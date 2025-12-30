@@ -185,37 +185,62 @@ public int countAlgotype(T[] cells, String algotype) {
 
 ## Category 3: Concurrency Model
 
-### 3.1 Multi-Threaded Cell Execution [MISSING]
+### 3.1 Multi-Threaded Cell Execution [IMPLEMENTED]
 
 **Paper Description (p.7):**
 > "We used multi-thread programming to implement the cell-view sorting algorithms. 2 types of threads were involved during the sorting process: cell threads are used to represent all cells, with each cell represented by a single thread; a main thread is used to activate all the threads and monitor the sorting process."
 
-**Implementation Status:** Single-threaded sequential execution.
+**Implementation Status:** IMPLEMENTED - One thread per cell with CyclicBarrier synchronization.
 
-**Code Location:** `src/main/java/com/emergent/doom/execution/ExecutionEngine.java:72-103`
-```java
-public int step() {
-    // ...
-    for (int i : iterationOrder) {  // <-- Sequential iteration
-        // ...
-    }
-}
+**Implementation Files:**
+- `src/main/java/com/emergent/doom/execution/ParallelExecutionEngine.java` - Main parallel engine
+- `src/main/java/com/emergent/doom/execution/CellThread.java` - Per-cell thread runnable
+- `src/main/java/com/emergent/doom/execution/CellEvaluator.java` - Cell evaluation interface
+- `src/main/java/com/emergent/doom/execution/ExecutionMode.java` - SEQUENTIAL/PARALLEL enum
+- `src/main/java/com/emergent/doom/swap/ConcurrentSwapCollector.java` - Thread-safe proposal collector
+- `src/main/java/com/emergent/doom/swap/SwapProposal.java` - Immutable swap proposal
+- `src/main/java/com/emergent/doom/swap/ThreadSafeFrozenCellStatus.java` - Thread-safe frozen state
+- `src/main/java/com/emergent/doom/probe/ThreadSafeProbe.java` - Thread-safe probe
+
+**Architecture:**
+```
+Main Thread                    Cell Threads (N threads)
+    |                               |
+    +-- barrier.await() -----> All cells evaluate in parallel
+    |                               |
+    +-- barrier.await() <----- All cells submit SwapProposals
+    |
+    +-- Resolve conflicts (leftmost priority)
+    +-- Execute non-conflicting swaps
+    |
+    +-- barrier.await() -----> Release for next step
 ```
 
-**Recommendation:** Consider `ExecutorService` or `ForkJoinPool` for parallel cell evaluation. Note: synchronization of swap operations requires careful design.
+**Usage:**
+```java
+// Enable parallel execution via ExperimentConfig
+ExperimentConfig config = new ExperimentConfig(
+    100,     // arraySize
+    10000,   // maxSteps
+    3,       // requiredStableSteps
+    true,    // recordTrajectory
+    ExecutionMode.PARALLEL  // <-- Enable parallel mode
+);
+```
 
 ---
 
-### 3.2 Parallel Cell Activation [DEVIATION]
+### 3.2 Parallel Cell Activation [IMPLEMENTED]
 
 **Paper Description (Figure 2 caption):**
 > "All cells have a chance to move at each time step (parallel)."
 
-**Implementation Status:** Cells are evaluated in fixed sequential order.
+**Implementation Status:** IMPLEMENTED - Configurable execution mode (SEQUENTIAL or PARALLEL).
 
-**Impact:** May affect emergent behaviors described in paper. Sequential vs. parallel evaluation can produce different dynamics.
-
-**Recommendation:** Implement configurable execution mode (sequential vs. parallel).
+**Details:**
+- `ExecutionMode.SEQUENTIAL` - Original behavior, cells evaluated one at a time
+- `ExecutionMode.PARALLEL` - All cells evaluate simultaneously with barrier sync
+- `ExperimentRunner` automatically uses thread-safe components for parallel mode
 
 ---
 

@@ -3,9 +3,11 @@ package com.emergent.doom.swap;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.swap.FrozenCellStatus.FrozenType;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Core swap engine that handles cell exchange mechanics.
- * 
+ *
  * <p>The swap engine is responsible for:
  * <ul>
  *   <li>Evaluating whether a swap should occur based on cell comparison</li>
@@ -14,17 +16,22 @@ import com.emergent.doom.swap.FrozenCellStatus.FrozenType;
  *   <li>Tracking swap statistics</li>
  * </ul>
  * </p>
- * 
+ *
  * <p><strong>Swap Logic:</strong> A swap occurs when both cells satisfy
  * frozen constraints. The comparison decision is handled externally
  * by the ExecutionEngine per algotype rules.</p>
- * 
+ *
+ * <p><strong>Thread Safety:</strong> The swap count uses {@link AtomicInteger}
+ * for thread-safe access. However, actual swap operations on the cell array
+ * must be externally synchronized (typically by the main thread after
+ * conflict resolution).</p>
+ *
  * @param <T> the type of cell
  */
 public class SwapEngine<T extends Cell<T>> {
-    
+
     private final FrozenCellStatus frozenStatus;
-    private int swapCount;
+    private final AtomicInteger swapCount;
     
     // PURPOSE: Initialize the swap engine with frozen cell tracking
     // INPUTS: frozenStatus (FrozenCellStatus) - tracks which cells are frozen
@@ -32,10 +39,10 @@ public class SwapEngine<T extends Cell<T>> {
     //   1. Store reference to frozenStatus
     //   2. Initialize swapCount to 0
     // OUTPUTS: SwapEngine instance
-    // DEPENDENCIES: FrozenCellStatus [IMPLEMENTED ✓]
+    // DEPENDENCIES: FrozenCellStatus [IMPLEMENTED]
     public SwapEngine(FrozenCellStatus frozenStatus) {
         this.frozenStatus = frozenStatus;
-        this.swapCount = 0;
+        this.swapCount = new AtomicInteger(0);
     }
     
     /**
@@ -53,22 +60,35 @@ public class SwapEngine<T extends Cell<T>> {
         T temp = cells[i];
         cells[i] = cells[j];
         cells[j] = temp;
-        swapCount++;
+        swapCount.incrementAndGet();
         return true;
     }
-    
+
     /**
-     * IMPLEMENTED: Get the total number of swaps performed
+     * IMPLEMENTED: Get the total number of swaps performed.
+     * Thread-safe read.
      */
     public int getSwapCount() {
-        return swapCount;
+        return swapCount.get();
     }
-    
+
     /**
-     * IMPLEMENTED: Reset the swap counter to zero
+     * IMPLEMENTED: Reset the swap counter to zero.
+     * Thread-safe write.
      */
     public void resetSwapCount() {
-        swapCount = 0;
+        swapCount.set(0);
+    }
+
+    /**
+     * Atomically add to the swap count.
+     * Useful when executing multiple swaps in parallel execution mode.
+     *
+     * @param delta the number of swaps to add
+     * @return the new total swap count
+     */
+    public int addSwapCount(int delta) {
+        return swapCount.addAndGet(delta);
     }
     
     /**

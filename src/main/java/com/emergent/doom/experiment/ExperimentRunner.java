@@ -3,12 +3,16 @@ package com.emergent.doom.experiment;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.execution.ConvergenceDetector;
 import com.emergent.doom.execution.ExecutionEngine;
+import com.emergent.doom.execution.ExecutionMode;
 import com.emergent.doom.execution.NoSwapConvergence;
+import com.emergent.doom.execution.ParallelExecutionEngine;
 import com.emergent.doom.metrics.Metric;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.probe.StepSnapshot;
+import com.emergent.doom.probe.ThreadSafeProbe;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.swap.SwapEngine;
+import com.emergent.doom.swap.ThreadSafeFrozenCellStatus;
 import com.emergent.doom.topology.Topology;
 
 import java.util.HashMap;
@@ -55,42 +59,65 @@ public class ExperimentRunner<T extends Cell<T>> {
     }
     
     /**
-     * IMPLEMENTED: Execute a single trial
+     * Execute a single trial using the configured execution mode.
      */
     public TrialResult<T> runTrial(ExperimentConfig config, int trialNumber) {
         // Create fresh instances for this trial
         T[] cells = cellArrayFactory.get();
-        FrozenCellStatus frozenStatus = new FrozenCellStatus();
+
+        // Use thread-safe components for parallel execution
+        boolean isParallel = config.isParallelExecution();
+        FrozenCellStatus frozenStatus = isParallel
+                ? new ThreadSafeFrozenCellStatus()
+                : new FrozenCellStatus();
         SwapEngine<T> swapEngine = new SwapEngine<>(frozenStatus);
-        Probe<T> probe = new Probe<>();
+        Probe<T> probe = isParallel ? new ThreadSafeProbe<>() : new Probe<>();
         probe.setRecordingEnabled(config.isRecordTrajectory());
         ConvergenceDetector<T> convergenceDetector =
                 new NoSwapConvergence<>(config.getRequiredStableSteps());
 
-        // Create execution engine (topologies now created internally based on algotype)
-        ExecutionEngine<T> engine = new ExecutionEngine<>(
-                cells, swapEngine, probe, convergenceDetector);
-        
-        // Run execution
+        // Run execution based on mode
         long startTime = System.nanoTime();
-        int finalStep = engine.runUntilConvergence(config.getMaxSteps());
+        int finalStep;
+        boolean converged;
+
+        if (isParallel) {
+            // Parallel execution: one thread per cell
+            ParallelExecutionEngine<T> parallelEngine = new ParallelExecutionEngine<>(
+                    cells, swapEngine, probe, convergenceDetector);
+            try {
+                parallelEngine.start();
+                finalStep = parallelEngine.runUntilConvergence(config.getMaxSteps());
+                converged = parallelEngine.hasConverged();
+            } finally {
+                parallelEngine.shutdown();
+            }
+        } else {
+            // Sequential execution: original behavior
+            ExecutionEngine<T> engine = new ExecutionEngine<>(
+                    cells, swapEngine, probe, convergenceDetector);
+            finalStep = engine.runUntilConvergence(config.getMaxSteps());
+            converged = engine.hasConverged();
+        }
+
         long endTime = System.nanoTime();
-        
+
         // Compute metrics
         Map<String, Double> metricValues = new HashMap<>();
         for (Map.Entry<String, Metric<T>> entry : metrics.entrySet()) {
             metricValues.put(entry.getKey(), entry.getValue().compute(cells));
         }
-        
+
         // Get trajectory if recorded
-        List<StepSnapshot<T>> trajectory = config.isRecordTrajectory() ? 
-                probe.getSnapshots() : null;
-        
+        List<StepSnapshot<T>> trajectory = config.isRecordTrajectory()
+                ? probe.getSnapshots()
+                : null;
+
         // Create and return result
         return new TrialResult<>(
                 trialNumber,
                 finalStep,
-                engine.hasConverged(),
+                converged,
                 trajectory,
                 metricValues,
                 endTime - startTime
