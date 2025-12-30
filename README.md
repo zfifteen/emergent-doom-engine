@@ -2,8 +2,6 @@
 
 The Emergent Doom Engine (EDE) is a general-purpose, domain-agnostic API for simulating emergent phenomena. It provides a clean, extensible framework that is not tied to any specific application domain, including prime factorization or game development. The engine is designed around sortable Cell primitives and configurable sorting dynamics to enable modular composition of complex emergent systems. [1]
 
-My work here is an implementation of the yet to be created EDE, hosted at https://github.com/zfifteen/emergent-factorization-engine, aiming to realize and extend these methods in a practical, extensible framework.
-
 ## Theoretical Background
 
 The EDE concept is inspired by research on sorting algorithms as models of emergent behavior and decentralized intelligence. Zhang, Goldstein, and Levin (2024) demonstrated that classical sorting algorithms can serve as minimal models of basal cognition and morphogenesis, revealing unexpected competencies in self-organizing systems.
