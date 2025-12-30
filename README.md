@@ -203,15 +203,6 @@ public class MyMetric<T extends Cell<T>> implements Metric<T> {
 }
 ```
 
-## Integration with Python Factorization Engine
-
-This Java EDE implementation complements the existing Python emergent factorization engine in this repository. Key integration points:
-
-1. **Comparative Studies**: Run identical experiments in both languages
-2. **Performance Analysis**: Compare Java vs Python execution characteristics
-3. **Cross-Validation**: Verify emergence patterns across implementations
-4. **Hybrid Workflows**: Use Java for compute-intensive trials, Python for analysis
-
 ## Testing
 
 ```bash
