@@ -9,28 +9,29 @@ import java.util.List;
 
 /**
  * Analyzes and visualizes execution trajectories.
- * 
+ *
  * <p>The TrajectoryAnalyzer processes snapshot sequences to extract
  * patterns, trends, and visualizable data.</p>
- * 
+ *
+ * <p><strong>Input Assumptions:</strong> All methods assume snapshots are provided
+ * in chronological order (sorted by step number / timestamp). Out-of-order snapshots
+ * will produce incorrect results for time-based calculations.</p>
+ *
  * @param <T> the type of cell
  */
 public class TrajectoryAnalyzer<T extends Cell<T>> {
-    
-    // PURPOSE: Compute a metric over the entire trajectory
-    // INPUTS:
-    //   - snapshots (List<StepSnapshot<T>>) - execution history
-    //   - metric (Metric<T>) - the metric to compute
-    // PROCESS:
-    //   1. For each snapshot in the list:
-    //      - Get cell states from snapshot
-    //      - Compute metric value
-    //      - Store in results list
-    //   2. Return list of metric values over time
-    // OUTPUTS: List<Double> - metric values at each step
-    // DEPENDENCIES:
-    //   - StepSnapshot.getCellStates()
-    //   - Metric.compute()
+
+    /**
+     * Compute a metric value at each step of the trajectory.
+     *
+     * <p>Iterates through all snapshots and computes the given metric
+     * on the cell states at each step, producing a time series of metric values.</p>
+     *
+     * @param snapshots the execution history as a list of step snapshots (chronologically ordered)
+     * @param metric the metric to compute at each step
+     * @return list of metric values, one per snapshot, in the same order as input;
+     *         empty list if snapshots is null or empty
+     */
     public List<Double> computeMetricTrajectory(List<StepSnapshot<T>> snapshots, Metric<T> metric) {
         if (snapshots == null || snapshots.isEmpty()) {
             return new ArrayList<>();
@@ -42,15 +43,16 @@ public class TrajectoryAnalyzer<T extends Cell<T>> {
         return values;
     }
     
-    // PURPOSE: Extract swap counts over time
-    // INPUTS: snapshots (List<StepSnapshot<T>>) - execution history
-    // PROCESS:
-    //   1. For each snapshot:
-    //      - Extract swap count
-    //      - Add to results list
-    //   2. Return list of swap counts
-    // OUTPUTS: List<Integer> - swap counts at each step
-    // DEPENDENCIES: StepSnapshot.getSwapCount()
+    /**
+     * Extract swap counts from each step of the trajectory.
+     *
+     * <p>Produces a time series of swap counts, useful for analyzing
+     * sorting progress and detecting convergence patterns.</p>
+     *
+     * @param snapshots the execution history as a list of step snapshots (chronologically ordered)
+     * @return list of swap counts, one per snapshot, in the same order as input;
+     *         empty list if snapshots is null or empty
+     */
     public List<Integer> extractSwapCounts(List<StepSnapshot<T>> snapshots) {
         if (snapshots == null || snapshots.isEmpty()) {
             return new ArrayList<>();
@@ -62,17 +64,24 @@ public class TrajectoryAnalyzer<T extends Cell<T>> {
         return counts;
     }
     
-    // PURPOSE: Detect convergence point in trajectory
-    // INPUTS:
-    //   - snapshots (List<StepSnapshot<T>>) - execution history
-    //   - consecutiveZeroSwaps (int) - required stable steps
-    // PROCESS:
-    //   1. Iterate through snapshots
-    //   2. Track consecutive zero-swap steps
-    //   3. When threshold reached, return that step number
-    //   4. Return -1 if never converged
-    // OUTPUTS: int - step number where convergence occurred, or -1
-    // DEPENDENCIES: StepSnapshot.getSwapCount()
+    /**
+     * Find the step at which the sorting process converged.
+     *
+     * <p>Convergence is defined as the <em>first</em> step of a sequence of
+     * {@code consecutiveZeroSwaps} steps with zero swaps. This represents
+     * the "time of entry into the attractor" - when the system first reaches
+     * and stays in a stable sorted state.</p>
+     *
+     * <p><strong>Semantics:</strong> Returns the step number where the stable
+     * sequence begins, not the step where it was confirmed. For example, if
+     * steps [5,6,7] all have zero swaps and consecutiveZeroSwaps=3, this
+     * returns 5 (start of stable sequence), not 7 (confirmation step).</p>
+     *
+     * @param snapshots the execution history as a list of step snapshots (chronologically ordered)
+     * @param consecutiveZeroSwaps number of consecutive zero-swap steps required to declare convergence
+     * @return the step number where convergence began, or -1 if never converged
+     *         or if inputs are invalid (null, empty, or consecutiveZeroSwaps &lt;= 0)
+     */
     public int findConvergenceStep(List<StepSnapshot<T>> snapshots, int consecutiveZeroSwaps) {
         if (snapshots == null || snapshots.isEmpty() || consecutiveZeroSwaps <= 0) {
             return -1;
@@ -93,18 +102,18 @@ public class TrajectoryAnalyzer<T extends Cell<T>> {
         return -1; // Never converged
     }
     
-    // PURPOSE: Generate a text-based visualization of trajectory
-    // INPUTS:
-    //   - snapshots (List<StepSnapshot<T>>) - execution history
-    //   - maxSnapshotsToShow (int) - limit on output size
-    // PROCESS:
-    //   1. Format header with column names
-    //   2. For each snapshot (up to max):
-    //      - Format step number, swap count, and key metrics
-    //      - Add to output string
-    //   3. Return formatted string
-    // OUTPUTS: String - multi-line text visualization
-    // DEPENDENCIES: StepSnapshot methods
+    /**
+     * Generate a text-based visualization of the trajectory.
+     *
+     * <p>Produces a formatted table showing step number, swap count, and
+     * array size for each snapshot, suitable for console output or logging.</p>
+     *
+     * @param snapshots the execution history as a list of step snapshots (chronologically ordered)
+     * @param maxSnapshotsToShow maximum number of snapshots to include in output;
+     *                           remaining snapshots are summarized with a count
+     * @return formatted multi-line string visualization, or informative message
+     *         if snapshots is null or empty
+     */
     public String visualizeTrajectory(List<StepSnapshot<T>> snapshots, int maxSnapshotsToShow) {
         if (snapshots == null || snapshots.isEmpty()) {
             return "No trajectory data available.";
@@ -130,14 +139,21 @@ public class TrajectoryAnalyzer<T extends Cell<T>> {
         return sb.toString();
     }
     
-    // PURPOSE: Calculate time elapsed between first and last snapshot
-    // INPUTS: snapshots (List<StepSnapshot<T>>) - execution history
-    // PROCESS:
-    //   1. Get timestamp from first snapshot
-    //   2. Get timestamp from last snapshot
-    //   3. Return difference in nanoseconds
-    // OUTPUTS: long - elapsed time in nanoseconds
-    // DEPENDENCIES: StepSnapshot.getTimestamp()
+    /**
+     * Calculate the total wall-clock execution time of the trajectory.
+     *
+     * <p>Computes the difference between the timestamp of the last snapshot
+     * and the first snapshot. This represents the actual elapsed time for
+     * the sorting process.</p>
+     *
+     * <p><strong>Assumption:</strong> Snapshots must be in chronological order
+     * with monotonically increasing timestamps. Out-of-order snapshots will
+     * produce incorrect (possibly negative) results.</p>
+     *
+     * @param snapshots the execution history as a list of step snapshots (chronologically ordered)
+     * @return elapsed time in nanoseconds between first and last snapshot;
+     *         returns 0 if snapshots is null, empty, or contains only one snapshot
+     */
     public long getTotalExecutionTime(List<StepSnapshot<T>> snapshots) {
         if (snapshots == null || snapshots.size() < 2) {
             return 0L;
