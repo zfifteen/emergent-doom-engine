@@ -6,6 +6,7 @@ import com.emergent.doom.experiment.ExperimentResults;
 import com.emergent.doom.experiment.ExperimentRunner;
 import com.emergent.doom.experiment.TrialResult;
 import com.emergent.doom.metrics.MonotonicityError;
+import com.emergent.doom.metrics.SortednessValue;
 import com.emergent.doom.probe.StepSnapshot;
 
 import java.math.BigInteger;
@@ -60,6 +61,7 @@ public class FactorizationExperiment {
         
         // Add metrics
         runner.addMetric("Monotonicity", new MonotonicityError<>());
+        runner.addMetric("Sortedness", new SortednessValue<>());
         
         // Run experiment with 5 trials
         int numTrials = 5;
