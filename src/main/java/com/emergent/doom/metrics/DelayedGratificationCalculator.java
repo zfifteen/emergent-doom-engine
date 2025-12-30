@@ -57,25 +57,33 @@ public class DelayedGratificationCalculator {
                 double peakValue = sortednessHistory.get(i);
                 int dropEndIndex = i + 1;
 
-                // Find bottom of the consecutive drop
+                // Find bottom of the consecutive drop (allow plateaus as part of the drop)
+                double troughValue = sortednessHistory.get(dropEndIndex);
                 while (dropEndIndex < sortednessHistory.size() - 1 &&
-                       sortednessHistory.get(dropEndIndex + 1) < sortednessHistory.get(dropEndIndex)) {
+                       sortednessHistory.get(dropEndIndex + 1) <= sortednessHistory.get(dropEndIndex)) {
                     dropEndIndex++;
+                    double currentValue = sortednessHistory.get(dropEndIndex);
+                    if (currentValue < troughValue) {
+                        troughValue = currentValue;
+                    }
                 }
 
-                double troughValue = sortednessHistory.get(dropEndIndex);
                 double deltaDecreasing = peakValue - troughValue;
 
                 // Now track the subsequent increase (recovery)
                 int recoveryEndIndex = dropEndIndex;
 
-                // Find peak of the consecutive increase
+                // Find peak of the consecutive increase (allow plateaus as part of the recovery)
+                double recoveryValue = sortednessHistory.get(recoveryEndIndex);
                 while (recoveryEndIndex < sortednessHistory.size() - 1 &&
-                       sortednessHistory.get(recoveryEndIndex + 1) > sortednessHistory.get(recoveryEndIndex)) {
+                       sortednessHistory.get(recoveryEndIndex + 1) >= sortednessHistory.get(recoveryEndIndex)) {
                     recoveryEndIndex++;
+                    double currentValue = sortednessHistory.get(recoveryEndIndex);
+                    if (currentValue > recoveryValue) {
+                        recoveryValue = currentValue;
+                    }
                 }
 
-                double recoveryValue = sortednessHistory.get(recoveryEndIndex);
                 double deltaIncreasing = recoveryValue - troughValue;
 
                 // Calculate DG for this event if there was actual decrease and recovery
@@ -115,21 +123,22 @@ public class DelayedGratificationCalculator {
                 // Found start of a drop
                 int dropEndIndex = i + 1;
 
+                // Allow plateaus as part of the drop
                 while (dropEndIndex < sortednessHistory.size() - 1 &&
-                       sortednessHistory.get(dropEndIndex + 1) < sortednessHistory.get(dropEndIndex)) {
+                       sortednessHistory.get(dropEndIndex + 1) <= sortednessHistory.get(dropEndIndex)) {
                     dropEndIndex++;
                 }
 
-                // Check if there's a recovery
+                // Check if there's a recovery (strict increase after the drop/plateau)
                 if (dropEndIndex < sortednessHistory.size() - 1 &&
                     sortednessHistory.get(dropEndIndex + 1) > sortednessHistory.get(dropEndIndex)) {
                     eventCount++;
                 }
 
-                // Skip to end of recovery
+                // Skip to end of recovery (allow plateaus as part of recovery)
                 int recoveryEndIndex = dropEndIndex;
                 while (recoveryEndIndex < sortednessHistory.size() - 1 &&
-                       sortednessHistory.get(recoveryEndIndex + 1) > sortednessHistory.get(recoveryEndIndex)) {
+                       sortednessHistory.get(recoveryEndIndex + 1) >= sortednessHistory.get(recoveryEndIndex)) {
                     recoveryEndIndex++;
                 }
                 i = recoveryEndIndex;

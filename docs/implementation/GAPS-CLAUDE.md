@@ -25,7 +25,7 @@ This document catalogs deviations between the Java implementation and the method
 |----------|---------|------|---------|-----------|-------|
 | Metrics | 0 | 1 | 0 | 0 | 1 |
 | Chimeric Populations | 2 | 2 | 0 | 0 | 4 |
-| Concurrency Model | 0 | 0 | 0 | 0 | 0 |
+| Concurrency Model | 0 | 0 | 0 | 0 | 0 | *(implemented in PR #2)*
 | Traditional Algorithms | 2 | 0 | 0 | 0 | 2 |
 | Trajectory Analysis | 0 | 0 | 0 | 0 | 0 |
 | Statistical Analysis | 2 | 0 | 1 | 0 | 3 |

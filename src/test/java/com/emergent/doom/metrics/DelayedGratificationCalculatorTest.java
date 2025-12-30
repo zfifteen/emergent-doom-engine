@@ -188,6 +188,64 @@ class DelayedGratificationCalculatorTest {
     }
 
     @Nested
+    @DisplayName("Plateau trajectories")
+    class PlateauTrajectories {
+
+        @Test
+        @DisplayName("plateau during drop: [80, 70, 70, 60, 75]")
+        void plateauDuringDrop() {
+            // Peak at 80, drops to 70, plateau at 70, drops to 60 (trough), recovers to 75
+            // ΔS_decreasing = 80 - 60 = 20, ΔS_increasing = 75 - 60 = 15
+            // DG = 15/20 = 0.75
+            List<Double> trajectory = Arrays.asList(80.0, 70.0, 70.0, 60.0, 75.0);
+            assertEquals(0.75, calculator.calculate(trajectory), 0.001);
+            assertEquals(1, calculator.countDGEvents(trajectory));
+        }
+
+        @Test
+        @DisplayName("plateau during recovery: [80, 60, 70, 70, 80]")
+        void plateauDuringRecovery() {
+            // Peak at 80, drops to 60 (trough), recovers to 70, plateau, recovers to 80
+            // ΔS_decreasing = 80 - 60 = 20, ΔS_increasing = 80 - 60 = 20
+            // DG = 20/20 = 1.0
+            List<Double> trajectory = Arrays.asList(80.0, 60.0, 70.0, 70.0, 80.0);
+            assertEquals(1.0, calculator.calculate(trajectory), 0.001);
+            assertEquals(1, calculator.countDGEvents(trajectory));
+        }
+
+        @Test
+        @DisplayName("plateau at trough: [80, 60, 60, 60, 75]")
+        void plateauAtTrough() {
+            // Peak at 80, drops to 60, stays at 60 (trough), recovers to 75
+            // ΔS_decreasing = 80 - 60 = 20, ΔS_increasing = 75 - 60 = 15
+            // DG = 15/20 = 0.75
+            List<Double> trajectory = Arrays.asList(80.0, 60.0, 60.0, 60.0, 75.0);
+            assertEquals(0.75, calculator.calculate(trajectory), 0.001);
+            assertEquals(1, calculator.countDGEvents(trajectory));
+        }
+
+        @Test
+        @DisplayName("multiple plateaus: [80, 70, 70, 60, 60, 70, 70, 80]")
+        void multiplePlateaus() {
+            // Peak 80, drop with plateau to 60, recovery with plateau to 80
+            // ΔS_decreasing = 80 - 60 = 20, ΔS_increasing = 80 - 60 = 20
+            // DG = 1.0
+            List<Double> trajectory = Arrays.asList(80.0, 70.0, 70.0, 60.0, 60.0, 70.0, 70.0, 80.0);
+            assertEquals(1.0, calculator.calculate(trajectory), 0.001);
+            assertEquals(1, calculator.countDGEvents(trajectory));
+        }
+
+        @Test
+        @DisplayName("plateau only (no actual drop or recovery)")
+        void plateauOnly() {
+            // Long plateau should not count as DG event
+            List<Double> trajectory = Arrays.asList(80.0, 80.0, 80.0, 80.0, 80.0);
+            assertEquals(0.0, calculator.calculate(trajectory));
+            assertEquals(0, calculator.countDGEvents(trajectory));
+        }
+    }
+
+    @Nested
     @DisplayName("Realistic sorting trajectories")
     class RealisticTrajectories {
 
