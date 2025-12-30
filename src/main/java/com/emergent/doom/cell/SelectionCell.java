@@ -1,11 +1,17 @@
 package com.emergent.doom.cell;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Abstract base for Levin cell-view Selection Sort cells.
  * Baked-in: Algotype.SELECTION (target chasing, long-range).
  * Domain extends and impls compareTo.
  * Note: Contains mutable idealPos state (starts at 0, increments on swap denial per Levin p.9).
  * This breaks cell immutability but is required for Levin's dynamic position chasing.
+ *
+ * <p><strong>Thread Safety:</strong> The idealPos field uses {@link AtomicInteger}
+ * for thread-safe access in parallel execution mode.</p>
+ *
  * TEMPLATE_BEGIN
  * PURPOSE: Provide Selection policy foundation (goal-directed).
  * INPUTS: value (int).
@@ -19,11 +25,11 @@ package com.emergent.doom.cell;
  */
 public abstract class SelectionCell<T extends SelectionCell<T>> implements Cell<T> {
     protected final int value;
-    private int idealPos;  // Mutable: starts at 0, increments on swap denial per Levin p.9
+    private final AtomicInteger idealPos;  // Thread-safe: starts at 0, increments on swap denial per Levin p.9
 
     protected SelectionCell(int value) {
         this.value = value;
-        this.idealPos = 0;  // Levin: initial ideal position is most left (0)
+        this.idealPos = new AtomicInteger(0);  // Levin: initial ideal position is most left (0)
     }
 
     public int getValue() {
@@ -31,15 +37,33 @@ public abstract class SelectionCell<T extends SelectionCell<T>> implements Cell<
     }
 
     public int getIdealPos() {
-        return idealPos;
+        return idealPos.get();
     }
 
-    public void incrementIdealPos() {
-        idealPos++;
+    /**
+     * Atomically increment the ideal position and return the new value.
+     * Thread-safe for parallel execution.
+     *
+     * @return the new ideal position after increment
+     */
+    public int incrementIdealPos() {
+        return idealPos.incrementAndGet();
     }
 
-    public void setIdealPos(int idealPos) {
-        this.idealPos = idealPos;
+    public void setIdealPos(int newIdealPos) {
+        this.idealPos.set(newIdealPos);
+    }
+
+    /**
+     * Atomically compare-and-set the ideal position.
+     * Useful for concurrent updates when exact coordination is needed.
+     *
+     * @param expected the expected current value
+     * @param newValue the new value to set
+     * @return true if successful (current value matched expected)
+     */
+    public boolean compareAndSetIdealPos(int expected, int newValue) {
+        return idealPos.compareAndSet(expected, newValue);
     }
 
     @Override
