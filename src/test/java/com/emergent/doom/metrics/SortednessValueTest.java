@@ -286,7 +286,7 @@ class SortednessValueTest {
     class StatisticalTests {
 
         @Test
-        @DisplayName("Random arrays average around 50% +/- 10%")
+        @DisplayName("Random arrays with duplicates average less than 50%")
         void randomArrays_averageAround50() {
             Random rng = new Random(42); // Fixed seed for reproducibility
             int trials = 1000;
