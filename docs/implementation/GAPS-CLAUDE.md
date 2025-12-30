@@ -23,15 +23,15 @@ This document catalogs deviations between the Java implementation and the method
 
 | Category | MISSING | STUB | PARTIAL | DEVIATION | Total |
 |----------|---------|------|---------|-----------|-------|
-| Metrics | 0 | 2 | 0 | 0 | 2 |
+| Metrics | 0 | 1 | 0 | 0 | 1 |
 | Chimeric Populations | 2 | 2 | 0 | 0 | 4 |
-| Concurrency Model | 1 | 0 | 0 | 1 | 2 |
+| Concurrency Model | 0 | 0 | 0 | 0 | 0 | *(implemented in PR #2)*
 | Traditional Algorithms | 2 | 0 | 0 | 0 | 2 |
-| Trajectory Analysis | 1 | 4 | 0 | 0 | 5 |
+| Trajectory Analysis | 0 | 0 | 0 | 0 | 0 |
 | Statistical Analysis | 2 | 0 | 1 | 0 | 3 |
 | Algorithm Specifics | 0 | 0 | 0 | 1 | 1 |
 | Visualization/Output | 3 | 0 | 0 | 0 | 3 |
-| **TOTAL** | **11** | **8** | **1** | **2** | **22** |
+| **TOTAL** | **9** | **3** | **1** | **1** | **14** |
 
 ---
 
@@ -50,7 +50,7 @@ This document catalogs deviations between the Java implementation and the method
 
 ---
 
-### 1.2 Delayed Gratification Index [STUB]
+### 1.2 Delayed Gratification Index [IMPLEMENTED ✓]
 
 **Paper Definition (p.8):**
 > "Delayed Gratification is used to evaluate the ability of each algorithm undertake actions that temporarily increase Monotonicity Error in order to achieve gains later on. Delayed Gratification is defined as the improvement in Sortedness made by a temporarily error increasing action. The total Sortedness change after a consecutive Sortedness value's increasing is ΔS_increasing. The total Sortedness change after the consecutive Sortedness value decreasing starting from last peak is ΔS_decreasing."
@@ -60,23 +60,17 @@ This document catalogs deviations between the Java implementation and the method
 DG = ΔS_increasing / ΔS_decreasing
 ```
 
-**Implementation Status:** Returns `0.0` unconditionally.
+**Implementation Status:** Implemented via trajectory-based calculation in `DelayedGratificationCalculator`.
 
-**Code Location:** `src/main/java/com/emergent/doom/metrics/DelayedGratificationIndex.java:30`
-```java
-@Override
-public double compute(T[] cells) {
-    // Implementation will go here
-    return 0.0;  // <-- STUB
-}
-```
+**Code Location:** `src/main/java/com/emergent/doom/metrics/DelayedGratificationCalculator.java`
 
-**Recommendation:** Implement trajectory-aware calculation:
-1. Analyze sequence of Sortedness values
-2. Identify peaks and troughs
-3. Calculate ratio of recovery gains to temporary setbacks
+**Verification:** Implementation correctly:
+1. Analyzes sequence of Sortedness values from trajectory
+2. Identifies peaks (start of consecutive decreases) and troughs (end of decreases)
+3. Calculates ratio of recovery gains (ΔS_increasing) to setbacks (ΔS_decreasing)
+4. Sums DG values across all events in a trajectory
 
-**Note:** This metric requires trajectory history, not just a single snapshot. Consider refactoring to accept `Probe<T>` or `List<StepSnapshot<T>>`.
+**Note:** The original `DelayedGratificationIndex.java` (snapshot-based) remains as a stub. Use `DelayedGratificationCalculator` with `TrajectoryAnalyzer.computeMetricTrajectory()` for trajectory-based DG calculation per the paper.
 
 ---
 
@@ -278,46 +272,50 @@ ExperimentConfig config = new ExperimentConfig(
 
 ## Category 5: Trajectory Analysis
 
-### 5.1 Metric Trajectory Computation [STUB]
+### 5.1 Metric Trajectory Computation [IMPLEMENTED ✓]
 
-**Code Location:** `src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java:34-37`
+**Code Location:** `src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java`
+
+**Implementation Status:** Fully implemented - computes any metric over trajectory snapshots.
+
 ```java
-public List<Double> computeMetricTrajectory(List<StepSnapshot<T>> snapshots, Metric<T> metric) {
-    return new ArrayList<>();  // <-- STUB
-}
+public List<Double> computeMetricTrajectory(List<StepSnapshot<T>> snapshots, Metric<T> metric)
 ```
 
 ---
 
-### 5.2 Swap Count Extraction [STUB]
+### 5.2 Swap Count Extraction [IMPLEMENTED ✓]
 
-**Code Location:** `src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java:48-51`
+**Code Location:** `src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java`
+
+**Implementation Status:** Fully implemented - extracts swap counts from trajectory.
+
 ```java
-public List<Integer> extractSwapCounts(List<StepSnapshot<T>> snapshots) {
-    return new ArrayList<>();  // <-- STUB
-}
+public List<Integer> extractSwapCounts(List<StepSnapshot<T>> snapshots)
 ```
 
 ---
 
-### 5.3 Convergence Detection [STUB]
+### 5.3 Convergence Detection [IMPLEMENTED ✓]
 
-**Code Location:** `src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java:64-67`
+**Code Location:** `src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java`
+
+**Implementation Status:** Fully implemented - finds step where N consecutive zero-swap steps occurred.
+
 ```java
-public int findConvergenceStep(List<StepSnapshot<T>> snapshots, int consecutiveZeroSwaps) {
-    return -1;  // <-- STUB
-}
+public int findConvergenceStep(List<StepSnapshot<T>> snapshots, int consecutiveZeroSwaps)
 ```
 
 ---
 
-### 5.4 Trajectory Visualization [STUB]
+### 5.4 Trajectory Visualization [IMPLEMENTED ✓]
 
-**Code Location:** `src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java:81-84`
+**Code Location:** `src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java`
+
+**Implementation Status:** Fully implemented - generates text-based trajectory visualization.
+
 ```java
-public String visualizeTrajectory(List<StepSnapshot<T>> snapshots, int maxSnapshotsToShow) {
-    return "";  // <-- STUB
-}
+public String visualizeTrajectory(List<StepSnapshot<T>> snapshots, int maxSnapshotsToShow)
 ```
 
 ---
@@ -436,15 +434,15 @@ Same as above.
 1. ~~`SortednessValue` metric~~ - ✓ IMPLEMENTED
 2. `AggregationValue.compute()` - Required for chimeric experiments
 3. `ChimericPopulation.createPopulation()` - Required for chimeric experiments
-4. `TrajectoryAnalyzer` stub methods - Required for trajectory analysis
+4. ~~`TrajectoryAnalyzer` stub methods~~ - ✓ IMPLEMENTED (all 5 methods)
 
 ### Medium Priority (Enhanced Analysis)
-5. `DelayedGratificationIndex.compute()` - Key emergent behavior metric
+5. ~~`DelayedGratificationCalculator`~~ - ✓ IMPLEMENTED (trajectory-based DG calculation)
 6. Traditional algorithm implementations - Required for comparison studies
 7. Statistical tests (Z-test, T-test) - Required for significance analysis
 
 ### Lower Priority (Extensions)
-8. Multi-threaded execution - Performance/accuracy improvement
+8. ~~Multi-threaded execution~~ - ✓ IMPLEMENTED (ParallelExecutionEngine)
 9. Cross-purpose sorting support - Extended experiments
 10. Visualization output - Presentation/publication support
 
@@ -458,10 +456,11 @@ After implementing fixes, verify against paper:
 - [ ] Insertion sort: left-prefix sorted check before swap
 - [ ] Selection sort: ideal position targeting with increment on denial
 - [ ] Frozen cells: MOVABLE vs IMMOVABLE behavior
-- [ ] Monotonicity Error: inversion count matches paper formula
+- [x] Monotonicity Error: inversion count matches paper formula
 - [x] Sortedness Value: percentage calculation correct
 - [ ] Aggregation Value: neighbor-matching percentage
-- [ ] Delayed Gratification: trajectory-based calculation
+- [x] Delayed Gratification: trajectory-based calculation (DelayedGratificationCalculator)
+- [x] Trajectory Analysis: all methods implemented (computeMetricTrajectory, extractSwapCounts, findConvergenceStep, visualizeTrajectory, getTotalExecutionTime)
 
 ---
 
