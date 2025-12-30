@@ -1,8 +1,10 @@
 package com.emergent.doom.metrics;
 
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.experiment.SortDirection;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * Measures the percentage of cells in their correct sorted position.
@@ -14,7 +16,7 @@ import java.util.Arrays;
  *
  * <p>Formula: (cells in correct final position / total cells) × 100</p>
  *
- * <p>Examples:
+ * <p>Examples (INCREASING direction):
  * <ul>
  *   <li>[1, 2, 3, 4, 5] → 100.0 (all in correct position)</li>
  *   <li>[5, 4, 3, 2, 1] → 20.0 (only middle element "3" is correct for 5-element array)</li>
@@ -22,15 +24,49 @@ import java.util.Arrays;
  * </ul>
  * </p>
  *
+ * <p>Examples (DECREASING direction):
+ * <ul>
+ *   <li>[5, 4, 3, 2, 1] → 100.0 (all in correct position for descending)</li>
+ *   <li>[1, 2, 3, 4, 5] → 20.0 (only middle element "3" is correct for 5-element array)</li>
+ * </ul>
+ * </p>
+ *
  * @param <T> the type of cell
  */
 public class SortednessValue<T extends Cell<T>> implements Metric<T> {
 
+    private final SortDirection direction;
+
+    /**
+     * Create a SortednessValue metric with default INCREASING direction.
+     */
+    public SortednessValue() {
+        this(SortDirection.INCREASING);
+    }
+
+    /**
+     * Create a SortednessValue metric with the specified sort direction.
+     *
+     * @param direction the target sort direction (INCREASING or DECREASING)
+     */
+    public SortednessValue(SortDirection direction) {
+        this.direction = direction != null ? direction : SortDirection.INCREASING;
+    }
+
+    /**
+     * Get the sort direction used by this metric.
+     *
+     * @return the sort direction
+     */
+    public SortDirection getDirection() {
+        return direction;
+    }
+
     /**
      * Compute the sortedness value for the given cell array.
      *
-     * <p>Creates a sorted reference array and counts how many cells
-     * are already in their correct final position.</p>
+     * <p>Creates a sorted reference array (in the configured direction)
+     * and counts how many cells are already in their correct final position.</p>
      *
      * @param cells the array of cells to analyze
      * @return sortedness as a percentage (0.0 to 100.0)
@@ -48,7 +84,12 @@ public class SortednessValue<T extends Cell<T>> implements Metric<T> {
         // Create sorted reference array
         @SuppressWarnings("unchecked")
         T[] sorted = (T[]) Arrays.copyOf(cells, cells.length);
-        Arrays.sort(sorted);
+
+        if (direction == SortDirection.DECREASING) {
+            Arrays.sort(sorted, Comparator.reverseOrder());
+        } else {
+            Arrays.sort(sorted);
+        }
 
         // Count cells in correct position
         int correctCount = 0;

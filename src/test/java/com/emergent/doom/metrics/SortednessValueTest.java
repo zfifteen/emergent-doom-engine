@@ -2,6 +2,7 @@ package com.emergent.doom.metrics;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.experiment.SortDirection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - Partially sorted arrays return intermediate values
  * - Edge cases (empty, single element, duplicates)
  * - Statistical baseline for random arrays
+ * - Both INCREASING and DECREASING sort directions
  */
 class SortednessValueTest {
 
@@ -363,6 +365,162 @@ class SortednessValueTest {
         @DisplayName("isLowerBetter returns false")
         void isLowerBetter_returnsFalse() {
             assertFalse(metric.isLowerBetter(), "Higher sortedness is better");
+        }
+    }
+
+    // ========================================================================
+    // Sort Direction Tests (DECREASING)
+    // ========================================================================
+
+    @Nested
+    @DisplayName("Decreasing sort direction")
+    class DecreasingDirectionTests {
+
+        private SortednessValue<IntCell> decreasingMetric;
+
+        @BeforeEach
+        void setUp() {
+            decreasingMetric = new SortednessValue<>(SortDirection.DECREASING);
+        }
+
+        @Test
+        @DisplayName("getDirection returns DECREASING")
+        void getDirection_returnsDecreasing() {
+            assertEquals(SortDirection.DECREASING, decreasingMetric.getDirection());
+        }
+
+        @Test
+        @DisplayName("Descending [5,4,3,2,1] returns 100.0 for DECREASING")
+        void descendingArray_returns100() {
+            // Array:  [5,4,3,2,1]
+            // Target: [5,4,3,2,1] (descending)
+            // All elements in correct position
+            IntCell[] cells = createCells(5, 4, 3, 2, 1);
+
+            double result = decreasingMetric.compute(cells);
+
+            assertEquals(100.0, result, 0.001, "All elements in correct position for descending");
+        }
+
+        @Test
+        @DisplayName("Ascending [1,2,3,4,5] returns 20.0 for DECREASING")
+        void ascendingArray_returns20_forDecreasing() {
+            // Array:  [1,2,3,4,5]
+            // Target: [5,4,3,2,1] (descending)
+            // Only position 2 (value 3) is correct
+            IntCell[] cells = createCells(1, 2, 3, 4, 5);
+
+            double result = decreasingMetric.compute(cells);
+
+            assertEquals(20.0, result, 0.001, "Only middle element '3' is in correct position");
+        }
+
+        @Test
+        @DisplayName("Two elements descending returns 100.0")
+        void twoElementsDescending_returns100() {
+            IntCell[] cells = createCells(2, 1);
+
+            double result = decreasingMetric.compute(cells);
+
+            assertEquals(100.0, result, 0.001, "Descending pair should be 100%");
+        }
+
+        @Test
+        @DisplayName("Two elements ascending returns 0.0 for DECREASING")
+        void twoElementsAscending_returns0_forDecreasing() {
+            IntCell[] cells = createCells(1, 2);
+
+            double result = decreasingMetric.compute(cells);
+
+            assertEquals(0.0, result, 0.001, "Ascending pair has no correct positions for descending");
+        }
+
+        @Test
+        @DisplayName("[4,3,2,1] returns 100.0 for DECREASING")
+        void descendingArray4_returns100() {
+            IntCell[] cells = createCells(4, 3, 2, 1);
+
+            double result = decreasingMetric.compute(cells);
+
+            assertEquals(100.0, result, 0.001, "All elements in correct position for descending");
+        }
+
+        @Test
+        @DisplayName("[5,4,2,3,1] returns 60.0 for DECREASING")
+        void partialDescending_returns60() {
+            // Array:  [5,4,2,3,1]
+            // Target: [5,4,3,2,1] (descending)
+            // Correct positions: 0(5), 1(4), 4(1) = 3/5 = 60%
+            IntCell[] cells = createCells(5, 4, 2, 3, 1);
+
+            double result = decreasingMetric.compute(cells);
+
+            assertEquals(60.0, result, 0.001, "3 out of 5 in correct position for descending");
+        }
+
+        @Test
+        @DisplayName("Empty array returns 100.0 for DECREASING")
+        void emptyArray_returns100_forDecreasing() {
+            IntCell[] cells = new IntCell[0];
+
+            double result = decreasingMetric.compute(cells);
+
+            assertEquals(100.0, result, 0.001, "Empty array is trivially sorted");
+        }
+
+        @Test
+        @DisplayName("Single element returns 100.0 for DECREASING")
+        void singleElement_returns100_forDecreasing() {
+            IntCell[] cells = createCells(42);
+
+            double result = decreasingMetric.compute(cells);
+
+            assertEquals(100.0, result, 0.001, "Single element is trivially sorted");
+        }
+
+        @Test
+        @DisplayName("All same values returns 100.0 for DECREASING")
+        void allSameValues_returns100_forDecreasing() {
+            IntCell[] cells = createCells(5, 5, 5, 5, 5);
+
+            double result = decreasingMetric.compute(cells);
+
+            assertEquals(100.0, result, 0.001, "All same values are trivially sorted");
+        }
+    }
+
+    // ========================================================================
+    // Default Direction Tests
+    // ========================================================================
+
+    @Nested
+    @DisplayName("Default direction behavior")
+    class DefaultDirectionTests {
+
+        @Test
+        @DisplayName("Default constructor uses INCREASING")
+        void defaultConstructor_usesIncreasing() {
+            SortednessValue<IntCell> defaultMetric = new SortednessValue<>();
+            assertEquals(SortDirection.INCREASING, defaultMetric.getDirection());
+        }
+
+        @Test
+        @DisplayName("Null direction defaults to INCREASING")
+        void nullDirection_defaultsToIncreasing() {
+            SortednessValue<IntCell> nullDirectionMetric = new SortednessValue<>(null);
+            assertEquals(SortDirection.INCREASING, nullDirectionMetric.getDirection());
+        }
+
+        @Test
+        @DisplayName("Explicit INCREASING matches default behavior")
+        void explicitIncreasing_matchesDefault() {
+            SortednessValue<IntCell> increasingMetric = new SortednessValue<>(SortDirection.INCREASING);
+            IntCell[] cells = createCells(1, 2, 3, 4, 5);
+
+            double defaultResult = metric.compute(cells);
+            double increasingResult = increasingMetric.compute(cells);
+
+            assertEquals(defaultResult, increasingResult, 0.001, "Explicit INCREASING should match default");
         }
     }
 
