@@ -1,0 +1,79 @@
+# Emergent Doom Engine (EDE)
+
+The Emergent Doom Engine (EDE) is a general-purpose, domain-agnostic API for simulating emergent phenomena. It provides a clean, extensible framework that is not tied to any specific application domain, including prime factorization or game development. The engine is designed around sortable Cell primitives and configurable sorting dynamics to enable modular composition of complex emergent systems. [1]
+
+My work here is an implementation of the yet to be created EDE, hosted at https://github.com/zfifteen/emergent-factorization-engine, aiming to realize and extend these methods in a practical, extensible framework.
+
+## Theoretical Background
+
+The EDE concept is inspired by research on sorting algorithms as models of emergent behavior and decentralized intelligence. Zhang, Goldstein, and Levin (2024) demonstrated that classical sorting algorithms can serve as minimal models of basal cognition and morphogenesis, revealing unexpected competencies in self-organizing systems.
+
+This work extends those ideas into a general-purpose engine framework, where sorting dynamics become the fundamental computational primitive for simulating emergent phenomena across diverse application domains.
+
+## Key Concepts from the Levin et al. Research
+
+### Decentralized Intelligence and Bottom-Up Control
+The Levin paper breaks the traditional assumption of top-down control in sorting algorithms. Instead of treating sorting as a centralized process controlled by an external executor, the research reconceptualizes each array element as an autonomous agent with minimal agency. Each element implements sorting policies from the bottom up through local interactions with neighbors, demonstrating that complex collective behaviors can emerge from simple, decentralized rules without centralized coordination.
+
+### Robustness Through Autonomous Element Agency
+A key finding is that arrays of autonomous elements sort themselves more reliably and robustly than traditional implementations, particularly in the presence of errors or "damaged" elements. This robustness emerges from the distributed nature of the sorting process—when individual elements possess agency, the system can adapt to failures without catastrophic breakdown. This demonstrates that basal forms of intelligence can provide unexpected resilience in computational systems.
+
+### Delayed Gratification and Problem-Space Navigation
+The research quantitatively characterizes sorting activity as traversal through a problem space, revealing that autonomous sorting systems exhibit delayed gratification behavior. Elements can temporarily increase disorder (reduce progress toward sorted state) to navigate around defects or obstacles, then resume progress toward the goal. This capacity to accept temporary setbacks for long-term gain represents a form of minimal goal-directed behavior that emerges from the sorting dynamics themselves.
+
+### Emergent Clustering in Chimeric Systems
+When arrays contain elements following different sorting algorithms ("chimeric arrays"), unexpected clustering behavior emerges. Elements sort themselves not only by value but also spontaneously organize by algorithm type, revealing that the sorting process encodes information about both the target state and the method being used. This emergent pattern formation demonstrates that simple systems can exhibit multiple simultaneous organizational principles.
+
+### Basal Cognition Without Explicit Encoding
+The most significant insight is that problem-solving capacities emerge in simple, familiar algorithms without being explicitly encoded in their underlying mechanics. The sorting algorithms, when viewed through the lens of autonomous elements navigating problem spaces, reveal memory-like persistence, decision-making at interaction points, and adaptive responses to perturbations. This demonstrates that basal forms of intelligence can exist in minimal computational substrates, providing a new perspective on the field of Diverse Intelligence and suggesting that cognitive-like competencies may be far more widespread in simple systems than previously recognized.
+
+## Design Concept
+
+The EDE is implemented in Java and built around the standard java.lang.Comparable interface. Users define domain-specific Cells that implement Comparable, allowing the engine to order and process them using well-understood Java sorting contracts.
+
+The engine provides three built-in sorting algorithm implementations:
+
+- Selection Sort
+- Bubble Sort
+- Merge Sort
+
+The Engine API allows users to configure which sorting algorithm is applied to their Cells, making the sorting strategy a tunable parameter of the emergent system.
+
+## User-Facing Components
+
+The EDE exposes two major user-facing components:
+
+### Engine API
+The Engine API allows implementors to customize engine parameters and behavior, including selection of the sorting algorithm (Selection Sort, Bubble Sort, or Merge Sort) to be applied during Cell processing. This provides flexibility to adapt the engine to specific emergent phenomena and experimental setups.
+
+### Implementation API
+The Implementation API facilitates the creation of domain-specific Cells that implement the java.lang.Comparable interface. This ensures modularity, interoperability, and the ability to compose complex systems from well-defined, sortable components.
+
+For more information and to contribute, visit the project repository at https://github.com/zfifteen/emergent-factorization-engine.
+
+## Java Architecture
+
+The EDE translates the theoretical concepts from the Levin et al. research into a practical Java implementation built around autonomous, sortable Cells and configurable sorting dynamics. The architecture is designed to enable emergent behaviors through decentralized bottom-up interactions while providing clean APIs for extensibility.
+
+### Core Components
+
+#### Cell Interface
+The foundation of the EDE is the Cell interface, which extends java.lang.Comparable<Cell>. Each Cell represents an autonomous agent with minimal agency, analogous to the array elements in the Levin paper. Cells must implement compareTo() to define their natural ordering, enabling them to participate in sorting operations. The Cell interface also defines methods for local state management, neighbor interaction, and damage/error simulation, allowing implementations to model various forms of basal intelligence and adaptive behavior.
+
+#### SortingStrategy
+This is an abstract strategy pattern implementation that encapsulates the three core sorting algorithms: SelectionSort, BubbleSort, and MergeSort. Each strategy interprets Cells as autonomous agents rather than passive data, treating comparisons and swaps as local interactions between neighboring elements. The SortingStrategy interface provides hooks for observing sorting progress, detecting temporary disorder increases (delayed gratification), and tracking problem-space traversal metrics like those defined in the Levin research.
+
+#### CellArray
+The CellArray class manages collections of Cells and serves as the primary data structure for emergent phenomena. Unlike traditional arrays, CellArray tracks not only element positions but also interaction histories, clustering patterns, and adaptive responses to perturbations. It provides methods for introducing "damaged" cells, creating chimeric arrays (mixing cells following different strategies), and monitoring emergent organizational patterns. The CellArray automatically instruments sorting operations to collect the problem-space navigation metrics described in the Levin paper.
+
+#### EmergentEngine
+This is the top-level orchestration component that ties together the Cell, SortingStrategy, and CellArray abstractions. The EmergentEngine provides the public API for configuring experiments, selecting sorting algorithms, defining initial conditions, and collecting emergent behavior metrics. It implements the pattern of treating each sorting execution as a traversal through problem space, automatically measuring robustness, delayed gratification, clustering behavior, and other competencies identified in the Levin research. The engine supports both single-run simulations and batch experiments for statistical analysis.
+
+#### ProblemSpaceAnalyzer
+This component implements the quantitative characterization methods from the Levin paper, measuring metrics such as Monotonicity Error (disorder remaining at each step), Sortedness (progress toward goal state), and Delayed Gratification (temporary error increases that lead to long-term gains). The analyzer treats the sorting process as goal-directed navigation through a problem space, automatically detecting cognitive-like behaviors such as obstacle avoidance, adaptive route-finding, and memory-like state persistence. These measurements provide the empirical grounding for claims about emergent intelligence in minimal substrates.
+
+## References
+
+[1] Zhang, T., Goldstein, A., Levin, M. (2024). "Classical Sorting Algorithms as a Model of Morphogenesis: self-sorting arrays reveal unexpected competencies in a minimal model of basal intelligence." Available at: https://github.com/zfifteen/emergent-factorization-engine/blob/main/docs/2401.05375v1.pdf
+
+[2] Emergent Factorization Engine - Implementation Repository. https://github.com/zfifteen/emergent-factorization-engine
