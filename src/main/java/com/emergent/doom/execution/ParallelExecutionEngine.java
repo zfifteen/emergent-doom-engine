@@ -372,10 +372,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
         return probe;
     }
 
-    /**
-     * Reset execution state to initial conditions.
-     */
-    // Helper methods for HasIdealPosition (scaffold; implement in phase two)
+    // Helper methods for HasIdealPosition
     private int getIdealPosition(T cell) {
         if (!(cell instanceof HasIdealPosition)) {
             throw new UnsupportedOperationException(
@@ -409,6 +406,9 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
         sel.setIdealPos(pos);
     }
 
+    /**
+     * Reset execution state to initial conditions.
+     */
     public void reset() {
         if (running) {
             shutdown();
@@ -424,41 +424,12 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
         insertionTopology.reset();
         convergenceDetector.reset();
 
-        // TODO: Phase Two - Reset using HasIdealPosition
-        // for (T cell : cells) {
-        //     if (cell.getAlgotype() == Algotype.SELECTION && cell instanceof HasIdealPosition) {
-        //         setIdealPosition(cell, 0);
-        //     }
-        // }
-
-        // Recreate cell workers (threads are single-use)
-        CellEvaluator<T> evaluator = this::evaluateCell;
-        for (int i = 0; i < cells.length; i++) {
-            cellWorkers[i] = new CellThread<>(i, cells, barrier, swapCollector, evaluator);
-            cellThreads[i] = new Thread(cellWorkers[i], "Cell-" + i);
-            cellThreads[i].setDaemon(true);
+        // Reset idealPos for SELECTION cells only
+        for (T cell : cells) {
+            if (cell.getAlgotype() == Algotype.SELECTION) {
+                setIdealPosition(cell, 0);
+            }
         }
-
-        probe.recordSnapshot(0, cells, 0);
-    }
-}
-
-        currentStep = 0;
-        converged = false;
-        running = false;
-        probe.clear();
-        swapEngine.resetSwapCount();
-        swapCollector.clear();
-        bubbleTopology.reset();
-        insertionTopology.reset();
-        convergenceDetector.reset();
-
-        // TODO: Phase Two - Reset using HasIdealPosition
-        // for (T cell : cells) {
-        //     if (cell.getAlgotype() == Algotype.SELECTION && cell instanceof HasIdealPosition) {
-        //         setIdealPosition(cell, 0);
-        //     }
-        // }
 
         // Recreate cell workers (threads are single-use)
         CellEvaluator<T> evaluator = this::evaluateCell;
