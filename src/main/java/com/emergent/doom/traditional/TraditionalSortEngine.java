@@ -223,10 +223,37 @@ public class TraditionalSortEngine<T extends Comparable<T>> {
      * INTEGRATION: Matches cell-view SelectionSortCell behavior for comparison
      * NOTE: Paper (p.10, Table 1) shows traditional selection ~100 swaps vs cell-view ~1100
      *       This 10x difference is key finding - cell-view lacks global minimum knowledge
+     * 
+     * IMPLEMENTATION NOTE (Phase Three - selectionSort): This is the classic
+     * selection sort algorithm where the minimum element from the unsorted
+     * portion is selected and placed at the beginning of the unsorted portion.
+     * Traditional selection sort has a key advantage: it uses global knowledge
+     * to find the minimum in O(n) comparisons with only 1 swap per pass.
+     * Cell-view selection sort lacks this global view, leading to ~10x more
+     * swaps as shown in the paper. This dramatically illustrates the cost of
+     * distributed decision-making without global coordination.
      */
     private void selectionSort(T[] array) {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE THREE will implement selection sort algorithm
+        int n = array.length;
+        
+        // Build sorted portion from left to right
+        for (int i = 0; i < n - 1; i++) {
+            // Find minimum element in unsorted portion
+            int minIndex = i;
+            
+            for (int j = i + 1; j < n; j++) {
+                // Compare array[j] with current minimum
+                if (compareAndTrack(array, j, minIndex) < 0) {
+                    // Found new minimum
+                    minIndex = j;
+                }
+            }
+            
+            // Swap minimum element to its correct position (if needed)
+            if (minIndex != i) {
+                swapAndTrack(array, i, minIndex);
+            }
+        }
     }
     
     /**
