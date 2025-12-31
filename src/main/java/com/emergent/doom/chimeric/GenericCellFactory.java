@@ -2,11 +2,12 @@ package com.emergent.doom.chimeric;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.GenericCell;
+import com.emergent.doom.cell.SortDirection;
 
 import java.util.Random;
 
 /**
- * Factory for creating GenericCell instances with specified algotypes.
+ * Factory for creating GenericCell instances with specified algotypes and sort directions.
  *
  * <p>Supports multiple value assignment strategies:
  * <ul>
@@ -14,10 +15,14 @@ import java.util.Random;
  *   <li>Random: random values within a range</li>
  *   <li>Shuffled: values 1 to N in random order</li>
  * </ul></p>
+ * 
+ * <p>Supports configurable sort direction strategies for cross-purpose sorting experiments
+ * (Levin et al. 2024, p.14).</p>
  */
 public class GenericCellFactory implements CellFactory<GenericCell> {
 
     private final ValueStrategy valueStrategy;
+    private final DirectionStrategy directionStrategy;
     private final int[] shuffledValues;
     private final Random random;
 
@@ -34,24 +39,51 @@ public class GenericCellFactory implements CellFactory<GenericCell> {
     }
 
     /**
-     * Create a factory with sequential value assignment (1 to N).
+     * Sort direction assignment strategy for cross-purpose sorting.
      */
-    public GenericCellFactory() {
-        this(ValueStrategy.SEQUENTIAL, 0, 0);
+    public enum DirectionStrategy {
+        /** All cells sort ascending (default, backward compatible) */
+        ALL_ASCENDING,
+        /** All cells sort descending */
+        ALL_DESCENDING,
+        /** Alternating: even positions ascending, odd descending */
+        ALTERNATING,
+        /** Random 50/50 distribution */
+        RANDOM
     }
 
     /**
-     * Create a factory with specified value strategy.
+     * Create a factory with sequential value assignment (1 to N) and ascending direction.
+     */
+    public GenericCellFactory() {
+        this(ValueStrategy.SEQUENTIAL, DirectionStrategy.ALL_ASCENDING, 0, 0);
+    }
+
+    /**
+     * Create a factory with specified value strategy and default ascending direction.
      *
      * @param strategy the value assignment strategy
      * @param arraySize the total array size (for SHUFFLED strategy)
      * @param seed random seed (for RANDOM and SHUFFLED strategies)
      */
     public GenericCellFactory(ValueStrategy strategy, int arraySize, long seed) {
-        this.valueStrategy = strategy;
+        this(strategy, DirectionStrategy.ALL_ASCENDING, arraySize, seed);
+    }
+
+    /**
+     * Create a factory with specified value and direction strategies.
+     *
+     * @param valueStrategy the value assignment strategy
+     * @param directionStrategy the sort direction assignment strategy
+     * @param arraySize the total array size (for SHUFFLED strategy)
+     * @param seed random seed (for RANDOM and SHUFFLED strategies)
+     */
+    public GenericCellFactory(ValueStrategy valueStrategy, DirectionStrategy directionStrategy, int arraySize, long seed) {
+        this.valueStrategy = valueStrategy;
+        this.directionStrategy = directionStrategy;
         this.random = new Random(seed);
 
-        if (strategy == ValueStrategy.SHUFFLED && arraySize > 0) {
+        if (valueStrategy == ValueStrategy.SHUFFLED && arraySize > 0) {
             // Pre-generate shuffled values
             shuffledValues = new int[arraySize];
             for (int i = 0; i < arraySize; i++) {
@@ -103,7 +135,8 @@ public class GenericCellFactory implements CellFactory<GenericCell> {
     public GenericCell createCell(int position, String algotypeStr) {
         Algotype algotype = Algotype.valueOf(algotypeStr.toUpperCase());
         int value = getValue(position);
-        return new GenericCell(value, algotype);
+        SortDirection direction = getDirection(position);
+        return new GenericCell(value, algotype, direction);
     }
 
     private int getValue(int position) {
@@ -119,6 +152,21 @@ public class GenericCellFactory implements CellFactory<GenericCell> {
                 return position + 1;
             default:
                 return position + 1;
+        }
+    }
+
+    private SortDirection getDirection(int position) {
+        switch (directionStrategy) {
+            case ALL_ASCENDING:
+                return SortDirection.ASCENDING;
+            case ALL_DESCENDING:
+                return SortDirection.DESCENDING;
+            case ALTERNATING:
+                return (position % 2 == 0) ? SortDirection.ASCENDING : SortDirection.DESCENDING;
+            case RANDOM:
+                return random.nextBoolean() ? SortDirection.ASCENDING : SortDirection.DESCENDING;
+            default:
+                return SortDirection.ASCENDING;
         }
     }
 }
