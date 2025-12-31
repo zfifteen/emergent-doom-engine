@@ -70,12 +70,32 @@ public class StatisticalTests {
      */
     public static double calculateZScore(double sampleMean, double populationMean, 
                                         double populationStdDev, int sampleSize) {
-        // TODO: Implementation in Phase 3, Iteration 1
+        // IMPLEMENTED in Phase 3, Iteration 1
+        // This method calculates the Z-score (standard score) which measures how many
+        // standard deviations a sample mean is from the population mean.
+        //
+        // The Z-score is fundamental to Z-tests and provides a standardized way to
+        // compare sample statistics against known population parameters.
+        
         // 1. Validate inputs: check populationStdDev > 0 and sampleSize > 0
+        if (populationStdDev <= 0) {
+            throw new IllegalArgumentException("Population standard deviation must be positive, got: " + populationStdDev);
+        }
+        if (sampleSize <= 0) {
+            throw new IllegalArgumentException("Sample size must be positive, got: " + sampleSize);
+        }
+        
         // 2. Calculate standard error: SE = populationStdDev / sqrt(sampleSize)
+        // Standard error represents the standard deviation of the sampling distribution
+        double standardError = populationStdDev / Math.sqrt(sampleSize);
+        
         // 3. Calculate Z-score: Z = (sampleMean - populationMean) / SE
+        // Positive Z-score means sample mean is above population mean
+        // Negative Z-score means sample mean is below population mean
+        double zScore = (sampleMean - populationMean) / standardError;
+        
         // 4. Return Z-score
-        throw new UnsupportedOperationException("Not implemented yet");
+        return zScore;
     }
     
     /**
