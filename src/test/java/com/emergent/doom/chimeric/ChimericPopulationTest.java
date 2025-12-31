@@ -7,6 +7,8 @@ import com.emergent.doom.execution.ExecutionEngine;
 import com.emergent.doom.probe.NoOpProbe;
 import com.emergent.doom.swap.NoOpSwapEngine;
 import com.emergent.doom.execution.NoSwapConvergence;
+import static org.junit.jupiter.api.Assertions.fail;
+import java.lang.reflect.InvocationTargetException;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.GenericCell;
@@ -95,9 +97,11 @@ class ChimericPopulationTest {
         }
 
         @Test
-        @DisplayName("ExecutionEngine throws UnsupportedOperationException for non-HasIdealPosition cell")
-        void engineThrowsForUnsupportedCell() {
-            // Create a mock unsupported cell (implements Cell but not HasIdealPosition)
+        @DisplayName("Engine helpers throw UnsupportedOperationException for non-HasIdealPosition cell via interface check")
+        void engineHelpersThrowForUnsupported() {
+            // Test the concept: helpers throw if cell does not implement HasIdealPosition
+            // Since all production cells do (GenericCell, SelectionCell), verify the exception message
+            // Use a hypothetical unsupported cell mock
             class UnsupportedCell implements Cell<UnsupportedCell> {
                 @Override
                 public int compareTo(UnsupportedCell o) {
@@ -111,7 +115,7 @@ class ChimericPopulationTest {
             }
             UnsupportedCell unsupported = new UnsupportedCell();
 
-            // Create minimal engine with dummies (NoOp implementations)
+            // Create minimal engine
             @SuppressWarnings("unchecked")
             ExecutionEngine<UnsupportedCell> engine = new ExecutionEngine<>(
                 new UnsupportedCell[]{unsupported},
@@ -120,17 +124,15 @@ class ChimericPopulationTest {
                 new NoSwapConvergence<>()
             );
 
-            // Since getIdealPosition is private, test by triggering it via SELECTION logic
-            // But to isolate, we can use reflection for unit test
+            // Use reflection to call private helper
             try {
                 java.lang.reflect.Method method = ExecutionEngine.class.getDeclaredMethod("getIdealPosition", Cell.class);
                 method.setAccessible(true);
-                assertThrows(UnsupportedOperationException.class,
-                    () -> method.invoke(engine, unsupported),
-                    "Engine should throw for unsupported cell type"
-                );
-            } catch (Exception e) {
-                fail("Reflection setup failed: " + e.getMessage());
+                UnsupportedOperationException ex = assertThrows(UnsupportedOperationException.class,
+                    () -> method.invoke(engine, unsupported));
+                assertTrue(ex.getMessage().contains("does not support idealPos"), "Exception message should indicate unsupported");
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                fail("Reflection failed: " + e.getMessage());
             }
         }
             UnsupportedCell unsupported = new UnsupportedCell();
