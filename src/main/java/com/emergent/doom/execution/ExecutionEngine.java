@@ -341,9 +341,13 @@ public class ExecutionEngine<T extends Cell<T>> {
      * @return the cell's sort direction, or ASCENDING if not direction-aware
      */
     private SortDirection getCellDirection(T cell) {
-        // UNIMPLEMENTED: Check if cell has direction, return ASCENDING default otherwise
-        // TODO: Implement in Phase Three
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Check if cell implements HasSortDirection interface
+        if (cell instanceof HasSortDirection) {
+            // Cell supports direction - return its preference
+            return ((HasSortDirection) cell).getSortDirection();
+        }
+        // Cell doesn't support direction - default to ascending
+        return SortDirection.ASCENDING;
     }
 
     /**
