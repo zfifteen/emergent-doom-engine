@@ -154,8 +154,8 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
      * <p>Uses the configured {@link ConvergenceDetector} to determine when convergence
      * has been reached, falling back to no-swap stability if the detector cannot determine.</p>
      *
-     * @param maxSteps maximum number of swap operations
-     * @return total number of swap operations
+     * @param maxSteps maximum number of steps (iterations), consistent with other execution engines
+     * @return final step count (not swap count, for consistency with ExperimentRunner)
      */
     public int runUntilConvergence(int maxSteps) {
         if (!running) {
@@ -166,7 +166,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         int lastSwapCount = 0;
         int stableCount = 0;
 
-        while (!converged && totalSwaps.get() < maxSteps) {
+        while (!converged && currentStep.get() < maxSteps) {
             try {
                 Thread.sleep(convergencePollIntervalMs);
             } catch (InterruptedException e) {
@@ -194,7 +194,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
             lastSwapCount = currentSwaps;
         }
 
-        return totalSwaps.get();
+        return currentStep.get();
     }
 
     /**
