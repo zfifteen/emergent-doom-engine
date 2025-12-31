@@ -1,0 +1,208 @@
+package com.emergent.doom.visualization;
+
+import com.emergent.doom.cell.Cell;
+import com.emergent.doom.experiment.SortDirection;
+import com.emergent.doom.metrics.AlgotypeAggregationIndex;
+import com.emergent.doom.metrics.MonotonicityError;
+import com.emergent.doom.metrics.SortednessValue;
+import com.emergent.doom.probe.Probe;
+import com.emergent.doom.probe.StepSnapshot;
+
+import java.util.List;
+
+/**
+ * Analyzes Probe snapshots to compute metric trajectories over execution time.
+ *
+ * <p>This class bridges the gap between raw execution data (captured by {@link Probe})
+ * and trajectory visualization (enabled by {@link TrajectoryPlotter} and export utilities).
+ * It computes time-series data for various metrics by applying metric computations to
+ * each snapshot in a probe's history.</p>
+ *
+ * <p><strong>Purpose in Emergent Doom Engine:</strong></p>
+ * <ul>
+ *   <li>Enables Paper Figure 3 (sortedness vs steps) by computing sortedness trajectories</li>
+ *   <li>Enables Paper Figure 8 (aggregation vs time) by computing aggregation trajectories</li>
+ *   <li>Supports general metric trajectory analysis for any custom metric</li>
+ *   <li>Provides foundation for data export to external visualization tools</li>
+ * </ul>
+ *
+ * <p><strong>Reference:</strong> Levin et al. (2024), p.6: "information collected by the
+ * Probe is stored as a .npy file for downstream analysis". This class performs the
+ * "downstream analysis" by computing metrics over the probe's snapshot history.</p>
+ *
+ * <p><strong>Design:</strong> This class is stateless and thread-safe. All methods are
+ * static or instance methods that operate only on input parameters.</p>
+ *
+ * @param <T> the type of cell
+ * @see Probe
+ * @see StepSnapshot
+ * @see TrajectoryPlotter
+ */
+public class TrajectoryAnalyzer<T extends Cell<T>> {
+    
+    /**
+     * PURPOSE: Compute the sortedness value trajectory over execution steps.
+     * 
+     * INPUTS:
+     *   - probe: The probe containing snapshot history
+     *   - direction: The target sort direction (INCREASING or DECREASING)
+     * 
+     * PROCESS:
+     *   1. Validate that probe is not null and contains snapshots
+     *   2. Create a SortednessValue metric instance with the specified direction
+     *   3. Iterate through all snapshots in chronological order
+     *   4. For each snapshot:
+     *      a. Extract the cell array state
+     *      b. Compute sortedness using the metric
+     *      c. Append the sortedness value to the result list
+     *   5. Return the complete trajectory as a list indexed by step number
+     * 
+     * OUTPUTS: List of sortedness values (0.0 to 100.0) indexed by step
+     * 
+     * THROWS: IllegalArgumentException if probe is null or empty
+     * 
+     * USAGE:
+     *   - Generate data for Paper Figure 3A, 3B, 3C (sortedness trajectories)
+     *   - Analyze convergence rate of sorting algorithms
+     *   - Compare performance across different configurations
+     * 
+     * DESIGN RATIONALE:
+     *   - Uses existing SortednessValue metric for consistency
+     *   - Returns list (not array) for easier manipulation and export
+     *   - Each index corresponds to the step number for direct plotting
+     */
+    public List<Double> computeSortednessTrajectory(Probe<T> probe, SortDirection direction) {
+        // UNIMPLEMENTED: Trajectory computation logic goes here
+        return null;
+    }
+    
+    /**
+     * PURPOSE: Compute the algotype aggregation trajectory over execution steps.
+     * 
+     * INPUTS:
+     *   - probe: The probe containing snapshot history
+     * 
+     * PROCESS:
+     *   1. Validate that probe is not null and contains snapshots
+     *   2. Create an AlgotypeAggregationIndex metric instance
+     *   3. Iterate through all snapshots in chronological order
+     *   4. For each snapshot:
+     *      a. Extract the cell array state
+     *      b. Compute aggregation using the metric
+     *      c. Append the aggregation value to the result list
+     *   5. Return the complete trajectory as a list indexed by step number
+     * 
+     * OUTPUTS: List of aggregation values (0.0 to 100.0) indexed by step
+     * 
+     * THROWS: IllegalArgumentException if probe is null or empty
+     * 
+     * USAGE:
+     *   - Generate data for Paper Figure 8 (algotype aggregation timelines)
+     *   - Analyze spatial clustering emergence in chimeric populations
+     *   - Compare aggregation patterns across different algotype ratios
+     * 
+     * DESIGN RATIONALE:
+     *   - Uses existing AlgotypeAggregationIndex metric for consistency
+     *   - Returns list for easy integration with plotting and export utilities
+     *   - Critical for understanding emergent self-sorting in chimeric arrays
+     */
+    public List<Double> computeAggregationTrajectory(Probe<T> probe) {
+        // UNIMPLEMENTED: Trajectory computation logic goes here
+        return null;
+    }
+    
+    /**
+     * PURPOSE: Compute the monotonicity error trajectory over execution steps.
+     * 
+     * INPUTS:
+     *   - probe: The probe containing snapshot history
+     *   - direction: The target sort direction (currently unused but reserved for future)
+     * 
+     * PROCESS:
+     *   1. Validate that probe is not null and contains snapshots
+     *   2. Create a MonotonicityError metric instance
+     *   3. Iterate through all snapshots in chronological order
+     *   4. For each snapshot:
+     *      a. Extract the cell array state
+     *      b. Compute inversion count using the metric
+     *      c. Append the error value to the result list
+     *   5. Return the complete trajectory as a list indexed by step number
+     * 
+     * OUTPUTS: List of inversion counts indexed by step
+     * 
+     * THROWS: IllegalArgumentException if probe is null or empty
+     * 
+     * USAGE:
+     *   - Analyze convergence behavior using inversion counts
+     *   - Compare to traditional sorting algorithm complexity
+     *   - Validate that arrays are monotonically improving
+     * 
+     * DESIGN RATIONALE:
+     *   - Uses existing MonotonicityError metric for consistency
+     *   - Inversion count is a classical measure in sorting analysis
+     *   - Decreasing inversions indicate progress toward sorted state
+     */
+    public List<Double> computeMonotonicityTrajectory(Probe<T> probe, SortDirection direction) {
+        // UNIMPLEMENTED: Trajectory computation logic goes here
+        return null;
+    }
+    
+    /**
+     * PURPOSE: Extract the swap count trajectory from probe snapshots.
+     * 
+     * INPUTS:
+     *   - probe: The probe containing snapshot history
+     * 
+     * PROCESS:
+     *   1. Validate that probe is not null and contains snapshots
+     *   2. Iterate through all snapshots in chronological order
+     *   3. For each snapshot:
+     *      a. Extract the swap count for that step
+     *      b. Append the swap count to the result list
+     *   4. Return the complete trajectory as a list indexed by step number
+     * 
+     * OUTPUTS: List of swap counts indexed by step
+     * 
+     * THROWS: IllegalArgumentException if probe is null or empty
+     * 
+     * USAGE:
+     *   - Analyze swap activity over time
+     *   - Compare swap efficiency across algorithms
+     *   - Correlate swap counts with sortedness improvements
+     * 
+     * DESIGN RATIONALE:
+     *   - Swap count is already recorded in snapshots, just needs extraction
+     *   - No metric computation required, just data access
+     *   - Useful for understanding algorithm behavior and efficiency
+     */
+    public List<Integer> computeSwapCountTrajectory(Probe<T> probe) {
+        // UNIMPLEMENTED: Swap count extraction logic goes here
+        return null;
+    }
+    
+    /**
+     * PURPOSE: Validate that a probe contains usable snapshot data.
+     * 
+     * INPUTS:
+     *   - probe: The probe to validate
+     * 
+     * PROCESS:
+     *   1. Check if probe is null
+     *   2. Check if probe has zero snapshots
+     *   3. Return validation result
+     * 
+     * OUTPUTS: true if probe is valid and has snapshots, false otherwise
+     * 
+     * USAGE:
+     *   - Guard clause for all trajectory computation methods
+     *   - Prevents null pointer exceptions and empty list results
+     * 
+     * DESIGN RATIONALE:
+     *   - Centralizes validation logic to reduce code duplication
+     *   - Enables consistent error handling across all methods
+     */
+    private boolean isProbeValid(Probe<T> probe) {
+        // UNIMPLEMENTED: Validation logic goes here
+        return false;
+    }
+}
