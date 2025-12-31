@@ -183,10 +183,76 @@ public class TrajectoryDataExporter {
      *   - No external JSON library needed for simple structure
      *   - Compact format compared to CSV for large datasets
      *   - Preserves data types (numbers vs strings)
+     * 
+     * IMPLEMENTATION:
+     *   This section exports trajectories to JSON format.
+     *   It integrates with the export system by following the same validation
+     *   and directory creation pattern as exportToCSV. Uses simple string
+     *   concatenation to build JSON (no external library needed for basic structure).
      */
     public static void exportToJSON(String filepath, Map<String, List<Double>> trajectories) 
             throws IOException {
-        // UNIMPLEMENTED: JSON export logic goes here
+        // Step 1: Validate filepath
+        if (filepath == null || filepath.trim().isEmpty()) {
+            throw new IllegalArgumentException("Filepath cannot be null or empty");
+        }
+        
+        // Step 2: Validate trajectories map
+        if (trajectories == null || trajectories.isEmpty()) {
+            throw new IllegalArgumentException("Trajectories cannot be null or empty");
+        }
+        
+        // Step 3: Validate all trajectories have same length
+        validateTrajectoriesHaveSameLength(trajectories);
+        
+        // Step 4: Ensure parent directories exist
+        ensureDirectoryExists(filepath);
+        
+        // Step 5: Open file writer and write JSON
+        try (java.io.BufferedWriter writer = new java.io.BufferedWriter(
+                new java.io.OutputStreamWriter(
+                    new java.io.FileOutputStream(filepath), 
+                    java.nio.charset.StandardCharsets.UTF_8))) {
+            
+            // Step 6: Write JSON opening
+            writer.write("{\n");
+            writer.write("  \"trajectories\": {\n");
+            
+            // Step 7: Write each metric trajectory
+            int metricCount = 0;
+            int totalMetrics = trajectories.size();
+            
+            for (Map.Entry<String, List<Double>> entry : trajectories.entrySet()) {
+                String metricName = entry.getKey();
+                List<Double> trajectory = entry.getValue();
+                
+                // Write metric name as JSON key
+                writer.write("    \"");
+                writer.write(metricName.replace("\"", "\\\"")); // Escape quotes
+                writer.write("\": [");
+                
+                // Write trajectory values
+                for (int i = 0; i < trajectory.size(); i++) {
+                    writer.write(String.valueOf(trajectory.get(i)));
+                    if (i < trajectory.size() - 1) {
+                        writer.write(", ");
+                    }
+                }
+                
+                writer.write("]");
+                
+                // Add comma unless last metric
+                metricCount++;
+                if (metricCount < totalMetrics) {
+                    writer.write(",");
+                }
+                writer.write("\n");
+            }
+            
+            // Step 8: Write JSON closing
+            writer.write("  }\n");
+            writer.write("}\n");
+        }
     }
     
     /**
@@ -235,10 +301,65 @@ public class TrajectoryDataExporter {
      * 
      * NOTE: Cell values are converted to strings using toString().
      *       For numeric cells, this should produce the underlying value.
+     * 
+     * IMPLEMENTATION:
+     *   This section exports raw snapshot data to CSV format.
+     *   It integrates with the export system by following the established pattern.
+     *   Writes complete cell state at each step for detailed analysis.
      */
     public static <T extends Cell<T>> void exportSnapshotsToCSV(String filepath, Probe<T> probe) 
             throws IOException {
-        // UNIMPLEMENTED: Snapshot CSV export logic goes here
+        // Step 1: Validate filepath
+        if (filepath == null || filepath.trim().isEmpty()) {
+            throw new IllegalArgumentException("Filepath cannot be null or empty");
+        }
+        
+        // Step 2: Validate probe
+        if (probe == null) {
+            throw new IllegalArgumentException("Probe cannot be null");
+        }
+        if (probe.getSnapshotCount() == 0) {
+            throw new IllegalArgumentException("Probe contains no snapshots");
+        }
+        
+        // Step 3: Ensure parent directories exist
+        ensureDirectoryExists(filepath);
+        
+        // Step 4: Get snapshots and determine array size from first snapshot
+        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
+        int arraySize = snapshots.get(0).getArraySize();
+        
+        // Step 5: Open file writer and write CSV
+        try (java.io.BufferedWriter writer = new java.io.BufferedWriter(
+                new java.io.OutputStreamWriter(
+                    new java.io.FileOutputStream(filepath), 
+                    java.nio.charset.StandardCharsets.UTF_8))) {
+            
+            // Step 6: Write header row
+            writer.write("step_number,swap_count");
+            for (int i = 0; i < arraySize; i++) {
+                writer.write(",cell_");
+                writer.write(String.valueOf(i));
+            }
+            writer.newLine();
+            
+            // Step 7: Write data rows
+            for (StepSnapshot<T> snapshot : snapshots) {
+                // Write step number and swap count
+                writer.write(String.valueOf(snapshot.getStepNumber()));
+                writer.write(",");
+                writer.write(String.valueOf(snapshot.getSwapCount()));
+                
+                // Write cell values
+                T[] cells = snapshot.getCellStates();
+                for (T cell : cells) {
+                    writer.write(",");
+                    writer.write(escapeCsvValue(cell.toString()));
+                }
+                
+                writer.newLine();
+            }
+        }
     }
     
     /**
@@ -293,10 +414,114 @@ public class TrajectoryDataExporter {
      *   - Timestamp enables temporal analysis (steps/second)
      *   - cellTypeDistribution crucial for chimeric experiments
      *   - Self-documenting format with field names
+     * 
+     * IMPLEMENTATION:
+     *   This section exports raw snapshot data with metadata to JSON format.
+     *   It integrates with the export system by following the established pattern.
+     *   Includes all available metadata for comprehensive data archival.
      */
     public static <T extends Cell<T>> void exportSnapshotsToJSON(String filepath, Probe<T> probe) 
             throws IOException {
-        // UNIMPLEMENTED: Snapshot JSON export logic goes here
+        // Step 1: Validate filepath
+        if (filepath == null || filepath.trim().isEmpty()) {
+            throw new IllegalArgumentException("Filepath cannot be null or empty");
+        }
+        
+        // Step 2: Validate probe
+        if (probe == null) {
+            throw new IllegalArgumentException("Probe cannot be null");
+        }
+        if (probe.getSnapshotCount() == 0) {
+            throw new IllegalArgumentException("Probe contains no snapshots");
+        }
+        
+        // Step 3: Ensure parent directories exist
+        ensureDirectoryExists(filepath);
+        
+        // Step 4: Get snapshots
+        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
+        
+        // Step 5: Open file writer and write JSON
+        try (java.io.BufferedWriter writer = new java.io.BufferedWriter(
+                new java.io.OutputStreamWriter(
+                    new java.io.FileOutputStream(filepath), 
+                    java.nio.charset.StandardCharsets.UTF_8))) {
+            
+            // Step 6: Write JSON opening
+            writer.write("{\n");
+            writer.write("  \"snapshots\": [\n");
+            
+            // Step 7: Write each snapshot
+            for (int i = 0; i < snapshots.size(); i++) {
+                StepSnapshot<T> snapshot = snapshots.get(i);
+                
+                writer.write("    {\n");
+                
+                // Write stepNumber
+                writer.write("      \"stepNumber\": ");
+                writer.write(String.valueOf(snapshot.getStepNumber()));
+                writer.write(",\n");
+                
+                // Write swapCount
+                writer.write("      \"swapCount\": ");
+                writer.write(String.valueOf(snapshot.getSwapCount()));
+                writer.write(",\n");
+                
+                // Write timestamp
+                writer.write("      \"timestamp\": ");
+                writer.write(String.valueOf(snapshot.getTimestamp()));
+                writer.write(",\n");
+                
+                // Write cellValues array
+                writer.write("      \"cellValues\": [");
+                T[] cells = snapshot.getCellStates();
+                for (int j = 0; j < cells.length; j++) {
+                    writer.write("\"");
+                    writer.write(cells[j].toString().replace("\"", "\\\""));
+                    writer.write("\"");
+                    if (j < cells.length - 1) {
+                        writer.write(", ");
+                    }
+                }
+                writer.write("]");
+                
+                // Write cellTypeDistribution if available
+                if (snapshot.hasCellTypeDistribution()) {
+                    writer.write(",\n");
+                    writer.write("      \"cellTypeDistribution\": {");
+                    
+                    Map<com.emergent.doom.cell.Algotype, Integer> distribution = 
+                        snapshot.getCellTypeDistribution();
+                    int entryCount = 0;
+                    for (Map.Entry<com.emergent.doom.cell.Algotype, Integer> entry : 
+                         distribution.entrySet()) {
+                        if (entryCount > 0) {
+                            writer.write(", ");
+                        }
+                        writer.write("\"");
+                        writer.write(entry.getKey().toString());
+                        writer.write("\": ");
+                        writer.write(String.valueOf(entry.getValue()));
+                        entryCount++;
+                    }
+                    writer.write("}\n");
+                } else {
+                    writer.write("\n");
+                }
+                
+                writer.write("    }");
+                
+                // Add comma unless last snapshot
+                if (i < snapshots.size() - 1) {
+                    writer.write(",");
+                }
+                writer.write("\n");
+            }
+            
+            // Step 8: Write JSON closing
+            writer.write("  ]\n");
+            writer.write("}\n");
+        }
     }
     
     /**
