@@ -12,6 +12,35 @@
 
 ## Changelog
 
+### 2025-12-31: Cross-Purpose Sorting Implementation Complete ✅
+**Major Update**: Cross-purpose sorting (conflicting directions) feature fully implemented (Category 6.2).
+
+**New Classes Created** (175 lines total):
+- `com.emergent.doom.cell.SortDirection` - Enum for ASCENDING/DESCENDING directions (89 lines)
+- `com.emergent.doom.cell.HasSortDirection` - Interface for direction-aware cells (86 lines)
+
+**Classes Updated**:
+- `GenericCell.java` - Now implements HasSortDirection with sortDirection field and 3-param constructor
+- `GenericCellFactory.java` - Added DirectionStrategy enum (ALL_ASCENDING, ALL_DESCENDING, ALTERNATING, RANDOM)
+- `ExecutionEngine.java` - Added direction-aware swap logic (getCellDirection, shouldSwapWithDirection)
+
+**Tests Created**:
+- `CrossPurposeSortingTest.java` (182 lines, 8 tests) - All passing ✅
+
+**Implementation Approach**: Followed Incremental Coder v2 workflow:
+- Phase One: Scaffold (1 commit)
+- Phase Two: Main entry points - constructors and getters (1 commit)
+- Phase Three: Iterative implementation (4 commits for getCellDirection, shouldSwapWithDirection, step() update, factory updates, tests)
+
+**Build Status**: ✅ SUCCESS (`mvn clean test`)
+
+**Gap Summary Update**:
+- Total gaps remaining: 8 → 7 (1 feature closed)
+- Chimeric Features: 1 MISSING → 2 IMPLEMENTED
+- All core functionality gaps: Closed ✅
+
+---
+
 ### 2025-12-31: CellGroup System Implementation Complete ✅
 **Major Update**: All 4 CellGroup System features have been implemented (Category 3).
 
@@ -63,11 +92,11 @@
 | CellGroup System | 0 | 0 | 0 | 4 | 0 |
 | Frozen Cells | 0 | 0 | 0 | 2 | 0 |
 | Metrics/Probe | 0 | 0 | 0 | 5 | 0 |
-| Chimeric Features | 1 | 0 | 0 | 1 | 1 |
+| Chimeric Features | 0 | 0 | 0 | 2 | 0 |
 | Statistical Analysis | 2 | 0 | 0 | 0 | 2 |
 | Traditional Algorithms | 2 | 0 | 0 | 0 | 2 |
 | Visualization | 3 | 0 | 0 | 0 | 3 |
-| **TOTAL** | **8** | **0** | **0** | **16** | **8** |
+| **TOTAL** | **7** | **0** | **0** | **17** | **7** |
 
 ---
 
@@ -581,16 +610,57 @@ public void setProbe(Probe<T> probe) { this.probe = probe; }
 
 ---
 
-### 6.2 Cross-Purpose Sorting (Conflicting Directions) [MISSING]
+### 6.2 Cross-Purpose Sorting (Conflicting Directions) [IMPLEMENTED ✓]
 
 **cell_research**: Supports cells with different `reverse_direction` flags.
 
 **Paper** (p.14):
 > "we performed experiments using two mixed Algotypes, where one was made to sort in *decreasing* order while the other sorted in *increasing* order."
 
-**EDE**: No per-cell sort direction. All cells sort in same direction.
+**EDE implementation** (2025-12-31):
 
-**Recommendation**: Add `SortDirection` field to Cell interface or GenericCell.
+**New classes created**:
+- `SortDirection.java` (89 lines) - ASCENDING/DESCENDING enum with helper methods
+- `HasSortDirection.java` (86 lines) - Interface for direction-aware cells  
+- Updated `GenericCell.java` - Now implements HasSortDirection with sortDirection field
+- Updated `GenericCellFactory.java` - Added DirectionStrategy enum (ALL_ASCENDING, ALL_DESCENDING, ALTERNATING, RANDOM)
+- Updated `ExecutionEngine.java` - Added direction-aware swap logic via shouldSwapWithDirection()
+
+**Key implementation details**:
+```java
+// GenericCell now supports per-cell direction
+GenericCell ascending = new GenericCell(42, Algotype.BUBBLE, SortDirection.ASCENDING);
+GenericCell descending = new GenericCell(99, Algotype.SELECTION, SortDirection.DESCENDING);
+
+// Factory supports multiple direction strategies
+GenericCellFactory factory = new GenericCellFactory(
+    ValueStrategy.SHUFFLED,
+    DirectionStrategy.ALTERNATING,  // Even positions ascending, odd descending
+    arraySize,
+    seed
+);
+
+// ExecutionEngine.step() uses direction-aware logic
+SortDirection direction = getCellDirection(cells[i]);
+boolean shouldSwap = shouldSwapWithDirection(i, j, algotype, direction);
+```
+
+**Direction-aware swap logic**:
+- BUBBLE: For ascending, move left if smaller, right if larger; for descending, inverse
+- INSERTION: Same polarity as BUBBLE, but only left movement with sorted check
+- SELECTION: Same polarity as BUBBLE, with ideal position tracking
+
+**Verified by**: `CrossPurposeSortingTest` (8 tests, all passing):
+- testGenericCellWithDirection
+- testGenericCellDefaultDirection  
+- testSortDirectionEnumMethods
+- testGenericCellFactoryAllAscending
+- testGenericCellFactoryAllDescending
+- testGenericCellFactoryAlternating
+- testCrossPurposeSortingExecution
+- testChimericPopulationWithDirections
+
+**Status**: IMPLEMENTED. The system now supports cross-purpose sorting where cells with different sort directions compete and reach equilibrium, exactly as described in Levin et al. (2024), p.14.
 
 ---
 
@@ -752,8 +822,8 @@ After implementing fixes, verify against cell_research:
 ## Implementation Summary
 
 **Total Gaps Identified**: 12  
-**Gaps Closed**: 16 features implemented (including sub-features)  
-**Gaps Remaining**: 8 (non-critical features)
+**Gaps Closed**: 17 features implemented (including sub-features)  
+**Gaps Remaining**: 7 (non-critical features)
 
 **Major Achievements**:
 - ✅ Complete CellGroup System (4 features, 2025-12-31)
@@ -761,9 +831,9 @@ After implementing fixes, verify against cell_research:
 - ✅ Full frozen cell support
 - ✅ Comprehensive metrics tracking
 - ✅ Lock-based threading model
+- ✅ Cross-purpose sorting with per-cell directions (2025-12-31)
 
 **Remaining Work** (non-blocking):
-- Cross-purpose sorting (per-cell sort direction)
 - Statistical analysis utilities (Z-test, T-test)
 - Traditional algorithm implementations
 - Visualization and export
