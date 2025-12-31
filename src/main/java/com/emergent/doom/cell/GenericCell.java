@@ -44,7 +44,7 @@ public class GenericCell implements Cell<GenericCell>, HasIdealPosition {
         }
         this.value = value;
         this.algotype = algotype;
-        // idealPos remains 0 for non-SELECTION; will be used only if algotype == SELECTION
+        // idealPos initialized to 0 for SELECTION compatibility (Levin p.9)
     }
 
     /**
@@ -72,29 +72,42 @@ public class GenericCell implements Cell<GenericCell>, HasIdealPosition {
         return Integer.compare(this.value, other.value);
     }
 
-    // HasIdealPosition implementations (stubbed for scaffold; logic in phase two)
     @Override
     public int getIdealPos() {
-        // TODO: Phase Two - Return idealPos.get(); only used if getAlgotype() == SELECTION
-        throw new UnsupportedOperationException("Implement getIdealPos for HasIdealPosition");
+        if (algotype != Algotype.SELECTION) {
+            throw new IllegalStateException("idealPos is only supported for SELECTION algotype; current: " + algotype);
+        }
+        return idealPos.get();
     }
 
     @Override
     public void setIdealPos(int newIdealPos) {
-        // TODO: Phase Two - idealPos.set(newIdealPos); validate if SELECTION
-        throw new UnsupportedOperationException("Implement setIdealPos for HasIdealPosition");
+        if (algotype != Algotype.SELECTION) {
+            throw new IllegalStateException("idealPos is only supported for SELECTION algotype; current: " + algotype);
+        }
+        if (newIdealPos < 0) {
+            throw new IllegalArgumentException("Ideal position cannot be negative: " + newIdealPos);
+        }
+        idealPos.set(newIdealPos);
     }
 
     @Override
     public int incrementIdealPos() {
-        // TODO: Phase Two - Return idealPos.incrementAndGet(); only if SELECTION and not at end
-        throw new UnsupportedOperationException("Implement incrementIdealPos for HasIdealPosition");
+        if (algotype != Algotype.SELECTION) {
+            throw new IllegalStateException("idealPos is only supported for SELECTION algotype; current: " + algotype);
+        }
+        return idealPos.incrementAndGet();
     }
 
     @Override
     public boolean compareAndSetIdealPos(int expected, int newValue) {
-        // TODO: Phase Two - Return idealPos.compareAndSet(expected, newValue);
-        throw new UnsupportedOperationException("Implement compareAndSetIdealPos for HasIdealPosition");
+        if (algotype != Algotype.SELECTION) {
+            throw new IllegalStateException("idealPos is only supported for SELECTION algotype; current: " + algotype);
+        }
+        if (newValue < 0) {
+            throw new IllegalArgumentException("Ideal position cannot be negative: " + newValue);
+        }
+        return idealPos.compareAndSet(expected, newValue);
     }
 
     @Override

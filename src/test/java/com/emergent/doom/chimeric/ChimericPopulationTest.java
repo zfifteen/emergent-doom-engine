@@ -29,32 +29,94 @@ class ChimericPopulationTest {
     class HasIdealPositionTests {
 
         @Test
-        @DisplayName("GenericCell implements HasIdealPosition for SELECTION")
-        void genericCellImplementsForSelection() {
-            // TODO: Phase Three - Create GenericCell with SELECTION, verify getIdealPos() == 0, increment works, etc.
-            // Assert no exception for supported type
-            // For non-SELECTION, optional: no-op or ignore if algotype check added
+        @DisplayName("GenericCell getIdealPos returns 0 initially for SELECTION")
+        void genericCellGetIdealPosInitial() {
+            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            assertEquals(0, cell.getIdealPos(), "Initial idealPos should be 0");
         }
 
         @Test
-        @DisplayName("SelectionCell implements HasIdealPosition")
-        void selectionCellImplements() {
-            // TODO: Phase Three - Create SelectionCell instance, verify methods work as before
-            // Ensure thread-safety with AtomicInteger
+        @DisplayName("GenericCell incrementIdealPos works for SELECTION")
+        void genericCellIncrementIdealPos() {
+            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            int newPos = cell.incrementIdealPos();
+            assertEquals(1, newPos, "Increment should return 1");
+            assertEquals(1, cell.getIdealPos(), "idealPos should be updated to 1");
         }
 
         @Test
-        @DisplayName("ExecutionEngine throws for unsupported cell in SELECTION helpers")
+        @DisplayName("GenericCell setIdealPos works for SELECTION")
+        void genericCellSetIdealPos() {
+            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            cell.setIdealPos(5);
+            assertEquals(5, cell.getIdealPos(), "setIdealPos should update to 5");
+        }
+
+        @Test
+        @DisplayName("GenericCell compareAndSetIdealPos works for SELECTION")
+        void genericCellCompareAndSetIdealPos() {
+            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            assertTrue(cell.compareAndSetIdealPos(0, 10), "CAS from 0 to 10 should succeed");
+            assertEquals(10, cell.getIdealPos(), "idealPos should be 10");
+            assertFalse(cell.compareAndSetIdealPos(5, 15), "CAS from wrong expected 5 should fail");
+            assertEquals(10, cell.getIdealPos(), "idealPos unchanged on failed CAS");
+        }
+
+        @Test
+        @DisplayName("GenericCell throws IllegalStateException for non-SELECTION algotype")
+        void genericCellThrowsForNonSelection() {
+            GenericCell bubbleCell = new GenericCell(42, Algotype.BUBBLE);
+            assertThrows(IllegalStateException.class, bubbleCell::getIdealPos, "Should throw for BUBBLE");
+            assertThrows(IllegalStateException.class, () -> bubbleCell.setIdealPos(5), "Should throw for BUBBLE");
+            assertThrows(IllegalStateException.class, bubbleCell::incrementIdealPos, "Should throw for BUBBLE");
+            assertThrows(IllegalStateException.class, () -> bubbleCell.compareAndSetIdealPos(0, 10), "Should throw for BUBBLE");
+        }
+
+        @Test
+        @DisplayName("GenericCell setIdealPos throws for negative value")
+        void genericCellSetNegativeThrows() {
+            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            assertThrows(IllegalArgumentException.class, () -> cell.setIdealPos(-1), "Negative position invalid");
+        }
+
+        @Test
+        @DisplayName("GenericCell compareAndSetIdealPos throws for negative newValue")
+        void genericCellCasNegativeThrows() {
+            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            assertThrows(IllegalArgumentException.class, () -> cell.compareAndSetIdealPos(0, -1), "Negative newValue invalid");
+        }
+
+        @Test
+        @DisplayName("ExecutionEngine throws UnsupportedOperationException for non-HasIdealPosition cell")
         void engineThrowsForUnsupportedCell() {
-            // TODO: Phase Three - Mock cell without HasIdealPosition, call getIdealPosition, assert UnsupportedOperationException
-            // Message: "Cell type X does not support idealPos for SELECTION"
+            // Note: Since all cells now implement via GenericCell or SelectionCell, test with custom mock
+            // But for this, assume a hypothetical unsupported cell; in practice, engine checks algotype first
+            // This test verifies the helper throws if somehow called on unsupported
+            class UnsupportedCell implements Cell<UnsupportedCell> {
+                @Override public int compareTo(UnsupportedCell o) { return 0; }
+                @Override public Algotype getAlgotype() { return Algotype.SELECTION; }
+            }
+            UnsupportedCell unsupported = new UnsupportedCell();
+            ExecutionEngine<UnsupportedCell> engine = new ExecutionEngine<>( // Minimal constructor for test
+                new UnsupportedCell[]{unsupported}, null, null, null
+            );
+            assertThrows(UnsupportedOperationException.class, 
+                () -> engine.getIdealPosition(unsupported), 
+                "Engine should throw for unsupported cell type"
+            );
         }
 
         @Test
-        @DisplayName("No silent no-op in incrementIdealPosition for non-SELECTION GenericCell")
+        @DisplayName("No silent no-op: incrementIdealPosition throws for non-SELECTION GenericCell")
         void noSilentNoOpInHelpers() {
-            // TODO: Phase Three - GenericCell with BUBBLE, attempt incrementIdealPosition via engine, assert exception thrown
-            // Prevents undetected failures in mixed populations
+            GenericCell bubbleCell = new GenericCell(42, Algotype.BUBBLE);
+            ExecutionEngine<GenericCell> engine = new ExecutionEngine<>(
+                new GenericCell[]{bubbleCell}, null, null, null
+            );
+            assertThrows(UnsupportedOperationException.class, 
+                () -> engine.incrementIdealPosition(bubbleCell),
+                "Should throw instead of silent no-op for non-SELECTION"
+            );
         }
     }
 
