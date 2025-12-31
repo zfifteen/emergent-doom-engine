@@ -217,37 +217,59 @@ public class CellGroup<T extends Cell<T> & GroupAwareCell<T>> extends Thread {
     
     @Override
     public void run() {
-        // PURPOSE: Execute group lifecycle coordination loop
-        // INPUTS: None (uses instance state)
-        // PROCESS:
-        //   1. Loop while status != MERGED and !allCellsInactive():
-        //      
-        //      a. If countDown == 0:
-        //         - Call changeStatus() to toggle phase
-        //      
-        //      b. If status == SLEEP:
-        //         - Call putCellsToSleep()
-        //         - Decrement countDown
-        //         - Sleep 50ms (Thread.sleep(50))
-        //      
-        //      c. If status == ACTIVE:
-        //         - Acquire lock
-        //         - If status still ACTIVE (recheck under lock) and isGroupSorted():
-        //           * nextGroup = findNextGroup()
-        //           * If nextGroup != null and nextGroup.status == ACTIVE and nextGroup.isGroupSorted():
-        //             - Call mergeWithGroup(nextGroup)
-        //         - Release lock
-        //         - Decrement countDown
-        //         - Sleep 50ms
-        //   
-        //   2. Thread exits when MERGED or all cells INACTIVE
-        // 
-        // OUTPUTS: None (thread execution)
-        // DEPENDENCIES: All methods defined above
-        // SIDE EFFECTS: Modifies group state, merges groups, changes cell statuses
-        // NOTE: Must handle InterruptedException from Thread.sleep()
+        // Main execution loop coordinating group lifecycle, sleep/wake cycles, and merging
+        // Matches cell_research CellGroup.py:104-122
         
-        throw new UnsupportedOperationException("SCAFFOLD: run() not yet implemented");
+        while (status != GroupStatus.MERGED && !allCellsInactive()) {
+            
+            // Phase change: toggle ACTIVE ↔ SLEEP when countdown expires
+            if (countDown == 0) {
+                changeStatus();
+            }
+            
+            // SLEEP phase: put cells to sleep, countdown, wait
+            if (status == GroupStatus.SLEEP) {
+                putCellsToSleep();
+                countDown--;
+                try {
+                    Thread.sleep(50); // 50ms matches Python time.sleep(0.05)
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break; // Exit on interruption
+                }
+            }
+            
+            // ACTIVE phase: check sorted status, attempt merge, countdown, wait
+            if (status == GroupStatus.ACTIVE) {
+                lock.lock();
+                try {
+                    // Recheck status under lock (may have changed)
+                    if (status == GroupStatus.ACTIVE && isGroupSorted()) {
+                        CellGroup<T> nextGroup = findNextGroup();
+                        
+                        // Merge if next group exists, is ACTIVE, and sorted
+                        if (nextGroup != null 
+                            && nextGroup.status == GroupStatus.ACTIVE 
+                            && nextGroup.isGroupSorted()) {
+                            mergeWithGroup(nextGroup);
+                        }
+                    }
+                } finally {
+                    lock.unlock();
+                }
+                
+                countDown--;
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+        
+        // Thread exits when status == MERGED or all cells INACTIVE
+        // This implements hierarchical emergence: small groups merge into larger ones
     }
     
     // ========== ACCESSORS ==========
