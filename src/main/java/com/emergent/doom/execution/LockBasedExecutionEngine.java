@@ -411,6 +411,10 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
      * <p>P1 FIX: All cell types now properly handled via getValue().
      * Previously fell back to hashCode() for InsertionCell/BubbleCell,
      * which broke insertion-mode runs using those types.</p>
+     * 
+     * <p>COPILOT REVIEW FIX: Throws UnsupportedOperationException instead of
+     * using hashCode() fallback, since hashCode() is unreliable for sorting
+     * comparisons (hash codes don't maintain ordering relationships).</p>
      */
     private int getCellValue(T cell) {
         if (cell instanceof SelectionCell) {
@@ -422,8 +426,12 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         } else if (cell instanceof com.emergent.doom.cell.BubbleCell) {
             return ((com.emergent.doom.cell.BubbleCell<?>) cell).getValue();
         }
-        // Fallback: use hashCode as last resort (should never happen with proper Cell types)
-        return cell.hashCode();
+        // Fail-fast: throw exception for unsupported cell types
+        // (hashCode is unreliable for sorting - doesn't maintain ordering relationships)
+        throw new UnsupportedOperationException(
+            "Cell type " + cell.getClass().getName() + " does not support getValue(). " +
+            "All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell."
+        );
     }
 
     // ========== Accessors ==========

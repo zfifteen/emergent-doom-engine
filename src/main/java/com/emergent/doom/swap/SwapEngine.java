@@ -34,7 +34,7 @@ public class SwapEngine<T extends Cell<T>> {
 
     private final FrozenCellStatus frozenStatus;
     private final AtomicInteger swapCount;
-    private Probe<T> probe; // Optional reference for frozen swap attempt tracking
+    private volatile Probe<T> probe; // Optional reference for frozen swap attempt tracking (volatile for thread visibility)
     
     /**
      * Initialize the swap engine with frozen cell tracking.

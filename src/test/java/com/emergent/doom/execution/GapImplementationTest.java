@@ -39,8 +39,8 @@ class GapImplementationTest {
         @Test
         @DisplayName("GenericCell implements HasIdealPosition interface")
         void genericCellImplementsHasIdealPosition() {
-            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
-            assertTrue(cell instanceof HasIdealPosition,
+            // Test at class level, not instance level (more precise)
+            assertTrue(HasIdealPosition.class.isAssignableFrom(GenericCell.class),
                     "GenericCell should implement HasIdealPosition");
         }
 
