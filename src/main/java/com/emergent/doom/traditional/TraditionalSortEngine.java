@@ -116,10 +116,37 @@ public class TraditionalSortEngine<T extends Comparable<T>> {
      * DEPENDENCIES: compareAndTrack(), swapAndTrack()
      * INTEGRATION: Matches cell-view BubbleSortCell behavior for comparison
      * NOTE: Paper (p.10, Table 1) shows traditional bubble ~2500 swaps vs cell-view ~2500
+     * 
+     * IMPLEMENTATION NOTE (Phase Three - bubbleSort): This is the classic bubble
+     * sort algorithm where larger elements "bubble up" to the right through
+     * successive adjacent comparisons and swaps. The algorithm continues until
+     * a complete pass is made with no swaps, indicating the array is sorted.
+     * Unlike cell-view bubble sort which has randomized direction choice, this
+     * traditional implementation always scans left-to-right deterministically.
      */
     private void bubbleSort(T[] array) {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE THREE will implement bubble sort algorithm
+        int n = array.length;
+        boolean swapped;
+        
+        // Continue until no swaps occur in a full pass
+        do {
+            swapped = false;
+            
+            // Compare and potentially swap each adjacent pair
+            for (int i = 0; i < n - 1; i++) {
+                // Compare array[i] with array[i+1]
+                if (compareAndTrack(array, i, i + 1) > 0) {
+                    // array[i] > array[i+1], so swap them
+                    swapAndTrack(array, i, i + 1);
+                    swapped = true;
+                }
+            }
+            
+            // Optimization: after each pass, the largest unsorted element
+            // is in its final position, so we can reduce the scan range
+            n--;
+            
+        } while (swapped);
     }
     
     /**
