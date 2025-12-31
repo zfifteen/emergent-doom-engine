@@ -1,37 +1,47 @@
 package com.emergent.doom.probe;
 
+import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Records execution trajectory by capturing snapshots at each step.
- * 
+ *
  * <p>The probe maintains a complete history of cell states throughout
  * execution, enabling post-hoc analysis, visualization, and metric
  * computation.</p>
- * 
+ *
+ * <p><strong>StatusProbe Fields (per cell_research):</strong></p>
+ * <ul>
+ *   <li>{@code compareAndSwapCount} - Comparisons that led to swap decisions</li>
+ *   <li>{@code frozenSwapAttempts} - Attempts to swap with frozen cells</li>
+ *   <li>{@code cellTypes} - Cell type distribution tracked in snapshots</li>
+ * </ul>
+ *
  * @param <T> the type of cell
  */
 public class Probe<T extends Cell<T>> {
-    
+
     private final List<StepSnapshot<T>> snapshots;
     private boolean recordingEnabled;
+
+    // StatusProbe fields matching cell_research Python implementation
+    private final AtomicInteger compareAndSwapCount;
+    private final AtomicInteger frozenSwapAttempts;
     
-    // PURPOSE: Initialize an empty probe
-    // INPUTS: None
-    // PROCESS:
-    //   1. Create new ArrayList for snapshots
-    //   2. Set recordingEnabled = true by default
-    // OUTPUTS: Probe instance
-    // DEPENDENCIES: ArrayList
     /**
-     * IMPLEMENTED: Initialize an empty probe
+     * IMPLEMENTED: Initialize an empty probe with all StatusProbe counters
      */
     public Probe() {
         this.snapshots = new ArrayList<>();
         this.recordingEnabled = true;
+        this.compareAndSwapCount = new AtomicInteger(0);
+        this.frozenSwapAttempts = new AtomicInteger(0);
     }
     
     /**
@@ -80,10 +90,11 @@ public class Probe<T extends Cell<T>> {
     }
     
     /**
-     * IMPLEMENTED: Clear all recorded snapshots
+     * IMPLEMENTED: Clear all recorded snapshots and reset counters
      */
     public void clear() {
         snapshots.clear();
+        resetCounters();
     }
     
     /**
@@ -99,5 +110,82 @@ public class Probe<T extends Cell<T>> {
      */
     public boolean isRecordingEnabled() {
         return recordingEnabled;
+    }
+
+    // ========== StatusProbe Methods (matching cell_research Python) ==========
+
+    /**
+     * Record a comparison that led to a swap decision.
+     * Called when should_move() returns true in Python cell_research.
+     * Thread-safe.
+     */
+    public void recordCompareAndSwap() {
+        compareAndSwapCount.incrementAndGet();
+    }
+
+    /**
+     * Count an attempt to swap with a frozen cell.
+     * Called when a cell tries to initiate a swap but is frozen.
+     * Thread-safe.
+     */
+    public void countFrozenSwapAttempt() {
+        frozenSwapAttempts.incrementAndGet();
+    }
+
+    /**
+     * Get the total number of comparisons that led to swap decisions.
+     * Thread-safe read.
+     */
+    public int getCompareAndSwapCount() {
+        return compareAndSwapCount.get();
+    }
+
+    /**
+     * Get the total number of frozen swap attempts.
+     * Thread-safe read.
+     */
+    public int getFrozenSwapAttempts() {
+        return frozenSwapAttempts.get();
+    }
+
+    /**
+     * Record a snapshot with cell type distribution.
+     * This extended version captures algotype distribution for each step.
+     *
+     * @param stepNumber the current step number
+     * @param cells the cell array
+     * @param swapCount swaps in this step
+     */
+    public void recordSnapshotWithTypes(int stepNumber, T[] cells, int swapCount) {
+        if (recordingEnabled) {
+            Map<Algotype, Integer> typeDistribution = new HashMap<>();
+            for (T cell : cells) {
+                Algotype type = cell.getAlgotype();
+                typeDistribution.merge(type, 1, Integer::sum);
+            }
+            snapshots.add(new StepSnapshot<>(stepNumber, cells, swapCount, typeDistribution));
+        }
+    }
+
+    /**
+     * Get the cell type distribution at a specific step.
+     *
+     * @param stepNumber the step to query
+     * @return map of algotype to count, or null if step not found
+     */
+    public Map<Algotype, Integer> getCellTypeDistribution(int stepNumber) {
+        StepSnapshot<T> snapshot = getSnapshot(stepNumber);
+        if (snapshot != null) {
+            return snapshot.getCellTypeDistribution();
+        }
+        return null;
+    }
+
+    /**
+     * Reset all StatusProbe counters (called on engine reset).
+     */
+    public void resetCounters() {
+        compareAndSwapCount.set(0);
+        frozenSwapAttempts.set(0);
     }
 }

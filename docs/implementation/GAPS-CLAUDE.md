@@ -23,15 +23,15 @@
 | Category | MISSING | PARTIAL | DEVIATION | IMPLEMENTED | Total Gaps |
 |----------|---------|---------|-----------|-------------|------------|
 | Threading Model | 0 | 0 | 0 | 1 | 0 |
-| Cell Algorithms | 0 | 1 | 0 | 2 | 1 |
+| Cell Algorithms | 0 | 0 | 0 | 3 | 0 |
 | CellGroup System | 4 | 0 | 0 | 0 | 4 |
-| Frozen Cells | 0 | 1 | 0 | 1 | 1 |
-| Metrics/Probe | 0 | 1 | 0 | 4 | 1 |
+| Frozen Cells | 0 | 0 | 0 | 2 | 0 |
+| Metrics/Probe | 0 | 0 | 0 | 5 | 0 |
 | Chimeric Features | 1 | 0 | 0 | 1 | 1 |
 | Statistical Analysis | 2 | 0 | 0 | 0 | 2 |
 | Traditional Algorithms | 2 | 0 | 0 | 0 | 2 |
 | Visualization | 3 | 0 | 0 | 0 | 3 |
-| **TOTAL** | **12** | **3** | **0** | **9** | **15** |
+| **TOTAL** | **12** | **0** | **0** | **12** | **12** |
 
 ---
 
@@ -113,7 +113,7 @@ both neighbors exist), exactly matching the Python cell_research behavior.
 
 ---
 
-### 2.2 SelectionCell `idealPos` Reset on Merge [PARTIAL]
+### 2.2 SelectionCell `idealPos` Reset on Merge [IMPLEMENTED ✓]
 
 **cell_research behavior** (`SelectionSortCell.py:77-81`):
 ```python
@@ -125,12 +125,33 @@ def update(self):
         self.ideal_position = self.left_boundary
 ```
 
-**EDE implementation**:
-- `SelectionCell.java` has `setIdealPos()` method ✓
-- But no `update()` method called on group merge because CellGroup doesn't exist
-- `ParallelExecutionEngine.reset()` resets to 0, not to boundary
+**EDE implementation** (`HasIdealPosition.java`, `ExecutionEngine.java`, `LockBasedExecutionEngine.java`):
+```java
+// HasIdealPosition interface provides default updateForBoundary method
+default void updateForBoundary(int leftBoundary, int rightBoundary, boolean reverseDirection) {
+    if (reverseDirection) {
+        setIdealPos(rightBoundary);
+    } else {
+        setIdealPos(leftBoundary);
+    }
+}
 
-**Impact**: Without CellGroup merging, this is currently not triggered. Will need implementation when CellGroup is added.
+// ExecutionEngine.reset() uses updateForBoundary
+private void resetSelectionCellIdealPositions(boolean reverseDirection) {
+    int leftBoundary = 0;
+    int rightBoundary = cells.length - 1;
+    for (T cell : cells) {
+        if (cell.getAlgotype() == Algotype.SELECTION && cell instanceof HasIdealPosition) {
+            ((HasIdealPosition) cell).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
+        }
+    }
+}
+```
+
+**Status**: IMPLEMENTED. Both `SelectionCell` and `GenericCell` implement `HasIdealPosition` with
+`updateForBoundary()` method. Execution engines call this on reset with proper boundaries.
+
+**Verified by**: `GapImplementationTest.SelectionCellBoundaryResetTests` (5 tests)
 
 ---
 
@@ -290,7 +311,7 @@ public boolean canBeDisplaced(int position) {
 
 ---
 
-### 4.2 Frozen Cell Skip in Insertion isLeftSorted [PARTIAL]
+### 4.2 Frozen Cell Skip in Insertion isLeftSorted [IMPLEMENTED ✓]
 
 **cell_research** (`InsertionSortCell.py:74-76`):
 ```python
@@ -299,16 +320,36 @@ if cells[i].status == FREEZE:
     continue
 ```
 
-**EDE** (`ExecutionEngine.java:108-115`):
-Does not skip frozen cells in `isLeftSorted()` check.
+**EDE implementation** (`ExecutionEngine.java`, `LockBasedExecutionEngine.java`):
+```java
+private boolean isLeftSorted(int i) {
+    int prevValue = Integer.MIN_VALUE; // Start with minimum so any value is >= prev
+    for (int k = 0; k < i; k++) {
+        // Skip frozen cells - reset comparison chain (matches Python)
+        if (swapEngine.isFrozen(k)) {
+            prevValue = Integer.MIN_VALUE; // Reset: next cell can be any value
+            continue;
+        }
+        int currentValue = getCellValue(cells[k]);
+        if (currentValue < prevValue) {
+            return false;
+        }
+        prevValue = currentValue;
+    }
+    return true;
+}
+```
 
-**Impact**: Insertion cells may incorrectly wait if frozen cell breaks left-side order.
+**Status**: IMPLEMENTED. Both execution engines now skip frozen cells in `isLeftSorted()` check,
+resetting the comparison chain as in Python cell_research.
+
+**Verified by**: `GapImplementationTest.FrozenCellSkipTests` (5 tests)
 
 ---
 
 ## Category 5: Metrics and Probe
 
-### 5.1 StatusProbe Fields [PARTIAL]
+### 5.1 StatusProbe Fields [IMPLEMENTED ✓]
 
 **cell_research** (`StatusProbe.py:1-22`):
 ```python
@@ -320,13 +361,32 @@ class StatusProbe:
     frozen_swap_attempts = 0     # Attempts to swap with frozen
 ```
 
-**EDE** (`Probe.java`):
-- ✓ `snapshots` (includes swapCount per step)
-- ✗ `compare_and_swap_count` — NOT tracked
-- ✗ `cell_types` — NOT tracked
-- ✗ `frozen_swap_attempts` — NOT tracked
+**EDE implementation** (`Probe.java`, `StepSnapshot.java`, `SwapEngine.java`):
+```java
+// Probe.java - StatusProbe fields
+private final AtomicInteger compareAndSwapCount;
+private final AtomicInteger frozenSwapAttempts;
 
-**Recommendation**: Add counters to Probe or create separate StatusProbe class.
+public void recordCompareAndSwap() { compareAndSwapCount.incrementAndGet(); }
+public void countFrozenSwapAttempt() { frozenSwapAttempts.incrementAndGet(); }
+public void recordSnapshotWithTypes(int stepNumber, T[] cells, int swapCount) { ... }
+
+// StepSnapshot.java - Cell type distribution
+private final Map<Algotype, Integer> cellTypeDistribution;
+public Map<Algotype, Integer> getCellTypeDistribution() { return cellTypeDistribution; }
+
+// SwapEngine.java - Frozen attempt tracking
+public void setProbe(Probe<T> probe) { this.probe = probe; }
+// In attemptSwap(): if (!frozenStatus.canMove(i)) { probe.countFrozenSwapAttempt(); }
+```
+
+**Status**: IMPLEMENTED. All StatusProbe fields from cell_research are now tracked:
+- ✓ `snapshots` with swapCount per step
+- ✓ `compareAndSwapCount` — recorded on swap decision
+- ✓ `cellTypeDistribution` — recorded via `recordSnapshotWithTypes()`
+- ✓ `frozenSwapAttempts` — tracked via SwapEngine
+
+**Verified by**: `ProbeTest` (15 tests), `GapImplementationTest.StatusProbeIntegrationTests` (2 tests)
 
 ---
 
@@ -484,8 +544,8 @@ After implementing fixes, verify against cell_research:
 
 ### Algorithms
 - [x] Bubble: Random 50% left/right direction choice ✓ (ExecutionEngine.java)
-- [ ] Selection: idealPos starts at left_boundary, resets on merge
-- [ ] Insertion: isLeftSorted skips FREEZE cells
+- [x] Selection: idealPos starts at left_boundary, resets on merge ✓ (HasIdealPosition.java)
+- [x] Insertion: isLeftSorted skips FREEZE cells ✓ (ExecutionEngine.java, LockBasedExecutionEngine.java)
 
 ### Threading
 - [x] Optional lock-based mode matching cell_research ✓ (LockBasedExecutionEngine.java)
@@ -499,13 +559,13 @@ After implementing fixes, verify against cell_research:
 
 ### Frozen Cells
 - [x] FREEZE = cannot initiate, CAN be moved ✓ (FrozenCellStatus.java)
-- [ ] frozen_swap_attempts counter
+- [x] frozen_swap_attempts counter ✓ (Probe.java)
 - [ ] tried_to_swap_with_frozen flag per cell
 
 ### Metrics
-- [ ] compare_and_swap_count
-- [ ] cell_types[] distribution tracking
-- [ ] frozen_swap_attempts
+- [x] compare_and_swap_count ✓ (Probe.java)
+- [x] cell_types[] distribution tracking ✓ (StepSnapshot.java)
+- [x] frozen_swap_attempts ✓ (Probe.java, SwapEngine.java)
 
 ### Chimeric
 - [ ] Per-cell sort direction (reverse_direction)

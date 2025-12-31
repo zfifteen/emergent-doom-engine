@@ -1,6 +1,7 @@
 package com.emergent.doom.swap;
 
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.FrozenCellStatus.FrozenType;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *   <li>Respecting frozen cell constraints</li>
  *   <li>Performing the actual swap operation</li>
  *   <li>Tracking swap statistics</li>
+ *   <li>Recording frozen swap attempts to Probe (StatusProbe compatibility)</li>
  * </ul>
  * </p>
  *
@@ -32,27 +34,47 @@ public class SwapEngine<T extends Cell<T>> {
 
     private final FrozenCellStatus frozenStatus;
     private final AtomicInteger swapCount;
+    private volatile Probe<T> probe; // Optional reference for frozen swap attempt tracking (volatile for thread visibility)
     
-    // PURPOSE: Initialize the swap engine with frozen cell tracking
-    // INPUTS: frozenStatus (FrozenCellStatus) - tracks which cells are frozen
-    // PROCESS:
-    //   1. Store reference to frozenStatus
-    //   2. Initialize swapCount to 0
-    // OUTPUTS: SwapEngine instance
-    // DEPENDENCIES: FrozenCellStatus [IMPLEMENTED]
+    /**
+     * Initialize the swap engine with frozen cell tracking.
+     *
+     * @param frozenStatus tracks which cells are frozen
+     */
     public SwapEngine(FrozenCellStatus frozenStatus) {
         this.frozenStatus = frozenStatus;
         this.swapCount = new AtomicInteger(0);
+        this.probe = null;
+    }
+
+    /**
+     * Set the probe reference for StatusProbe-compatible tracking.
+     * When set, frozen swap attempts will be recorded to the probe.
+     *
+     * @param probe the probe to record frozen swap attempts to
+     */
+    public void setProbe(Probe<T> probe) {
+        this.probe = probe;
     }
     
     /**
      * IMPLEMENTED: Attempt to swap cells at positions i and j
      * The swap decision is made externally; this method only checks frozen constraints.
+     * Records frozen swap attempts to the probe if one is set.
+     *
      * @return true if swap occurred, false otherwise
      */
     public boolean attemptSwap(T[] cells, int i, int j) {
         // Check frozen constraints
-        if (!frozenStatus.canMove(i) || !frozenStatus.canBeDisplaced(j)) {
+        if (!frozenStatus.canMove(i)) {
+            // Cell at i is frozen and tried to initiate swap
+            if (probe != null) {
+                probe.countFrozenSwapAttempt();
+            }
+            return false;
+        }
+        if (!frozenStatus.canBeDisplaced(j)) {
+            // Target is immovable (IMMOVABLE type)
             return false;
         }
 
@@ -98,5 +120,25 @@ public class SwapEngine<T extends Cell<T>> {
     public boolean wouldSwap(T[] cells, int i, int j) {
         // Check frozen constraints (same as attemptSwap)
         return frozenStatus.canMove(i) && frozenStatus.canBeDisplaced(j);
+    }
+
+    /**
+     * Check if a cell at the given position is frozen (MOVABLE or IMMOVABLE).
+     * Used for isLeftSorted skip logic matching Python cell_research behavior.
+     *
+     * @param position the cell position to check
+     * @return true if cell is frozen (cannot initiate swaps)
+     */
+    public boolean isFrozen(int position) {
+        return !frozenStatus.canMove(position);
+    }
+
+    /**
+     * Get the frozen status tracker.
+     *
+     * @return the FrozenCellStatus instance
+     */
+    public FrozenCellStatus getFrozenStatus() {
+        return frozenStatus;
     }
 }
