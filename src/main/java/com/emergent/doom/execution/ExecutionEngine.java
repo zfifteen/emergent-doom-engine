@@ -125,11 +125,34 @@ public class ExecutionEngine<T extends Cell<T>> {
                 return insertionTopology.getNeighbors(i, cells.length, algotype);
             case SELECTION:
                 // Get dynamic ideal target from cell state
-                SelectionCell<?> selCell = (SelectionCell<?>) cells[i];
-                int target = Math.min(selCell.getIdealPos(), cells.length - 1);
+                int idealPos = getIdealPosition(cells[i]);
+                int target = Math.min(idealPos, cells.length - 1);
                 return Arrays.asList(target);
             default:
                 throw new IllegalStateException("Unknown algotype: " + algotype);
+        }
+    }
+
+    /**
+     * Helper: Get ideal position from a SELECTION cell (supports both SelectionCell and GenericCell)
+     */
+    private int getIdealPosition(T cell) {
+        if (cell instanceof SelectionCell) {
+            return ((SelectionCell<?>) cell).getIdealPos();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            return ((com.emergent.doom.cell.GenericCell) cell).getIdealPos();
+        }
+        return 0;  // Default for other cell types
+    }
+
+    /**
+     * Helper: Increment ideal position for a SELECTION cell (supports both SelectionCell and GenericCell)
+     */
+    private void incrementIdealPosition(T cell) {
+        if (cell instanceof SelectionCell) {
+            ((SelectionCell<?>) cell).incrementIdealPos();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            ((com.emergent.doom.cell.GenericCell) cell).incrementIdealPos();
         }
     }
 
@@ -164,11 +187,9 @@ public class ExecutionEngine<T extends Cell<T>> {
                     return true;
                 } else {
                     // Swap denied: increment ideal position if not at end
-                    if (cells[i] instanceof SelectionCell) {
-                        SelectionCell<?> selCell = (SelectionCell<?>) cells[i];
-                        if (selCell.getIdealPos() < cells.length - 1) {
-                            selCell.incrementIdealPos();
-                        }
+                    int currentIdealPos = getIdealPosition(cells[i]);
+                    if (currentIdealPos < cells.length - 1) {
+                        incrementIdealPosition(cells[i]);
                     }
                     return false;
                 }

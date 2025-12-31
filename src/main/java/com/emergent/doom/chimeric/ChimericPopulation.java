@@ -1,73 +1,141 @@
 package com.emergent.doom.chimeric;
 
+import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
 
 import java.lang.reflect.Array;
 
 /**
  * Manages populations with multiple algotypes (chimeric populations).
- * 
+ *
  * <p>Chimeric populations allow mixing different cell behaviors in a
  * single array, enabling study of cooperative and competitive dynamics.</p>
- * 
+ *
+ * <p>From Levin et al. (2024), p.11-12:
+ * "At the beginning of these experiments, we randomly assigned one of the three
+ * different Algotypes to each of the cells, and began the sort as previously,
+ * allowing all the cells to move based on their Algotype."</p>
+ *
  * @param <T> the type of cell
  */
 public class ChimericPopulation<T extends Cell<T>> {
-    
+
     private final CellFactory<T> cellFactory;
     private final AlgotypeProvider algotypeProvider;
-    
-    // PURPOSE: Create a chimeric population manager
-    // INPUTS:
-    //   - cellFactory (CellFactory<T>) - creates cells
-    //   - algotypeProvider (AlgotypeProvider) - assigns algotypes
-    // PROCESS:
-    //   1. Store factory and provider references
-    // OUTPUTS: ChimericPopulation instance
-    // DEPENDENCIES: None
+
+    /**
+     * Create a chimeric population manager.
+     *
+     * @param cellFactory creates cells with specified position and algotype
+     * @param algotypeProvider determines algotype assignment strategy
+     */
     public ChimericPopulation(CellFactory<T> cellFactory, AlgotypeProvider algotypeProvider) {
-        // Implementation will go here
+        if (cellFactory == null) {
+            throw new IllegalArgumentException("CellFactory cannot be null");
+        }
+        if (algotypeProvider == null) {
+            throw new IllegalArgumentException("AlgotypeProvider cannot be null");
+        }
         this.cellFactory = cellFactory;
         this.algotypeProvider = algotypeProvider;
     }
-    
-    // PURPOSE: Create a cell array with mixed algotypes
-    // INPUTS:
-    //   - size (int) - number of cells to create
-    //   - cellClass (Class<T>) - the cell class for array creation
-    // PROCESS:
-    //   1. Create array of size using Array.newInstance()
-    //   2. For each position i:
-    //      - Get algotype from algotypeProvider
-    //      - Create cell using cellFactory with position and algotype
-    //      - Store in array[i]
-    //   3. Return populated array
-    // OUTPUTS: T[] - array of cells with assigned algotypes
-    // DEPENDENCIES:
-    //   - AlgotypeProvider.getAlgotype() [DEFINED IN INTERFACE]
-    //   - CellFactory.createCell() [DEFINED IN INTERFACE]
-    //   - Array.newInstance() for generic array creation
+
+    /**
+     * Create a cell array with mixed algotypes.
+     *
+     * <p>For each position, gets the algotype from the provider and
+     * creates a cell using the factory with that algotype.</p>
+     *
+     * @param size the number of cells to create
+     * @param cellClass the cell class for array creation
+     * @return array of cells with assigned algotypes
+     * @throws IllegalArgumentException if size <= 0 or cellClass is null
+     */
     @SuppressWarnings("unchecked")
     public T[] createPopulation(int size, Class<T> cellClass) {
-        // Implementation will go here
-        return null;
+        if (size <= 0) {
+            throw new IllegalArgumentException("Size must be positive");
+        }
+        if (cellClass == null) {
+            throw new IllegalArgumentException("Cell class cannot be null");
+        }
+
+        T[] cells = (T[]) Array.newInstance(cellClass, size);
+        for (int i = 0; i < size; i++) {
+            String algotype = algotypeProvider.getAlgotype(i, size);
+            cells[i] = cellFactory.createCell(i, algotype);
+        }
+        return cells;
     }
-    
-    // PURPOSE: Count cells of a specific algotype in an array
-    // INPUTS:
-    //   - cells (T[]) - the cell array
-    //   - algotype (String) - the algotype to count
-    // PROCESS:
-    //   1. Initialize count = 0
-    //   2. For each position i:
-    //      - Get expected algotype from algotypeProvider
-    //      - If matches target algotype, increment count
-    //   3. Return count
-    // OUTPUTS: int - number of cells with specified algotype
-    // DEPENDENCIES: AlgotypeProvider.getAlgotype() [DEFINED IN INTERFACE]
-    // NOTE: Assumes cells haven't been swapped from original positions
+
+    /**
+     * Count cells of a specific algotype in an array.
+     *
+     * <p>Iterates through the array and counts cells whose algotype
+     * matches the specified name (case-insensitive).</p>
+     *
+     * @param cells the cell array to analyze
+     * @param algotype the algotype name to count (e.g., "BUBBLE", "SELECTION")
+     * @return number of cells with the specified algotype
+     * @throws IllegalArgumentException if cells or algotype is null
+     */
     public int countAlgotype(T[] cells, String algotype) {
-        // Implementation will go here
-        return 0;
+        if (cells == null) {
+            throw new IllegalArgumentException("Cells array cannot be null");
+        }
+        if (algotype == null) {
+            throw new IllegalArgumentException("Algotype cannot be null");
+        }
+
+        int count = 0;
+        for (T cell : cells) {
+            if (cell != null && cell.getAlgotype() != null
+                    && cell.getAlgotype().name().equalsIgnoreCase(algotype)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Count cells of a specific algotype enum in an array.
+     *
+     * @param cells the cell array to analyze
+     * @param algotype the algotype enum to count
+     * @return number of cells with the specified algotype
+     */
+    public int countAlgotype(T[] cells, Algotype algotype) {
+        if (cells == null) {
+            throw new IllegalArgumentException("Cells array cannot be null");
+        }
+        if (algotype == null) {
+            throw new IllegalArgumentException("Algotype cannot be null");
+        }
+
+        int count = 0;
+        for (T cell : cells) {
+            if (cell != null && cell.getAlgotype() == algotype) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Get the algotype provider used by this population.
+     *
+     * @return the algotype provider
+     */
+    public AlgotypeProvider getAlgotypeProvider() {
+        return algotypeProvider;
+    }
+
+    /**
+     * Get the cell factory used by this population.
+     *
+     * @return the cell factory
+     */
+    public CellFactory<T> getCellFactory() {
+        return cellFactory;
     }
 }
