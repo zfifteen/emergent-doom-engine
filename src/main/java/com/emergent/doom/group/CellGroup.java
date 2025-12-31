@@ -167,22 +167,21 @@ public class CellGroup<T extends Cell<T> & GroupAwareCell<T>> extends Thread {
     // ========== SLEEP/WAKE CYCLE ==========
     
     public void changeStatus() {
-        // PURPOSE: Toggle group between ACTIVE and SLEEP phases
-        // INPUTS: None (uses current status)
-        // PROCESS:
-        //   1. Reset countDown = phasePeriod (restart phase timer)
-        //   2. If status == ACTIVE:
-        //      a. Set status = SLEEP
-        //      b. Call putCellsToSleep()
-        //   3. Else if status == SLEEP:
-        //      a. Set status = ACTIVE
-        //      b. Call awakeCells()
-        // OUTPUTS: None (mutates status and cells)
-        // DEPENDENCIES: putCellsToSleep(), awakeCells()
-        // SIDE EFFECTS: All cells in group change status
-        // NOTE: Called when countDown reaches 0
+        // Toggle group between ACTIVE and SLEEP phases
+        // Resets countdown and updates all cell statuses
+        // Matches cell_research CellGroup.py:81-90
         
-        throw new UnsupportedOperationException("SCAFFOLD: changeStatus() not yet implemented");
+        countDown = phasePeriod; // Reset phase timer
+        
+        if (status == GroupStatus.ACTIVE) {
+            status = GroupStatus.SLEEP;
+            putCellsToSleep();
+        } else if (status == GroupStatus.SLEEP) {
+            status = GroupStatus.ACTIVE;
+            awakeCells();
+        }
+        
+        // MERGING and MERGED statuses don't change
     }
     
     public void putCellsToSleep() {
