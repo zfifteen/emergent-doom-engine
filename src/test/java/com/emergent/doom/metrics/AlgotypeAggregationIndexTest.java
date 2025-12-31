@@ -169,7 +169,7 @@ class AlgotypeAggregationIndexTest {
 
         // TODO: Phase Three - Fix test name and docs to 80.0% (scaffold comment only)
         @Test
-        @DisplayName("[B,B,B,S,S,S] returns 80.0% (scaffold: update from 66.67%)")
+        @DisplayName("[B,B,B,S,S,S] returns 80.0%")
         void perfectlyClustered_returns80() {
             // [B,B,B,S,S,S] has pairs: BB, BB, BS, SS, SS
             // Matching: BB, BB, SS, SS = 4/5 = 80%
