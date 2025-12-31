@@ -407,14 +407,22 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
     /**
      * Helper: Extract comparable value from cell for isLeftSorted comparison.
+     * 
+     * <p>P1 FIX: All cell types now properly handled via getValue().
+     * Previously fell back to hashCode() for InsertionCell/BubbleCell,
+     * which broke insertion-mode runs using those types.</p>
      */
     private int getCellValue(T cell) {
         if (cell instanceof SelectionCell) {
             return ((SelectionCell<?>) cell).getValue();
         } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
             return ((com.emergent.doom.cell.GenericCell) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.InsertionCell) {
+            return ((com.emergent.doom.cell.InsertionCell<?>) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.BubbleCell) {
+            return ((com.emergent.doom.cell.BubbleCell<?>) cell).getValue();
         }
-        // Fallback: use hashCode as proxy (not ideal but allows compilation)
+        // Fallback: use hashCode as last resort (should never happen with proper Cell types)
         return cell.hashCode();
     }
 
