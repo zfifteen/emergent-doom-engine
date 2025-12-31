@@ -201,22 +201,17 @@ public class CellGroup<T extends Cell<T> & GroupAwareCell<T>> extends Thread {
     }
     
     public void awakeCells() {
-        // PURPOSE: Restore cells to previous (pre-sleep) status
-        // INPUTS: None (uses cellsInGroup)
-        // PROCESS:
-        //   1. Iterate through cellsInGroup
-        //   2. For each cell:
-        //      a. Get current status
-        //      b. If status != INACTIVE:
-        //         - Get previousStatus = cell.getPreviousStatus()
-        //         - Set cell.setStatus(previousStatus)
-        //   3. Skip INACTIVE cells (terminated threads)
-        // OUTPUTS: None (mutates cell statuses)
-        // DEPENDENCIES: cell.getStatus(), cell.getPreviousStatus(), cell.setStatus()
-        // SIDE EFFECTS: Cells resume evaluating/swapping
-        // NOTE: Relies on cells saving previous_status before MOVING transitions
+        // Restore cells to previous status (typically ACTIVE)
+        // Called when group transitions from SLEEP to ACTIVE
+        // Matches cell_research CellGroup.py:97-100
         
-        throw new UnsupportedOperationException("SCAFFOLD: awakeCells() not yet implemented");
+        for (T cell : cellsInGroup) {
+            // Don't wake terminated cells
+            if (cell.getStatus() != CellStatus.INACTIVE) {
+                CellStatus previousStatus = cell.getPreviousStatus();
+                cell.setStatus(previousStatus);
+            }
+        }
     }
     
     public boolean allCellsInactive() {
