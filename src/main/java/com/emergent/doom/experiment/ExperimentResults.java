@@ -247,14 +247,42 @@ public class ExperimentResults<T extends Cell<T>> {
      * @throws IllegalArgumentException if metric doesn't exist or insufficient data
      */
     public double getTTestPValue(String metricName, double populationMean) {
-        // TODO: Implementation in Phase 3, Iteration 10
+        // IMPLEMENTED in Phase 3, Iteration 10
+        // This method performs one-sample t-test on experiment metric data to determine
+        // if the observed results differ significantly from a hypothesized population mean.
+        //
+        // This is the primary statistical test for batch experiment analysis.
+        
         // 1. Validate metricName exists and trials not empty
+        if (trials.isEmpty()) {
+            throw new IllegalArgumentException("Cannot perform t-test: no trials available");
+        }
+        
         // 2. Create List<Double> to collect metric values
+        List<Double> metricValues = new ArrayList<>();
+        
         // 3. Iterate through trials and extract metric values
+        for (TrialResult<T> trial : trials) {
+            Double value = trial.getMetric(metricName);
+            if (value != null) {
+                metricValues.add(value);
+            }
+        }
+        
         // 4. Validate list has at least 2 values
+        if (metricValues.size() < 2) {
+            throw new IllegalArgumentException(
+                "Cannot perform t-test: metric '" + metricName + "' has insufficient data points. " +
+                "Found " + metricValues.size() + ", need at least 2."
+            );
+        }
+        
         // 5. Call StatisticalTests.tTestOneSample(metricValues, populationMean)
+        // This delegates to the static utility which uses Apache Commons Math TTest
+        double pValue = StatisticalTests.tTestOneSample(metricValues, populationMean);
+        
         // 6. Return p-value
-        throw new UnsupportedOperationException("Not implemented yet");
+        return pValue;
     }
     
     /**
