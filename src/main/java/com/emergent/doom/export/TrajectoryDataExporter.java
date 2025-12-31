@@ -78,10 +78,67 @@ public class TrajectoryDataExporter {
      *   - Header row enables self-documenting data files
      *   - Comma separation is standard and widely compatible
      *   - UTF-8 encoding ensures international character support
+     * 
+     * IMPLEMENTATION NOTES:
+     *   This is the MAIN ENTRY POINT for data export. It orchestrates the complete
+     *   CSV export workflow by:
+     *   - Validating inputs via validateTrajectoriesHaveSameLength() (to be implemented)
+     *   - Ensuring directory exists via ensureDirectoryExists() (to be implemented)
+     *   - Writing CSV header and data rows
+     *   - Handling I/O operations with proper resource management
+     *   
+     *   This method triggers the file export pipeline and coordinates all helper methods.
      */
     public static void exportToCSV(String filepath, Map<String, List<Double>> trajectories) 
             throws IOException {
-        // UNIMPLEMENTED: CSV export logic goes here
+        // Step 1: Validate filepath
+        if (filepath == null || filepath.trim().isEmpty()) {
+            throw new IllegalArgumentException("Filepath cannot be null or empty");
+        }
+        
+        // Step 2: Validate trajectories map
+        if (trajectories == null || trajectories.isEmpty()) {
+            throw new IllegalArgumentException("Trajectories cannot be null or empty");
+        }
+        
+        // Step 3: Validate all trajectories have same length
+        validateTrajectoriesHaveSameLength(trajectories);
+        
+        // Step 4: Ensure parent directories exist
+        ensureDirectoryExists(filepath);
+        
+        // Step 5: Open file writer with UTF-8 encoding and write CSV
+        try (java.io.BufferedWriter writer = new java.io.BufferedWriter(
+                new java.io.OutputStreamWriter(
+                    new java.io.FileOutputStream(filepath), 
+                    java.nio.charset.StandardCharsets.UTF_8))) {
+            
+            // Step 6: Write header row
+            writer.write("step_number");
+            for (String metricName : trajectories.keySet()) {
+                writer.write(",");
+                writer.write(escapeCsvValue(metricName));
+            }
+            writer.newLine();
+            
+            // Step 7: Get trajectory length (all same length after validation)
+            int trajectoryLength = trajectories.values().iterator().next().size();
+            
+            // Step 8: Write data rows
+            for (int step = 0; step < trajectoryLength; step++) {
+                writer.write(String.valueOf(step));
+                
+                for (List<Double> trajectory : trajectories.values()) {
+                    writer.write(",");
+                    writer.write(String.valueOf(trajectory.get(step)));
+                }
+                
+                writer.newLine();
+            }
+            
+            // Step 9: Flush (implicit with try-with-resources close)
+        }
+        // File writer is automatically closed by try-with-resources
     }
     
     /**

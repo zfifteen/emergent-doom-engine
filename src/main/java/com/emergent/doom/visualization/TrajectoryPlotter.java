@@ -68,10 +68,41 @@ public class TrajectoryPlotter {
      * EXAMPLE:
      *   List<Double> sortedness = analyzer.computeSortednessTrajectory(probe, INCREASING);
      *   PlotData plotData = plotter.generatePlotData("Sortedness Value", sortedness);
+     * 
+     * IMPLEMENTATION NOTES:
+     *   This is the MAIN ENTRY POINT for plot data generation. It orchestrates the
+     *   complete workflow of converting trajectory data to plot-ready format by:
+     *   - Validating inputs
+     *   - Generating x-values via generateStepNumbers() (to be implemented)
+     *   - Converting list to array via convertToArray() (to be implemented)
+     *   - Computing statistics via computeStatistics() (to be implemented)
+     *   - Creating the immutable PlotData object
+     *   
+     *   This method coordinates all the unimplemented helper methods to produce
+     *   the final plot-ready data structure.
      */
     public PlotData generatePlotData(String metricName, List<Double> trajectory) {
-        // UNIMPLEMENTED: Plot data generation logic goes here
-        return null;
+        // Step 1: Validate metricName
+        if (metricName == null || metricName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Metric name cannot be null or empty");
+        }
+        
+        // Step 2: Validate trajectory
+        if (trajectory == null || trajectory.isEmpty()) {
+            throw new IllegalArgumentException("Trajectory cannot be null or empty");
+        }
+        
+        // Step 3: Generate x-values (step numbers)
+        double[] xValues = generateStepNumbers(trajectory.size());
+        
+        // Step 4: Convert trajectory to y-values array
+        double[] yValues = convertToArray(trajectory);
+        
+        // Step 5: Compute metadata statistics
+        Map<String, Double> metadata = computeStatistics(trajectory);
+        
+        // Step 6: Create and return PlotData
+        return new PlotData(metricName, xValues, yValues, metadata);
     }
     
     /**

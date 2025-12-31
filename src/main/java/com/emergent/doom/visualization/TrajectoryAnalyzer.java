@@ -70,10 +70,46 @@ public class TrajectoryAnalyzer<T extends Cell<T>> {
      *   - Uses existing SortednessValue metric for consistency
      *   - Returns list (not array) for easier manipulation and export
      *   - Each index corresponds to the step number for direct plotting
+     * 
+     * IMPLEMENTATION NOTES:
+     *   This is the MAIN ENTRY POINT for trajectory analysis. It orchestrates the
+     *   complete workflow of extracting snapshots and computing metrics. This method
+     *   satisfies the role of the program's primary analysis function by:
+     *   - Validating input data via isProbeValid() (to be implemented)
+     *   - Creating appropriate metric instances
+     *   - Delegating metric computation to existing SortednessValue class
+     *   - Building and returning the trajectory list
+     *   
+     *   Other unimplemented trajectory methods follow this same pattern.
      */
     public List<Double> computeSortednessTrajectory(Probe<T> probe, SortDirection direction) {
-        // UNIMPLEMENTED: Trajectory computation logic goes here
-        return null;
+        // Step 1: Validate inputs
+        if (probe == null) {
+            throw new IllegalArgumentException("Probe cannot be null");
+        }
+        if (probe.getSnapshotCount() == 0) {
+            throw new IllegalArgumentException("Probe contains no snapshots");
+        }
+        if (direction == null) {
+            direction = SortDirection.INCREASING; // Default direction
+        }
+        
+        // Step 2: Create metric instance with specified direction
+        SortednessValue<T> metric = new SortednessValue<>(direction);
+        
+        // Step 3: Build trajectory by computing metric at each snapshot
+        java.util.ArrayList<Double> trajectory = new java.util.ArrayList<>();
+        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
+        
+        // Step 4: Iterate through snapshots and compute sortedness
+        for (StepSnapshot<T> snapshot : snapshots) {
+            T[] cellStates = snapshot.getCellStates();
+            double sortedness = metric.compute(cellStates);
+            trajectory.add(sortedness);
+        }
+        
+        // Step 5: Return complete trajectory
+        return trajectory;
     }
     
     /**
