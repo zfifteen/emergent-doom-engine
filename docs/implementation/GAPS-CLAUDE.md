@@ -23,15 +23,15 @@ This document catalogs deviations between the Java implementation and the method
 
 | Category | MISSING | STUB | PARTIAL | DEVIATION | Total |
 |----------|---------|------|---------|-----------|-------|
-| Metrics | 0 | 1 | 0 | 0 | 1 |
-| Chimeric Populations | 2 | 2 | 0 | 0 | 4 |
+| Metrics | 0 | 0 | 0 | 0 | 0 | *(AlgotypeAggregationIndex added)*
+| Chimeric Populations | 2 | 0 | 0 | 0 | 2 | *(ChimericPopulation implemented)*
 | Concurrency Model | 0 | 0 | 0 | 0 | 0 | *(implemented in PR #2)*
 | Traditional Algorithms | 2 | 0 | 0 | 0 | 2 |
 | Trajectory Analysis | 0 | 0 | 0 | 0 | 0 |
 | Statistical Analysis | 2 | 0 | 1 | 0 | 3 |
 | Algorithm Specifics | 0 | 0 | 0 | 1 | 1 |
 | Visualization/Output | 3 | 0 | 0 | 0 | 3 |
-| **TOTAL** | **9** | **3** | **1** | **1** | **14** |
+| **TOTAL** | **7** | **0** | **1** | **1** | **9** |
 
 ---
 
@@ -74,34 +74,34 @@ DG = ΔS_increasing / ΔS_decreasing
 
 ---
 
-### 1.3 Aggregation Value [STUB]
+### 1.3 Aggregation Value [IMPLEMENTED ✓]
 
 **Paper Definition (p.8-9):**
 > "In sorting experiments with mixed Algotypes, we measured the extent to which cells of the same Algotype aggregated together (spatially) within the array. We defined Aggregation Value as the percentage of cells with directly adjacent neighboring cells that were all the same Algotype."
 
-**Implementation Status:** Returns `0.0` unconditionally.
+**Implementation Status:** Implemented as `AlgotypeAggregationIndex` metric.
 
-**Code Location:** `src/main/java/com/emergent/doom/metrics/AggregationValue.java:48`
-```java
-@Override
-public double compute(T[] cells) {
-    // Implementation will go here
-    return 0.0;  // <-- STUB
-}
-```
+**Code Location:** `src/main/java/com/emergent/doom/metrics/AlgotypeAggregationIndex.java`
 
-**Recommendation:** Implement as:
+**Implementation:**
 ```java
-int matchingNeighbors = 0;
-int totalNeighborPairs = 0;
-for (int i = 0; i < cells.length - 1; i++) {
+int matchingPairs = 0;
+int totalPairs = cells.length - 1;
+for (int i = 0; i < totalPairs; i++) {
     if (cells[i].getAlgotype() == cells[i + 1].getAlgotype()) {
-        matchingNeighbors++;
+        matchingPairs++;
     }
-    totalNeighborPairs++;
 }
-return (double) matchingNeighbors / totalNeighborPairs;
+return (matchingPairs * 100.0) / totalPairs;
 ```
+
+**Verification:** Comprehensive test suite (`AlgotypeAggregationIndexTest.java`) validates:
+- Homogeneous arrays return 100%
+- Alternating arrays return 0%
+- Random 50/50 mix averages ~50% (baseline per paper)
+- Clustered arrays return expected intermediate values
+
+**Note:** The original `AggregationValue.java` (generic extractor-based) remains for domain-specific aggregation (e.g., summing remainder values). Use `AlgotypeAggregationIndex` for chimeric population clustering experiments per the paper.
 
 ---
 
@@ -120,34 +120,40 @@ return (double) matchingNeighbors / totalNeighborPairs;
 
 ## Category 2: Chimeric Population Support
 
-### 2.1 Population Creation [STUB]
+### 2.1 Population Creation [IMPLEMENTED ✓]
 
 **Paper Context (p.11-12):**
 > "At the beginning of these experiments, we randomly assigned one of the three different Algotypes to each of the cells, and began the sort as previously, allowing all the cells to move based on their Algotype."
 
-**Implementation Status:** Returns `null`.
+**Implementation Status:** Fully implemented with support for percentage-based algotype distribution.
 
-**Code Location:** `src/main/java/com/emergent/doom/chimeric/ChimericPopulation.java:51-54`
+**Implementation Files:**
+- `src/main/java/com/emergent/doom/chimeric/ChimericPopulation.java` - Population manager
+- `src/main/java/com/emergent/doom/chimeric/PercentageAlgotypeProvider.java` - Percentage-based distribution
+- `src/main/java/com/emergent/doom/chimeric/GenericCellFactory.java` - Cell creation with shuffled values
+- `src/main/java/com/emergent/doom/cell/GenericCell.java` - Multi-algotype cell implementation
+
+**Usage:**
 ```java
-public T[] createPopulation(int size, Class<T> cellClass) {
-    // Implementation will go here
-    return null;  // <-- STUB
-}
+Map<Algotype, Double> mix = Map.of(Algotype.BUBBLE, 0.5, Algotype.SELECTION, 0.5);
+PercentageAlgotypeProvider provider = new PercentageAlgotypeProvider(mix, size, seed);
+GenericCellFactory factory = GenericCellFactory.shuffled(size, seed);
+ChimericPopulation<GenericCell> population = new ChimericPopulation<>(factory, provider);
+GenericCell[] cells = population.createPopulation(size, GenericCell.class);
 ```
-
-**Recommendation:** Implement using provided `CellFactory<T>` and `AlgotypeProvider` interfaces.
 
 ---
 
-### 2.2 Algotype Counting [STUB]
+### 2.2 Algotype Counting [IMPLEMENTED ✓]
 
-**Implementation Status:** Returns `0`.
+**Implementation Status:** Fully implemented with both enum and string-based counting.
 
-**Code Location:** `src/main/java/com/emergent/doom/chimeric/ChimericPopulation.java:69-72`
+**Code Location:** `src/main/java/com/emergent/doom/chimeric/ChimericPopulation.java:82-122`
+
+**Usage:**
 ```java
-public int countAlgotype(T[] cells, String algotype) {
-    // Implementation will go here
-    return 0;  // <-- STUB
+int bubbleCount = population.countAlgotype(cells, Algotype.BUBBLE);
+int selectionCount = population.countAlgotype(cells, "SELECTION");  // case-insensitive
 }
 ```
 
@@ -458,9 +464,11 @@ After implementing fixes, verify against paper:
 - [ ] Frozen cells: MOVABLE vs IMMOVABLE behavior
 - [x] Monotonicity Error: inversion count matches paper formula
 - [x] Sortedness Value: percentage calculation correct
-- [ ] Aggregation Value: neighbor-matching percentage
+- [x] Aggregation Value: neighbor-matching percentage (AlgotypeAggregationIndex)
 - [x] Delayed Gratification: trajectory-based calculation (DelayedGratificationCalculator)
 - [x] Trajectory Analysis: all methods implemented (computeMetricTrajectory, extractSwapCounts, findConvergenceStep, visualizeTrajectory, getTotalExecutionTime)
+- [x] Chimeric Population: createPopulation, countAlgotype, GenericCell
+- [x] Chimeric Experiment: ChimericClusteringExperiment with trajectory export
 
 ---
 
