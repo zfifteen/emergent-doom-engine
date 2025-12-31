@@ -242,6 +242,40 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     }
 
     /**
+     * Helper: Get ideal position from a SELECTION cell (supports both SelectionCell and GenericCell)
+     */
+    private int getIdealPosition(T cell) {
+        if (cell instanceof SelectionCell) {
+            return ((SelectionCell<?>) cell).getIdealPos();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            return ((com.emergent.doom.cell.GenericCell) cell).getIdealPos();
+        }
+        return 0;  // Default for other cell types
+    }
+
+    /**
+     * Helper: Increment ideal position for a SELECTION cell (supports both SelectionCell and GenericCell)
+     */
+    private void incrementIdealPosition(T cell) {
+        if (cell instanceof SelectionCell) {
+            ((SelectionCell<?>) cell).incrementIdealPos();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            ((com.emergent.doom.cell.GenericCell) cell).incrementIdealPos();
+        }
+    }
+
+    /**
+     * Helper: Set ideal position for a SELECTION cell (supports both SelectionCell and GenericCell)
+     */
+    private void setIdealPosition(T cell, int newIdealPos) {
+        if (cell instanceof SelectionCell) {
+            ((SelectionCell<?>) cell).setIdealPos(newIdealPos);
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            ((com.emergent.doom.cell.GenericCell) cell).setIdealPos(newIdealPos);
+        }
+    }
+
+    /**
      * Get neighbors for a cell based on its algotype.
      */
     private List<Integer> getNeighborsForAlgotype(int i, Algotype algotype, T[] cellArray) {
@@ -251,12 +285,9 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             case INSERTION:
                 return insertionTopology.getNeighbors(i, cellArray.length, algotype);
             case SELECTION:
-                if (cellArray[i] instanceof SelectionCell) {
-                    SelectionCell<?> selCell = (SelectionCell<?>) cellArray[i];
-                    int target = Math.min(selCell.getIdealPos(), cellArray.length - 1);
-                    return Arrays.asList(target);
-                }
-                return Arrays.asList();
+                int idealPos = getIdealPosition(cellArray[i]);
+                int target = Math.min(idealPos, cellArray.length - 1);
+                return Arrays.asList(target);
             default:
                 throw new IllegalStateException("Unknown algotype: " + algotype);
         }
@@ -288,12 +319,10 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
                 if (cellArray[i].compareTo(cellArray[j]) < 0) {
                     return true;
                 } else {
-                    // Swap denied: increment ideal position
-                    if (cellArray[i] instanceof SelectionCell) {
-                        SelectionCell<?> selCell = (SelectionCell<?>) cellArray[i];
-                        if (selCell.getIdealPos() < cellArray.length - 1) {
-                            selCell.incrementIdealPos();
-                        }
+                    // Swap denied: increment ideal position if not at end
+                    int currentIdealPos = getIdealPosition(cellArray[i]);
+                    if (currentIdealPos < cellArray.length - 1) {
+                        incrementIdealPosition(cellArray[i]);
                     }
                     return false;
                 }
@@ -397,8 +426,8 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
 
         // Reset SelectionCell ideal positions
         for (T cell : cells) {
-            if (cell instanceof SelectionCell) {
-                ((SelectionCell<?>) cell).setIdealPos(0);
+            if (cell.getAlgotype() == Algotype.SELECTION) {
+                setIdealPosition(cell, 0);
             }
         }
 
