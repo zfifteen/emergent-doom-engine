@@ -22,6 +22,43 @@ import static org.junit.jupiter.api.Assertions.*;
 class ChimericPopulationTest {
 
     // ========================================================================
+    // HasIdealPosition Tests (for SELECTION no-op fix)
+    // ========================================================================
+    @Nested
+    @DisplayName("HasIdealPosition interface")
+    class HasIdealPositionTests {
+
+        @Test
+        @DisplayName("GenericCell implements HasIdealPosition for SELECTION")
+        void genericCellImplementsForSelection() {
+            // TODO: Phase Three - Create GenericCell with SELECTION, verify getIdealPos() == 0, increment works, etc.
+            // Assert no exception for supported type
+            // For non-SELECTION, optional: no-op or ignore if algotype check added
+        }
+
+        @Test
+        @DisplayName("SelectionCell implements HasIdealPosition")
+        void selectionCellImplements() {
+            // TODO: Phase Three - Create SelectionCell instance, verify methods work as before
+            // Ensure thread-safety with AtomicInteger
+        }
+
+        @Test
+        @DisplayName("ExecutionEngine throws for unsupported cell in SELECTION helpers")
+        void engineThrowsForUnsupportedCell() {
+            // TODO: Phase Three - Mock cell without HasIdealPosition, call getIdealPosition, assert UnsupportedOperationException
+            // Message: "Cell type X does not support idealPos for SELECTION"
+        }
+
+        @Test
+        @DisplayName("No silent no-op in incrementIdealPosition for non-SELECTION GenericCell")
+        void noSilentNoOpInHelpers() {
+            // TODO: Phase Three - GenericCell with BUBBLE, attempt incrementIdealPosition via engine, assert exception thrown
+            // Prevents undetected failures in mixed populations
+        }
+    }
+
+    // ========================================================================
     // Population Creation Tests
     // ========================================================================
 

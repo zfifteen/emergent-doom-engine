@@ -19,7 +19,7 @@ import com.emergent.doom.cell.Cell;
  *
  * <p>Examples (B=Bubble, S=Selection):
  * <ul>
- *   <li>[B, B, B, S, S, S] → 66.7% (4/5 pairs match: BB, BB, BS, SS, SS)</li>
+    *   <li>[B, B, B, S, S, S] → 80.0% (4/5 pairs match: BB, BB, BS, SS, SS)</li>  // TODO: Phase Three - Corrected from 66.7%
  *   <li>[B, S, B, S, B, S] → 0% (0/5 pairs match: alternating)</li>
  *   <li>[B, B, B, B, B, B] → 100% (5/5 pairs match: homogeneous)</li>
  *   <li>[B, S, S, S, B, B] → 60% (3/5 pairs match)</li>

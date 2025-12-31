@@ -251,12 +251,11 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             case INSERTION:
                 return insertionTopology.getNeighbors(i, cellArray.length, algotype);
             case SELECTION:
-                if (cellArray[i] instanceof SelectionCell) {
-                    SelectionCell<?> selCell = (SelectionCell<?>) cellArray[i];
-                    int target = Math.min(selCell.getIdealPos(), cellArray.length - 1);
-                    return Arrays.asList(target);
-                }
-                return Arrays.asList();
+                // TODO: Phase Two - Use HasIdealPosition
+                // if (!(cellArray[i] instanceof HasIdealPosition)) return emptyList or throw;
+                // int target = Math.min(getIdealPosition(cellArray[i]), cellArray.length - 1);
+                // return Arrays.asList(target);
+                throw new UnsupportedOperationException("Scaffold: Implement SELECTION neighbors using HasIdealPosition");
             default:
                 throw new IllegalStateException("Unknown algotype: " + algotype);
         }
@@ -282,19 +281,17 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
                 return false;
 
             case SELECTION:
+                // TODO: Phase Two - Use HasIdealPosition
                 if (i == j) {
                     return false;
                 }
                 if (cellArray[i].compareTo(cellArray[j]) < 0) {
                     return true;
                 } else {
-                    // Swap denied: increment ideal position
-                    if (cellArray[i] instanceof SelectionCell) {
-                        SelectionCell<?> selCell = (SelectionCell<?>) cellArray[i];
-                        if (selCell.getIdealPos() < cellArray.length - 1) {
-                            selCell.incrementIdealPos();
-                        }
-                    }
+                    // Denied: Increment using interface
+                    // if (!(cellArray[i] instanceof HasIdealPosition)) throw ...;
+                    // HasIdealPosition sel = (HasIdealPosition) cellArray[i];
+                    // if (getIdealPosition(cellArray[i]) < cellArray.length - 1) incrementIdealPosition(cellArray[i]);
                     return false;
                 }
 
@@ -380,6 +377,25 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     /**
      * Reset execution state to initial conditions.
      */
+    // Helper methods for HasIdealPosition (scaffold; implement in phase two)
+    private int getIdealPosition(T cell) {
+        // TODO: Phase Two - if (cell instanceof HasIdealPosition) return ((HasIdealPosition) cell).getIdealPos();
+        // else throw new UnsupportedOperationException("Cell " + cell.getClass() + " does not support idealPos for SELECTION");
+        throw new UnsupportedOperationException("Scaffold: Implement getIdealPosition using HasIdealPosition");
+    }
+
+    private void incrementIdealPosition(T cell) {
+        // TODO: Phase Two - if (cell instanceof HasIdealPosition) ((HasIdealPosition) cell).incrementIdealPos();
+        // else throw new UnsupportedOperationException(...);
+        throw new UnsupportedOperationException("Scaffold: Implement incrementIdealPosition using HasIdealPosition");
+    }
+
+    private void setIdealPosition(T cell, int pos) {
+        // TODO: Phase Two - if (cell instanceof HasIdealPosition) ((HasIdealPosition) cell).setIdealPos(pos);
+        // else throw new UnsupportedOperationException(...);
+        throw new UnsupportedOperationException("Scaffold: Implement setIdealPosition using HasIdealPosition");
+    }
+
     public void reset() {
         if (running) {
             shutdown();
@@ -395,12 +411,41 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
         insertionTopology.reset();
         convergenceDetector.reset();
 
-        // Reset SelectionCell ideal positions
-        for (T cell : cells) {
-            if (cell instanceof SelectionCell) {
-                ((SelectionCell<?>) cell).setIdealPos(0);
-            }
+        // TODO: Phase Two - Reset using HasIdealPosition
+        // for (T cell : cells) {
+        //     if (cell.getAlgotype() == Algotype.SELECTION && cell instanceof HasIdealPosition) {
+        //         setIdealPosition(cell, 0);
+        //     }
+        // }
+
+        // Recreate cell workers (threads are single-use)
+        CellEvaluator<T> evaluator = this::evaluateCell;
+        for (int i = 0; i < cells.length; i++) {
+            cellWorkers[i] = new CellThread<>(i, cells, barrier, swapCollector, evaluator);
+            cellThreads[i] = new Thread(cellWorkers[i], "Cell-" + i);
+            cellThreads[i].setDaemon(true);
         }
+
+        probe.recordSnapshot(0, cells, 0);
+    }
+}
+
+        currentStep = 0;
+        converged = false;
+        running = false;
+        probe.clear();
+        swapEngine.resetSwapCount();
+        swapCollector.clear();
+        bubbleTopology.reset();
+        insertionTopology.reset();
+        convergenceDetector.reset();
+
+        // TODO: Phase Two - Reset using HasIdealPosition
+        // for (T cell : cells) {
+        //     if (cell.getAlgotype() == Algotype.SELECTION && cell instanceof HasIdealPosition) {
+        //         setIdealPosition(cell, 0);
+        //     }
+        // }
 
         // Recreate cell workers (threads are single-use)
         CellEvaluator<T> evaluator = this::evaluateCell;

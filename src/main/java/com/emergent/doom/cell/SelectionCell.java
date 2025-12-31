@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * DEPENDENCIES: Cell interface; internal idealPos state and accessors.
  * TEMPLATE_END
  */
-public abstract class SelectionCell<T extends SelectionCell<T>> implements Cell<T> {
+public abstract class SelectionCell<T extends SelectionCell<T>> implements Cell<T>, HasIdealPosition {
     protected final int value;
     private final AtomicInteger idealPos;  // Thread-safe: starts at 0, increments on swap denial per Levin p.9
 
@@ -73,4 +73,6 @@ public abstract class SelectionCell<T extends SelectionCell<T>> implements Cell<
 
     @Override
     public abstract int compareTo(T other);
-}
+
+    // HasIdealPosition already implemented via existing methods; no additional stubs needed
+    // Existing: getIdealPos(), incrementIdealPos(), setIdealPos(), compareAndSetIdealPos()

@@ -25,10 +25,11 @@ package com.emergent.doom.cell;
  * }
  * }</pre></p>
  */
-public class GenericCell implements Cell<GenericCell> {
+public class GenericCell implements Cell<GenericCell>, HasIdealPosition {
 
     private final int value;
     private final Algotype algotype;
+    private final AtomicInteger idealPos = new AtomicInteger(0);  // For SELECTION compatibility; initialized to 0 per Levin
 
     /**
      * Create a GenericCell with the specified value and algotype.
@@ -43,6 +44,7 @@ public class GenericCell implements Cell<GenericCell> {
         }
         this.value = value;
         this.algotype = algotype;
+        // idealPos remains 0 for non-SELECTION; will be used only if algotype == SELECTION
     }
 
     /**
@@ -68,6 +70,31 @@ public class GenericCell implements Cell<GenericCell> {
     @Override
     public int compareTo(GenericCell other) {
         return Integer.compare(this.value, other.value);
+    }
+
+    // HasIdealPosition implementations (stubbed for scaffold; logic in phase two)
+    @Override
+    public int getIdealPos() {
+        // TODO: Phase Two - Return idealPos.get(); only used if getAlgotype() == SELECTION
+        throw new UnsupportedOperationException("Implement getIdealPos for HasIdealPosition");
+    }
+
+    @Override
+    public void setIdealPos(int newIdealPos) {
+        // TODO: Phase Two - idealPos.set(newIdealPos); validate if SELECTION
+        throw new UnsupportedOperationException("Implement setIdealPos for HasIdealPosition");
+    }
+
+    @Override
+    public int incrementIdealPos() {
+        // TODO: Phase Two - Return idealPos.incrementAndGet(); only if SELECTION and not at end
+        throw new UnsupportedOperationException("Implement incrementIdealPos for HasIdealPosition");
+    }
+
+    @Override
+    public boolean compareAndSetIdealPos(int expected, int newValue) {
+        // TODO: Phase Two - Return idealPos.compareAndSet(expected, newValue);
+        throw new UnsupportedOperationException("Implement compareAndSetIdealPos for HasIdealPosition");
     }
 
     @Override
