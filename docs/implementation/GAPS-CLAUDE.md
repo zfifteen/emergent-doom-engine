@@ -22,22 +22,22 @@
 
 | Category | MISSING | PARTIAL | DEVIATION | IMPLEMENTED | Total Gaps |
 |----------|---------|---------|-----------|-------------|------------|
-| Threading Model | 0 | 0 | 1 | 0 | 1 |
-| Cell Algorithms | 0 | 1 | 1 | 1 | 2 |
+| Threading Model | 0 | 0 | 0 | 1 | 0 |
+| Cell Algorithms | 0 | 1 | 0 | 2 | 1 |
 | CellGroup System | 4 | 0 | 0 | 0 | 4 |
-| Frozen Cells | 0 | 1 | 1 | 0 | 2 |
+| Frozen Cells | 0 | 1 | 0 | 1 | 1 |
 | Metrics/Probe | 0 | 1 | 0 | 4 | 1 |
 | Chimeric Features | 1 | 0 | 0 | 1 | 1 |
 | Statistical Analysis | 2 | 0 | 0 | 0 | 2 |
 | Traditional Algorithms | 2 | 0 | 0 | 0 | 2 |
 | Visualization | 3 | 0 | 0 | 0 | 3 |
-| **TOTAL** | **12** | **3** | **3** | **6** | **18** |
+| **TOTAL** | **12** | **3** | **0** | **9** | **15** |
 
 ---
 
 ## Category 1: Threading Model
 
-### 1.1 Synchronization Mechanism [DEVIATION]
+### 1.1 Synchronization Mechanism [IMPLEMENTED ✓]
 
 **cell_research behavior** (`MultiThreadCell.py:58-74`):
 ```python
@@ -50,29 +50,32 @@ def move(self):
 - Each cell: acquire → evaluate → swap → release
 - No explicit phase synchronization
 
-**EDE implementation** (`ParallelExecutionEngine.java:50-175`):
+**EDE implementation** (`LockBasedExecutionEngine.java`):
 ```java
-// Uses CyclicBarrier with N+1 parties
-this.barrier = new CyclicBarrier(cells.length + 1);
+// Uses single ReentrantLock matching Python behavior
+private final ReentrantLock globalLock = new ReentrantLock();
 
-public int step() {
-    barrier.await();  // Release cells to evaluate
-    barrier.await();  // Wait for all cells
-    // Resolve conflicts
-    // Execute swaps
-    barrier.await();  // Release for next step
+// In CellThread.run():
+while (running) {
+    globalLock.lock();
+    try {
+        evaluateAndSwapIfNeeded();
+    } finally {
+        globalLock.unlock();
+    }
 }
 ```
 
-**Impact**: EDE has stricter synchronization (all cells complete evaluation before any swaps occur). cell_research allows cells to swap asynchronously as they acquire the lock.
-
-**Recommendation**: Consider adding a `ExecutionMode.LOCK_BASED` option that uses ReentrantLock instead of CyclicBarrier to match cell_research exactly.
+**Status**: IMPLEMENTED via `ExecutionMode.LOCK_BASED` option. The `LockBasedExecutionEngine` uses
+a single `ReentrantLock` exactly matching the Python cell_research threading model. The existing
+`ParallelExecutionEngine` with `CyclicBarrier` remains available as `ExecutionMode.PARALLEL` for
+deterministic parallel execution.
 
 ---
 
 ## Category 2: Cell Algorithms
 
-### 2.1 BubbleSortCell Direction Selection [DEVIATION]
+### 2.1 BubbleSortCell Direction Selection [IMPLEMENTED ✓]
 
 **cell_research behavior** (`BubbleSortCell.py:66-72`):
 ```python
@@ -85,21 +88,24 @@ else:
 ```
 Each iteration, cell randomly picks ONE direction (50% chance).
 
-**EDE implementation** (`ExecutionEngine.java:162-171`):
+**EDE implementation** (`ExecutionEngine.java:99-124`):
 ```java
-case BUBBLE:
-    // Checks BOTH directions
-    if (j == i - 1 && cells[i].compareTo(cells[j]) < 0) {
-        return true;  // left
-    } else if (j == i + 1 && cells[i].compareTo(cells[j]) > 0) {
-        return true;  // right
+if (algotype == Algotype.BUBBLE) {
+    // Random 50/50 direction choice - matches cell_research Python behavior
+    List<Integer> allNeighbors = getNeighborsForAlgotype(i, algotype);
+    if (!allNeighbors.isEmpty()) {
+        // Pick ONE random neighbor (50% left, 50% right if both exist)
+        int randomIndex = random.nextInt(allNeighbors.size());
+        int j = allNeighbors.get(randomIndex);
+        if (shouldSwapForAlgotype(i, j, algotype)) {
+            swapEngine.attemptSwap(cells, i, j);
+        }
     }
+}
 ```
-EDE checks both neighbors and may swap with either.
 
-**Impact**: Different swap patterns and potentially different convergence behavior.
-
-**Fix Required**: Add randomization to BubbleTopology or ExecutionEngine to match cell_research.
+**Status**: IMPLEMENTED. Each BUBBLE cell now randomly picks ONE direction per iteration (50/50 when
+both neighbors exist), exactly matching the Python cell_research behavior.
 
 ---
 
@@ -236,7 +242,7 @@ def is_group_sorted(self):
 
 ## Category 4: Frozen Cells
 
-### 4.1 Frozen Cell Semantics [DEVIATION]
+### 4.1 Frozen Cell Semantics [IMPLEMENTED ✓]
 
 **cell_research** (`MultiThreadCell.py:7-14, 71-78`):
 ```python
@@ -251,24 +257,30 @@ def swap(self, target_position):
     # But frozen cells CAN BE MOVED by active cells
 ```
 
-**EDE** (`FrozenCellStatus.java:30-39`):
+**EDE** (`FrozenCellStatus.java:30-39, 78-96`):
 ```java
 public enum FrozenType {
     NONE,      // Fully mobile
-    MOVABLE,   // Can move, cannot be displaced
+    MOVABLE,   // Cannot initiate, CAN be displaced (matches Python FREEZE)
     IMMOVABLE  // Cannot participate in swaps
+}
+
+public boolean canMove(int position) {
+    return getFrozen(position) == FrozenType.NONE;  // Only NONE can initiate
+}
+
+public boolean canBeDisplaced(int position) {
+    FrozenType type = getFrozen(position);
+    return type == FrozenType.NONE || type == FrozenType.MOVABLE;
 }
 ```
 
-**Differences**:
-| Aspect | cell_research FREEZE | EDE MOVABLE | EDE IMMOVABLE |
-|--------|---------------------|-------------|---------------|
-| Can initiate swap | No | Yes | No |
-| Can be moved by others | Yes | No | No |
+**Status**: IMPLEMENTED. The semantics now match cell_research exactly:
 
-**Impact**: EDE's MOVABLE is opposite of cell_research FREEZE semantics.
-
-**Recommendation**: Align EDE FREEZE = cannot initiate but CAN be moved.
+| Aspect | cell_research FREEZE | EDE MOVABLE |
+|--------|---------------------|-------------|
+| Can initiate swap | No | No ✓ |
+| Can be moved by others | Yes | Yes ✓ |
 
 ---
 
@@ -465,13 +477,13 @@ class StatusProbe:
 After implementing fixes, verify against cell_research:
 
 ### Algorithms
-- [ ] Bubble: Random 50% left/right direction choice
+- [x] Bubble: Random 50% left/right direction choice ✓ (ExecutionEngine.java)
 - [ ] Selection: idealPos starts at left_boundary, resets on merge
 - [ ] Insertion: isLeftSorted skips FREEZE cells
 
 ### Threading
-- [ ] Optional lock-based mode matching cell_research
-- [ ] Barrier mode for deterministic parallel execution
+- [x] Optional lock-based mode matching cell_research ✓ (LockBasedExecutionEngine.java)
+- [x] Barrier mode for deterministic parallel execution ✓ (ParallelExecutionEngine.java)
 
 ### CellGroup
 - [ ] GroupStatus enum (ACTIVE, MERGING, SLEEP, MERGED)
@@ -480,7 +492,7 @@ After implementing fixes, verify against cell_research:
 - [ ] Cell boundary updates on merge
 
 ### Frozen Cells
-- [ ] FREEZE = cannot initiate, CAN be moved
+- [x] FREEZE = cannot initiate, CAN be moved ✓ (FrozenCellStatus.java)
 - [ ] frozen_swap_attempts counter
 - [ ] tried_to_swap_with_frozen flag per cell
 
