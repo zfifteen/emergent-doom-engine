@@ -186,21 +186,18 @@ public class CellGroup<T extends Cell<T> & GroupAwareCell<T>> extends Thread {
     }
     
     public void putCellsToSleep() {
-        // PURPOSE: Set all active cells to SLEEP status
-        // INPUTS: None (uses cellsInGroup)
-        // PROCESS:
-        //   1. Iterate through cellsInGroup
-        //   2. For each cell:
-        //      a. Get current status
-        //      b. If status != MOVING and status != INACTIVE:
-        //         - Set cell.setStatus(SLEEP)
-        //   3. Skip cells that are MOVING (animating) or INACTIVE (terminated)
-        // OUTPUTS: None (mutates cell statuses)
-        // DEPENDENCIES: cell.getStatus(), cell.setStatus()
-        // SIDE EFFECTS: Cells cannot evaluate/swap until awakened
-        // NOTE: Preserves MOVING and INACTIVE states
+        // Set all active cells to SLEEP status
+        // Preserves MOVING and INACTIVE states
+        // Matches cell_research CellGroup.py:93-95
         
-        throw new UnsupportedOperationException("SCAFFOLD: putCellsToSleep() not yet implemented");
+        for (T cell : cellsInGroup) {
+            CellStatus cellStatus = cell.getStatus();
+            
+            // Don't interrupt MOVING (animation) or INACTIVE (terminated) cells
+            if (cellStatus != CellStatus.MOVING && cellStatus != CellStatus.INACTIVE) {
+                cell.setStatus(CellStatus.SLEEP);
+            }
+        }
     }
     
     public void awakeCells() {
