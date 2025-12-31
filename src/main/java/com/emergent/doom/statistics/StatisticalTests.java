@@ -294,13 +294,40 @@ public class StatisticalTests {
      * @throws IllegalArgumentException if sample is null, empty, or has fewer than 2 values
      */
     public static double tTestOneSample(List<Double> sample, double populationMean) {
-        // TODO: Implementation in Phase 3, Iteration 4
+        // IMPLEMENTED in Phase 3, Iteration 4
+        // This method performs a one-sample t-test to determine if a sample mean
+        // differs significantly from a hypothesized population mean.
+        //
+        // Uses Apache Commons Math TTest for robust implementation with proper
+        // handling of the t-distribution and degrees of freedom.
+        
         // 1. Validate sample: check not null, size >= 2
+        if (sample == null) {
+            throw new IllegalArgumentException("Sample list cannot be null");
+        }
+        if (sample.size() < 2) {
+            throw new IllegalArgumentException("Sample must contain at least 2 values, got: " + sample.size());
+        }
+        
         // 2. Convert List<Double> to double[] array
+        // Apache Commons Math TTest requires primitive double array
+        double[] sampleArray = new double[sample.size()];
+        for (int i = 0; i < sample.size(); i++) {
+            if (sample.get(i) == null) {
+                throw new IllegalArgumentException("Sample cannot contain null values");
+            }
+            sampleArray[i] = sample.get(i);
+        }
+        
         // 3. Create TTest instance
+        TTest tTest = new TTest();
+        
         // 4. Call tTest.tTest(populationMean, sampleArray)
+        // This performs a two-tailed t-test and returns the p-value
+        double pValue = tTest.tTest(populationMean, sampleArray);
+        
         // 5. Return p-value
-        throw new UnsupportedOperationException("Not implemented yet");
+        return pValue;
     }
     
     /**
