@@ -82,14 +82,57 @@ public final class MultiSeriesPlotData {
      *   - Immutability ensures thread-safety for concurrent analysis
      *   - Validation ensures data consistency across all series
      *   - sharedXAxis flag enables efficient storage when appropriate
+     * 
+     * IMPLEMENTATION:
+     *   This section constructs an immutable, validated MultiSeriesPlotData object.
+     *   It integrates with the plotting system by enforcing strict validation and
+     *   creating defensive copies to ensure immutability.
      */
     public MultiSeriesPlotData(List<String> seriesNames, List<PlotData> seriesData,
                                boolean sharedXAxis, Map<String, String> plotMetadata) {
-        // UNIMPLEMENTED: Validation and defensive copying logic goes here
-        this.seriesNames = null;
-        this.seriesData = null;
-        this.sharedXAxis = false;
-        this.plotMetadata = null;
+        // Validate inputs
+        if (seriesNames == null || seriesData == null) {
+            throw new IllegalArgumentException("Series names and data cannot be null");
+        }
+        
+        if (seriesNames.size() != seriesData.size()) {
+            throw new IllegalArgumentException(
+                "Series names and data must have same size. Got: " + 
+                seriesNames.size() + " names vs " + seriesData.size() + " data");
+        }
+        
+        if (seriesNames.isEmpty()) {
+            throw new IllegalArgumentException("Must have at least one series");
+        }
+        
+        // Validate sharedXAxis if claimed
+        if (sharedXAxis && seriesData.size() > 1) {
+            double[] firstXValues = seriesData.get(0).getXValues();
+            
+            for (int i = 1; i < seriesData.size(); i++) {
+                double[] xValues = seriesData.get(i).getXValues();
+                
+                if (!java.util.Arrays.equals(firstXValues, xValues)) {
+                    throw new IllegalArgumentException(
+                        "sharedXAxis is true but series have different x-values");
+                }
+            }
+        }
+        
+        // Store fields with defensive copies
+        this.seriesNames = java.util.Collections.unmodifiableList(
+            new java.util.ArrayList<>(seriesNames));
+        this.seriesData = java.util.Collections.unmodifiableList(
+            new java.util.ArrayList<>(seriesData));
+        this.sharedXAxis = sharedXAxis;
+        
+        // Create defensive copy of metadata if provided
+        if (plotMetadata != null) {
+            this.plotMetadata = java.util.Collections.unmodifiableMap(
+                new java.util.HashMap<>(plotMetadata));
+        } else {
+            this.plotMetadata = null;
+        }
     }
     
     /**
@@ -100,10 +143,12 @@ public final class MultiSeriesPlotData {
      * DESIGN RATIONALE:
      *   - Returns unmodifiable view to preserve immutability
      *   - Prevents external modification while allowing iteration
+     * 
+     * IMPLEMENTATION:
+     *   Returns the unmodifiable list created during construction.
      */
     public List<String> getSeriesNames() {
-        // UNIMPLEMENTED: Unmodifiable list logic goes here
-        return null;
+        return seriesNames;
     }
     
     /**
@@ -114,10 +159,12 @@ public final class MultiSeriesPlotData {
      * DESIGN RATIONALE:
      *   - Returns unmodifiable view to preserve immutability
      *   - Each PlotData is itself immutable, ensuring deep immutability
+     * 
+     * IMPLEMENTATION:
+     *   Returns the unmodifiable list created during construction.
      */
     public List<PlotData> getSeriesData() {
-        // UNIMPLEMENTED: Unmodifiable list logic goes here
-        return null;
+        return seriesData;
     }
     
     /**
@@ -126,10 +173,12 @@ public final class MultiSeriesPlotData {
      * OUTPUTS: true if all series have identical x-values
      * 
      * USAGE: Determines whether plotting can optimize by sharing x-axis
+     * 
+     * IMPLEMENTATION:
+     *   Returns the sharedXAxis flag validated during construction.
      */
     public boolean hasSharedXAxis() {
-        // UNIMPLEMENTED: Return logic goes here
-        return false;
+        return sharedXAxis;
     }
     
     /**
@@ -138,10 +187,12 @@ public final class MultiSeriesPlotData {
      * OUTPUTS: Unmodifiable map of metadata, or null if no metadata
      * 
      * USAGE: Access plot title, axis labels, and other plot-wide settings
+     * 
+     * IMPLEMENTATION:
+     *   Returns the unmodifiable map created during construction.
      */
     public Map<String, String> getPlotMetadata() {
-        // UNIMPLEMENTED: Unmodifiable map logic goes here
-        return null;
+        return plotMetadata;
     }
     
     /**
@@ -150,10 +201,12 @@ public final class MultiSeriesPlotData {
      * OUTPUTS: Number of series (length of seriesNames/seriesData)
      * 
      * USAGE: Useful for validation and iteration
+     * 
+     * IMPLEMENTATION:
+     *   Returns the size of seriesNames (same as seriesData per constructor validation).
      */
     public int getSeriesCount() {
-        // UNIMPLEMENTED: Count logic goes here
-        return 0;
+        return seriesNames.size();
     }
     
     /**
@@ -164,9 +217,21 @@ public final class MultiSeriesPlotData {
      * OUTPUTS: PlotData for the named series, or null if not found
      * 
      * USAGE: Direct access to specific series without iterating through lists
+     * 
+     * IMPLEMENTATION:
+     *   Searches through seriesNames to find matching name, returns corresponding PlotData.
      */
     public PlotData getSeriesByName(String seriesName) {
-        // UNIMPLEMENTED: Lookup logic goes here
+        if (seriesName == null) {
+            return null;
+        }
+        
+        for (int i = 0; i < seriesNames.size(); i++) {
+            if (seriesNames.get(i).equals(seriesName)) {
+                return seriesData.get(i);
+            }
+        }
+        
         return null;
     }
     
@@ -176,9 +241,11 @@ public final class MultiSeriesPlotData {
      * OUTPUTS: true if metadata map is non-null and non-empty
      * 
      * USAGE: Guards against null pointer exceptions when accessing metadata
+     * 
+     * IMPLEMENTATION:
+     *   Checks if plotMetadata is non-null and non-empty.
      */
     public boolean hasPlotMetadata() {
-        // UNIMPLEMENTED: Null check logic goes here
-        return false;
+        return plotMetadata != null && !plotMetadata.isEmpty();
     }
 }

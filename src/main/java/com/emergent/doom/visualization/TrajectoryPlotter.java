@@ -141,10 +141,63 @@ public class TrajectoryPlotter {
      *   trajectories.put("Bubble", bubbleSortedness);
      *   trajectories.put("Selection", selectionSortedness);
      *   MultiSeriesPlotData plotData = plotter.generateMultiSeriesPlotData(trajectories);
+     * 
+     * IMPLEMENTATION:
+     *   This section generates multi-series plot data from a map of trajectories.
+     *   It integrates with TrajectoryPlotter by reusing generatePlotData for each series.
+     *   Validates that all trajectories have the same length to ensure shared x-axis.
      */
     public MultiSeriesPlotData generateMultiSeriesPlotData(Map<String, List<Double>> trajectories) {
-        // UNIMPLEMENTED: Multi-series plot data generation logic goes here
-        return null;
+        // Step 1: Validate trajectories map
+        if (trajectories == null || trajectories.isEmpty()) {
+            throw new IllegalArgumentException("Trajectories map cannot be null or empty");
+        }
+        
+        // Step 2: Validate all trajectories have same length
+        Integer expectedLength = null;
+        String firstSeries = null;
+        
+        for (Map.Entry<String, List<Double>> entry : trajectories.entrySet()) {
+            if (entry.getValue() == null) {
+                throw new IllegalArgumentException(
+                    "Trajectory for series '" + entry.getKey() + "' is null");
+            }
+            
+            if (expectedLength == null) {
+                expectedLength = entry.getValue().size();
+                firstSeries = entry.getKey();
+            } else {
+                if (entry.getValue().size() != expectedLength) {
+                    throw new IllegalArgumentException(
+                        "Trajectory length mismatch: '" + firstSeries + "' has " + 
+                        expectedLength + " values, but '" + entry.getKey() + "' has " + 
+                        entry.getValue().size() + " values");
+                }
+            }
+        }
+        
+        // Step 3: Generate PlotData for each series
+        java.util.List<String> seriesNames = new java.util.ArrayList<>();
+        java.util.List<PlotData> seriesData = new java.util.ArrayList<>();
+        
+        for (Map.Entry<String, List<Double>> entry : trajectories.entrySet()) {
+            String seriesName = entry.getKey();
+            List<Double> trajectory = entry.getValue();
+            
+            PlotData plotData = generatePlotData(seriesName, trajectory);
+            
+            seriesNames.add(seriesName);
+            seriesData.add(plotData);
+        }
+        
+        // Step 4: All series share x-axis (validated above)
+        boolean sharedXAxis = true;
+        
+        // Step 5: Create plot-level metadata (optional, currently null)
+        Map<String, String> plotMetadata = null;
+        
+        // Step 6: Create and return MultiSeriesPlotData
+        return new MultiSeriesPlotData(seriesNames, seriesData, sharedXAxis, plotMetadata);
     }
     
     /**
