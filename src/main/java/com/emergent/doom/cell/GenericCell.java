@@ -198,7 +198,8 @@ public class GenericCell implements Cell<GenericCell>, HasIdealPosition, HasSort
 
     @Override
     public String toString() {
-        return String.format("GenericCell{value=%d, algotype=%s}", value, algotype.name());
+        return String.format("GenericCell{value=%d, algotype=%s, direction=%s}",
+                value, algotype.name(), sortDirection.name());
     }
 
     /**
