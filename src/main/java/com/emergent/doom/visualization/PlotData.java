@@ -79,14 +79,51 @@ public final class PlotData {
      *   - Immutability ensures thread-safety and prevents accidental modification
      *   - Defensive copying prevents external modification of internal state
      *   - Validation ensures data consistency for downstream visualization tools
+     * 
+     * IMPLEMENTATION:
+     *   This section constructs an immutable, validated PlotData object.
+     *   It integrates with the PlotData class by:
+     *   - Enforcing strict validation on all inputs
+     *   - Creating defensive copies to ensure immutability
+     *   - Storing data in final fields for thread-safety
+     *   
+     *   This satisfies the requirement of creating a robust, immutable data structure
+     *   that can be safely shared across threads and passed to external tools.
      */
     public PlotData(String metricName, double[] xValues, double[] yValues, 
                     Map<String, Double> metadata) {
-        // UNIMPLEMENTED: Validation and defensive copying logic goes here
-        this.metricName = null;
-        this.xValues = null;
-        this.yValues = null;
-        this.metadata = null;
+        // Validate metricName
+        if (metricName == null || metricName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Metric name cannot be null or empty");
+        }
+        
+        // Validate arrays
+        if (xValues == null || yValues == null) {
+            throw new IllegalArgumentException("xValues and yValues cannot be null");
+        }
+        
+        if (xValues.length != yValues.length) {
+            throw new IllegalArgumentException(
+                "xValues and yValues must have same length. Got: " + 
+                xValues.length + " vs " + yValues.length);
+        }
+        
+        if (xValues.length == 0) {
+            throw new IllegalArgumentException("Arrays cannot be empty");
+        }
+        
+        // Store fields with defensive copies
+        this.metricName = metricName;
+        this.xValues = java.util.Arrays.copyOf(xValues, xValues.length);
+        this.yValues = java.util.Arrays.copyOf(yValues, yValues.length);
+        
+        // Create defensive copy of metadata if provided
+        if (metadata != null) {
+            this.metadata = java.util.Collections.unmodifiableMap(
+                new java.util.HashMap<>(metadata));
+        } else {
+            this.metadata = null;
+        }
     }
     
     /**
@@ -95,10 +132,13 @@ public final class PlotData {
      * OUTPUTS: The metric name string
      * 
      * USAGE: Used for plot titles, legends, and identifying the data series
+     * 
+     * IMPLEMENTATION:
+     *   Simple getter that returns the immutable metric name.
+     *   No defensive copy needed since String is immutable.
      */
     public String getMetricName() {
-        // UNIMPLEMENTED: Return logic goes here
-        return null;
+        return metricName;
     }
     
     /**
@@ -109,10 +149,13 @@ public final class PlotData {
      * DESIGN RATIONALE:
      *   - Returns copy to preserve immutability
      *   - Prevents external code from modifying internal state
+     * 
+     * IMPLEMENTATION:
+     *   Returns a defensive copy to prevent external modification.
+     *   Ensures PlotData remains immutable after construction.
      */
     public double[] getXValues() {
-        // UNIMPLEMENTED: Defensive copy logic goes here
-        return null;
+        return java.util.Arrays.copyOf(xValues, xValues.length);
     }
     
     /**
@@ -123,10 +166,13 @@ public final class PlotData {
      * DESIGN RATIONALE:
      *   - Returns copy to preserve immutability
      *   - Prevents external code from modifying internal state
+     * 
+     * IMPLEMENTATION:
+     *   Returns a defensive copy to prevent external modification.
+     *   Ensures PlotData remains immutable after construction.
      */
     public double[] getYValues() {
-        // UNIMPLEMENTED: Defensive copy logic goes here
-        return null;
+        return java.util.Arrays.copyOf(yValues, yValues.length);
     }
     
     /**
@@ -137,10 +183,13 @@ public final class PlotData {
      * DESIGN RATIONALE:
      *   - Returns unmodifiable map to preserve immutability
      *   - Allows read access without risking modification
+     * 
+     * IMPLEMENTATION:
+     *   Returns the unmodifiable map created during construction.
+     *   No additional wrapping needed since map was already made unmodifiable.
      */
     public Map<String, Double> getMetadata() {
-        // UNIMPLEMENTED: Unmodifiable map logic goes here
-        return null;
+        return metadata;
     }
     
     /**
@@ -149,10 +198,12 @@ public final class PlotData {
      * OUTPUTS: Length of x/y value arrays
      * 
      * USAGE: Useful for validation and iteration
+     * 
+     * IMPLEMENTATION:
+     *   Returns the length of xValues (same as yValues per constructor validation).
      */
     public int getDataPointCount() {
-        // UNIMPLEMENTED: Length calculation goes here
-        return 0;
+        return xValues.length;
     }
     
     /**
@@ -161,9 +212,11 @@ public final class PlotData {
      * OUTPUTS: true if metadata map is non-null and non-empty
      * 
      * USAGE: Guards against null pointer exceptions when accessing metadata
+     * 
+     * IMPLEMENTATION:
+     *   Checks if metadata is non-null and non-empty.
      */
     public boolean hasMetadata() {
-        // UNIMPLEMENTED: Null check logic goes here
-        return false;
+        return metadata != null && !metadata.isEmpty();
     }
 }
