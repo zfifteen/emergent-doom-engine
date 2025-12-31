@@ -243,6 +243,81 @@ class GapImplementationTest {
 
             assertFalse(swapped, "Active cell should not be able to displace IMMOVABLE cell");
         }
+
+        @Test
+        @DisplayName("CRITICAL FIX: isLeftSorted handles descending sort with frozen cells")
+        void isLeftSortedDescendingWithFrozen() {
+            // Array: [5, FROZEN(99), 3, 1] - descending order with frozen cell at idx 1
+            GenericCell[] cells = {
+                new GenericCell(5, Algotype.INSERTION),
+                new GenericCell(99, Algotype.INSERTION), // frozen (out of desc order, should be skipped)
+                new GenericCell(3, Algotype.INSERTION),
+                new GenericCell(1, Algotype.INSERTION)
+            };
+
+            FrozenCellStatus frozenStatus = new FrozenCellStatus();
+            frozenStatus.setFrozen(1, FrozenType.MOVABLE);
+
+            SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
+            Probe<GenericCell> probe = new Probe<>();
+            ConvergenceDetector<GenericCell> detector = new NoSwapConvergence<>(3);
+
+            ExecutionEngine<GenericCell> engine = new ExecutionEngine<>(
+                    cells, swapEngine, probe, detector, new Random(42));
+
+            // Reset for descending sort
+            engine.reset(true);
+
+            // Should return true - [5, FROZEN, 3] is sorted descending (skipping frozen at 1)
+            // Using reflection to access private isLeftSorted method for testing
+            try {
+                java.lang.reflect.Method isLeftSorted = ExecutionEngine.class
+                        .getDeclaredMethod("isLeftSorted", int.class, boolean.class);
+                isLeftSorted.setAccessible(true);
+                
+                boolean result = (boolean) isLeftSorted.invoke(engine, 3, true); // reverseDirection=true
+                assertTrue(result, "[5, FROZEN, 3] should be sorted descending (frozen skipped)");
+            } catch (Exception e) {
+                fail("Failed to test isLeftSorted: " + e.getMessage());
+            }
+        }
+
+        @Test
+        @DisplayName("CRITICAL FIX: isLeftSorted handles ascending sort with frozen cells")
+        void isLeftSortedAscendingWithFrozen() {
+            // Array: [1, FROZEN(0), 3, 5] - ascending order with frozen cell at idx 1
+            GenericCell[] cells = {
+                new GenericCell(1, Algotype.INSERTION),
+                new GenericCell(0, Algotype.INSERTION), // frozen (out of asc order, should be skipped)
+                new GenericCell(3, Algotype.INSERTION),
+                new GenericCell(5, Algotype.INSERTION)
+            };
+
+            FrozenCellStatus frozenStatus = new FrozenCellStatus();
+            frozenStatus.setFrozen(1, FrozenType.MOVABLE);
+
+            SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
+            Probe<GenericCell> probe = new Probe<>();
+            ConvergenceDetector<GenericCell> detector = new NoSwapConvergence<>(3);
+
+            ExecutionEngine<GenericCell> engine = new ExecutionEngine<>(
+                    cells, swapEngine, probe, detector, new Random(42));
+
+            // Reset for ascending sort (default)
+            engine.reset(false);
+
+            // Should return true - [1, FROZEN, 3] is sorted ascending (skipping frozen at 1)
+            try {
+                java.lang.reflect.Method isLeftSorted = ExecutionEngine.class
+                        .getDeclaredMethod("isLeftSorted", int.class, boolean.class);
+                isLeftSorted.setAccessible(true);
+                
+                boolean result = (boolean) isLeftSorted.invoke(engine, 3, false); // reverseDirection=false
+                assertTrue(result, "[1, FROZEN, 3] should be sorted ascending (frozen skipped)");
+            } catch (Exception e) {
+                fail("Failed to test isLeftSorted: " + e.getMessage());
+            }
+        }
     }
 
     // ========================================================================
@@ -302,6 +377,42 @@ class GapImplementationTest {
 
             assertTrue(probe.getCompareAndSwapCount() > 0,
                     "Should have recorded compare-and-swap events during sorting");
+        }
+
+        @Test
+        @DisplayName("CRITICAL FIX: compareAndSwap counts ALL comparisons, not just swaps")
+        void compareAndSwapCountsAllComparisons() {
+            // Create array where BUBBLE will compare but not always swap
+            GenericCell[] cells = {
+                new GenericCell(1, Algotype.BUBBLE),
+                new GenericCell(2, Algotype.BUBBLE),
+                new GenericCell(3, Algotype.BUBBLE)  // Already sorted
+            };
+
+            FrozenCellStatus frozenStatus = new FrozenCellStatus();
+            SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
+            Probe<GenericCell> probe = new Probe<>();
+            ConvergenceDetector<GenericCell> detector = new NoSwapConvergence<>(3);
+
+            ExecutionEngine<GenericCell> engine = new ExecutionEngine<>(
+                    cells, swapEngine, probe, detector, new Random(42));
+
+            // Execute 5 steps (many comparisons, few/no swaps since already sorted)
+            for (int i = 0; i < 5; i++) {
+                engine.step();
+            }
+
+            int swapCount = swapEngine.getSwapCount();
+            int compareCount = probe.getCompareAndSwapCount();
+
+            // CRITICAL: compareAndSwap should be >= swapCount
+            // (Python tracks all comparisons, even those that don't lead to swaps)
+            assertTrue(compareCount >= swapCount,
+                    "compareAndSwapCount (" + compareCount + ") should be >= swapCount (" + swapCount + ")");
+            
+            // Since array is sorted, we expect many comparisons but zero swaps
+            assertEquals(0, swapCount, "No swaps should occur in already sorted array");
+            assertTrue(compareCount > 0, "Should have made comparisons even with no swaps");
         }
     }
 }

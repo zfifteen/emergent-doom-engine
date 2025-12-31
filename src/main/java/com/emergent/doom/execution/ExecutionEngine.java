@@ -42,6 +42,7 @@ public class ExecutionEngine<T extends Cell<T>> {
 
     private int currentStep;
     private boolean converged;
+    private boolean reverseDirection;  // Track sort direction for isLeftSorted
     
     /**
      * IMPLEMENTED: Initialize the execution engine with algotype-based topology dispatch
@@ -79,6 +80,7 @@ public class ExecutionEngine<T extends Cell<T>> {
         this.random = random;
         this.currentStep = 0;
         this.converged = false;
+        this.reverseDirection = false;  // Default to ascending sort
 
         // Wire up probe to swap engine for frozen swap attempt tracking
         swapEngine.setProbe(probe);
@@ -112,8 +114,11 @@ public class ExecutionEngine<T extends Cell<T>> {
                     // Pick ONE random neighbor (50% left, 50% right if both exist)
                     int randomIndex = random.nextInt(allNeighbors.size());
                     int j = allNeighbors.get(randomIndex);
-                    if (shouldSwapForAlgotype(i, j, algotype)) {
-                        probe.recordCompareAndSwap(); // StatusProbe: comparison led to swap decision
+                    // CRITICAL FIX: Record comparison before checking shouldSwap
+                    // Python tracks ALL comparisons, not just those leading to swaps
+                    boolean shouldSwap = shouldSwapForAlgotype(i, j, algotype);
+                    probe.recordCompareAndSwap(); // StatusProbe: comparison made
+                    if (shouldSwap) {
                         swapEngine.attemptSwap(cells, i, j);
                     }
                 }
@@ -121,8 +126,10 @@ public class ExecutionEngine<T extends Cell<T>> {
                 // Other algotypes: iterate all neighbors as before
                 List<Integer> neighbors = getNeighborsForAlgotype(i, algotype);
                 for (int j : neighbors) {
-                    if (shouldSwapForAlgotype(i, j, algotype)) {
-                        probe.recordCompareAndSwap(); // StatusProbe: comparison led to swap decision
+                    // CRITICAL FIX: Record comparison before checking shouldSwap
+                    boolean shouldSwap = shouldSwapForAlgotype(i, j, algotype);
+                    probe.recordCompareAndSwap(); // StatusProbe: comparison made
+                    if (shouldSwap) {
                         swapEngine.attemptSwap(cells, i, j);
                     }
                 }
@@ -145,29 +152,45 @@ public class ExecutionEngine<T extends Cell<T>> {
     }
 
     /**
-     * Helper: Check if cells 0 to i-1 are sorted in ascending order.
+     * Helper: Check if cells 0 to i-1 are sorted in correct order (ascending or descending).
      * Matches Python cell_research behavior: frozen cells are skipped and
      * reset the comparison chain.
+     *
+     * <p>CRITICAL FIX: Now supports both ascending and descending sort directions.
+     * For descending sorts, the sentinel value is MAX_VALUE and comparison is inverted.</p>
      *
      * Python reference (InsertionSortCell.py:74-76):
      * <pre>
      * if cells[i].status == FREEZE:
-     *     prev = -1  # Reset comparison, skip frozen
+     *     prev = -1  # Reset comparison, skip frozen (ascending: MIN_VALUE)
      *     continue
      * </pre>
+     *
+     * @param i the position to check (checks cells 0 to i-1)
+     * @param reverseDirection true for descending sort, false for ascending
+     * @return true if cells 0 to i-1 are sorted in the specified direction
      */
-    private boolean isLeftSorted(int i) {
-        int prevValue = Integer.MIN_VALUE; // Start with minimum so any value is >= prev
+    private boolean isLeftSorted(int i, boolean reverseDirection) {
+        // Start with sentinel: MIN for ascending (any value >= MIN), MAX for descending (any value <= MAX)
+        int prevValue = reverseDirection ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+        
         for (int k = 0; k < i; k++) {
             // Skip frozen cells - reset comparison chain (matches Python)
             if (swapEngine.isFrozen(k)) {
-                prevValue = Integer.MIN_VALUE; // Reset: next cell can be any value
+                // Reset sentinel after frozen cell
+                prevValue = reverseDirection ? Integer.MAX_VALUE : Integer.MIN_VALUE;
                 continue;
             }
 
             // Get cell value for comparison
             int currentValue = getCellValue(cells[k]);
-            if (currentValue < prevValue) {
+            
+            // Check if out of order based on direction
+            boolean outOfOrder = reverseDirection 
+                ? (currentValue > prevValue)  // Descending: next should be <= prev
+                : (currentValue < prevValue); // Ascending: next should be >= prev
+            
+            if (outOfOrder) {
                 return false; // Out of order
             }
             prevValue = currentValue;
@@ -245,7 +268,7 @@ public class ExecutionEngine<T extends Cell<T>> {
                 return false;
             case INSERTION:
                 // Move left only if left side sorted AND value < left neighbor
-                if (j == i - 1 && isLeftSorted(i) && cells[i].compareTo(cells[j]) < 0) {
+                if (j == i - 1 && isLeftSorted(i, reverseDirection) && cells[i].compareTo(cells[j]) < 0) {
                     return true;
                 }
                 // Note: neighbors include all left, but only swap with immediate left if conditions met
@@ -341,6 +364,7 @@ public class ExecutionEngine<T extends Cell<T>> {
     public void reset(boolean reverseDirection) {
         currentStep = 0;
         converged = false;
+        this.reverseDirection = reverseDirection;  // CRITICAL FIX: Store for isLeftSorted
         probe.clear();
         swapEngine.resetSwapCount();
         bubbleTopology.reset();
