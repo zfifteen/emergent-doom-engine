@@ -97,6 +97,69 @@ class ChimericPopulationTest {
         }
 
         @Test
+        @DisplayName("No silent no-op: HasIdealPosition methods throw for non-SELECTION in GenericCell")
+        void noSilentNoOpInGenericCell() {
+            GenericCell bubbleCell = new GenericCell(42, Algotype.BUBBLE);
+            assertThrows(IllegalStateException.class, bubbleCell::getIdealPos, "Should throw instead of silent no-op for non-SELECTION");
+            assertThrows(IllegalStateException.class, () -> bubbleCell.incrementIdealPos(), "Should throw for increment on non-SELECTION");
+            assertThrows(IllegalStateException.class, () -> bubbleCell.setIdealPos(5), "Should throw for set on non-SELECTION");
+            // Engine helpers call only for SELECTION, but GenericCell enforces no misuse
+        }
+
+    }
+
+        @Test
+        @DisplayName("GenericCell incrementIdealPos works for SELECTION")
+        void genericCellIncrementIdealPos() {
+            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            int newPos = cell.incrementIdealPos();
+            assertEquals(1, newPos, "Increment should return 1");
+            assertEquals(1, cell.getIdealPos(), "idealPos should be updated to 1");
+        }
+
+        @Test
+        @DisplayName("GenericCell setIdealPos works for SELECTION")
+        void genericCellSetIdealPos() {
+            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            cell.setIdealPos(5);
+            assertEquals(5, cell.getIdealPos(), "setIdealPos should update to 5");
+        }
+
+        @Test
+        @DisplayName("GenericCell compareAndSetIdealPos works for SELECTION")
+        void genericCellCompareAndSetIdealPos() {
+            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            assertTrue(cell.compareAndSetIdealPos(0, 10), "CAS from 0 to 10 should succeed");
+            assertEquals(10, cell.getIdealPos(), "idealPos should be 10");
+            assertFalse(cell.compareAndSetIdealPos(5, 15), "CAS from wrong expected 5 should fail");
+            assertEquals(10, cell.getIdealPos(), "idealPos unchanged on failed CAS");
+        }
+
+        @Test
+        @DisplayName("GenericCell throws IllegalStateException for non-SELECTION algotype")
+        void genericCellThrowsForNonSelection() {
+            GenericCell bubbleCell = new GenericCell(42, Algotype.BUBBLE);
+            assertThrows(IllegalStateException.class, bubbleCell::getIdealPos, "Should throw for BUBBLE");
+            assertThrows(IllegalStateException.class, () -> bubbleCell.setIdealPos(5), "Should throw for BUBBLE");
+            assertThrows(IllegalStateException.class, bubbleCell::incrementIdealPos, "Should throw for BUBBLE");
+            assertThrows(IllegalStateException.class, () -> bubbleCell.compareAndSetIdealPos(0, 10), "Should throw for BUBBLE");
+        }
+
+        @Test
+        @DisplayName("GenericCell setIdealPos throws for negative value")
+        void genericCellSetNegativeThrows() {
+            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            assertThrows(IllegalArgumentException.class, () -> cell.setIdealPos(-1), "Negative position invalid");
+        }
+
+        @Test
+        @DisplayName("GenericCell compareAndSetIdealPos throws for negative newValue")
+        void genericCellCasNegativeThrows() {
+            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            assertThrows(IllegalArgumentException.class, () -> cell.compareAndSetIdealPos(0, -1), "Negative newValue invalid");
+        }
+
+        @Test
         @DisplayName("Engine helpers throw UnsupportedOperationException for non-HasIdealPosition cell via interface check")
         void engineHelpersThrowForUnsupported() {
             // Test the concept: helpers throw if cell does not implement HasIdealPosition
