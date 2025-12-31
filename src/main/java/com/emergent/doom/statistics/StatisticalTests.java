@@ -699,16 +699,50 @@ public class StatisticalTests {
      */
     public static double[] calculateConfidenceInterval(double mean, double stdDev, 
                                                       int sampleSize, double confidenceLevel) {
-        // TODO: Implementation in Phase 3, Iteration 7
+        // IMPLEMENTED in Phase 3, Iteration 7
+        // This method calculates a confidence interval for a mean using the t-distribution.
+        //
+        // Confidence intervals provide a range estimate for the true population parameter
+        // with a specified level of confidence (e.g., 95%).
+        
         // 1. Validate inputs: 0 < confidenceLevel < 1, sampleSize > 0, stdDev >= 0
+        if (confidenceLevel <= 0 || confidenceLevel >= 1) {
+            throw new IllegalArgumentException(
+                "Confidence level must be between 0 and 1 (exclusive), got: " + confidenceLevel
+            );
+        }
+        if (sampleSize <= 0) {
+            throw new IllegalArgumentException("Sample size must be positive, got: " + sampleSize);
+        }
+        if (stdDev < 0) {
+            throw new IllegalArgumentException("Standard deviation cannot be negative, got: " + stdDev);
+        }
+        
         // 2. Calculate standard error: SE = stdDev / sqrt(sampleSize)
+        double standardError = stdDev / Math.sqrt(sampleSize);
+        
         // 3. Calculate alpha: alpha = (1 - confidenceLevel) / 2 (two-tailed)
+        // For 95% confidence level, alpha = 0.025 for each tail
+        double alpha = (1.0 - confidenceLevel) / 2.0;
+        
         // 4. Get degrees of freedom: df = sampleSize - 1
+        int degreesOfFreedom = sampleSize - 1;
+        
         // 5. Create TDistribution with df
+        TDistribution tDist = new TDistribution(degreesOfFreedom);
+        
         // 6. Get critical t-value: tDist.inverseCumulativeProbability(1 - alpha)
+        // This gives the t-value such that P(T <= t) = 1 - alpha
+        double criticalValue = tDist.inverseCumulativeProbability(1.0 - alpha);
+        
         // 7. Calculate margin of error: ME = criticalValue * SE
+        double marginOfError = criticalValue * standardError;
+        
         // 8. Return new double[] {mean - ME, mean + ME}
-        throw new UnsupportedOperationException("Not implemented yet");
+        return new double[] {
+            mean - marginOfError,  // lower bound
+            mean + marginOfError   // upper bound
+        };
     }
     
     /**
