@@ -95,6 +95,7 @@ public class ExecutionEngine<T extends Cell<T>> {
     
     /**
      * IMPLEMENTED: Execute a single step of the algorithm
+     * Now supports per-cell sort direction for cross-purpose sorting
      * @return number of swaps performed in this step
      */
     public int step() {
@@ -107,6 +108,7 @@ public class ExecutionEngine<T extends Cell<T>> {
         // For each cell in iteration order, try swapping with neighbors based on algotype
         for (int i : iterationOrder) {
             Algotype algotype = cells[i].getAlgotype();
+            SortDirection direction = getCellDirection(cells[i]);
 
             if (algotype == Algotype.BUBBLE) {
                 // Random 50/50 direction choice - matches cell_research Python behavior
@@ -118,7 +120,7 @@ public class ExecutionEngine<T extends Cell<T>> {
                     int j = allNeighbors.get(randomIndex);
                     // CRITICAL FIX: Record comparison before checking shouldSwap
                     // Python tracks ALL comparisons, not just those leading to swaps
-                    boolean shouldSwap = shouldSwapForAlgotype(i, j, algotype);
+                    boolean shouldSwap = shouldSwapWithDirection(i, j, algotype, direction);
                     probe.recordCompareAndSwap(); // StatusProbe: comparison made
                     if (shouldSwap) {
                         swapEngine.attemptSwap(cells, i, j);
@@ -129,7 +131,7 @@ public class ExecutionEngine<T extends Cell<T>> {
                 List<Integer> neighbors = getNeighborsForAlgotype(i, algotype);
                 for (int j : neighbors) {
                     // CRITICAL FIX: Record comparison before checking shouldSwap
-                    boolean shouldSwap = shouldSwapForAlgotype(i, j, algotype);
+                    boolean shouldSwap = shouldSwapWithDirection(i, j, algotype, direction);
                     probe.recordCompareAndSwap(); // StatusProbe: comparison made
                     if (shouldSwap) {
                         swapEngine.attemptSwap(cells, i, j);
