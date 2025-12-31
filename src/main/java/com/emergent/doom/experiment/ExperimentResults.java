@@ -428,14 +428,44 @@ public class ExperimentResults<T extends Cell<T>> {
      * @throws IllegalArgumentException if metric doesn't exist or insufficient data
      */
     public double[] getConfidenceInterval(String metricName, double confidenceLevel) {
-        // TODO: Implementation in Phase 3, Iteration 12
+        // IMPLEMENTED in Phase 3, Iteration 12
+        // This method calculates a confidence interval for a metric by extracting
+        // statistics from experiment trials and delegating to the StatisticalTests utility.
+        //
+        // Provides interval estimates showing the range where the true mean likely falls.
+        
         // 1. Validate metricName exists and trials not empty
+        if (trials.isEmpty()) {
+            throw new IllegalArgumentException("Cannot calculate confidence interval: no trials available");
+        }
+        
         // 2. Get mean using getMeanMetric(metricName)
+        double mean = getMeanMetric(metricName);
+        
         // 3. Get stdDev using getStdDevMetric(metricName)
+        double stdDev = getStdDevMetric(metricName);
+        
         // 4. Get sample size from trials.size()
+        int sampleSize = trials.size();
+        
+        // Validate we have enough data
+        if (sampleSize < 2) {
+            throw new IllegalArgumentException(
+                "Cannot calculate confidence interval: need at least 2 trials, got " + sampleSize
+            );
+        }
+        
         // 5. Call StatisticalTests.calculateConfidenceInterval(mean, stdDev, sampleSize, confidenceLevel)
-        // 6. Return confidence interval array
-        throw new UnsupportedOperationException("Not implemented yet");
+        // This uses the t-distribution to compute the interval bounds
+        double[] confidenceInterval = StatisticalTests.calculateConfidenceInterval(
+            mean, 
+            stdDev, 
+            sampleSize, 
+            confidenceLevel
+        );
+        
+        // 6. Return confidence interval array [lowerBound, upperBound]
+        return confidenceInterval;
     }
     
     /**
