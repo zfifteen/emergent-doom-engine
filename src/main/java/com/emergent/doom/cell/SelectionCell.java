@@ -76,3 +76,4 @@ public abstract class SelectionCell<T extends SelectionCell<T>> implements Cell<
 
     // HasIdealPosition already implemented via existing methods; no additional stubs needed
     // Existing: getIdealPos(), incrementIdealPos(), setIdealPos(), compareAndSetIdealPos()
+}
