@@ -1,175 +1,239 @@
 # Technical Requirements: Emergence Engine Implementation
 ## Based on "Classical Sorting Algorithms as a Model of Morphogenesis" (Levin et al., 2024)
 
-**Target Audience**: Software engineers implementing cell-view sorting algorithms as emergence engines  
-**Reference**: Zhang, T., Goldstein, A., Levin, M. (2024). arXiv:2401.05375v1  
-**Repository**: https://github.com/Zhangtaining/cell_research
+**Target Audience**: Software engineers implementing cell-view sorting algorithms as emergence engines
+**Paper Reference**: Zhang, T., Goldstein, A., Levin, M. (2024). arXiv:2401.05375v1
+**Code Reference**: https://github.com/Zhangtaining/cell_research (Python 3.0 implementation)
+
+> **IMPORTANT**: This document reflects the **actual implementation** from the `cell_research` Python codebase as the authoritative ground truth. Where the paper description differs from the code, the code behavior is documented as canonical.
+
+---
+
+## Document Conventions
+
+Throughout this document:
+- **[Paper p.X]** — Reference to the Levin et al. paper page number
+- **[Code: filename.py:line]** — Reference to cell_research Python source
 
 ---
 
 ## 1. System Overview
 
 ### 1.1 Architecture Philosophy
-The emergence engine implements a **distributed, agent-based sorting system** where each cell is an autonomous agent making local decisions based on its perspective of the environment. This contrasts with traditional top-down sorting algorithms where a central controller manages the entire process.
 
-**Key Principles**:
+The emergence engine implements a **distributed, agent-based sorting system** where each cell is an autonomous agent making local decisions based on its perspective of the environment.
+
+**[Paper p.5-6]** Key Principles:
 - **Bottom-up control**: No global controller; each cell acts independently
 - **Local knowledge**: Cells only see their immediate neighbors or specific positions
-- **Parallel execution**: All cells evaluate and act simultaneously
+- **Parallel execution**: All cells execute in their own threads
 - **Emergent behavior**: System-level sorting emerges from local cell interactions
-- **Unreliable substrate**: Support for "damaged" (frozen) cells that fail to execute
+- **Unreliable substrate**: Support for "frozen" cells that fail to execute
 
-### 1.2 Multi-Threading Architecture
-The system consists of two thread types running concurrently:
+### 1.2 Threading Architecture
 
-1. **Cell Threads**: One thread per cell in the array
-    - Each cell is a separate thread instance
-    - Implements sorting logic from cell's perspective
-    - Executes in parallel with all other cells
+**[Paper p.7]** describes two thread types. **[Code: MultiThreadCell.py, CellGroup.py]** implements:
 
-2. **Main Thread**: Single orchestration thread
-    - Activates all cell threads
-    - Monitors sorting process progress
-    - Detects termination conditions
-    - Manages probe data collection
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        THREADING MODEL                          │
+├─────────────────────────────────────────────────────────────────┤
+│  Main Thread                                                    │
+│    └── Starts all cell threads                                  │
+│    └── Starts all group threads                                 │
+│    └── Monitors for completion                                  │
+│                                                                 │
+│  Cell Threads (N threads, one per cell)                         │
+│    └── Each extends threading.Thread                            │
+│    └── Acquires shared lock → evaluates → swaps → releases      │
+│    └── Runs until status == INACTIVE                            │
+│                                                                 │
+│  Group Threads (M threads, one per CellGroup)                   │
+│    └── Manages sleep/wake cycles for cells                      │
+│    └── Detects when group is sorted                             │
+│    └── Merges with adjacent sorted groups                       │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**CRITICAL**: The actual synchronization uses a **single global `threading.Lock()`**, NOT a barrier-based phase system. Each cell:
+1. Acquires the lock
+2. Evaluates its move condition
+3. Executes swap if appropriate
+4. Releases the lock
+
+**[Code: BubbleSortCell.py:58-74]**:
+```python
+def move(self):
+    self.lock.acquire()
+    self.with_lock = True
+    # ... evaluation and swap logic ...
+    self.lock.release()
+    self.with_lock = False
+```
 
 ---
 
 ## 2. Core Data Structures
 
-### 2.1 Cell Class
+### 2.1 Position Format
+
+**[Code: MultiThreadCell.py:38-39]** — Positions are **tuples**, not integers:
 
 ```python
-class Cell:
-    """
-    Autonomous agent representing a single sortable element.
-    Each cell runs in its own thread.
-    """
-    
+self.current_position = current_position  # (x, y) tuple
+self.target_position = current_position   # (x, y) tuple
+```
+
+For 1D sorting, `y` is always 1: `(index, 1)`
+
+### 2.2 Cell Status Enumeration
+
+**[Code: MultiThreadCell.py:7-14]**:
+
+```python
+class CellStatus(Enum):
+    ACTIVE = 1      # Normal, can move
+    SLEEP = 2       # Group is sleeping, cannot move
+    MERGE = 3       # Group is merging (unused in current impl)
+    MOVING = 4      # Animation in progress
+    INACTIVE = 5    # Thread should terminate
+    ERROR = 6       # Error state (unused)
+    FREEZE = 7      # Frozen cell, cannot initiate swaps
+```
+
+### 2.3 MultiThreadCell Base Class
+
+**[Code: MultiThreadCell.py:17-113]**:
+
+```python
+class MultiThreadCell(threading.Thread):
     # Core Properties
-    value: int                    # Fixed integer value (determines final position)
-    position: int                 # Current index in array
-    algotype: AlgotypeEnum        # Sorting algorithm (BUBBLE, INSERTION, SELECTION)
-    frozen_state: FrozenStateEnum # ACTIVE, MOVABLE_FROZEN, IMMOVABLE_FROZEN
-    
-    # For Selection Sort
-    ideal_target_position: int    # Desired position (Selection sort only)
-    
-    # Thread Management
-    thread: Thread                # Underlying thread object
-    active: bool                  # Whether cell is still processing
-    
-    # Methods
-    def view_neighbors() -> List[Cell]
-    def can_swap_with(other: Cell) -> bool
-    def initiate_swap(other: Cell) -> bool
-    def accept_swap(other: Cell) -> bool
-    def evaluate_move() -> Optional[SwapAction]
-    def execute_step()
+    threadID: int                    # Thread identifier
+    value: int/float                 # Sortable value (immutable)
+    current_position: tuple          # (x, y) current location
+    target_position: tuple           # (x, y) destination during swap
+    status: CellStatus               # Current operational status
+    previous_status: CellStatus      # Status before MOVING
+
+    # Threading
+    lock: threading.Lock             # Shared global lock
+    with_lock: bool                  # Currently holding lock
+
+    # Boundaries (from CellGroup)
+    left_boundary: tuple             # (x, y) leftmost position in group
+    right_boundary: tuple            # (x, y) rightmost position in group
+    group: CellGroup                 # Parent group reference
+
+    # Algorithm-specific
+    cell_vision: int = 1             # How far cell can see (always 1)
+    ideal_position: tuple            # For SelectionSortCell only
+    cell_type: str                   # 'Bubble', 'Selection', 'Insertion'
+    label: int                       # 0=Bubble, 1=Selection, 2=Insertion
+    reverse_direction: bool          # True = sort descending
+
+    # Metrics tracking
+    tried_to_swap_with_frozen: bool  # Tracks frozen interaction
+    swapping_count: list             # [count] - shared mutable reference
+    export_steps: list               # Snapshot history
+    status_probe: StatusProbe        # Metrics collector
+
+    # Global array reference
+    cells: list                      # Reference to entire cell array
 ```
 
-**Property Details**:
+### 2.4 Cell Type Implementations
 
-- **`value`**: Immutable integer that determines where the cell should end up in sorted order
-    - Range: 1-100 for unique value experiments
-    - Range: 1-10 (with duplicates) for aggregation experiments
+#### 2.4.1 BubbleSortCell
 
-- **`algotype`**: Determines behavioral algorithm
-    - `BUBBLE`: Views and swaps with left/right neighbors
-    - `INSERTION`: Views all left cells, swaps with left neighbor only
-    - `SELECTION`: Views ideal position occupant, swaps to ideal position
-
-- **`frozen_state`**:
-    - `ACTIVE`: Normal cell, can initiate and accept swaps
-    - `MOVABLE_FROZEN`: Cannot initiate swaps, but accepts swaps from others
-    - `IMMOVABLE_FROZEN`: Cannot initiate or accept any swaps
-
-### 2.2 Probe Class
+**[Paper p.7]** describes bidirectional neighbor comparison.
+**[Code: BubbleSortCell.py]** — Actually uses **random direction selection**:
 
 ```python
-class Probe:
-    """
-    Monitoring object that records each step of the sorting process.
-    Passed to experiments to track progress and metrics.
-    """
-    
-    # Recording Data
-    step_log: List[StepRecord]      # Record of each comparison/swap
-    sortedness_history: List[float] # Sortedness value at each step
-    position_history: List[List[int]] # Array state at each step
-    aggregation_history: List[float] # Aggregation value (chimeric mode)
-    
-    # Metrics
-    total_swaps: int
-    total_comparisons: int
-    total_steps: int
-    
-    # Methods
-    def record_comparison(cell_a: Cell, cell_b: Cell)
-    def record_swap(cell_a: Cell, cell_b: Cell)
-    def calculate_sortedness(array: List[Cell]) -> float
-    def calculate_monotonicity_error(array: List[Cell]) -> int
-    def calculate_aggregation_value(array: List[Cell]) -> float
-    def save_to_file(filepath: str)
-    def load_from_file(filepath: str)
+class BubbleSortCell(MultiThreadCell):
+    cell_vision = 1
+    cell_type = 'Bubble'
 ```
 
-**StepRecord Structure**:
+**Key Behavior** — Random direction choice per iteration:
 ```python
-@dataclass
-class StepRecord:
-    step_number: int
-    action_type: str  # "COMPARISON" or "SWAP"
-    cell_a_index: int
-    cell_b_index: int
-    cell_a_value: int
-    cell_b_value: int
-    timestamp: float
-    array_state: List[int]  # Snapshot after action
+# [Code: BubbleSortCell.py:66]
+check_right = random.random() < 0.5  # 50% chance left, 50% right
 ```
 
-### 2.3 Experiment Configuration
+#### 2.4.2 SelectionSortCell
+
+**[Paper p.7-8]** describes ideal position targeting.
+**[Code: SelectionSortCell.py]**:
 
 ```python
-@dataclass
-class ExperimentConfig:
-    """Configuration for a single sorting experiment"""
-    
-    # Array Setup
-    array_size: int = 100
-    value_range: Tuple[int, int] = (1, 100)
-    allow_duplicates: bool = False
-    
-    # Algorithm Selection
-    algotypes: List[AlgotypeEnum]  # Single or mixed algotypes
-    algotype_distribution: Optional[Dict[AlgotypeEnum, float]] = None
-    
-    # Frozen Cells
-    num_frozen_cells: int = 0
-    frozen_type: FrozenStateEnum = FrozenStateEnum.MOVABLE_FROZEN
-    frozen_positions: Optional[List[int]] = None  # Random if None
-    
-    # Sorting Direction
-    sort_direction: SortDirection = SortDirection.INCREASING  # or DECREASING
-    
-    # Termination Conditions
-    max_steps: int = 100000
-    stable_steps_required: int = 10  # Steps with no change to declare done
-    
-    # Data Collection
-    enable_probe: bool = True
-    record_full_history: bool = True
-    output_filepath: Optional[str] = None
+class SelectionSortCell(MultiThreadCell):
+    cell_type = 'Selection'
 
-@dataclass
-class BatchExperimentConfig:
-    """Configuration for batch experiments (typically 100 runs)"""
-    
-    single_experiment_config: ExperimentConfig
-    num_repetitions: int = 100
-    output_directory: str
-    statistical_analysis: bool = True
+    def __init__(self, ...):
+        # Initial ideal position is leftmost (or rightmost if reverse)
+        if self.reverse_direction:
+            self.ideal_position = right_boundary
+        else:
+            self.ideal_position = left_boundary
 ```
+
+#### 2.4.3 InsertionSortCell
+
+**[Paper p.7]** describes left-prefix sorted checking.
+**[Code: InsertionSortCell.py]**:
+
+```python
+class InsertionSortCell(MultiThreadCell):
+    cell_vision = 1
+    cell_type = 'Insertion'
+    # Only moves LEFT, never right
+```
+
+### 2.5 CellGroup Class
+
+**[Code: CellGroup.py]** — Hierarchical group management (not fully detailed in paper):
+
+```python
+class CellGroup(threading.Thread):
+    group_id: int                      # Unique identifier
+    cells_in_group: list               # Cells belonging to this group
+    global_cells: list                 # Reference to all cells
+    left_boundary_position: tuple      # (x, y) group start
+    right_boundary_position: tuple     # (x, y) group end
+    status: GroupStatus                # ACTIVE, MERGING, SLEEP, MERGED
+    lock: threading.Lock               # Shared global lock
+    phase_period: int                  # Sleep/wake cycle duration
+    count_down: int                    # Current countdown to phase change
+```
+
+**GroupStatus Enumeration** **[Code: CellGroup.py:6-10]**:
+```python
+class GroupStatus(Enum):
+    ACTIVE = 1      # Cells can move
+    MERGING = 2     # Merging in progress
+    SLEEP = 3       # All cells asleep
+    MERGED = 4      # Group absorbed into another (terminal)
+```
+
+### 2.6 StatusProbe Class
+
+**[Code: StatusProbe.py:1-22]** — Metrics collection:
+
+```python
+class StatusProbe:
+    sorting_steps: list = []           # Array snapshots at each swap
+    swap_count: int = 0                # Total swap operations
+    compare_and_swap_count: int = 0    # Comparisons that led to swap decision
+    cell_types: list = []              # Cell type distribution per step
+    frozen_swap_attempts: int = 0      # Attempts to swap with frozen cells
+```
+
+**Recording Methods**:
+- `record_swap()` — Increment swap_count
+- `record_compare_and_swap()` — Increment comparison count
+- `record_sorting_step(snapshot)` — Save array state
+- `record_cell_type(snapshot)` — Save type distribution
+- `count_frozen_cell_attempt()` — Track frozen interactions
 
 ---
 
@@ -177,1695 +241,720 @@ class BatchExperimentConfig:
 
 ### 3.1 Cell-View Bubble Sort
 
-**Algorithm Logic** (executed by each cell in parallel):
+**[Paper p.7]**: "Bubble sort... can swap with the cell next to it (either left or right)"
+
+**[Code: BubbleSortCell.py:24-75]** — Actual implementation:
 
 ```
-CELL-VIEW-BUBBLE-SORT(cell):
-    INPUT: 
-        cell.value: This cell's value
-        cell.position: Current position in array
-        left_neighbor: Cell to the left (if exists)
-        right_neighbor: Cell to the right (if exists)
-    
-    OUTPUT:
-        SwapAction or None
-    
-    PROCEDURE:
-        # View both neighbors
-        IF left_neighbor EXISTS AND cell.value < left_neighbor.value:
-            RETURN SwapAction(direction=LEFT, target=left_neighbor)
-        
-        ELSE IF right_neighbor EXISTS AND cell.value > right_neighbor.value:
-            RETURN SwapAction(direction=RIGHT, target=right_neighbor)
-        
-        ELSE:
-            RETURN None  # No swap needed
+ALGORITHM: BubbleSortCell.move()
+
+1. ACQUIRE global lock
+
+2. UPDATE status if group is sleeping:
+   IF group.status == SLEEP AND self.status != MOVING:
+       self.status = SLEEP
+
+3. RECORD comparison if should_move() returns True:
+   IF should_move():
+       status_probe.record_compare_and_swap()
+
+4. RANDOMLY choose direction (NOT both!):
+   check_right = random.random() < 0.5
+
+   IF check_right:
+       target = (current_position[0] + cell_vision, current_position[1])
+   ELSE:
+       target = (current_position[0] - cell_vision, current_position[1])
+
+5. ATTEMPT swap if conditions met:
+   IF should_move_to(target, check_right):
+       swap(target)
+
+6. RELEASE lock
 ```
 
-**Characteristics**:
-- Bi-directional: Can move left or right
-- Local view: Only sees immediate neighbors
-- Decision rule: Move toward correct relative position
-- Termination: When no cell returns a SwapAction
-
-**Implementation Notes**:
-- Each cell must check both neighbors every step
-- Swaps happen when both cells agree (mutual consent)
-- If two adjacent cells both want to swap, resolve by priority rule
-- Cell threads run in parallel; synchronization required for actual swaps
-
-### 3.2 Cell-View Insertion Sort
-
-**Algorithm Logic**:
-
+**should_move()** **[Code: BubbleSortCell.py:24-42]**:
 ```
-CELL-VIEW-INSERTION-SORT(cell):
-    INPUT:
-        cell.value: This cell's value
-        cell.position: Current position in array
-        left_cells: All cells to the left
-        left_neighbor: Immediate left neighbor
-    
-    OUTPUT:
-        SwapAction or None
-    
-    PROCEDURE:
-        # Check if left side is sorted
-        is_left_sorted = CHECK_IF_SORTED(left_cells)
-        
-        IF NOT is_left_sorted:
-            RETURN None  # Wait for left side to sort
-        
-        # If left is sorted and we're out of order, move left
-        IF left_neighbor EXISTS AND cell.value < left_neighbor.value:
-            RETURN SwapAction(direction=LEFT, target=left_neighbor)
-        
-        ELSE:
-            RETURN None  # Already in correct position relative to left
+# For ascending sort (reverse_direction=False):
+smaller_than_left = value < left_neighbor.value AND left_neighbor.status == ACTIVE
+bigger_than_right = value > right_neighbor.value AND right_neighbor.status == ACTIVE
+RETURN smaller_than_left OR bigger_than_right
+
+# For descending sort (reverse_direction=True):
+bigger_than_left = value > left_neighbor.value AND left_neighbor.status == ACTIVE
+smaller_than_right = value < right_neighbor.value AND right_neighbor.status == ACTIVE
+RETURN bigger_than_left OR smaller_than_right
 ```
 
-**Helper Function**:
+**should_move_to(target, check_right)** **[Code: BubbleSortCell.py:44-56]**:
 ```
-CHECK_IF_SORTED(cells):
-    FOR i FROM 0 TO length(cells) - 2:
-        IF cells[i].value > cells[i+1].value:
-            RETURN False
-    RETURN True
-```
+IF status != ACTIVE:
+    RETURN False
+IF NOT within_boundary(target):
+    RETURN False
+IF target_cell.status NOT IN [ACTIVE, FREEZE]:
+    RETURN False
 
-**Characteristics**:
-- Unidirectional: Only moves left
-- Extended view: Sees all cells to the left
-- Conditional movement: Only moves if left side is sorted
-- Maintains sorted invariant: Left portion always sorted
-
-**Implementation Notes**:
-- Cell must track which cells are to its left
-- More efficient than bubble in comparisons (stops checking when in place)
-- Natural wave pattern: sorted region expands from left to right
-- Similar behavior to traditional insertion sort
-
-### 3.3 Cell-View Selection Sort
-
-**Algorithm Logic**:
-
-```
-CELL-VIEW-SELECTION-SORT(cell):
-    INPUT:
-        cell.value: This cell's value
-        cell.ideal_target_position: Where cell wants to be
-        occupant: Cell currently at ideal_target_position
-    
-    OUTPUT:
-        SwapAction or None
-    
-    PROCEDURE:
-        # View the cell at our ideal position
-        occupant = GET_CELL_AT(cell.ideal_target_position)
-        
-        # Try to claim that position
-        IF cell.value < occupant.value:
-            # We deserve that spot more than occupant
-            RETURN SwapAction(target_position=cell.ideal_target_position)
-        
-        ELSE:
-            # Occupant has smaller value, shift our target right
-            cell.ideal_target_position += 1
-            RETURN None  # Try again next step
+# Comparison logic (ascending):
+IF check_right:
+    RETURN value > target_cell.value  # Move right if bigger
+ELSE:
+    RETURN value < target_cell.value  # Move left if smaller
 ```
 
-**Initialization**:
+### 3.2 Cell-View Selection Sort
+
+**[Paper p.7-8]**: Each cell has ideal target position, starts at leftmost.
+
+**[Code: SelectionSortCell.py:31-98]**:
+
 ```
-INITIALIZE_SELECTION_CELL(cell):
-    cell.ideal_target_position = 0  # Everyone starts wanting leftmost position
+ALGORITHM: SelectionSortCell.move()
+
+1. ACQUIRE global lock
+
+2. UPDATE status if group sleeping
+
+3. RECORD comparison if should_move()
+
+4. CHECK should_move_to(ideal_position):
+
+   # Handle frozen cell at ideal position:
+   IF target is FREEZE:
+       SHIFT ideal_position by 1
+       IF value < frozen_cell.value:
+           swap(target)  # Just to count frozen attempt
+       RETURN False
+
+   # Normal movement logic:
+   IF status == ACTIVE AND within_boundary AND target is ACTIVE:
+       IF value >= target_cell.value:
+           # Swap denied: I'm not smaller, shift target
+           ideal_position += 1
+           RETURN False
+       ELSE:
+           RETURN True  # I'm smaller, can swap
+
+5. IF should_move_to() returned True:
+   IF cell_at_ideal.status == ACTIVE:
+       swap(ideal_position)
+
+6. RELEASE lock
 ```
 
-**Characteristics**:
-- Position-seeking: Each cell has a target position
-- Competitive: Cells "compete" for positions based on value
-- Adaptive: Target shifts right if denied
-- Less efficient: More swaps than traditional selection sort
+**should_move()** **[Code: SelectionSortCell.py:31-32]**:
+```
+RETURN current_position != ideal_position AND within_boundary(ideal_position)
+```
 
-**Implementation Notes**:
-- All cells initially target position 0
-- Smaller values will successfully claim earlier positions
-- Larger values get "pushed" rightward by competition
-- Requires careful synchronization of ideal_target_position updates
+**update()** — Called after group merge **[Code: SelectionSortCell.py:77-81]**:
+```
+# Reset ideal position to group boundary
+IF reverse_direction:
+    ideal_position = right_boundary
+ELSE:
+    ideal_position = left_boundary
+```
+
+### 3.3 Cell-View Insertion Sort
+
+**[Paper p.7]**: Check if left portion is sorted before moving left.
+
+**[Code: InsertionSortCell.py:24-101]**:
+
+```
+ALGORITHM: InsertionSortCell.move()
+
+1. ACQUIRE global lock
+
+2. CHECK is_enable_to_move():
+   IF NOT is_enable_to_move():
+       RELEASE lock
+       RETURN  # Wait for left side to sort
+
+3. RECORD comparison if should_move()
+
+4. UPDATE status if group sleeping
+
+5. CALCULATE target (always LEFT):
+   target = (current_position[0] - cell_vision, current_position[1])
+
+6. IF should_move_to(target):
+   swap(target)
+
+7. RELEASE lock
+```
+
+**is_enable_to_move()** **[Code: InsertionSortCell.py:68-83]**:
+```
+# Check if all cells to the left are sorted
+prev = -1  # (or 100000 if reverse_direction)
+
+FOR i FROM left_boundary TO current_position - 1:
+    IF cells[i].status == FREEZE:
+        prev = -1  # Reset on frozen (skip it)
+        CONTINUE
+
+    IF cells[i].value < prev:  # (or > if reverse)
+        RETURN False  # Left side not sorted yet
+
+    prev = cells[i].value
+
+RETURN True  # Left side is sorted, can move
+```
+
+**should_move_to(target)** **[Code: InsertionSortCell.py:40-61]**:
+```
+IF (status IN [ACTIVE, FREEZE]) AND within_boundary(target)
+   AND target_cell.status IN [ACTIVE, FREEZE]:
+
+    # Skip past consecutive frozen cells
+    next_cell = target[0]
+    WHILE next_cell < len(cells) AND cells[next_cell].status == FREEZE:
+        next_cell += 1
+
+    # Compare with target
+    IF reverse_direction:
+        RETURN value > target_cell.value
+    ELSE:
+        RETURN value < target_cell.value
+```
 
 ---
 
-## 4. Evaluation Metrics Implementation
+## 4. Swap Operation
 
-### 4.1 Monotonicity Error
+### 4.1 Atomic Swap
 
-**Formula**:
+**[Code: MultiThreadCell.py:71-98]**:
+
 ```
-ME = Î£(i=0 to n-1) f(A[i], A[i+1])
+ALGORITHM: swap(target_position, skip_stats=False)
 
-where f(A[i], A[i+1]) = {
-    0 if A[i] <= A[i+1]  (correct order)
-    1 if A[i] > A[i+1]   (violation)
-}
+1. GET cell at target position:
+   target_cell = cells[target_position[0]]
+
+2. CHECK if self is frozen:
+   IF self.status == FREEZE:
+       IF NOT tried_to_swap_with_frozen:
+           status_probe.count_frozen_cell_attempt()
+           tried_to_swap_with_frozen = True
+       RETURN  # Cannot initiate swap
+
+3. RESET frozen attempt flags:
+   self.tried_to_swap_with_frozen = False
+   target_cell.tried_to_swap_with_frozen = False
+
+4. SET both cells to MOVING status:
+   self.status = MOVING
+   target_cell.status = MOVING
+
+5. SWAP positions in array:
+   cells[self.current_position[0]] = target_cell
+   cells[target_position[0]] = self
+
+6. UPDATE target positions:
+   target_cell.target_position = self.current_position
+   self.target_position = target_position
+
+7. IF visualization disabled (instant mode):
+   self.current_position = self.target_position
+   target_cell.current_position = target_cell.target_position
+   self.status = self.previous_status
+   target_cell.status = target_cell.previous_status
+
+8. RECORD metrics (unless skip_stats):
+   swapping_count[0] += 1
+   status_probe.record_swap()
+   snapshot, cell_type_snapshot = take_snapshot()
+   status_probe.record_sorting_step(snapshot)
+   export_steps.append(snapshot)
+   status_probe.record_cell_type(cell_type_snapshot)
 ```
 
-**Implementation**:
+### 4.2 Snapshot Format
+
+**[Code: MultiThreadCell.py:61-62]**:
+
 ```python
-def calculate_monotonicity_error(array: List[Cell], 
-                                 direction: SortDirection) -> int:
-    """
-    Count cells that violate monotonic order.
-    
-    Args:
-        array: List of cells in current positions
-        direction: INCREASING or DECREASING
-        
-    Returns:
-        Number of inversions (0 = perfectly sorted)
-    """
-    error_count = 0
-    
-    for i in range(len(array) - 1):
-        current_value = array[i].value
-        next_value = array[i + 1].value
-        
-        if direction == SortDirection.INCREASING:
-            if current_value > next_value:
-                error_count += 1
-        else:  # DECREASING
-            if current_value < next_value:
-                error_count += 1
-    
-    return error_count
+def take_snapshot(self):
+    # Array values snapshot
+    values = [c.value for c in self.cells]
+
+    # Cell type snapshot: [group_id, cell_type, value, is_frozen]
+    types = [[c.group.group_id,
+              cell_type_dict[c.cell_type] if c.label == 0 else c.label,
+              c.value,
+              1 if c.status == CellStatus.FREEZE else 0]
+             for c in self.cells]
+
+    return values, types
 ```
 
-**Usage**:
-- Lower is better (0 = perfect)
-- Primary metric for error tolerance evaluation
-- Called after each step during experiments with frozen cells
+---
 
-### 4.2 Sortedness Value
+## 5. CellGroup Management
 
-**Formula**:
+### 5.1 Group Lifecycle
+
+**[Code: CellGroup.py:104-122]**:
+
 ```
-Sortedness = (Number of cells in correct position / Total cells) Ã— 100%
+ALGORITHM: CellGroup.run()
+
+WHILE status != MERGED AND NOT all_cells_inactive():
+
+    IF count_down == 0:
+        change_status()  # Toggle ACTIVE <-> SLEEP
+
+    IF status == SLEEP:
+        put_cells_to_sleep()
+        count_down -= 1
+        sleep(0.05)
+
+    IF status == ACTIVE:
+        ACQUIRE lock
+
+        IF is_group_sorted():
+            next_group = find_next_group()
+            IF next_group AND next_group.status == ACTIVE AND next_group.is_group_sorted():
+                merge_with_group(next_group)
+
+        RELEASE lock
+        sleep(0.05)
+        count_down -= 1
 ```
 
-**Implementation**:
+### 5.2 Group Sorted Check
+
+**[Code: CellGroup.py:37-44]**:
+
+```
+ALGORITHM: is_group_sorted()
+
+prev_cell = cells[left_boundary[0]]
+
+FOR i FROM left_boundary[0] TO right_boundary[0]:
+    cell = cells[i]
+
+    IF cell.status IN [SLEEP, MOVING]:
+        RETURN False  # Can't determine if cell is moving
+
+    IF cell.value < prev_cell.value:
+        RETURN False  # Out of order
+
+    prev_cell = cell
+
+RETURN True
+```
+
+### 5.3 Group Merging
+
+**[Code: CellGroup.py:55-73]**:
+
+```
+ALGORITHM: merge_with_group(next_group)
+
+1. MARK next group as merged:
+   next_group.status = MERGED
+
+2. TAKE minimum timing parameters:
+   self.count_down = min(self.count_down, next_group.count_down)
+   self.phase_period = min(self.phase_period, next_group.phase_period)
+
+3. EXTEND boundary:
+   self.right_boundary_position = next_group.right_boundary_position
+
+4. ABSORB cells:
+   self.cells_in_group.extend(next_group.cells_in_group)
+
+5. UPDATE all cells in merged group:
+   FOR cell IN self.cells_in_group:
+       cell.group = self
+       cell.left_boundary = self.left_boundary_position
+       cell.right_boundary = self.right_boundary_position
+       cell.update()  # Reset ideal_position for Selection cells
+
+       IF cell.cell_type == 'Insertion':
+           cell.enable_to_move = False
+
+6. ENABLE one insertion cell:
+   FOR cell IN self.cells_in_group:
+       IF cell.cell_type == 'Insertion':
+           cell.enable_to_move = False  # Only first one enabled
+           BREAK
+```
+
+### 5.4 Sleep/Wake Cycle
+
+**[Code: CellGroup.py:81-101]**:
+
+```
+ALGORITHM: change_status()
+
+1. RESET countdown:
+   count_down = phase_period
+
+2. TOGGLE status:
+   IF status == ACTIVE:
+       status = SLEEP
+       put_cells_to_sleep()
+
+   ELSE IF status == SLEEP:
+       status = ACTIVE
+       awake_cells()
+
+---
+
+put_cells_to_sleep():
+    FOR cell IN cells_in_group:
+        IF cell.status NOT IN [MOVING, INACTIVE]:
+            cell.status = SLEEP
+
+awake_cells():
+    FOR cell IN cells_in_group:
+        IF cell.status != INACTIVE:
+            cell.status = cell.previous_status
+```
+
+---
+
+## 6. Frozen Cell Implementation
+
+### 6.1 Frozen Cell Semantics
+
+**[Paper p.8]** describes "movable frozen" vs "immovable frozen".
+**[Code: MultiThreadCell.py]** — Simpler single FREEZE status:
+
+| Aspect | Behavior |
+|--------|----------|
+| **Initiate swap** | Cannot (swap() returns early) |
+| **Accept swap** | Can be swapped with by ACTIVE cells |
+| **Position** | Moves when swapped with |
+| **Tracking** | `frozen_swap_attempts` counter |
+
+### 6.2 Setting Frozen Status
+
+**[Code: MultiThreadCell.py:67-69]**:
+
 ```python
-def calculate_sortedness(array: List[Cell], 
-                        direction: SortDirection) -> float:
-    """
-    Calculate percentage of cells in their final sorted position.
-    
-    Args:
-        array: Current array state
-        direction: Target sort direction
-        
-    Returns:
-        Percentage (0.0 to 100.0)
-    """
-    # Create target sorted array
-    sorted_values = sorted([cell.value for cell in array], 
-                          reverse=(direction == SortDirection.DECREASING))
-    
-    # Count matches
-    correct_positions = 0
-    for i, cell in enumerate(array):
-        if cell.value == sorted_values[i]:
-            correct_positions += 1
-    
-    return (correct_positions / len(array)) * 100.0
+def set_cell_to_freeze(self):
+    self.status = CellStatus.FREEZE
+    self.previous_status = CellStatus.FREEZE
 ```
 
-**Usage**:
-- Ranges from ~50% (random) to 100% (fully sorted)
-- Tracked at every step to create sortedness trajectory
-- Used to detect termination (stable at 100%)
-- Key metric for delayed gratification calculation
+### 6.3 Frozen Cell Interactions by Algorithm
 
-### 4.3 Delayed Gratification (DG)
+**BubbleSortCell** **[Code: BubbleSortCell.py:49]**:
+- Can attempt swap with FREEZE cells (included in valid targets)
+- Swap will succeed, moving frozen cell
 
-**Concept**: Ability to temporarily decrease sortedness to navigate around obstacles (frozen cells).
+**SelectionSortCell** **[Code: SelectionSortCell.py:35-42]**:
+- When ideal_position has frozen cell: shifts ideal_position
+- Calls swap() anyway if value < frozen.value (to count attempt)
+
+**InsertionSortCell** **[Code: InsertionSortCell.py:74-76]**:
+- Skips frozen cells in `is_enable_to_move()` check
+- Can swap with frozen cells
+
+---
+
+## 7. Evaluation Metrics
+
+### 7.1 Monotonicity (Sortedness by Neighbors)
+
+**[Paper p.8]**: "Monotonicity is the measurement of how well the cells followed monotonic order"
+
+**[Code: analysis/utils.py]** — `get_monotonicity()`:
+
+```python
+def get_monotonicity(arr):
+    monotonicity_value = 1  # Start counting from first element
+    prev = arr[0]
+    for i in range(1, len(arr)):
+        if arr[i] >= prev:
+            monotonicity_value += 1
+        prev = arr[i]
+    return (monotonicity_value / len(arr)) * 100
+```
+
+**Formula**: (cells in correct relative order with predecessor / total cells) × 100
+
+### 7.2 Monotonicity Error
+
+**[Paper p.8]**: "number of cells that violate the monotonic order"
+
+**Formula**: Count of adjacent pairs where `arr[i] > arr[i+1]` (for ascending)
+
+### 7.3 Sortedness Value
+
+**[Paper p.8]**: "percentage of cells that strictly follow the designated sort order"
+
+**Formula**: (cells in correct final sorted position / total cells) × 100
+
+### 7.4 Spearman Distance
+
+**[Code: analysis/utils.py]** — `get_spearman_distance()`:
+
+```python
+def get_spearman_distance(arr):
+    res = 0
+    for i in range(len(arr)):
+        res += abs(arr[i] - i)  # Distance from correct position
+    return res
+```
+
+**Formula**: Σ |actual_position - expected_position| for all cells
+
+### 7.5 Delayed Gratification
+
+**[Paper p.8]**: "ability to undertake actions that temporarily increase Monotonicity Error in order to achieve gains later on"
 
 **Formula**:
 ```
-DG_event = Î” S_increasing / Î” S_decreasing
+DG_event = ΔS_increasing / ΔS_decreasing
 
 where:
-    Î” S_decreasing = Total sortedness lost during consecutive drops
-    Î” S_increasing = Total sortedness gained in subsequent recovery
+  ΔS_decreasing = Sortedness drop from peak to trough
+  ΔS_increasing = Sortedness gain from trough to next peak
 ```
 
-**Implementation**:
+**Calculation**: Sum all DG events across trajectory
+
+### 7.6 Aggregation Value (Chimeric)
+
+**[Paper p.8-9]**: "percentage of cells with directly adjacent neighboring cells that were all the same Algotype"
+
+**[Code: analysis/utils.py style]**:
+
 ```python
-def calculate_delayed_gratification(sortedness_history: List[float]) -> float:
-    """
-    Calculate total delayed gratification across entire run.
-    
-    Args:
-        sortedness_history: Sortedness value at each step
-        
-    Returns:
-        Sum of all DG events
-    """
-    dg_total = 0.0
-    i = 0
-    
-    while i < len(sortedness_history) - 1:
-        # Detect start of decrease
-        if sortedness_history[i + 1] < sortedness_history[i]:
-            # Track the drop
-            drop_start_value = sortedness_history[i]
-            drop_end_index = i + 1
-            
-            # Find bottom of drop
-            while (drop_end_index < len(sortedness_history) - 1 and
-                   sortedness_history[drop_end_index + 1] < 
-                   sortedness_history[drop_end_index]):
-                drop_end_index += 1
-            
-            drop_end_value = sortedness_history[drop_end_index]
-            delta_decreasing = drop_start_value - drop_end_value
-            
-            # Now track the subsequent increase
-            increase_start_index = drop_end_index
-            increase_end_index = drop_end_index + 1
-            
-            # Find peak of increase
-            while (increase_end_index < len(sortedness_history) - 1 and
-                   sortedness_history[increase_end_index + 1] > 
-                   sortedness_history[increase_end_index]):
-                increase_end_index += 1
-            
-            increase_start_value = sortedness_history[increase_start_index]
-            increase_end_value = sortedness_history[increase_end_index]
-            delta_increasing = increase_end_value - increase_start_value
-            
-            # Calculate DG for this event
-            if delta_decreasing > 0:
-                dg_event = delta_increasing / delta_decreasing
-                dg_total += dg_event
-            
-            # Move past this DG event
-            i = increase_end_index
-        else:
-            i += 1
-    
-    return dg_total
-```
-
-**Expected Values** (from paper experiments):
-- Cell-view Bubble sort: 0.24 (0 frozen) to 0.37 (3 frozen)
-- Cell-view Insertion sort: 1.1 (0 frozen) to 1.19 (3 frozen)
-- Cell-view Selection sort: ~2.8 (varies, no clear trend with frozen cells)
-
-**Usage**:
-- Measures intelligence/problem-solving capacity
-- Higher DG with more frozen cells indicates context-sensitive navigation
-- Compare against traditional algorithms (should be lower or absent)
-
-### 4.4 Aggregation Value
-
-**Purpose**: Measure spatial clustering of same-algotype cells in chimeric arrays.
-
-**Formula**:
-```
-Aggregation = (Cells with same-algotype neighbors / Total cells) Ã— 100%
-```
-
-**Implementation**:
-```python
-def calculate_aggregation_value(array: List[Cell]) -> float:
-    """
-    Calculate percentage of cells adjacent to same-algotype neighbors.
-    Only applicable for chimeric arrays (mixed algotypes).
-    
-    Args:
-        array: Current array with algotype information
-        
-    Returns:
-        Percentage (0.0 to 100.0)
-    """
-    if len(array) < 2:
-        return 0.0
-    
-    same_type_neighbors = 0
-    
-    for i, cell in enumerate(array):
-        has_left_same = (i > 0 and 
-                        array[i - 1].algotype == cell.algotype)
-        has_right_same = (i < len(array) - 1 and 
-                         array[i + 1].algotype == cell.algotype)
-        
+def get_aggregation_value(cells):
+    same_type_count = 0
+    for i in range(len(cells)):
+        has_left_same = (i > 0 and cells[i-1].algotype == cells[i].algotype)
+        has_right_same = (i < len(cells)-1 and cells[i+1].algotype == cells[i].algotype)
         if has_left_same or has_right_same:
-            same_type_neighbors += 1
-    
-    return (same_type_neighbors / len(array)) * 100.0
+            same_type_count += 1
+    return (same_type_count / len(cells)) * 100
 ```
 
-**Expected Patterns** (from paper):
-- Start: ~50% (random assignment)
-- Peak during sorting:
-    - Bubble-Selection: 72% at 42% completion
-    - Bubble-Insertion: 65% at 21% completion
-    - Selection-Insertion: 69% at 19% completion
-- End: ~50% (must sort by value, breaking algotype clusters)
+### 7.7 Position Success Rate (Frozen Experiments)
 
-**Usage**:
-- Only meaningful in chimeric array experiments
-- Track throughout sorting process to capture transient clustering
-- Compare against negative control (identical algorithms, different labels)
-
----
-
-## 5. Frozen Cell Implementation
-
-### 5.1 Frozen Cell Types
+**[Code: freezing_sorting_analysis.py]**:
 
 ```python
-class FrozenStateEnum(Enum):
-    """Cell operational states"""
-    ACTIVE = 1              # Normal, fully functional cell
-    MOVABLE_FROZEN = 2      # Cannot initiate swaps, accepts swaps from others
-    IMMOVABLE_FROZEN = 3    # Cannot initiate or accept any swaps
-```
-
-### 5.2 Swap Logic with Frozen Cells
-
-```python
-def attempt_swap(cell_a: Cell, cell_b: Cell) -> bool:
-    """
-    Attempt to swap two cells, respecting frozen states.
-    
-    Args:
-        cell_a: Initiating cell
-        cell_b: Target cell
-        
-    Returns:
-        True if swap succeeded, False otherwise
-    """
-    # Initiator must be ACTIVE to initiate
-    if cell_a.frozen_state != FrozenStateEnum.ACTIVE:
-        return False
-    
-    # Target must not be IMMOVABLE_FROZEN to accept
-    if cell_b.frozen_state == FrozenStateEnum.IMMOVABLE_FROZEN:
-        return False
-    
-    # Swap is allowed
-    cell_a.position, cell_b.position = cell_b.position, cell_a.position
-    return True
-```
-
-### 5.3 Frozen Cell Placement
-
-```python
-def create_array_with_frozen_cells(
-    size: int,
-    num_frozen: int,
-    frozen_type: FrozenStateEnum,
-    frozen_positions: Optional[List[int]] = None
-) -> List[Cell]:
-    """
-    Create array with specified number of frozen cells.
-    
-    Args:
-        size: Total array size
-        num_frozen: Number of cells to freeze
-        frozen_type: MOVABLE_FROZEN or IMMOVABLE_FROZEN
-        frozen_positions: Specific positions (random if None)
-        
-    Returns:
-        Array with frozen cells in place
-    """
-    # Create cells with random values
-    cells = [Cell(value=v) for v in random.sample(range(1, size+1), size)]
-    
-    # Select positions for frozen cells
-    if frozen_positions is None:
-        frozen_positions = random.sample(range(size), num_frozen)
-    
-    # Freeze selected cells
-    for pos in frozen_positions:
-        cells[pos].frozen_state = frozen_type
-    
-    return cells
-```
-
-### 5.4 Expected Error Tolerance Results
-
-**Movable Frozen Cells** (1/2/3 frozen):
-- Cell-view Bubble: 0.0 / 0.8 / 2.64 monotonicity error
-- Cell-view Insertion: (medium error)
-- Cell-view Selection: 2.24 / 4.36 / 13.24 monotonicity error
-
-**Immovable Frozen Cells** (1/2/3 frozen):
-- Cell-view Bubble: 1.91 / 3.72 / 5.37 monotonicity error
-- Cell-view Insertion: (medium error)
-- Cell-view Selection: 1.0 / 1.96 / 2.91 monotonicity error
-
-**Key Finding**: Cell-view algorithms have higher error tolerance than traditional versions.
-
----
-
-## 6. Chimeric Array Implementation
-
-### 6.1 Mixed Algotype Configuration
-
-```python
-def create_chimeric_array(
-    size: int,
-    algotypes: List[AlgotypeEnum],
-    distribution: Optional[Dict[AlgotypeEnum, float]] = None
-) -> List[Cell]:
-    """
-    Create array with mixed algotypes.
-    
-    Args:
-        size: Array size
-        algotypes: List of algotypes to use
-        distribution: Proportion of each (equal if None)
-        
-    Returns:
-        Array with randomly assigned algotypes
-    """
-    # Default to equal distribution
-    if distribution is None:
-        distribution = {a: 1.0/len(algotypes) for a in algotypes}
-    
-    # Create cells with random values
-    cells = []
-    for i in range(size):
-        value = random.randint(1, size)  # or unique values
-        
-        # Assign algotype based on distribution
-        algotype = random.choices(
-            population=list(distribution.keys()),
-            weights=list(distribution.values()),
-            k=1
-        )[0]
-        
-        cells.append(Cell(value=value, algotype=algotype))
-    
-    return cells
-```
-
-### 6.2 Conflicting Goals Experiment
-
-```python
-def create_conflict_chimeric_array(
-    size: int,
-    algotype_a: AlgotypeEnum,
-    algotype_b: AlgotypeEnum,
-    direction_a: SortDirection,
-    direction_b: SortDirection
-) -> List[Cell]:
-    """
-    Create chimeric array where algotypes have conflicting goals.
-    
-    Example: Bubble sorting INCREASING + Selection sorting DECREASING
-    
-    Args:
-        size: Array size
-        algotype_a: First algorithm type
-        algotype_b: Second algorithm type
-        direction_a: Sort direction for algotype_a
-        direction_b: Sort direction for algotype_b
-        
-    Returns:
-        Chimeric array with conflicting directives
-    """
-    cells = []
-    for i in range(size):
-        value = random.randint(1, size)
-        
-        # Randomly assign algotype
-        if random.random() < 0.5:
-            cells.append(Cell(value=value, 
-                            algotype=algotype_a,
-                            sort_direction=direction_a))
-        else:
-            cells.append(Cell(value=value,
-                            algotype=algotype_b,
-                            sort_direction=direction_b))
-    
-    return cells
-```
-
-**Expected Equilibrium Sortedness** (from paper):
-- Bubble (decreasing) + Selection (increasing): 42.5%
-- Bubble (increasing) + Insertion (decreasing): 73.73%
-- Selection (decreasing) + Insertion (increasing): 38.31%
-
-### 6.3 Duplicate Values for Aggregation Study
-
-```python
-def create_array_with_duplicates(
-    total_size: int,
-    unique_values: int,
-    algotypes: List[AlgotypeEnum]
-) -> List[Cell]:
-    """
-    Create array with duplicate values to study persistent aggregation.
-    
-    Args:
-        total_size: Total array size (e.g., 100)
-        unique_values: Number of unique values (e.g., 10)
-        algotypes: Algotype options
-        
-    Returns:
-        Array where duplicates can remain clustered by algotype
-    """
-    copies_per_value = total_size // unique_values
-    cells = []
-    
-    for value in range(1, unique_values + 1):
-        for _ in range(copies_per_value):
-            algotype = random.choice(algotypes)
-            cells.append(Cell(value=value, algotype=algotype))
-    
-    random.shuffle(cells)
-    return cells
+def get_pos_success_rate(cells, frozen_cell_num):
+    current = [c.value for c in cells]
+    expected = sorted(current)
+    correct = sum(1 for a, b in zip(expected, current) if a == b)
+    return (correct - frozen_cell_num) / (len(current) - frozen_cell_num)
 ```
 
 ---
 
-## 7. Threading and Synchronization
+## 8. Experiment Configuration
 
-### 7.1 Parallel Cell Execution
+### 8.1 Standard Parameters
 
-```python
-class SortingEngine:
-    """Main engine coordinating parallel cell-view sorting"""
-    
-    def __init__(self, cells: List[Cell], config: ExperimentConfig):
-        self.cells = cells
-        self.config = config
-        self.probe = Probe() if config.enable_probe else None
-        self.step_count = 0
-        self.stable_steps = 0
-        self.running = True
-        
-        # Synchronization
-        self.swap_lock = threading.Lock()
-        self.barrier = threading.Barrier(len(cells) + 1)  # +1 for main thread
-        self.proposed_swaps: List[SwapProposal] = []
-    
-    def run(self) -> SortingResult:
-        """Execute the sorting process"""
-        
-        # Start all cell threads
-        for cell in self.cells:
-            cell_thread = threading.Thread(
-                target=self.cell_worker,
-                args=(cell,)
-            )
-            cell_thread.start()
-            cell.thread = cell_thread
-        
-        # Main coordination loop
-        while self.running:
-            # Wait for all cells to evaluate
-            self.barrier.wait()
-            
-            # Resolve proposed swaps
-            executed_swaps = self.resolve_swaps()
-            
-            # Update probe
-            if self.probe:
-                self.probe.record_step(self.cells, executed_swaps)
-            
-            # Check termination
-            self.check_termination()
-            
-            self.step_count += 1
-            
-            # Release cells for next step
-            self.barrier.wait()
-        
-        # Join all threads
-        for cell in self.cells:
-            cell.thread.join()
-        
-        return self.create_result()
-```
+**[Code: Various experiment files]**:
 
-### 7.2 Cell Worker Function
+| Parameter | Typical Value | Description |
+|-----------|---------------|-------------|
+| Array size | 100 | Number of cells |
+| Value range | 1-100 (unique) or 1-10 (duplicates) | Cell values |
+| Frozen cells | 0, 1, 2, 3 | Number of frozen obstacles |
+| Experiment count | 100 | Repetitions for statistics |
+| Timeout | 40 seconds | Max time before abort |
+| Phase period | random(100, 200) | Group sleep/wake cycle |
+| Start countdown | random(0, phase_period) | Initial delay |
 
-```python
-def cell_worker(self, cell: Cell):
-    """Worker function executed by each cell thread"""
-    
-    while self.running:
-        # Wait for step start
-        self.barrier.wait()
-        
-        if not self.running:
-            break
-        
-        # Evaluate and propose action
-        swap_action = cell.evaluate_move()
-        
-        if swap_action and cell.frozen_state == FrozenStateEnum.ACTIVE:
-            # Propose swap
-            with self.swap_lock:
-                self.proposed_swaps.append(
-                    SwapProposal(
-                        initiator=cell,
-                        target=swap_action.target,
-                        priority=cell.position  # or other priority scheme
-                    )
-                )
-        
-        # Wait for main thread to resolve swaps
-        self.barrier.wait()
-```
+### 8.2 Experiment Types
 
-### 7.3 Swap Resolution
+**Single Algorithm Sorting**:
+- Homogeneous population (all Bubble, all Selection, or all Insertion)
+- Single group or multi-group configuration
+- With/without frozen cells
 
-```python
-def resolve_swaps(self) -> List[ExecutedSwap]:
-    """
-    Resolve all proposed swaps for this step.
-    Handle conflicts where multiple cells want the same target.
-    """
-    executed = []
-    
-    with self.swap_lock:
-        # Sort by priority (e.g., leftmost cell first)
-        self.proposed_swaps.sort(key=lambda p: p.priority)
-        
-        # Track which cells are involved in swaps
-        involved = set()
-        
-        for proposal in self.proposed_swaps:
-            initiator = proposal.initiator
-            target = proposal.target
-            
-            # Skip if either cell already swapped this step
-            if initiator in involved or target in involved:
-                continue
-            
-            # Attempt swap (respects frozen states)
-            if attempt_swap(initiator, target):
-                executed.append(
-                    ExecutedSwap(initiator, target, self.step_count)
-                )
-                involved.add(initiator)
-                involved.add(target)
-        
-        # Clear proposals for next step
-        self.proposed_swaps.clear()
-    
-    return executed
-```
+**Chimeric Population Sorting**:
+- Mixed algotypes (e.g., 50% Bubble + 50% Selection)
+- Random algotype assignment
+- Aggregation tracking
 
-### 7.4 Termination Detection
+**Cross-Purpose Sorting**:
+- Different algotypes with different sort directions
+- E.g., Bubble(ascending) + Selection(descending)
+- Measures equilibrium sortedness
 
-```python
-def check_termination(self):
-    """Check if sorting is complete"""
-    
-    current_sortedness = calculate_sortedness(
-        self.cells,
-        self.config.sort_direction
-    )
-    
-    # Termination conditions
-    if current_sortedness == 100.0:
-        self.stable_steps += 1
-        if self.stable_steps >= self.config.stable_steps_required:
-            self.running = False
-    else:
-        self.stable_steps = 0
-    
-    # Safety: max steps reached
-    if self.step_count >= self.config.max_steps:
-        self.running = False
-```
+**Duplicate Values**:
+- 100 cells with values 1-10 (10 copies each)
+- Studies persistent aggregation after sorting
 
 ---
 
-## 8. Experiment Execution
+## 9. Expected Experimental Results
 
-### 8.1 Single Experiment
+### 9.1 Efficiency (Steps to Sort)
 
-```python
-def run_single_experiment(config: ExperimentConfig) -> ExperimentResult:
-    """
-    Run a single sorting experiment.
-    
-    Args:
-        config: Experiment configuration
-        
-    Returns:
-        Result with metrics and probe data
-    """
-    # Create array
-    if len(config.algotypes) == 1:
-        cells = create_homogeneous_array(
-            size=config.array_size,
-            algotype=config.algotypes[0]
-        )
-    else:
-        cells = create_chimeric_array(
-            size=config.array_size,
-            algotypes=config.algotypes,
-            distribution=config.algotype_distribution
-        )
-    
-    # Add frozen cells if specified
-    if config.num_frozen_cells > 0:
-        add_frozen_cells(cells, config.num_frozen_cells, config.frozen_type)
-    
-    # Randomize initial order
-    random.shuffle(cells)
-    
-    # Run sorting engine
-    engine = SortingEngine(cells, config)
-    result = engine.run()
-    
-    # Calculate final metrics
-    result.final_sortedness = calculate_sortedness(
-        cells,
-        config.sort_direction
-    )
-    result.final_monotonicity_error = calculate_monotonicity_error(
-        cells,
-        config.sort_direction
-    )
-    result.total_steps = engine.step_count
-    
-    if engine.probe:
-        result.delayed_gratification = calculate_delayed_gratification(
-            engine.probe.sortedness_history
-        )
-        result.probe_data = engine.probe
-    
-    return result
-```
+**[Paper p.10, Table 1]**:
 
-### 8.2 Batch Experiments
+| Algorithm | Traditional (swaps) | Cell-View (swaps) | Z-score | p-value |
+|-----------|--------------------|--------------------|---------|---------|
+| Bubble | ~2500 | ~2500 | 0.73 | 0.47 |
+| Insertion | ~2500 | ~2500 | 1.26 | 0.24 |
+| Selection | ~100 | ~1100 | 120.43 | <0.01 |
 
-```python
-def run_batch_experiments(
-    batch_config: BatchExperimentConfig
-) -> BatchExperimentResult:
-    """
-    Run multiple experiments (typically 100) for statistical analysis.
-    
-    Args:
-        batch_config: Batch configuration
-        
-    Returns:
-        Aggregate results with statistical measures
-    """
-    results = []
-    
-    for i in range(batch_config.num_repetitions):
-        # Run experiment
-        result = run_single_experiment(
-            batch_config.single_experiment_config
-        )
-        
-        # Save probe data
-        if result.probe_data:
-            filepath = os.path.join(
-                batch_config.output_directory,
-                f"experiment_{i:03d}.npy"
-            )
-            result.probe_data.save_to_file(filepath)
-        
-        results.append(result)
-        
-        # Progress logging
-        if (i + 1) % 10 == 0:
-            logger.info(f"Completed {i+1}/{batch_config.num_repetitions}")
-    
-    # Aggregate statistics
-    batch_result = BatchExperimentResult()
-    batch_result.individual_results = results
-    
-    # Calculate means and std devs
-    batch_result.mean_steps = np.mean([r.total_steps for r in results])
-    batch_result.std_steps = np.std([r.total_steps for r in results])
-    
-    batch_result.mean_sortedness = np.mean([r.final_sortedness for r in results])
-    batch_result.std_sortedness = np.std([r.final_sortedness for r in results])
-    
-    batch_result.mean_dg = np.mean([r.delayed_gratification for r in results])
-    batch_result.std_dg = np.std([r.delayed_gratification for r in results])
-    
-    # Statistical tests (if comparing against baseline)
-    if batch_config.statistical_analysis:
-        batch_result.statistical_tests = perform_statistical_tests(results)
-    
-    return batch_result
-```
+### 9.2 Error Tolerance (Monotonicity Error)
 
-### 8.3 Statistical Analysis
+**[Paper p.10-11, Tables 2-3]**:
 
-```python
-def perform_statistical_tests(
-    results_a: List[ExperimentResult],
-    results_b: List[ExperimentResult]
-) -> StatisticalTestResult:
-    """
-    Perform Z-test or T-test between two result sets.
-    
-    Args:
-        results_a: First experiment group (e.g., cell-view)
-        results_b: Second experiment group (e.g., traditional)
-        
-    Returns:
-        Test results with z-score and p-value
-    """
-    from scipy import stats
-    
-    # Extract metric (e.g., total steps)
-    values_a = [r.total_steps for r in results_a]
-    values_b = [r.total_steps for r in results_b]
-    
-    # Perform Z-test (large sample)
-    if len(values_a) >= 30 and len(values_b) >= 30:
-        z_score = calculate_z_score(values_a, values_b)
-        p_value = stats.norm.sf(abs(z_score)) * 2  # two-tailed
-        test_type = "Z-test"
-    else:
-        # T-test (smaller sample)
-        t_score, p_value = stats.ttest_ind(values_a, values_b)
-        z_score = t_score
-        test_type = "T-test"
-    
-    return StatisticalTestResult(
-        test_type=test_type,
-        z_score=z_score,
-        p_value=p_value,
-        significant=(p_value < 0.01)  # Î± = 0.01
-    )
-```
-
----
-
-## 9. Data Persistence and Analysis
-
-### 9.1 Probe Data Format
-
-**File Format**: NumPy `.npy` binary format
-
-**Saved Data Structure**:
-```python
-@dataclass
-class ProbeDataSnapshot:
-    """Complete probe data for serialization"""
-    
-    # Metadata
-    experiment_id: str
-    timestamp: datetime
-    config: ExperimentConfig
-    
-    # Step-by-step history
-    step_log: List[StepRecord]
-    sortedness_history: List[float]
-    monotonicity_history: List[int]
-    aggregation_history: List[float]  # For chimeric experiments
-    position_history: List[List[int]]  # Array state at each step
-    
-    # Summary metrics
-    total_steps: int
-    total_swaps: int
-    total_comparisons: int
-    final_sortedness: float
-    delayed_gratification: float
-```
-
-**Save/Load Implementation**:
-```python
-def save_probe_data(probe: Probe, filepath: str):
-    """Save probe data to .npy file"""
-    snapshot = ProbeDataSnapshot.from_probe(probe)
-    np.save(filepath, snapshot, allow_pickle=True)
-
-def load_probe_data(filepath: str) -> ProbeDataSnapshot:
-    """Load probe data from .npy file"""
-    return np.load(filepath, allow_pickle=True).item()
-```
-
-### 9.2 Evaluation Pipeline
-
-```python
-class EvaluationPipeline:
-    """
-    Post-processing pipeline for analyzing saved probe data.
-    Mirrors the paper's evaluation subsystem.
-    """
-    
-    def __init__(self, data_directory: str):
-        self.data_directory = data_directory
-        self.loaded_experiments: Dict[str, ProbeDataSnapshot] = {}
-    
-    def load_experiments(
-        self,
-        algorithm: Optional[AlgotypeEnum] = None,
-        num_frozen: Optional[int] = None,
-        experiment_type: Optional[str] = None
-    ) -> List[ProbeDataSnapshot]:
-        """
-        Load experiments matching criteria.
-        
-        Args:
-            algorithm: Filter by algotype
-            num_frozen: Filter by frozen cell count
-            experiment_type: Filter by type (e.g., "chimeric")
-            
-        Returns:
-            List of matching experiment data
-        """
-        files = glob.glob(os.path.join(self.data_directory, "*.npy"))
-        experiments = []
-        
-        for filepath in files:
-            data = load_probe_data(filepath)
-            
-            # Apply filters
-            if algorithm and data.config.algotypes[0] != algorithm:
-                continue
-            if num_frozen is not None and data.config.num_frozen_cells != num_frozen:
-                continue
-            if experiment_type and not self.matches_type(data, experiment_type):
-                continue
-            
-            experiments.append(data)
-        
-        return experiments
-    
-    def evaluate_efficiency(
-        self,
-        algorithm: AlgotypeEnum,
-        count_comparisons: bool = True
-    ) -> EfficiencyReport:
-        """
-        Evaluate efficiency (total steps) for an algorithm.
-        Compare against traditional baseline.
-        """
-        # Load cell-view experiments
-        cell_view_data = self.load_experiments(algorithm=algorithm)
-        
-        # Load traditional baseline
-        traditional_data = self.load_traditional_baseline(algorithm)
-        
-        # Extract step counts
-        if count_comparisons:
-            cv_steps = [d.total_steps for d in cell_view_data]
-            trad_steps = [d.total_steps for d in traditional_data]
-        else:
-            cv_steps = [d.total_swaps for d in cell_view_data]
-            trad_steps = [d.total_swaps for d in traditional_data]
-        
-        # Statistical comparison
-        stats = perform_statistical_tests(cell_view_data, traditional_data)
-        
-        return EfficiencyReport(
-            algorithm=algorithm,
-            cell_view_mean=np.mean(cv_steps),
-            cell_view_std=np.std(cv_steps),
-            traditional_mean=np.mean(trad_steps),
-            traditional_std=np.std(trad_steps),
-            statistical_test=stats
-        )
-    
-    def evaluate_error_tolerance(
-        self,
-        algorithm: AlgotypeEnum,
-        frozen_counts: List[int] = [0, 1, 2, 3]
-    ) -> ErrorToleranceReport:
-        """
-        Evaluate error tolerance across different frozen cell counts.
-        """
-        results = {}
-        
-        for num_frozen in frozen_counts:
-            experiments = self.load_experiments(
-                algorithm=algorithm,
-                num_frozen=num_frozen
-            )
-            
-            # Calculate mean monotonicity error
-            errors = [d.final_monotonicity_error for d in experiments]
-            results[num_frozen] = {
-                'mean_error': np.mean(errors),
-                'std_error': np.std(errors)
-            }
-        
-        return ErrorToleranceReport(algorithm=algorithm, results=results)
-    
-    def evaluate_delayed_gratification(
-        self,
-        algorithm: AlgotypeEnum,
-        frozen_counts: List[int] = [0, 1, 2, 3]
-    ) -> DelayedGratificationReport:
-        """
-        Evaluate DG across frozen cell counts to detect context-sensitivity.
-        """
-        results = {}
-        
-        for num_frozen in frozen_counts:
-            experiments = self.load_experiments(
-                algorithm=algorithm,
-                num_frozen=num_frozen
-            )
-            
-            dg_values = [d.delayed_gratification for d in experiments]
-            results[num_frozen] = {
-                'mean_dg': np.mean(dg_values),
-                'std_dg': np.std(dg_values)
-            }
-        
-        return DelayedGratificationReport(algorithm=algorithm, results=results)
-    
-    def evaluate_aggregation(
-        self,
-        algotype_pair: Tuple[AlgotypeEnum, AlgotypeEnum],
-        allow_duplicates: bool = False
-    ) -> AggregationReport:
-        """
-        Evaluate algotype clustering in chimeric arrays.
-        """
-        experiments = self.load_experiments(experiment_type="chimeric")
-        
-        # Filter by algotype pair and duplicate setting
-        relevant = [e for e in experiments 
-                   if self.matches_pair(e, algotype_pair) and
-                      e.config.allow_duplicates == allow_duplicates]
-        
-        # Extract aggregation trajectories
-        aggregation_curves = [e.aggregation_history for e in relevant]
-        
-        # Calculate mean curve
-        mean_curve = np.mean(aggregation_curves, axis=0)
-        std_curve = np.std(aggregation_curves, axis=0)
-        
-        # Find peak aggregation
-        peak_value = np.max(mean_curve)
-        peak_step = np.argmax(mean_curve)
-        peak_percent = (peak_step / len(mean_curve)) * 100
-        
-        return AggregationReport(
-            algotype_pair=algotype_pair,
-            mean_curve=mean_curve,
-            std_curve=std_curve,
-            peak_aggregation=peak_value,
-            peak_at_percent=peak_percent
-        )
-```
-
----
-
-## 10. Visualization and Output
-
-### 10.1 Sortedness Trajectory Plots
-
-```python
-def plot_sortedness_trajectory(
-    probe_data: List[ProbeDataSnapshot],
-    title: str = "Sortedness Over Time"
-):
-    """
-    Plot sortedness trajectories (Figure 3 in paper).
-    Shows 100 overlaid trajectories.
-    """
-    import matplotlib.pyplot as plt
-    
-    plt.figure(figsize=(10, 6))
-    
-    for data in probe_data:
-        steps = range(len(data.sortedness_history))
-        plt.plot(steps, data.sortedness_history, 
-                alpha=0.1, color='blue', linewidth=0.5)
-    
-    plt.xlabel('Steps')
-    plt.ylabel('Sortedness (%)')
-    plt.title(title)
-    plt.ylim(0, 105)
-    plt.grid(True, alpha=0.3)
-    plt.savefig(f'{title.replace(" ", "_")}.png', dpi=300)
-    plt.close()
-```
-
-### 10.2 Aggregation Value Plots
-
-```python
-def plot_aggregation_curves(
-    chimeric_data: List[ProbeDataSnapshot],
-    control_data: List[ProbeDataSnapshot],
-    title: str = "Algotype Aggregation"
-):
-    """
-    Plot aggregation value over time (Figure 8 in paper).
-    Show both experimental (chimeric) and control (same algorithm).
-    """
-    import matplotlib.pyplot as plt
-    
-    # Calculate mean curves
-    exp_curves = [d.aggregation_history for d in chimeric_data]
-    ctrl_curves = [d.aggregation_history for d in control_data]
-    
-    exp_mean = np.mean(exp_curves, axis=0)
-    ctrl_mean = np.mean(ctrl_curves, axis=0)
-    
-    # Also plot sortedness on secondary axis
-    sortedness = np.mean([d.sortedness_history for d in chimeric_data], axis=0)
-    
-    fig, ax1 = plt.subplots(figsize=(10, 6))
-    
-    # Aggregation on left axis
-    ax1.plot(exp_mean, 'r-', label='Chimeric (Mixed Algotypes)', linewidth=2)
-    ax1.plot(ctrl_mean, 'pink', label='Control (Same Algotype)', linewidth=2)
-    ax1.set_ylabel('Aggregation Value', color='r')
-    ax1.set_ylim(0.4, 0.8)
-    
-    # Sortedness on right axis
-    ax2 = ax1.twinx()
-    ax2.plot(sortedness, 'b-', label='Sortedness', linewidth=2, alpha=0.5)
-    ax2.set_ylabel('Sortedness (%)', color='b')
-    ax2.set_ylim(0, 105)
-    
-    plt.title(title)
-    ax1.legend(loc='upper left')
-    ax2.legend(loc='upper right')
-    plt.savefig(f'{title.replace(" ", "_")}.png', dpi=300)
-    plt.close()
-```
-
-### 10.3 Efficiency Comparison Plots
-
-```python
-def plot_efficiency_comparison(
-    results: Dict[AlgotypeEnum, EfficiencyReport],
-    metric: str = "total_steps"
-):
-    """
-    Bar plot comparing cell-view vs traditional efficiency (Figure 4).
-    """
-    import matplotlib.pyplot as plt
-    
-    algorithms = list(results.keys())
-    cv_means = [results[a].cell_view_mean for a in algorithms]
-    trad_means = [results[a].traditional_mean for a in algorithms]
-    
-    x = np.arange(len(algorithms))
-    width = 0.35
-    
-    fig, ax = plt.subplots(figsize=(8, 6))
-    
-    bars1 = ax.bar(x - width/2, cv_means, width, label='Cell-View')
-    bars2 = ax.bar(x + width/2, trad_means, width, label='Traditional')
-    
-    ax.set_ylabel('Total Steps')
-    ax.set_title(f'Efficiency Comparison ({metric})')
-    ax.set_xticks(x)
-    ax.set_xticklabels([a.name for a in algorithms])
-    ax.legend()
-    
-    # Add significance stars
-    for i, alg in enumerate(algorithms):
-        if results[alg].statistical_test.significant:
-            y_pos = max(cv_means[i], trad_means[i]) * 1.05
-            ax.text(i, y_pos, '**', ha='center', fontsize=16)
-    
-    plt.tight_layout()
-    plt.savefig('efficiency_comparison.png', dpi=300)
-    plt.close()
-```
-
----
-
-## 11. Testing and Validation
-
-### 11.1 Unit Tests
-
-```python
-class TestCellViewAlgorithms(unittest.TestCase):
-    """Test correctness of cell-view sorting algorithms"""
-    
-    def test_bubble_sort_completes(self):
-        """Verify cell-view bubble sort reaches 100% sortedness"""
-        cells = create_homogeneous_array(100, AlgotypeEnum.BUBBLE)
-        random.shuffle(cells)
-        
-        config = ExperimentConfig(algotypes=[AlgotypeEnum.BUBBLE])
-        engine = SortingEngine(cells, config)
-        result = engine.run()
-        
-        self.assertEqual(result.final_sortedness, 100.0)
-        self.assertEqual(result.final_monotonicity_error, 0)
-    
-    def test_frozen_cell_prevents_swap(self):
-        """Verify immovable frozen cells cannot be swapped"""
-        cells = [
-            Cell(value=3, frozen_state=FrozenStateEnum.ACTIVE),
-            Cell(value=1, frozen_state=FrozenStateEnum.IMMOVABLE_FROZEN),
-            Cell(value=2, frozen_state=FrozenStateEnum.ACTIVE)
-        ]
-        
-        # Cell 0 (value=3) should not be able to swap with cell 1 (frozen)
-        success = attempt_swap(cells[0], cells[1])
-        self.assertFalse(success)
-    
-    def test_chimeric_array_sorts(self):
-        """Verify mixed algotypes can still sort"""
-        cells = create_chimeric_array(
-            100,
-            [AlgotypeEnum.BUBBLE, AlgotypeEnum.SELECTION]
-        )
-        
-        config = ExperimentConfig(
-            algotypes=[AlgotypeEnum.BUBBLE, AlgotypeEnum.SELECTION]
-        )
-        engine = SortingEngine(cells, config)
-        result = engine.run()
-        
-        self.assertEqual(result.final_sortedness, 100.0)
-```
-
-### 11.2 Integration Tests
-
-```python
-class TestFullPipeline(unittest.TestCase):
-    """Test complete experiment pipeline"""
-    
-    def test_batch_experiment_produces_100_results(self):
-        """Verify batch experiments run to completion"""
-        config = ExperimentConfig(algotypes=[AlgotypeEnum.BUBBLE])
-        batch_config = BatchExperimentConfig(
-            single_experiment_config=config,
-            num_repetitions=100,
-            output_directory='/tmp/test_batch'
-        )
-        
-        result = run_batch_experiments(batch_config)
-        
-        self.assertEqual(len(result.individual_results), 100)
-        self.assertGreater(result.mean_steps, 0)
-    
-    def test_evaluation_pipeline_loads_data(self):
-        """Verify evaluation pipeline can load and analyze probe data"""
-        pipeline = EvaluationPipeline('/tmp/test_batch')
-        experiments = pipeline.load_experiments(
-            algorithm=AlgotypeEnum.BUBBLE
-        )
-        
-        self.assertGreater(len(experiments), 0)
-```
-
-### 11.3 Validation Against Paper Results
-
-```python
-class TestPaperReplication(unittest.TestCase):
-    """Validate implementation against paper's reported results"""
-    
-    def test_efficiency_bubble_swap_count(self):
-        """
-        Paper result: Cell-view bubble sort has similar swap count
-        to traditional (Z=0.73, p=0.47)
-        """
-        # Run 100 cell-view bubble sort experiments
-        cv_results = run_batch_experiments(...)
-        
-        # Run 100 traditional bubble sort experiments
-        trad_results = run_batch_experiments(...)
-        
-        # Perform Z-test
-        stats = perform_statistical_tests(cv_results, trad_results)
-        
-        # Should not be significantly different
-        self.assertGreater(stats.p_value, 0.05)
-        self.assertAlmostEqual(stats.z_score, 0.73, delta=0.2)
-    
-    def test_aggregation_peak_bubble_selection(self):
-        """
-        Paper result: Bubble-Selection chimera peaks at 72% aggregation
-        at 42% progress
-        """
-        chimeric_data = run_chimeric_experiments(
-            AlgotypeEnum.BUBBLE,
-            AlgotypeEnum.SELECTION
-        )
-        
-        report = evaluate_aggregation(chimeric_data)
-        
-        self.assertAlmostEqual(report.peak_aggregation, 0.72, delta=0.03)
-        self.assertAlmostEqual(report.peak_at_percent, 42, delta=5)
-```
-
----
-
-## 12. Performance Optimization
-
-### 12.1 Threading Overhead Mitigation
-
-```python
-# Use thread pools instead of creating threads per step
-from concurrent.futures import ThreadPoolExecutor
-
-class OptimizedSortingEngine(SortingEngine):
-    """Optimized version with thread pooling"""
-    
-    def __init__(self, cells: List[Cell], config: ExperimentConfig):
-        super().__init__(cells, config)
-        self.thread_pool = ThreadPoolExecutor(max_workers=len(cells))
-    
-    def run(self):
-        # Submit all cell workers to pool
-        futures = [
-            self.thread_pool.submit(self.cell_worker, cell)
-            for cell in self.cells
-        ]
-        
-        # Main loop (same as before)
-        # ...
-```
-
-### 12.2 Efficient Neighbor Lookups
-
-```python
-class ArrayView:
-    """Efficient view of array for neighbor queries"""
-    
-    def __init__(self, cells: List[Cell]):
-        self.cells = cells
-        self._position_index = {cell: i for i, cell in enumerate(cells)}
-    
-    def get_left_neighbor(self, cell: Cell) -> Optional[Cell]:
-        pos = self._position_index[cell]
-        return self.cells[pos - 1] if pos > 0 else None
-    
-    def get_right_neighbor(self, cell: Cell) -> Optional[Cell]:
-        pos = self._position_index[cell]
-        return self.cells[pos + 1] if pos < len(self.cells) - 1 else None
-    
-    def get_cells_to_left(self, cell: Cell) -> List[Cell]:
-        pos = self._position_index[cell]
-        return self.cells[:pos]
-    
-    def update_position(self, cell: Cell, new_position: int):
-        """Update after swap"""
-        old_pos = self._position_index[cell]
-        self._position_index[cell] = new_position
-        self.cells[old_pos], self.cells[new_position] = \
-            self.cells[new_position], self.cells[old_pos]
-```
-
-### 12.3 Probe Recording Optimization
-
-```python
-class LightweightProbe(Probe):
-    """Optimized probe that doesn't record every detail"""
-    
-    def __init__(self, record_full_history: bool = False):
-        super().__init__()
-        self.record_full_history = record_full_history
-        self.sample_rate = 10 if not record_full_history else 1
-    
-    def record_step(self, cells: List[Cell], swaps: List[ExecutedSwap]):
-        """Only sample positions periodically to reduce memory"""
-        self.total_steps += 1
-        self.total_swaps += len(swaps)
-        
-        # Always record sortedness
-        sortedness = calculate_sortedness(cells, self.sort_direction)
-        self.sortedness_history.append(sortedness)
-        
-        # Only sample full array state
-        if self.total_steps % self.sample_rate == 0 or sortedness == 100.0:
-            self.position_history.append([c.value for c in cells])
-```
-
----
-
-## 13. Deployment and Usage
-
-### 13.1 Command-Line Interface
-
-```python
-# cli.py - Main entry point for emergence engine
-
-import argparse
-
-def main():
-    parser = argparse.ArgumentParser(
-        description='Emergence Engine: Cell-View Sorting Algorithms'
-    )
-    
-    parser.add_argument('--algorithm', type=str, required=True,
-                       choices=['bubble', 'insertion', 'selection'],
-                       help='Sorting algorithm to use')
-    
-    parser.add_argument('--size', type=int, default=100,
-                       help='Array size (default: 100)')
-    
-    parser.add_argument('--frozen', type=int, default=0,
-                       help='Number of frozen cells (default: 0)')
-    
-    parser.add_argument('--frozen-type', type=str, default='movable',
-                       choices=['movable', 'immovable'],
-                       help='Type of frozen cells')
-    
-    parser.add_argument('--chimeric', action='store_true',
-                       help='Enable chimeric mode (mixed algotypes)')
-    
-    parser.add_argument('--batch', type=int, default=1,
-                       help='Number of experiments to run (default: 1)')
-    
-    parser.add_argument('--output', type=str, default='./results',
-                       help='Output directory for results')
-    
-    args = parser.parse_args()
-    
-    # Build config
-    algotype = AlgotypeEnum[args.algorithm.upper()]
-    
-    if args.chimeric:
-        # Use all three algorithms
-        algotypes = list(AlgotypeEnum)
-    else:
-        algotypes = [algotype]
-    
-    config = ExperimentConfig(
-        array_size=args.size,
-        algotypes=algotypes,
-        num_frozen_cells=args.frozen,
-        frozen_type=(FrozenStateEnum.MOVABLE_FROZEN if args.frozen_type == 'movable'
-                    else FrozenStateEnum.IMMOVABLE_FROZEN)
-    )
-    
-    # Run experiment(s)
-    if args.batch > 1:
-        batch_config = BatchExperimentConfig(
-            single_experiment_config=config,
-            num_repetitions=args.batch,
-            output_directory=args.output
-        )
-        result = run_batch_experiments(batch_config)
-        print(f"Batch complete: {result.mean_steps:.1f} Â± {result.std_steps:.1f} steps")
-    else:
-        result = run_single_experiment(config)
-        print(f"Experiment complete: {result.total_steps} steps, "
-              f"{result.final_sortedness:.1f}% sorted")
-
-if __name__ == '__main__':
-    main()
-```
-
-**Example Usage**:
-```bash
-# Single bubble sort experiment
-python cli.py --algorithm bubble --size 100
-
-# Batch with frozen cells
-python cli.py --algorithm selection --frozen 3 --frozen-type immovable --batch 100
-
-# Chimeric array experiment
-python cli.py --chimeric --size 100 --batch 100 --output ./chimeric_results
-```
-
-### 13.2 Python API
-
-```python
-# Example: Programmatic usage
-
-from emergence_engine import (
-    ExperimentConfig, AlgotypeEnum, FrozenStateEnum,
-    run_single_experiment, run_batch_experiments
-)
-
-# Configure experiment
-config = ExperimentConfig(
-    array_size=100,
-    algotypes=[AlgotypeEnum.BUBBLE],
-    num_frozen_cells=2,
-    frozen_type=FrozenStateEnum.MOVABLE_FROZEN,
-    enable_probe=True
-)
-
-# Run single experiment
-result = run_single_experiment(config)
-print(f"Steps: {result.total_steps}")
-print(f"Delayed Gratification: {result.delayed_gratification:.2f}")
-
-# Access probe data
-sortedness_curve = result.probe_data.sortedness_history
-plot_sortedness_trajectory([result.probe_data], "My Experiment")
-```
-
----
-
-## 14. Expected Experimental Results
-
-### 14.1 Efficiency Benchmarks
-
-**Swaps Only** (traditional ~ cell-view):
-- Bubble: Z=0.73, p=0.47 (no significant difference)
-- Insertion: Z=1.26, p=0.24 (no significant difference)
-- Selection: Z=120.43, p<0.01 (cell-view takes 11Ã— more swaps)
-
-**Swaps + Comparisons** (cell-view > traditional):
-- Bubble: Cell-view 1.5Ã— faster (Z=-68.96, p<0.01)
-- Insertion: Cell-view 2.03Ã— faster (Z=-71.19, p<0.01)
-- Selection: Cell-view 1.17Ã— slower (Z=106.55, p<0.01)
-
-### 14.2 Error Tolerance
-
-**Movable Frozen (monotonicity error, 100 experiments)**:
+**Movable Frozen**:
 | Algorithm | 1 Frozen | 2 Frozen | 3 Frozen |
 |-----------|----------|----------|----------|
-| Bubble    | 0.00     | 0.80     | 2.64     |
-| Selection | 2.24     | 4.36     | 13.24    |
+| Bubble | 0.00 | 0.80 | 2.64 |
+| Selection | 2.24 | 4.36 | 13.24 |
 
 **Immovable Frozen**:
 | Algorithm | 1 Frozen | 2 Frozen | 3 Frozen |
 |-----------|----------|----------|----------|
-| Bubble    | 1.91     | 3.72     | 5.37     |
-| Selection | 1.00     | 1.96     | 2.91     |
+| Bubble | 1.91 | 3.72 | 5.37 |
+| Selection | 1.00 | 1.96 | 2.91 |
 
-**Key**: Lower error = higher tolerance. Cell-view always beats traditional.
+### 9.3 Delayed Gratification
 
-### 14.3 Delayed Gratification Trends
+**[Paper p.11]**:
 
-**Average DG value by frozen cell count**:
-- Bubble: 0.24 â†’ 0.29 â†’ 0.32 â†’ 0.37 (clear increase)
-- Insertion: 1.10 â†’ 1.13 â†’ 1.15 â†’ 1.19 (clear increase)
-- Selection: ~2.8 (no clear trend)
+| Algorithm | 0 Frozen | 1 Frozen | 2 Frozen | 3 Frozen |
+|-----------|----------|----------|----------|----------|
+| Bubble | 0.24 | 0.29 | 0.32 | 0.37 |
+| Insertion | 1.10 | 1.13 | 1.15 | 1.19 |
+| Selection | ~2.8 | (no clear trend) | | |
 
-**Interpretation**: Bubble and Insertion exhibit context-sensitive backtracking.
+### 9.4 Chimeric Aggregation
 
-### 14.4 Chimeric Aggregation
+**[Paper p.12-13]**:
 
-**Peak Aggregation Values** (unique values):
-- Bubble + Selection: 72% at 42% progress
-- Bubble + Insertion: 65% at 21% progress
-- Selection + Insertion: 69% at 19% progress
-- Control (same algorithm): 61% (random baseline)
+| Algotype Pair | Peak Aggregation | At Progress % |
+|---------------|------------------|---------------|
+| Bubble + Selection | 72% | 42% |
+| Bubble + Insertion | 65% | 21% |
+| Selection + Insertion | 69% | 19% |
+| Control (same algo) | 61% | (baseline) |
 
-**With Duplicates** (final aggregation):
-- Bubble + Selection: 65%
-- Selection + Insertion: 70%
+### 9.5 Cross-Purpose Equilibrium
 
-**Conflicting Goals** (final sortedness):
-- Bubbleâ†“ + Selectionâ†‘: 42.5%
-- Bubbleâ†‘ + Insertionâ†“: 73.73%
-- Selectionâ†“ + Insertionâ†‘: 38.31%
+**[Paper p.14]**:
 
----
-
-## 15. Future Extensions
-
-### 15.1 Planned Enhancements
-
-1. **2D Sorting**: Extend to 2-dimensional arrays (e.g., image sorting)
-2. **Dynamic Unfreezing**: Allow frozen cells to "repair" after N nudges
-3. **Hybrid Control**: Mix top-down and bottom-up control mechanisms
-4. **Real-time Visualization**: Live display of sorting process
-5. **GPU Acceleration**: Parallel execution on GPUs for large arrays
-6. **Adaptive Algorithms**: Cells that change algotype based on experience
-
-### 15.2 Research Questions
-
-1. How do these patterns scale to larger arrays (1000+ cells)?
-2. Can cells learn optimal behaviors through reinforcement learning?
-3. What happens with more than 3 algotypes in chimeric arrays?
-4. Can delayed gratification be explicitly encoded and improved?
-5. How do these patterns apply to non-sorting morphogenetic tasks?
+| Configuration | Final Sortedness |
+|---------------|------------------|
+| Bubble↓ + Selection↑ | 42.5% |
+| Bubble↑ + Insertion↓ | 73.73% |
+| Selection↓ + Insertion↑ | 38.31% |
 
 ---
 
-## 16. References and Further Reading
+## 10. Implementation Checklist
 
-### Core Paper
-- Zhang, T., Goldstein, A., Levin, M. (2024). "Classical Sorting Algorithms as a Model of Morphogenesis." arXiv:2401.05375v1
+### 10.1 Core Components
 
-### Related Concepts
-- **Diverse Intelligence**: Levin, M. (2022). "Technological Approach to Mind Everywhere."
-- **Agent-Based Modeling**: Doursat et al. (2013). "A review of morphogenetic engineering."
-- **Unreliable Computing**: Wang, D. (2014). "Computing with unreliable resources."
-- **Basal Cognition**: Lyon, P. (2006). "The biogenic approach to cognition."
+- [ ] `MultiThreadCell` base class with all properties
+- [ ] `CellStatus` enumeration (7 states)
+- [ ] `BubbleSortCell` with random direction selection
+- [ ] `SelectionSortCell` with ideal_position shifting
+- [ ] `InsertionSortCell` with left-sorted check
+- [ ] `CellGroup` with sleep/wake and merge logic
+- [ ] `GroupStatus` enumeration (4 states)
+- [ ] `StatusProbe` metrics collector
+- [ ] Position as (x, y) tuples
 
-### GitHub Repository
-- https://github.com/Zhangtaining/cell_research (original Python 3.0 implementation)
+### 10.2 Threading
+
+- [ ] Single global lock (not barrier-based)
+- [ ] Cell threads extending Thread class
+- [ ] Group threads for coordination
+- [ ] Lock acquire/release pattern in move()
+
+### 10.3 Algorithms
+
+- [ ] Bubble: random 50% left/right direction
+- [ ] Selection: ideal_position init, shift on denial, reset on merge
+- [ ] Insertion: is_enable_to_move() left-sorted check
+
+### 10.4 Frozen Cells
+
+- [ ] FREEZE status prevents initiating swaps
+- [ ] FREEZE cells can be moved by others
+- [ ] frozen_swap_attempts counter
+- [ ] tried_to_swap_with_frozen flag
+
+### 10.5 Groups
+
+- [ ] Sleep/wake cycle with phase_period
+- [ ] is_group_sorted() check
+- [ ] merge_with_group() logic
+- [ ] Cell boundary and group updates on merge
+
+### 10.6 Metrics
+
+- [ ] swap_count
+- [ ] compare_and_swap_count
+- [ ] sorting_steps[] array snapshots
+- [ ] cell_types[] type distribution
+- [ ] Monotonicity calculation
+- [ ] Sortedness calculation
+- [ ] Delayed Gratification calculation
+- [ ] Aggregation Value calculation
 
 ---
 
-## Appendix A: Glossary
+## Appendix A: File Reference Map
 
-**Active Cell**: Cell with normal functionality, can initiate and accept swaps
+| Component | Python File | Line Numbers |
+|-----------|-------------|--------------|
+| CellStatus enum | MultiThreadCell.py | 7-14 |
+| MultiThreadCell class | MultiThreadCell.py | 17-113 |
+| swap() method | MultiThreadCell.py | 71-98 |
+| BubbleSortCell | BubbleSortCell.py | 8-75 |
+| SelectionSortCell | SelectionSortCell.py | 8-100 |
+| InsertionSortCell | InsertionSortCell.py | 8-101 |
+| GroupStatus enum | CellGroup.py | 6-10 |
+| CellGroup class | CellGroup.py | 13-122 |
+| is_group_sorted() | CellGroup.py | 37-44 |
+| merge_with_group() | CellGroup.py | 55-73 |
+| StatusProbe | StatusProbe.py | 1-22 |
 
-**Algotype**: The sorting algorithm/behavioral policy a cell follows (like a "genetic" identity)
+---
 
-**Aggregation Value**: Percentage of cells with same-algotype neighbors (chimeric arrays)
+## Appendix B: Glossary
 
-**Cell**: Autonomous agent with a value, position, and sorting algorithm
+**Active Cell**: Cell with `status == ACTIVE`, can initiate and accept swaps
 
-**Cell-View**: Bottom-up perspective where each cell makes local decisions
+**Algotype**: The sorting algorithm a cell follows (Bubble, Selection, Insertion)
+
+**Aggregation Value**: Percentage of cells adjacent to same-algotype neighbors
+
+**Cell Vision**: How many positions a cell can see (always 1 in current implementation)
 
 **Chimeric Array**: Array with cells following different algotypes
 
-**Delayed Gratification (DG)**: Temporarily decreasing sortedness to navigate obstacles
+**Delayed Gratification (DG)**: Ratio of sortedness recovery to temporary setback
 
-**Frozen Cell**: Damaged cell that cannot execute normally (movable or immovable)
+**Frozen Cell**: Cell with `status == FREEZE`, cannot initiate swaps
 
-**Monotonicity Error**: Count of adjacent cells in wrong order
+**Group**: Collection of cells with shared boundaries managed by CellGroup thread
 
-**Probe**: Monitoring object that records sorting process
+**Ideal Position**: Target position for SelectionSortCell (shifts on denial)
 
-**Sortedness**: Percentage of cells in their final sorted position
+**Monotonicity Error**: Count of adjacent cell pairs in wrong order
 
-**Thread**: Independent execution context for each cell
+**Phase Period**: Duration of sleep or wake phase for a CellGroup
 
----
+**Sortedness Value**: Percentage of cells in correct final sorted position
 
-## Appendix B: Algorithm Comparison Table
-
-| Feature | Bubble | Insertion | Selection |
-|---------|---------|-----------|-----------|
-| **View Range** | Left + right neighbors | All left cells | Target position |
-| **Swap Direction** | Bi-directional | Left only | Direct to target |
-| **Efficiency (swaps)** | Medium | Medium | High (traditional) / Low (cell-view) |
-| **Efficiency (total)** | High (cell-view) | High (cell-view) | Low (cell-view) |
-| **Error Tolerance (movable)** | Highest | Medium | Lowest |
-| **Error Tolerance (immovable)** | Lowest | Medium | Highest |
-| **Delayed Gratification** | Medium, increases with frozen | High, increases with frozen | Highest, no clear trend |
-| **Complexity** | Simple | Medium | Complex |
-| **Best For** | General use, movable frozen | Similar to bubble | Immovable frozen |
+**Spearman Distance**: Sum of positional displacements from sorted order
 
 ---
 
-**END OF TECHNICAL REQUIREMENTS DOCUMENT**
-
----
-
-**Document Version**: 1.0  
-**Date**: December 30, 2025  
-**Prepared For**: Software engineering teams implementing emergence engines  
-**Confidence Level**: 100%
-
-This document provides complete technical specifications for implementing cell-view sorting algorithms as described in the Levin et al. paper. All algorithms, data structures, metrics, and experimental procedures are specified in sufficient detail for engineering implementation.
+**Document Version**: 2.0
+**Date**: December 31, 2025
+**Status**: Revised to match cell_research ground truth
+**Previous Version**: 1.0 (paper-only derivation)

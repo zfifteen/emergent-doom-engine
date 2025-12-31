@@ -1,475 +1,513 @@
-# Implementation Gap Analysis: Emergent Doom Engine vs. Levin Paper
+# Implementation Gap Analysis: Emergent Doom Engine vs. cell_research
 
-**Paper:** Zhang, T., Goldstein, A., & Levin, M. (2024). *Classical Sorting Algorithms as a Model of Morphogenesis: self-sorting arrays reveal unexpected competencies in a minimal model of basal intelligence*
-
+**Ground Truth Reference:** `cell_research` Python implementation (Levin et al.)
+**Paper Reference:** Zhang, T., Goldstein, A., & Levin, M. (2024). *Classical Sorting Algorithms as a Model of Morphogenesis*
 **Implementation:** Java Emergent Doom Engine (this repository)
+**Analysis Date:** 2025-12-31
 
-**Analysis Date:** 2025-12-30
+> **IMPORTANT**: This gap analysis uses the `cell_research` Python codebase as the authoritative ground truth, NOT the paper alone. The paper descriptions sometimes differ from the actual code behavior.
 
 ---
 
 ## Executive Summary
 
-This document catalogs deviations between the Java implementation and the methods described in the Levin paper. Each gap is rated by severity:
-
 | Rating | Description |
 |--------|-------------|
-| **MISSING** | Feature described in paper has no implementation |
-| **STUB** | Code structure exists but returns placeholder values |
+| **MISSING** | Feature in cell_research has no EDE implementation |
 | **PARTIAL** | Feature partially implemented, missing key aspects |
-| **DEVIATION** | Implementation differs from paper's methodology |
+| **DEVIATION** | EDE implementation differs from cell_research behavior |
+| **IMPLEMENTED** | Feature correctly matches cell_research |
 
 ### Gap Count by Category
 
-| Category | MISSING | STUB | PARTIAL | DEVIATION | Total |
-|----------|---------|------|---------|-----------|-------|
-| Metrics | 0 | 0 | 0 | 0 | 0 | *(AlgotypeAggregationIndex added)*
-| Chimeric Populations | 2 | 0 | 0 | 0 | 2 | *(ChimericPopulation implemented)*
-| Concurrency Model | 0 | 0 | 0 | 0 | 0 | *(implemented in PR #2)*
+| Category | MISSING | PARTIAL | DEVIATION | IMPLEMENTED | Total Gaps |
+|----------|---------|---------|-----------|-------------|------------|
+| Threading Model | 0 | 0 | 1 | 0 | 1 |
+| Cell Algorithms | 0 | 1 | 1 | 1 | 2 |
+| CellGroup System | 4 | 0 | 0 | 0 | 4 |
+| Frozen Cells | 0 | 1 | 1 | 0 | 2 |
+| Metrics/Probe | 0 | 1 | 0 | 4 | 1 |
+| Chimeric Features | 1 | 0 | 0 | 1 | 1 |
+| Statistical Analysis | 2 | 0 | 0 | 0 | 2 |
 | Traditional Algorithms | 2 | 0 | 0 | 0 | 2 |
-| Trajectory Analysis | 0 | 0 | 0 | 0 | 0 |
-| Statistical Analysis | 2 | 0 | 1 | 0 | 3 |
-| Algorithm Specifics | 0 | 0 | 0 | 1 | 1 |
-| Visualization/Output | 3 | 0 | 0 | 0 | 3 |
-| **TOTAL** | **7** | **0** | **1** | **1** | **9** |
+| Visualization | 3 | 0 | 0 | 0 | 3 |
+| **TOTAL** | **12** | **3** | **3** | **6** | **18** |
 
 ---
 
-## Category 1: Metrics
+## Category 1: Threading Model
 
-### 1.1 Sortedness Value [IMPLEMENTED ✓]
+### 1.1 Synchronization Mechanism [DEVIATION]
 
-**Paper Definition (p.8):**
-> "Sortedness Value is defined as the percentage of cells that strictly follow the designated sort order (either increasing or decreasing). For example, if the array were completely sorted, the Sortedness Value would be 100%."
-
-**Implementation Status:** Correctly implemented as percentage of cells in correct sorted position.
-
-**Code Location:** `src/main/java/com/emergent/doom/metrics/SortednessValue.java`
-
-**Verification:** Implementation matches paper definition. Creates sorted reference array and counts cells in correct final position. Formula: (cells in correct position / total cells) × 100.
-
----
-
-### 1.2 Delayed Gratification Index [IMPLEMENTED ✓]
-
-**Paper Definition (p.8):**
-> "Delayed Gratification is used to evaluate the ability of each algorithm undertake actions that temporarily increase Monotonicity Error in order to achieve gains later on. Delayed Gratification is defined as the improvement in Sortedness made by a temporarily error increasing action. The total Sortedness change after a consecutive Sortedness value's increasing is ΔS_increasing. The total Sortedness change after the consecutive Sortedness value decreasing starting from last peak is ΔS_decreasing."
-
-**Paper Formula:**
+**cell_research behavior** (`MultiThreadCell.py:58-74`):
+```python
+def move(self):
+    self.lock.acquire()    # Simple mutex
+    # ... evaluation and swap ...
+    self.lock.release()
 ```
-DG = ΔS_increasing / ΔS_decreasing
-```
+- Uses single global `threading.Lock()`
+- Each cell: acquire → evaluate → swap → release
+- No explicit phase synchronization
 
-**Implementation Status:** Implemented via trajectory-based calculation in `DelayedGratificationCalculator`.
-
-**Code Location:** `src/main/java/com/emergent/doom/metrics/DelayedGratificationCalculator.java`
-
-**Verification:** Implementation correctly:
-1. Analyzes sequence of Sortedness values from trajectory
-2. Identifies peaks (start of consecutive decreases) and troughs (end of decreases)
-3. Calculates ratio of recovery gains (ΔS_increasing) to setbacks (ΔS_decreasing)
-4. Sums DG values across all events in a trajectory
-
-**Note:** The original `DelayedGratificationIndex.java` (snapshot-based) remains as a stub. Use `DelayedGratificationCalculator` with `TrajectoryAnalyzer.computeMetricTrajectory()` for trajectory-based DG calculation per the paper.
-
----
-
-### 1.3 Aggregation Value [IMPLEMENTED ✓]
-
-**Paper Definition (p.8-9):**
-> "In sorting experiments with mixed Algotypes, we measured the extent to which cells of the same Algotype aggregated together (spatially) within the array. We defined Aggregation Value as the percentage of cells with directly adjacent neighboring cells that were all the same Algotype."
-
-**Implementation Status:** Implemented as `AlgotypeAggregationIndex` metric.
-
-**Code Location:** `src/main/java/com/emergent/doom/metrics/AlgotypeAggregationIndex.java`
-
-**Implementation:**
+**EDE implementation** (`ParallelExecutionEngine.java:50-175`):
 ```java
-int matchingPairs = 0;
-int totalPairs = cells.length - 1;
-for (int i = 0; i < totalPairs; i++) {
-    if (cells[i].getAlgotype() == cells[i + 1].getAlgotype()) {
-        matchingPairs++;
+// Uses CyclicBarrier with N+1 parties
+this.barrier = new CyclicBarrier(cells.length + 1);
+
+public int step() {
+    barrier.await();  // Release cells to evaluate
+    barrier.await();  // Wait for all cells
+    // Resolve conflicts
+    // Execute swaps
+    barrier.await();  // Release for next step
+}
+```
+
+**Impact**: EDE has stricter synchronization (all cells complete evaluation before any swaps occur). cell_research allows cells to swap asynchronously as they acquire the lock.
+
+**Recommendation**: Consider adding a `ExecutionMode.LOCK_BASED` option that uses ReentrantLock instead of CyclicBarrier to match cell_research exactly.
+
+---
+
+## Category 2: Cell Algorithms
+
+### 2.1 BubbleSortCell Direction Selection [DEVIATION]
+
+**cell_research behavior** (`BubbleSortCell.py:66-72`):
+```python
+# Random direction choice - NOT both!
+check_right = random.random() < 0.5
+if check_right:
+    target_position = (pos[0] + vision, pos[1])
+else:
+    target_position = (pos[0] - vision, pos[1])
+```
+Each iteration, cell randomly picks ONE direction (50% chance).
+
+**EDE implementation** (`ExecutionEngine.java:162-171`):
+```java
+case BUBBLE:
+    // Checks BOTH directions
+    if (j == i - 1 && cells[i].compareTo(cells[j]) < 0) {
+        return true;  // left
+    } else if (j == i + 1 && cells[i].compareTo(cells[j]) > 0) {
+        return true;  // right
     }
-}
-return (matchingPairs * 100.0) / totalPairs;
+```
+EDE checks both neighbors and may swap with either.
+
+**Impact**: Different swap patterns and potentially different convergence behavior.
+
+**Fix Required**: Add randomization to BubbleTopology or ExecutionEngine to match cell_research.
+
+---
+
+### 2.2 SelectionCell `idealPos` Reset on Merge [PARTIAL]
+
+**cell_research behavior** (`SelectionSortCell.py:77-81`):
+```python
+def update(self):
+    # Called when group merges - reset ideal position
+    if self.reverse_direction:
+        self.ideal_position = self.right_boundary
+    else:
+        self.ideal_position = self.left_boundary
 ```
 
-**Verification:** Comprehensive test suite (`AlgotypeAggregationIndexTest.java`) validates:
-- Homogeneous arrays return 100%
-- Alternating arrays return 0%
-- Random 50/50 mix averages ~50% (baseline per paper)
-- Clustered arrays return expected intermediate values
+**EDE implementation**:
+- `SelectionCell.java` has `setIdealPos()` method ✓
+- But no `update()` method called on group merge because CellGroup doesn't exist
+- `ParallelExecutionEngine.reset()` resets to 0, not to boundary
 
-**Note:** The original `AggregationValue.java` (generic extractor-based) remains for domain-specific aggregation (e.g., summing remainder values). Use `AlgotypeAggregationIndex` for chimeric population clustering experiments per the paper.
-
----
-
-### 1.4 Monotonicity Error [IMPLEMENTED ✓]
-
-**Paper Definition (p.8):**
-> "Monotonicity is the measurement of how well the cells followed monotonic order (either increasing or decreasing). The monotonicity error is the number of cells that violate the monotonic order and break the monotonicity of the cell array."
-
-**Implementation Status:** Correctly implemented as inversion counting.
-
-**Code Location:** `src/main/java/com/emergent/doom/metrics/MonotonicityError.java:20-33`
-
-**Verification:** Implementation matches paper definition.
+**Impact**: Without CellGroup merging, this is currently not triggered. Will need implementation when CellGroup is added.
 
 ---
 
-## Category 2: Chimeric Population Support
+### 2.3 InsertionCell Left-Sorted Check [IMPLEMENTED ✓]
 
-### 2.1 Population Creation [IMPLEMENTED ✓]
+**cell_research behavior** (`InsertionSortCell.py:68-83`):
+```python
+def is_enable_to_move(self):
+    for i in range(left_boundary, current_position):
+        if cells[i].status == FREEZE:
+            prev = -1  # Skip frozen
+            continue
+        if cells[i].value < prev:
+            return False
+```
 
-**Paper Context (p.11-12):**
-> "At the beginning of these experiments, we randomly assigned one of the three different Algotypes to each of the cells, and began the sort as previously, allowing all the cells to move based on their Algotype."
-
-**Implementation Status:** Fully implemented with support for percentage-based algotype distribution.
-
-**Implementation Files:**
-- `src/main/java/com/emergent/doom/chimeric/ChimericPopulation.java` - Population manager
-- `src/main/java/com/emergent/doom/chimeric/PercentageAlgotypeProvider.java` - Percentage-based distribution
-- `src/main/java/com/emergent/doom/chimeric/GenericCellFactory.java` - Cell creation with shuffled values
-- `src/main/java/com/emergent/doom/cell/GenericCell.java` - Multi-algotype cell implementation
-
-**Usage:**
+**EDE implementation** (`ExecutionEngine.java:108-115`):
 ```java
-Map<Algotype, Double> mix = Map.of(Algotype.BUBBLE, 0.5, Algotype.SELECTION, 0.5);
-PercentageAlgotypeProvider provider = new PercentageAlgotypeProvider(mix, size, seed);
-GenericCellFactory factory = GenericCellFactory.shuffled(size, seed);
-ChimericPopulation<GenericCell> population = new ChimericPopulation<>(factory, provider);
-GenericCell[] cells = population.createPopulation(size, GenericCell.class);
-```
-
----
-
-### 2.2 Algotype Counting [IMPLEMENTED ✓]
-
-**Implementation Status:** Fully implemented with both enum and string-based counting.
-
-**Code Location:** `src/main/java/com/emergent/doom/chimeric/ChimericPopulation.java:82-122`
-
-**Usage:**
-```java
-int bubbleCount = population.countAlgotype(cells, Algotype.BUBBLE);
-int selectionCount = population.countAlgotype(cells, "SELECTION");  // case-insensitive
-}
-```
-
----
-
-### 2.3 Cross-Purpose Sorting [MISSING]
-
-**Paper Description (p.14):**
-> "what happens when the two different Algotypes are at cross-purposes—that is, they do not have the same goal? ... we performed experiments using two mixed Algotypes, where one was made to sort in *decreasing* order while the other sorted in *increasing* order."
-
-**Implementation Status:** No support for cells with different sort directions.
-
-**Code Location:** `Cell` interface has no sort direction property.
-
-**Recommendation:** Add `getSortDirection()` method to `Cell` interface or create `DirectedCell` extension.
-
----
-
-### 2.4 Duplicate Values Experiments [MISSING]
-
-**Paper Description (p.13):**
-> "we performed similar experiments as above but allowed assignment of duplicated values to cells (100 cells with values ranging from 1 to 10, guaranteeing duplicated occurrences of 10 cells for each value randomly distributed in the initial string)."
-
-**Implementation Status:** Not explicitly tested or documented.
-
-**Recommendation:** Add experiment configuration and tests for duplicate-value scenarios.
-
----
-
-## Category 3: Concurrency Model
-
-### 3.1 Multi-Threaded Cell Execution [IMPLEMENTED]
-
-**Paper Description (p.7):**
-> "We used multi-thread programming to implement the cell-view sorting algorithms. 2 types of threads were involved during the sorting process: cell threads are used to represent all cells, with each cell represented by a single thread; a main thread is used to activate all the threads and monitor the sorting process."
-
-**Implementation Status:** IMPLEMENTED - One thread per cell with CyclicBarrier synchronization.
-
-**Implementation Files:**
-- `src/main/java/com/emergent/doom/execution/ParallelExecutionEngine.java` - Main parallel engine
-- `src/main/java/com/emergent/doom/execution/CellThread.java` - Per-cell thread runnable
-- `src/main/java/com/emergent/doom/execution/CellEvaluator.java` - Cell evaluation interface
-- `src/main/java/com/emergent/doom/execution/ExecutionMode.java` - SEQUENTIAL/PARALLEL enum
-- `src/main/java/com/emergent/doom/swap/ConcurrentSwapCollector.java` - Thread-safe proposal collector
-- `src/main/java/com/emergent/doom/swap/SwapProposal.java` - Immutable swap proposal
-- `src/main/java/com/emergent/doom/swap/ThreadSafeFrozenCellStatus.java` - Thread-safe frozen state
-- `src/main/java/com/emergent/doom/probe/ThreadSafeProbe.java` - Thread-safe probe
-
-**Architecture:**
-```
-Main Thread                    Cell Threads (N threads)
-    |                               |
-    +-- barrier.await() -----> All cells evaluate in parallel
-    |                               |
-    +-- barrier.await() <----- All cells submit SwapProposals
-    |
-    +-- Resolve conflicts (leftmost priority)
-    +-- Execute non-conflicting swaps
-    |
-    +-- barrier.await() -----> Release for next step
-```
-
-**Usage:**
-```java
-// Enable parallel execution via ExperimentConfig
-ExperimentConfig config = new ExperimentConfig(
-    100,     // arraySize
-    10000,   // maxSteps
-    3,       // requiredStableSteps
-    true,    // recordTrajectory
-    ExecutionMode.PARALLEL  // <-- Enable parallel mode
-);
-```
-
----
-
-### 3.2 Parallel Cell Activation [IMPLEMENTED]
-
-**Paper Description (Figure 2 caption):**
-> "All cells have a chance to move at each time step (parallel)."
-
-**Implementation Status:** IMPLEMENTED - Configurable execution mode (SEQUENTIAL or PARALLEL).
-
-**Details:**
-- `ExecutionMode.SEQUENTIAL` - Original behavior, cells evaluated one at a time
-- `ExecutionMode.PARALLEL` - All cells evaluate simultaneously with barrier sync
-- `ExperimentRunner` automatically uses thread-safe components for parallel mode
-
----
-
-## Category 4: Traditional Algorithm Comparison
-
-### 4.1 Traditional Sorting Algorithms [MISSING]
-
-**Paper Description (p.6-7):**
-> Traditional algorithms described:
-> - Bubble Sort (top-down controller)
-> - Insertion Sort (top-down controller)
-> - Selection Sort (top-down controller)
-
-**Paper Context (p.10):**
-> "We used the total steps that each algorithm needed to complete the sorting process for 100 elements in each experiment to indicate the efficiency of the algorithm... By repeating the experiments and doing the Z-test over the average steps, we calculated the efficiency difference between traditional sorting and cell-view sorting algorithms."
-
-**Implementation Status:** Only cell-view algorithms implemented.
-
-**Recommendation:** Create `TraditionalSortEngine` class with implementations of standard algorithms for comparison studies.
-
----
-
-### 4.2 Dual Cost Model [MISSING]
-
-**Paper Description (p.10):**
-> "When we counted only swapping steps..." and "The situation changed when we considered both reading (comparison) and writing (swapping) as costly steps, simulating the metabolic cost of both measurements and actions."
-
-**Implementation Status:** Only swap count tracked.
-
-**Code Location:** `SwapEngine.java` tracks swap count only.
-
-**Recommendation:** Add comparison counter to track read operations for complete cost analysis.
-
----
-
-## Category 5: Trajectory Analysis
-
-### 5.1 Metric Trajectory Computation [IMPLEMENTED ✓]
-
-**Code Location:** `src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java`
-
-**Implementation Status:** Fully implemented - computes any metric over trajectory snapshots.
-
-```java
-public List<Double> computeMetricTrajectory(List<StepSnapshot<T>> snapshots, Metric<T> metric)
-```
-
----
-
-### 5.2 Swap Count Extraction [IMPLEMENTED ✓]
-
-**Code Location:** `src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java`
-
-**Implementation Status:** Fully implemented - extracts swap counts from trajectory.
-
-```java
-public List<Integer> extractSwapCounts(List<StepSnapshot<T>> snapshots)
-```
-
----
-
-### 5.3 Convergence Detection [IMPLEMENTED ✓]
-
-**Code Location:** `src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java`
-
-**Implementation Status:** Fully implemented - finds step where N consecutive zero-swap steps occurred.
-
-```java
-public int findConvergenceStep(List<StepSnapshot<T>> snapshots, int consecutiveZeroSwaps)
-```
-
----
-
-### 5.4 Trajectory Visualization [IMPLEMENTED ✓]
-
-**Code Location:** `src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java`
-
-**Implementation Status:** Fully implemented - generates text-based trajectory visualization.
-
-```java
-public String visualizeTrajectory(List<StepSnapshot<T>> snapshots, int maxSnapshotsToShow)
-```
-
----
-
-### 5.5 Trajectory File Export [MISSING]
-
-**Paper Description (p.6):**
-> "After the sorting process ends, the information collected by the Probe is stored as a .npy file."
-
-**Implementation Status:** No file export capability.
-
-**Recommendation:** Add JSON or CSV export for Java compatibility (or use jnumpy for .npy support).
-
----
-
-## Category 6: Statistical Analysis
-
-### 6.1 Z-Test [MISSING]
-
-**Paper Description (p.9):**
-> "We apply standard statistical hypothesis methods, Z-test and T-test, to evaluate the significance of the differences we report."
-
-**Paper Usage Example (p.10):**
-> "the Z-test statistical values comparing the efficiencies of Bubble and Insertion sort were 0.73 and 1.26 (p-values were 0.47 and 0.24 respectively)"
-
-**Implementation Status:** No statistical testing implemented.
-
-**Recommendation:** Add `StatisticalTests` utility class or integrate Apache Commons Math.
-
----
-
-### 6.2 T-Test [MISSING]
-
-Same as above.
-
----
-
-### 6.3 Experiment Replication (N=100) [PARTIAL]
-
-**Paper Description (p.10):**
-> "By repeating the experiments" (consistently uses N=100 replicates)
-
-**Implementation Status:** `ExperimentRunner` supports multi-trial execution but statistical analysis is incomplete.
-
-**Code Location:** `src/main/java/com/emergent/doom/experiment/ExperimentResults.java`
-- `getMeanMetric()` - implemented
-- `getStdDevMetric()` - implemented
-- Z-test, T-test, p-values - NOT implemented
-
----
-
-## Category 7: Algorithm Specifics
-
-### 7.1 Selection Sort `idealPos` Reset Behavior [DEVIATION]
-
-**Paper Description (p.7-8):**
-> "1. Each cell has an ideal target position to which it wants to move. The initial value of the ideal position for all the cells is the most left position.
-> 2. Each cell can view and swap with the cell that currently occupies its ideal position.
-> 3. If the value of the active cell is smaller than the value of the cell occupying the active cell's ideal target position, the active cell swaps places with that occupying cell."
-
-**Paper Implication:** After a successful swap, behavior is not specified. Does `idealPos` reset?
-
-**Implementation:** `idealPos` only increments on swap denial, never resets.
-
-**Code Location:** `src/main/java/com/emergent/doom/execution/ExecutionEngine.java:166-173`
-```java
-} else {
-    // Swap denied: increment ideal position if not at end
-    if (cells[i] instanceof SelectionCell) {
-        SelectionCell<?> selCell = (SelectionCell<?>) cells[i];
-        if (selCell.getIdealPos() < cells.length - 1) {
-            selCell.incrementIdealPos();
+private boolean isLeftSorted(int i) {
+    for (int k = 0; k < i - 1; k++) {
+        if (cells[k].compareTo(cells[k + 1]) > 0) {
+            return false;
         }
     }
-    return false;
+    return true;
 }
 ```
 
-**Impact:** Cells may "drift" to targeting far-right positions without mechanism to return to seeking position 0.
-
-**Recommendation:** Clarify with paper authors or add configurable reset-on-swap behavior.
+**Status**: Core logic implemented. Note: EDE doesn't skip frozen cells in the check (see Frozen Cells section).
 
 ---
 
-## Category 8: Visualization and Output
+## Category 3: CellGroup System [MAJOR MISSING]
 
-### 8.1 Sortedness Trajectory Plots [MISSING]
+The entire CellGroup hierarchical management system from cell_research is not implemented in EDE.
 
-**Paper:** Figures 3A, 3B, 3C show Sortedness vs. Steps plots.
+### 3.1 CellGroup Class [MISSING]
 
-**Implementation Status:** No plotting capability.
+**cell_research** (`CellGroup.py:13-122`):
+```python
+class CellGroup(threading.Thread):
+    group_id: int
+    cells_in_group: list
+    left_boundary_position: tuple
+    right_boundary_position: tuple
+    status: GroupStatus  # ACTIVE, MERGING, SLEEP, MERGED
+    phase_period: int
+    count_down: int
+```
 
----
-
-### 8.2 Aggregation Timeline Plots [MISSING]
-
-**Paper:** Figure 8 shows Aggregation Value over sorting process.
-
-**Implementation Status:** No plotting capability.
-
----
-
-### 8.3 Statistical Comparison Figures [MISSING]
-
-**Paper:** Figures 4, 5, 7 show bar charts with error bars.
-
-**Implementation Status:** No visualization output.
-
-**Recommendation:** Consider JFreeChart integration or JSON export for external visualization.
+**EDE**: No equivalent class.
 
 ---
 
-## Implementation Priority Recommendations
+### 3.2 Group Sleep/Wake Cycles [MISSING]
 
-### High Priority (Core Functionality)
-1. ~~`SortednessValue` metric~~ - ✓ IMPLEMENTED
-2. `AggregationValue.compute()` - Required for chimeric experiments
-3. `ChimericPopulation.createPopulation()` - Required for chimeric experiments
-4. ~~`TrajectoryAnalyzer` stub methods~~ - ✓ IMPLEMENTED (all 5 methods)
+**cell_research** (`CellGroup.py:81-101`):
+```python
+def change_status(self):
+    count_down = phase_period
+    if status == ACTIVE:
+        status = SLEEP
+        put_cells_to_sleep()
+    elif status == SLEEP:
+        status = ACTIVE
+        awake_cells()
+```
 
-### Medium Priority (Enhanced Analysis)
-5. ~~`DelayedGratificationCalculator`~~ - ✓ IMPLEMENTED (trajectory-based DG calculation)
-6. Traditional algorithm implementations - Required for comparison studies
-7. Statistical tests (Z-test, T-test) - Required for significance analysis
+Cells have periodic inactive phases controlled by their group.
 
-### Lower Priority (Extensions)
-8. ~~Multi-threaded execution~~ - ✓ IMPLEMENTED (ParallelExecutionEngine)
-9. Cross-purpose sorting support - Extended experiments
-10. Visualization output - Presentation/publication support
+**EDE**: No sleep/wake mechanism.
+
+---
+
+### 3.3 Group Merging [MISSING]
+
+**cell_research** (`CellGroup.py:55-73`):
+```python
+def merge_with_group(self, next_group):
+    next_group.status = MERGED
+    self.right_boundary_position = next_group.right_boundary_position
+    self.cells_in_group.extend(next_group.cells_in_group)
+    for cell in self.cells_in_group:
+        cell.group = self
+        cell.left_boundary = self.left_boundary_position
+        cell.right_boundary = self.right_boundary_position
+        cell.update()  # Reset idealPos for Selection cells
+```
+
+When adjacent groups are both sorted, they merge into one larger group.
+
+**EDE**: No group merging.
+
+---
+
+### 3.4 Group Sorted Detection [MISSING]
+
+**cell_research** (`CellGroup.py:37-44`):
+```python
+def is_group_sorted(self):
+    prev_cell = cells[left_boundary[0]]
+    for i in range(left_boundary[0], right_boundary[0] + 1):
+        cell = cells[i]
+        if cell.status in [SLEEP, MOVING] or cell.value < prev_cell.value:
+            return False
+        prev_cell = cell
+    return True
+```
+
+**EDE**: No per-group sorted detection.
+
+---
+
+## Category 4: Frozen Cells
+
+### 4.1 Frozen Cell Semantics [DEVIATION]
+
+**cell_research** (`MultiThreadCell.py:7-14, 71-78`):
+```python
+class CellStatus(Enum):
+    FREEZE = 7  # Single frozen state
+
+def swap(self, target_position):
+    if self.status == CellStatus.FREEZE:
+        # Frozen cell cannot INITIATE swap
+        status_probe.count_frozen_cell_attempt()
+        return
+    # But frozen cells CAN BE MOVED by active cells
+```
+
+**EDE** (`FrozenCellStatus.java:30-39`):
+```java
+public enum FrozenType {
+    NONE,      // Fully mobile
+    MOVABLE,   // Can move, cannot be displaced
+    IMMOVABLE  // Cannot participate in swaps
+}
+```
+
+**Differences**:
+| Aspect | cell_research FREEZE | EDE MOVABLE | EDE IMMOVABLE |
+|--------|---------------------|-------------|---------------|
+| Can initiate swap | No | Yes | No |
+| Can be moved by others | Yes | No | No |
+
+**Impact**: EDE's MOVABLE is opposite of cell_research FREEZE semantics.
+
+**Recommendation**: Align EDE FREEZE = cannot initiate but CAN be moved.
+
+---
+
+### 4.2 Frozen Cell Skip in Insertion isLeftSorted [PARTIAL]
+
+**cell_research** (`InsertionSortCell.py:74-76`):
+```python
+if cells[i].status == FREEZE:
+    prev = -1  # Reset comparison, skip frozen
+    continue
+```
+
+**EDE** (`ExecutionEngine.java:108-115`):
+Does not skip frozen cells in `isLeftSorted()` check.
+
+**Impact**: Insertion cells may incorrectly wait if frozen cell breaks left-side order.
+
+---
+
+## Category 5: Metrics and Probe
+
+### 5.1 StatusProbe Fields [PARTIAL]
+
+**cell_research** (`StatusProbe.py:1-22`):
+```python
+class StatusProbe:
+    sorting_steps = []           # Array snapshots
+    swap_count = 0               # Total swaps
+    compare_and_swap_count = 0   # Comparisons leading to swap decision
+    cell_types = []              # Type distribution per step
+    frozen_swap_attempts = 0     # Attempts to swap with frozen
+```
+
+**EDE** (`Probe.java`):
+- ✓ `snapshots` (includes swapCount per step)
+- ✗ `compare_and_swap_count` — NOT tracked
+- ✗ `cell_types` — NOT tracked
+- ✗ `frozen_swap_attempts` — NOT tracked
+
+**Recommendation**: Add counters to Probe or create separate StatusProbe class.
+
+---
+
+### 5.2 SortednessValue [IMPLEMENTED ✓]
+
+**Location**: `SortednessValue.java`
+**Status**: Correctly implemented per paper and cell_research.
+
+---
+
+### 5.3 MonotonicityError [IMPLEMENTED ✓]
+
+**Location**: `MonotonicityError.java`
+**Status**: Correctly implemented.
+
+---
+
+### 5.4 AlgotypeAggregationIndex [IMPLEMENTED ✓]
+
+**Location**: `AlgotypeAggregationIndex.java`
+**Status**: Correctly implemented per cell_research.
+
+---
+
+### 5.5 DelayedGratificationCalculator [IMPLEMENTED ✓]
+
+**Location**: `DelayedGratificationCalculator.java`
+**Status**: Correctly implemented using trajectory analysis.
+
+---
+
+## Category 6: Chimeric Features
+
+### 6.1 ChimericPopulation [IMPLEMENTED ✓]
+
+**Location**: `ChimericPopulation.java`, `PercentageAlgotypeProvider.java`, `GenericCellFactory.java`
+**Status**: Correctly implemented with percentage-based distribution.
+
+---
+
+### 6.2 Cross-Purpose Sorting (Conflicting Directions) [MISSING]
+
+**cell_research**: Supports cells with different `reverse_direction` flags.
+
+**Paper** (p.14):
+> "we performed experiments using two mixed Algotypes, where one was made to sort in *decreasing* order while the other sorted in *increasing* order."
+
+**EDE**: No per-cell sort direction. All cells sort in same direction.
+
+**Recommendation**: Add `SortDirection` field to Cell interface or GenericCell.
+
+---
+
+## Category 7: Statistical Analysis
+
+### 7.1 Z-Test / T-Test [MISSING]
+
+**Paper** (p.9): Uses Z-test and T-test for significance analysis.
+
+**EDE**: No statistical testing utilities.
+
+**Recommendation**: Add `StatisticalTests` utility or integrate Apache Commons Math.
+
+---
+
+### 7.2 Batch Experiment Statistics [MISSING]
+
+**cell_research**: Runs 100 experiments, computes mean, std dev, Z-scores, p-values.
+
+**EDE** (`ExperimentResults.java`): Has `getMeanMetric()`, `getStdDevMetric()` but no Z/T-test.
+
+---
+
+## Category 8: Traditional Algorithms
+
+### 8.1 Traditional Sorting Implementations [MISSING]
+
+**Paper** (p.6-7, p.10): Compares cell-view vs traditional (top-down) algorithms.
+
+**EDE**: Only has cell-view implementations.
+
+**Recommendation**: Create `TraditionalSortEngine` for comparison studies.
+
+---
+
+### 8.2 Dual Cost Model (Swaps + Comparisons) [MISSING]
+
+**Paper** (p.10): Analyzes efficiency counting "both reading (comparison) and writing (swapping)".
+
+**EDE**: Only tracks swap count.
+
+**Recommendation**: Add comparison counter to execution engine.
+
+---
+
+## Category 9: Visualization / Output
+
+### 9.1 Sortedness Trajectory Plots [MISSING]
+
+**Paper**: Figures 3A, 3B, 3C show sortedness vs steps.
+
+**EDE**: No plotting capability.
+
+---
+
+### 9.2 Aggregation Timeline Plots [MISSING]
+
+**Paper**: Figure 8 shows aggregation value over time.
+
+---
+
+### 9.3 File Export (.npy format) [MISSING]
+
+**Paper** (p.6): "information collected by the Probe is stored as a .npy file"
+
+**EDE**: No file export.
+
+**Recommendation**: Add JSON or CSV export (or jnumpy for .npy compatibility).
+
+---
+
+## Implementation Priority Matrix
+
+### Critical (Blocks Core Functionality)
+| Gap | Impact | Effort |
+|-----|--------|--------|
+| 2.1 Bubble random direction | Different convergence behavior | Low |
+| 4.1 Frozen cell semantics | Incorrect frozen behavior | Medium |
+
+### High (Major Feature Gaps)
+| Gap | Impact | Effort |
+|-----|--------|--------|
+| 3.1-3.4 CellGroup system | No hierarchical organization | High |
+| 5.1 StatusProbe fields | Missing metrics | Low |
+| 6.2 Cross-purpose sorting | Can't replicate paper experiments | Low |
+
+### Medium (Enhanced Analysis)
+| Gap | Impact | Effort |
+|-----|--------|--------|
+| 1.1 Lock-based threading option | Match cell_research exactly | Medium |
+| 7.1-7.2 Statistical tests | No significance analysis | Low |
+| 8.1-8.2 Traditional algorithms | No comparison baseline | Medium |
+
+### Lower (Extensions)
+| Gap | Impact | Effort |
+|-----|--------|--------|
+| 9.1-9.3 Visualization | No visual output | Medium |
+| 4.2 Frozen skip in insertion | Edge case | Low |
 
 ---
 
 ## Verification Checklist
 
-After implementing fixes, verify against paper:
+After implementing fixes, verify against cell_research:
 
-- [ ] Bubble sort: bidirectional swapping with neighbors
-- [ ] Insertion sort: left-prefix sorted check before swap
-- [ ] Selection sort: ideal position targeting with increment on denial
-- [ ] Frozen cells: MOVABLE vs IMMOVABLE behavior
-- [x] Monotonicity Error: inversion count matches paper formula
-- [x] Sortedness Value: percentage calculation correct
-- [x] Aggregation Value: neighbor-matching percentage (AlgotypeAggregationIndex)
-- [x] Delayed Gratification: trajectory-based calculation (DelayedGratificationCalculator)
-- [x] Trajectory Analysis: all methods implemented (computeMetricTrajectory, extractSwapCounts, findConvergenceStep, visualizeTrajectory, getTotalExecutionTime)
-- [x] Chimeric Population: createPopulation, countAlgotype, GenericCell
-- [x] Chimeric Experiment: ChimericClusteringExperiment with trajectory export
+### Algorithms
+- [ ] Bubble: Random 50% left/right direction choice
+- [ ] Selection: idealPos starts at left_boundary, resets on merge
+- [ ] Insertion: isLeftSorted skips FREEZE cells
+
+### Threading
+- [ ] Optional lock-based mode matching cell_research
+- [ ] Barrier mode for deterministic parallel execution
+
+### CellGroup
+- [ ] GroupStatus enum (ACTIVE, MERGING, SLEEP, MERGED)
+- [ ] Sleep/wake cycles with phase_period
+- [ ] Group merge when adjacent groups sorted
+- [ ] Cell boundary updates on merge
+
+### Frozen Cells
+- [ ] FREEZE = cannot initiate, CAN be moved
+- [ ] frozen_swap_attempts counter
+- [ ] tried_to_swap_with_frozen flag per cell
+
+### Metrics
+- [ ] compare_and_swap_count
+- [ ] cell_types[] distribution tracking
+- [ ] frozen_swap_attempts
+
+### Chimeric
+- [ ] Per-cell sort direction (reverse_direction)
 
 ---
 
-*Generated by gap analysis comparing `docs/2401.05375v1.md` against Java implementation*
+## Reference: cell_research File Map
+
+| Component | File | Lines |
+|-----------|------|-------|
+| CellStatus enum | `MultiThreadCell.py` | 7-14 |
+| MultiThreadCell | `MultiThreadCell.py` | 17-113 |
+| swap() | `MultiThreadCell.py` | 71-98 |
+| BubbleSortCell | `BubbleSortCell.py` | 8-75 |
+| SelectionSortCell | `SelectionSortCell.py` | 8-100 |
+| InsertionSortCell | `InsertionSortCell.py` | 8-101 |
+| GroupStatus enum | `CellGroup.py` | 6-10 |
+| CellGroup | `CellGroup.py` | 13-122 |
+| StatusProbe | `StatusProbe.py` | 1-22 |
+
+---
+
+*Generated by comparing EDE Java implementation against cell_research Python ground truth*
