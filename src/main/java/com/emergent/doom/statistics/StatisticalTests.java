@@ -212,15 +212,46 @@ public class StatisticalTests {
      */
     public static double zTestTwoSample(double mean1, double stdDev1, int n1, 
                                        double mean2, double stdDev2, int n2) {
-        // TODO: Implementation in Phase 3, Iteration 3
+        // IMPLEMENTED in Phase 3, Iteration 3
+        // This method performs a two-sample Z-test to determine if two independent
+        // samples have significantly different means.
+        //
+        // The test assumes known or well-estimated standard deviations and uses
+        // the standard normal distribution for hypothesis testing.
+        
         // 1. Validate inputs: check stdDev1, stdDev2 > 0 and n1, n2 > 0
+        if (stdDev1 <= 0) {
+            throw new IllegalArgumentException("Standard deviation 1 must be positive, got: " + stdDev1);
+        }
+        if (stdDev2 <= 0) {
+            throw new IllegalArgumentException("Standard deviation 2 must be positive, got: " + stdDev2);
+        }
+        if (n1 <= 0) {
+            throw new IllegalArgumentException("Sample size 1 must be positive, got: " + n1);
+        }
+        if (n2 <= 0) {
+            throw new IllegalArgumentException("Sample size 2 must be positive, got: " + n2);
+        }
+        
         // 2. Calculate variance for each sample: var1 = stdDev1²/n1, var2 = stdDev2²/n2
+        double variance1 = (stdDev1 * stdDev1) / n1;
+        double variance2 = (stdDev2 * stdDev2) / n2;
+        
         // 3. Calculate pooled standard error: SE = sqrt(var1 + var2)
+        // This represents the standard deviation of the difference between sample means
+        double pooledSE = Math.sqrt(variance1 + variance2);
+        
         // 4. Calculate Z-statistic: Z = (mean1 - mean2) / SE
+        double zStatistic = (mean1 - mean2) / pooledSE;
+        
         // 5. Create standard normal distribution
+        NormalDistribution normalDist = new NormalDistribution(0, 1);
+        
         // 6. Calculate two-tailed p-value: 2 * (1 - normalDist.cumulativeProbability(|Z|))
+        double pValue = 2.0 * (1.0 - normalDist.cumulativeProbability(Math.abs(zStatistic)));
+        
         // 7. Return p-value
-        throw new UnsupportedOperationException("Not implemented yet");
+        return pValue;
     }
     
     /**
