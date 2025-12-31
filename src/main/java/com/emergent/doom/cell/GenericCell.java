@@ -14,6 +14,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * different Algotypes to each of the cells, and began the sort as previously,
  * allowing all the cells to move based on their Algotype."</p>
  *
+ * <p>For SELECTION algotype cells, GenericCell maintains an idealPos field that tracks
+ * the cell's target position, matching the behavior of SelectionCell. This field starts
+ * at 0 and increments when swap attempts are denied, per Levin p.9.</p>
+ *
  * <p>Usage:
  * <pre>{@code
  * // Create a cell with value 42 and Bubble algotype
@@ -27,11 +31,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * }
  * }</pre></p>
  */
-public class GenericCell implements Cell<GenericCell>, HasIdealPosition {
+public class GenericCell implements Cell<GenericCell> {
 
     private final int value;
     private final Algotype algotype;
-    private final AtomicInteger idealPos = new AtomicInteger(0);  // For SELECTION compatibility; initialized to 0 per Levin
+    private final AtomicInteger idealPos;  // Thread-safe: used only for SELECTION algotype
 
     /**
      * Create a GenericCell with the specified value and algotype.
@@ -46,7 +50,7 @@ public class GenericCell implements Cell<GenericCell>, HasIdealPosition {
         }
         this.value = value;
         this.algotype = algotype;
-        // idealPos initialized to 0 for SELECTION compatibility (Levin p.9)
+        this.idealPos = new AtomicInteger(0);  // Levin: initial ideal position is leftmost (0)
     }
 
     /**
@@ -64,6 +68,49 @@ public class GenericCell implements Cell<GenericCell>, HasIdealPosition {
     }
 
     /**
+     * Get the ideal position for SELECTION algotype cells.
+     * Thread-safe for parallel execution.
+     *
+     * @return the current ideal position (0-based index)
+     */
+    public int getIdealPos() {
+        return idealPos.get();
+    }
+
+    /**
+     * Atomically increment the ideal position and return the new value.
+     * Used by SELECTION algotype when swap is denied.
+     * Thread-safe for parallel execution.
+     *
+     * @return the new ideal position after increment
+     */
+    public int incrementIdealPos() {
+        return idealPos.incrementAndGet();
+    }
+
+    /**
+     * Set the ideal position to a specific value.
+     * Used for SELECTION algotype state management.
+     *
+     * @param newIdealPos the new ideal position (0-based index)
+     */
+    public void setIdealPos(int newIdealPos) {
+        this.idealPos.set(newIdealPos);
+    }
+
+    /**
+     * Atomically compare-and-set the ideal position.
+     * Useful for concurrent updates when exact coordination is needed.
+     *
+     * @param expected the expected current value
+     * @param newValue the new value to set
+     * @return true if successful (current value matched expected)
+     */
+    public boolean compareAndSetIdealPos(int expected, int newValue) {
+        return idealPos.compareAndSet(expected, newValue);
+    }
+
+    /**
      * Compare this cell to another based on their values.
      *
      * @param other the cell to compare against
@@ -72,44 +119,6 @@ public class GenericCell implements Cell<GenericCell>, HasIdealPosition {
     @Override
     public int compareTo(GenericCell other) {
         return Integer.compare(this.value, other.value);
-    }
-
-    @Override
-    public int getIdealPos() {
-        if (algotype != Algotype.SELECTION) {
-            throw new IllegalStateException("idealPos is only supported for SELECTION algotype; current: " + algotype);
-        }
-        return idealPos.get();
-    }
-
-    @Override
-    public void setIdealPos(int newIdealPos) {
-        if (algotype != Algotype.SELECTION) {
-            throw new IllegalStateException("idealPos is only supported for SELECTION algotype; current: " + algotype);
-        }
-        if (newIdealPos < 0) {
-            throw new IllegalArgumentException("Ideal position cannot be negative: " + newIdealPos);
-        }
-        idealPos.set(newIdealPos);
-    }
-
-    @Override
-    public int incrementIdealPos() {
-        if (algotype != Algotype.SELECTION) {
-            throw new IllegalStateException("idealPos is only supported for SELECTION algotype; current: " + algotype);
-        }
-        return idealPos.incrementAndGet();
-    }
-
-    @Override
-    public boolean compareAndSetIdealPos(int expected, int newValue) {
-        if (algotype != Algotype.SELECTION) {
-            throw new IllegalStateException("idealPos is only supported for SELECTION algotype; current: " + algotype);
-        }
-        if (newValue < 0) {
-            throw new IllegalArgumentException("Ideal position cannot be negative: " + newValue);
-        }
-        return idealPos.compareAndSet(expected, newValue);
     }
 
     @Override

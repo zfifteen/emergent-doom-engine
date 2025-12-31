@@ -10,8 +10,6 @@ import com.emergent.doom.swap.SwapProposal;
 import com.emergent.doom.topology.BubbleTopology;
 import com.emergent.doom.topology.InsertionTopology;
 
-import com.emergent.doom.cell.HasIdealPosition;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -244,6 +242,40 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     }
 
     /**
+     * Helper: Get ideal position from a SELECTION cell (supports both SelectionCell and GenericCell)
+     */
+    private int getIdealPosition(T cell) {
+        if (cell instanceof SelectionCell) {
+            return ((SelectionCell<?>) cell).getIdealPos();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            return ((com.emergent.doom.cell.GenericCell) cell).getIdealPos();
+        }
+        return 0;  // Default for other cell types
+    }
+
+    /**
+     * Helper: Increment ideal position for a SELECTION cell (supports both SelectionCell and GenericCell)
+     */
+    private void incrementIdealPosition(T cell) {
+        if (cell instanceof SelectionCell) {
+            ((SelectionCell<?>) cell).incrementIdealPos();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            ((com.emergent.doom.cell.GenericCell) cell).incrementIdealPos();
+        }
+    }
+
+    /**
+     * Helper: Set ideal position for a SELECTION cell (supports both SelectionCell and GenericCell)
+     */
+    private void setIdealPosition(T cell, int newIdealPos) {
+        if (cell instanceof SelectionCell) {
+            ((SelectionCell<?>) cell).setIdealPos(newIdealPos);
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            ((com.emergent.doom.cell.GenericCell) cell).setIdealPos(newIdealPos);
+        }
+    }
+
+    /**
      * Get neighbors for a cell based on its algotype.
      */
     private List<Integer> getNeighborsForAlgotype(int i, Algotype algotype, T[] cellArray) {
@@ -253,7 +285,8 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             case INSERTION:
                 return insertionTopology.getNeighbors(i, cellArray.length, algotype);
             case SELECTION:
-                int target = Math.min(getIdealPosition(cellArray[i]), cellArray.length - 1);
+                int idealPos = getIdealPosition(cellArray[i]);
+                int target = Math.min(idealPos, cellArray.length - 1);
                 return Arrays.asList(target);
             default:
                 throw new IllegalStateException("Unknown algotype: " + algotype);
@@ -286,11 +319,10 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
                 if (cellArray[i].compareTo(cellArray[j]) < 0) {
                     return true;
                 } else {
-                    // Denied: Increment idealPos if SELECTION and not at end
-                    if (cellArray[i].getAlgotype() == Algotype.SELECTION) {
-                        if (getIdealPosition(cellArray[i]) < cellArray.length - 1) {
-                            incrementIdealPosition(cellArray[i]);
-                        }
+                    // Swap denied: increment ideal position if not at end
+                    int currentIdealPos = getIdealPosition(cellArray[i]);
+                    if (currentIdealPos < cellArray.length - 1) {
+                        incrementIdealPosition(cellArray[i]);
                     }
                     return false;
                 }
@@ -374,40 +406,6 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
         return probe;
     }
 
-    // Helper methods for HasIdealPosition
-    private int getIdealPosition(T cell) {
-        if (!(cell instanceof HasIdealPosition)) {
-            throw new UnsupportedOperationException(
-                "Cell type " + cell.getClass().getSimpleName() + 
-                " does not support idealPos for SELECTION algotype. Ensure cell implements HasIdealPosition."
-            );
-        }
-        HasIdealPosition sel = (HasIdealPosition) cell;
-        return sel.getIdealPos();
-    }
-
-    private void incrementIdealPosition(T cell) {
-        if (!(cell instanceof HasIdealPosition)) {
-            throw new UnsupportedOperationException(
-                "Cell type " + cell.getClass().getSimpleName() + 
-                " does not support idealPos for SELECTION algotype. Ensure cell implements HasIdealPosition."
-            );
-        }
-        HasIdealPosition sel = (HasIdealPosition) cell;
-        sel.incrementIdealPos();
-    }
-
-    private void setIdealPosition(T cell, int pos) {
-        if (!(cell instanceof HasIdealPosition)) {
-            throw new UnsupportedOperationException(
-                "Cell type " + cell.getClass().getSimpleName() + 
-                " does not support idealPos for SELECTION algotype. Ensure cell implements HasIdealPosition."
-            );
-        }
-        HasIdealPosition sel = (HasIdealPosition) cell;
-        sel.setIdealPos(pos);
-    }
-
     /**
      * Reset execution state to initial conditions.
      */
@@ -426,7 +424,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
         insertionTopology.reset();
         convergenceDetector.reset();
 
-        // Reset idealPos for SELECTION cells only
+        // Reset SelectionCell ideal positions
         for (T cell : cells) {
             if (cell.getAlgotype() == Algotype.SELECTION) {
                 setIdealPosition(cell, 0);
