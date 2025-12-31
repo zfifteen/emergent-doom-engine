@@ -223,19 +223,17 @@ public class CellGroup<T extends Cell<T> & GroupAwareCell<T>> extends Thread {
     }
     
     public boolean allCellsInactive() {
-        // PURPOSE: Check if group thread should terminate
-        // INPUTS: None (uses cellsInGroup)
-        // PROCESS:
-        //   1. Iterate through cellsInGroup
-        //   2. For each cell:
-        //      a. If cell.getStatus() != INACTIVE: return false
-        //   3. If loop completes: return true (all inactive)
-        // OUTPUTS: boolean
-        // DEPENDENCIES: cell.getStatus()
-        // SIDE EFFECTS: None (read-only check)
-        // NOTE: Used in run() loop termination condition
+        // Check if all cells in this group have terminated
+        // Used in run() loop termination condition
+        // Matches cell_research CellGroup.py:75-78
         
-        throw new UnsupportedOperationException("SCAFFOLD: allCellsInactive() not yet implemented");
+        for (T cell : cellsInGroup) {
+            if (cell.getStatus() != CellStatus.INACTIVE) {
+                return false; // At least one cell still active
+            }
+        }
+        
+        return true; // All cells terminated
     }
     
     // ========== THREAD EXECUTION ==========
