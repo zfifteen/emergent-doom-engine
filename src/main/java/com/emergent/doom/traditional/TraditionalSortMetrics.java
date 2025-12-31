@@ -72,10 +72,15 @@ public class TraditionalSortMetrics {
      * DEPENDENCIES: None
      * INTEGRATION: Called by TraditionalSortEngine.compareAndTrack()
      * NOTE: This represents the "reading" cost in the dual cost model
+     * 
+     * IMPLEMENTATION NOTE (Phase Three - recordComparison): This method tracks
+     * each comparison operation as it occurs. The totalOperations field is
+     * maintained incrementally to avoid repeated recalculation. Each comparison
+     * contributes 1 unit to the total operation cost.
      */
     public void recordComparison() {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE THREE will implement actual comparison tracking logic
+        comparisonCount++;
+        totalOperations++;
     }
     
     /**
@@ -90,10 +95,15 @@ public class TraditionalSortMetrics {
      * DEPENDENCIES: None
      * INTEGRATION: Called by TraditionalSortEngine.swapAndTrack()
      * NOTE: This represents the "writing" cost in the dual cost model
+     * 
+     * IMPLEMENTATION NOTE (Phase Three - recordSwap): This method tracks each
+     * swap operation. Swaps are the primary metric for comparing traditional
+     * vs cell-view implementations, as shown in the paper (Table 1, p.10).
+     * Each swap contributes 1 unit to the total operation cost.
      */
     public void recordSwap() {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE THREE will implement actual swap tracking logic
+        swapCount++;
+        totalOperations++;
     }
     
     /**
@@ -162,9 +172,15 @@ public class TraditionalSortMetrics {
      * OUTPUTS: None (modifies internal state)
      * DEPENDENCIES: None
      * INTEGRATION: Called between experiment runs
+     * 
+     * IMPLEMENTATION NOTE (Phase Three - reset): This method allows the same
+     * metrics tracker to be reused across multiple sort operations without
+     * creating new objects. This is important for experiment runners that
+     * perform many sorting trials.
      */
     public void reset() {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE THREE will implement reset logic
+        comparisonCount = 0;
+        swapCount = 0;
+        totalOperations = 0;
     }
 }
