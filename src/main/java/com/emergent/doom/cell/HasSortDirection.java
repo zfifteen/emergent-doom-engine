@@ -88,6 +88,5 @@ public interface HasSortDirection {
      * 
      * @return the sort direction of this cell (never null)
      */
-    // UNIMPLEMENTED: To be implemented by GenericCell in Phase Two/Three
     SortDirection getSortDirection();
 }
