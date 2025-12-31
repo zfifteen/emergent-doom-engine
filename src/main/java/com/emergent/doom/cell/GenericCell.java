@@ -1,5 +1,7 @@
 package com.emergent.doom.cell;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * A flexible cell implementation that can represent any algotype.
  *
@@ -11,6 +13,10 @@ package com.emergent.doom.cell;
  * "At the beginning of these experiments, we randomly assigned one of the three
  * different Algotypes to each of the cells, and began the sort as previously,
  * allowing all the cells to move based on their Algotype."</p>
+ *
+ * <p>For SELECTION algotype cells, GenericCell maintains an idealPos field that tracks
+ * the cell's target position, matching the behavior of SelectionCell. This field starts
+ * at 0 and increments when swap attempts are denied, per Levin p.9.</p>
  *
  * <p>Usage:
  * <pre>{@code
@@ -29,6 +35,7 @@ public class GenericCell implements Cell<GenericCell> {
 
     private final int value;
     private final Algotype algotype;
+    private final AtomicInteger idealPos;  // Thread-safe: used only for SELECTION algotype
 
     /**
      * Create a GenericCell with the specified value and algotype.
@@ -43,6 +50,7 @@ public class GenericCell implements Cell<GenericCell> {
         }
         this.value = value;
         this.algotype = algotype;
+        this.idealPos = new AtomicInteger(0);  // Levin: initial ideal position is leftmost (0)
     }
 
     /**
@@ -57,6 +65,49 @@ public class GenericCell implements Cell<GenericCell> {
     @Override
     public Algotype getAlgotype() {
         return algotype;
+    }
+
+    /**
+     * Get the ideal position for SELECTION algotype cells.
+     * Thread-safe for parallel execution.
+     *
+     * @return the current ideal position (0-based index)
+     */
+    public int getIdealPos() {
+        return idealPos.get();
+    }
+
+    /**
+     * Atomically increment the ideal position and return the new value.
+     * Used by SELECTION algotype when swap is denied.
+     * Thread-safe for parallel execution.
+     *
+     * @return the new ideal position after increment
+     */
+    public int incrementIdealPos() {
+        return idealPos.incrementAndGet();
+    }
+
+    /**
+     * Set the ideal position to a specific value.
+     * Used for SELECTION algotype state management.
+     *
+     * @param newIdealPos the new ideal position (0-based index)
+     */
+    public void setIdealPos(int newIdealPos) {
+        this.idealPos.set(newIdealPos);
+    }
+
+    /**
+     * Atomically compare-and-set the ideal position.
+     * Useful for concurrent updates when exact coordination is needed.
+     *
+     * @param expected the expected current value
+     * @param newValue the new value to set
+     * @return true if successful (current value matched expected)
+     */
+    public boolean compareAndSetIdealPos(int expected, int newValue) {
+        return idealPos.compareAndSet(expected, newValue);
     }
 
     /**
