@@ -174,10 +174,51 @@ public class TrajectoryPlotter {
      *   - Provides useful summary statistics without external libraries
      *   - Standard deviation gives insight into trajectory variability
      *   - Map format allows easy extension with additional statistics
+     * 
+     * IMPLEMENTATION:
+     *   This section computes statistical metadata for a trajectory.
+     *   It integrates with generatePlotData by providing the metadata parameter
+     *   for PlotData construction. The implementation uses standard statistical
+     *   formulas: min/max via iteration, mean via sum/count, and standard deviation
+     *   via variance calculation.
      */
     private Map<String, Double> computeStatistics(List<Double> trajectory) {
-        // UNIMPLEMENTED: Statistics computation logic goes here
-        return null;
+        if (trajectory == null || trajectory.isEmpty()) {
+            throw new IllegalArgumentException("Trajectory cannot be null or empty");
+        }
+        
+        // Initialize statistics
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        double sum = 0.0;
+        
+        // First pass: compute min, max, sum
+        for (Double value : trajectory) {
+            if (value < min) min = value;
+            if (value > max) max = value;
+            sum += value;
+        }
+        
+        // Compute mean
+        double mean = sum / trajectory.size();
+        
+        // Second pass: compute variance for standard deviation
+        double sumSquaredDiff = 0.0;
+        for (Double value : trajectory) {
+            double diff = value - mean;
+            sumSquaredDiff += diff * diff;
+        }
+        double variance = sumSquaredDiff / trajectory.size();
+        double stddev = Math.sqrt(variance);
+        
+        // Package into map
+        Map<String, Double> metadata = new HashMap<>();
+        metadata.put("min", min);
+        metadata.put("max", max);
+        metadata.put("mean", mean);
+        metadata.put("stddev", stddev);
+        
+        return metadata;
     }
     
     /**
@@ -204,10 +245,24 @@ public class TrajectoryPlotter {
      *   - Step numbers start at 0 to match array indexing
      *   - Returns doubles for consistency with PlotData (allows future timestamping)
      *   - Encapsulates simple but repetitive logic
+     * 
+     * IMPLEMENTATION:
+     *   This section generates sequential step numbers as x-values.
+     *   It integrates with generatePlotData by providing the xValues parameter
+     *   for PlotData construction. The implementation creates a simple sequence
+     *   starting from 0, matching the standard indexing of trajectory lists.
      */
     private double[] generateStepNumbers(int trajectoryLength) {
-        // UNIMPLEMENTED: Step number generation logic goes here
-        return null;
+        if (trajectoryLength <= 0) {
+            throw new IllegalArgumentException("Trajectory length must be positive");
+        }
+        
+        double[] stepNumbers = new double[trajectoryLength];
+        for (int i = 0; i < trajectoryLength; i++) {
+            stepNumbers[i] = (double) i;
+        }
+        
+        return stepNumbers;
     }
     
     /**
@@ -234,9 +289,23 @@ public class TrajectoryPlotter {
      *   - PlotData uses arrays for efficient storage and iteration
      *   - Trajectory computations return lists for ease of building
      *   - This method bridges the two representations
+     * 
+     * IMPLEMENTATION:
+     *   This section converts a List<Double> to a primitive double[] array.
+     *   It integrates with generatePlotData by providing the yValues parameter
+     *   for PlotData construction. The implementation performs a simple list-to-array
+     *   conversion, handling the boxing/unboxing of Double objects.
      */
     private double[] convertToArray(List<Double> trajectory) {
-        // UNIMPLEMENTED: List-to-array conversion logic goes here
-        return null;
+        if (trajectory == null) {
+            throw new IllegalArgumentException("Trajectory cannot be null");
+        }
+        
+        double[] array = new double[trajectory.size()];
+        for (int i = 0; i < trajectory.size(); i++) {
+            array[i] = trajectory.get(i);
+        }
+        
+        return array;
     }
 }
