@@ -9,6 +9,8 @@ import com.emergent.doom.topology.BubbleTopology;
 import com.emergent.doom.topology.InsertionTopology;
 import com.emergent.doom.topology.SelectionTopology;
 
+import com.emergent.doom.cell.HasIdealPosition;
+
 import java.util.Arrays;
 
 import java.util.List;

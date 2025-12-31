@@ -1,5 +1,7 @@
 package com.emergent.doom.cell;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * A flexible cell implementation that can represent any algotype.
  *

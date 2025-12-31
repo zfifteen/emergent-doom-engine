@@ -10,6 +10,8 @@ import com.emergent.doom.swap.SwapProposal;
 import com.emergent.doom.topology.BubbleTopology;
 import com.emergent.doom.topology.InsertionTopology;
 
+import com.emergent.doom.cell.HasIdealPosition;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
