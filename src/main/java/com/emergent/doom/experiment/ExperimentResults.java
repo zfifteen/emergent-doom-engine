@@ -508,13 +508,39 @@ public class ExperimentResults<T extends Cell<T>> {
      * @throws IllegalArgumentException if metric doesn't exist or insufficient data
      */
     public String getStatisticalSummary(String metricName) {
-        // TODO: Implementation in Phase 3, Iteration 13
+        // IMPLEMENTED in Phase 3, Iteration 13
+        // This method generates a comprehensive statistical summary for a metric by
+        // combining mean, standard deviation, and confidence interval into a formatted string.
+        //
+        // Provides human-readable statistical reporting suitable for logs and reports.
+        
         // 1. Validate metricName exists
+        if (trials.isEmpty()) {
+            throw new IllegalArgumentException("Cannot generate statistical summary: no trials available");
+        }
+        
         // 2. Get mean using getMeanMetric(metricName)
+        double mean = getMeanMetric(metricName);
+        
         // 3. Get stdDev using getStdDevMetric(metricName)
+        double stdDev = getStdDevMetric(metricName);
+        
         // 4. Get CI using getConfidenceInterval(metricName, 0.95)
+        // Using 95% confidence level as the standard in scientific reporting
+        double[] confidenceInterval = getConfidenceInterval(metricName, 0.95);
+        
         // 5. Format into string: "MetricName: mean=X.XX, stddev=X.XX, 95% CI=[X.XX, X.XX]"
+        // Using 2 decimal places for readability and common scientific precision
+        String summary = String.format(
+            "%s: mean=%.2f, stddev=%.2f, 95%% CI=[%.2f, %.2f]",
+            metricName,
+            mean,
+            stdDev,
+            confidenceInterval[0],  // lower bound
+            confidenceInterval[1]   // upper bound
+        );
+        
         // 6. Return formatted string
-        throw new UnsupportedOperationException("Not implemented yet");
+        return summary;
     }
 }
