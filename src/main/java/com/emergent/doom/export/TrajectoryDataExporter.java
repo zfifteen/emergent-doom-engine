@@ -323,9 +323,19 @@ public class TrajectoryDataExporter {
      *   - Improves user experience (no need to pre-create directories)
      *   - Centralizes directory handling logic
      *   - Prevents common I/O errors
+     * 
+     * IMPLEMENTATION:
+     *   This section ensures parent directories exist for a file path.
+     *   It integrates with all export methods by being called before file writing.
+     *   Uses java.nio.file.Files and Paths for modern, robust directory creation.
      */
     private static void ensureDirectoryExists(String filepath) throws IOException {
-        // UNIMPLEMENTED: Directory creation logic goes here
+        java.nio.file.Path path = java.nio.file.Paths.get(filepath);
+        java.nio.file.Path parentDir = path.getParent();
+        
+        if (parentDir != null && !java.nio.file.Files.exists(parentDir)) {
+            java.nio.file.Files.createDirectories(parentDir);
+        }
     }
     
     /**
@@ -353,9 +363,42 @@ public class TrajectoryDataExporter {
      *   - Prevents corrupted output files from mismatched data
      *   - Centralizes validation logic
      *   - Provides clear error messages for debugging
+     * 
+     * IMPLEMENTATION:
+     *   This section validates that all trajectories have the same length.
+     *   It integrates with export methods by being called during input validation.
+     *   Throws clear exceptions to help users identify data inconsistencies.
      */
     private static void validateTrajectoriesHaveSameLength(Map<String, List<Double>> trajectories) {
-        // UNIMPLEMENTED: Validation logic goes here
+        if (trajectories == null || trajectories.isEmpty()) {
+            return; // Already handled by calling methods
+        }
+        
+        // Get length from first trajectory
+        Integer expectedLength = null;
+        String firstMetric = null;
+        
+        for (Map.Entry<String, List<Double>> entry : trajectories.entrySet()) {
+            String metricName = entry.getKey();
+            List<Double> trajectory = entry.getValue();
+            
+            if (trajectory == null) {
+                throw new IllegalArgumentException(
+                    "Trajectory for metric '" + metricName + "' is null");
+            }
+            
+            if (expectedLength == null) {
+                expectedLength = trajectory.size();
+                firstMetric = metricName;
+            } else {
+                if (trajectory.size() != expectedLength) {
+                    throw new IllegalArgumentException(
+                        "Trajectory length mismatch: '" + firstMetric + "' has " + 
+                        expectedLength + " values, but '" + metricName + "' has " + 
+                        trajectory.size() + " values");
+                }
+            }
+        }
     }
     
     /**
@@ -381,9 +424,31 @@ public class TrajectoryDataExporter {
      *   - Follows CSV RFC 4180 standard
      *   - Prevents CSV injection and parsing errors
      *   - Handles edge cases like metric names with commas
+     * 
+     * IMPLEMENTATION:
+     *   This section escapes strings for CSV format per RFC 4180.
+     *   It integrates with CSV export methods by being called on all string values.
+     *   Handles special characters: comma, quote, newline, carriage return.
      */
     private static String escapeCsvValue(String value) {
-        // UNIMPLEMENTED: CSV escaping logic goes here
-        return null;
+        if (value == null) {
+            return "";
+        }
+        
+        // Check if value needs escaping
+        boolean needsEscaping = value.contains(",") || 
+                                value.contains("\"") || 
+                                value.contains("\n") || 
+                                value.contains("\r");
+        
+        if (!needsEscaping) {
+            return value;
+        }
+        
+        // Escape internal quotes by doubling them
+        String escaped = value.replace("\"", "\"\"");
+        
+        // Wrap in quotes
+        return "\"" + escaped + "\"";
     }
 }
