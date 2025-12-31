@@ -328,16 +328,66 @@ public class ExperimentResults<T extends Cell<T>> {
      * @throws IllegalArgumentException if metric doesn't exist in both experiments or insufficient data
      */
     public double compareTwoExperiments(ExperimentResults<T> other, String metricName) {
-        // TODO: Implementation in Phase 3, Iteration 11
+        // IMPLEMENTED in Phase 3, Iteration 11
+        // This method compares two experiment results using two-sample t-test to determine
+        // if they have significantly different means for a given metric.
+        //
+        // This is the central method for comparing experimental conditions, such as
+        // emergent vs. traditional approaches as shown in the paper's Table 1.
+        
         // 1. Validate metricName exists in both this and other experiments
+        if (this.trials.isEmpty()) {
+            throw new IllegalArgumentException("Cannot compare experiments: this experiment has no trials");
+        }
+        if (other == null) {
+            throw new IllegalArgumentException("Cannot compare experiments: other experiment is null");
+        }
+        if (other.trials.isEmpty()) {
+            throw new IllegalArgumentException("Cannot compare experiments: other experiment has no trials");
+        }
+        
         // 2. Create List<Double> for this experiment's metric values
+        List<Double> thisMetricValues = new ArrayList<>();
+        
         // 3. Create List<Double> for other experiment's metric values
+        List<Double> otherMetricValues = new ArrayList<>();
+        
         // 4. Iterate through this.trials to extract metric values
+        for (TrialResult<T> trial : this.trials) {
+            Double value = trial.getMetric(metricName);
+            if (value != null) {
+                thisMetricValues.add(value);
+            }
+        }
+        
         // 5. Iterate through other.trials to extract metric values
+        for (TrialResult<T> trial : other.trials) {
+            Double value = trial.getMetric(metricName);
+            if (value != null) {
+                otherMetricValues.add(value);
+            }
+        }
+        
         // 6. Validate both lists have at least 2 values
+        if (thisMetricValues.size() < 2) {
+            throw new IllegalArgumentException(
+                "Cannot compare experiments: this experiment has insufficient data for metric '" + 
+                metricName + "'. Found " + thisMetricValues.size() + ", need at least 2."
+            );
+        }
+        if (otherMetricValues.size() < 2) {
+            throw new IllegalArgumentException(
+                "Cannot compare experiments: other experiment has insufficient data for metric '" + 
+                metricName + "'. Found " + otherMetricValues.size() + ", need at least 2."
+            );
+        }
+        
         // 7. Call StatisticalTests.tTestTwoSample(thisSample, otherSample)
+        // This performs Welch's t-test which doesn't assume equal variances
+        double pValue = StatisticalTests.tTestTwoSample(thisMetricValues, otherMetricValues);
+        
         // 8. Return p-value
-        throw new UnsupportedOperationException("Not implemented yet");
+        return pValue;
     }
     
     /**
