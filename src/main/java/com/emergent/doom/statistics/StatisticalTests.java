@@ -787,10 +787,29 @@ public class StatisticalTests {
      * @throws IllegalArgumentException if pValue or alpha not in [0, 1]
      */
     public static boolean isSignificant(double pValue, double alpha) {
-        // TODO: Implementation in Phase 3, Iteration 8
+        // IMPLEMENTED in Phase 3, Iteration 8
+        // This method provides a simple decision rule for hypothesis testing based
+        // on comparing a p-value to a significance threshold (alpha level).
+        //
+        // Returns true if the result is statistically significant, false otherwise.
+        
         // 1. Validate pValue: 0 <= pValue <= 1
+        if (pValue < 0 || pValue > 1) {
+            throw new IllegalArgumentException(
+                "P-value must be between 0 and 1 (inclusive), got: " + pValue
+            );
+        }
+        
         // 2. Validate alpha: 0 <= alpha <= 1
+        if (alpha < 0 || alpha > 1) {
+            throw new IllegalArgumentException(
+                "Alpha must be between 0 and 1 (inclusive), got: " + alpha
+            );
+        }
+        
         // 3. Return pValue < alpha
-        throw new UnsupportedOperationException("Not implemented yet");
+        // If p-value is less than alpha, we reject the null hypothesis
+        // and conclude the result is statistically significant
+        return pValue < alpha;
     }
 }
