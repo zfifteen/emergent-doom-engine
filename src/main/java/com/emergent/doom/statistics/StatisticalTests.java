@@ -140,12 +140,29 @@ public class StatisticalTests {
      */
     public static double zTestOneSample(double sampleMean, double populationMean, 
                                        double populationStdDev, int sampleSize) {
-        // TODO: Implementation in Phase 3, Iteration 2
+        // IMPLEMENTED in Phase 3, Iteration 2
+        // This method performs a one-sample Z-test to determine if a sample mean
+        // differs significantly from a known population mean.
+        //
+        // The test uses the standard normal distribution and returns a two-tailed p-value
+        // that indicates the probability of observing the data under the null hypothesis.
+        
         // 1. Calculate Z-score using calculateZScore()
-        // 2. Create NormalDistribution(0, 1) - standard normal
+        // This demonstrates integration with the previously implemented method
+        double zScore = calculateZScore(sampleMean, populationMean, populationStdDev, sampleSize);
+        
+        // 2. Create NormalDistribution(0, 1) - standard normal distribution
+        // Mean = 0, Standard Deviation = 1
+        NormalDistribution normalDist = new NormalDistribution(0, 1);
+        
         // 3. Calculate two-tailed p-value: 2 * (1 - normalDist.cumulativeProbability(|z|))
+        // Use absolute value of Z-score for two-tailed test
+        // cumulativeProbability gives P(Z <= z), so 1 - P(Z <= |z|) gives P(Z > |z|)
+        // Multiply by 2 for both tails of the distribution
+        double pValue = 2.0 * (1.0 - normalDist.cumulativeProbability(Math.abs(zScore)));
+        
         // 4. Return p-value
-        throw new UnsupportedOperationException("Not implemented yet");
+        return pValue;
     }
     
     /**
