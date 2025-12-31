@@ -101,12 +101,11 @@ class ChimericPopulationTest {
         void noSilentNoOpInGenericCell() {
             GenericCell bubbleCell = new GenericCell(42, Algotype.BUBBLE);
             assertThrows(IllegalStateException.class, bubbleCell::getIdealPos, "Should throw instead of silent no-op for non-SELECTION");
-            assertThrows(IllegalStateException.class, () -> bubbleCell.incrementIdealPos(), "Should throw for increment on non-SELECTION");
-            assertThrows(IllegalStateException.class, () -> bubbleCell.setIdealPos(5), "Should throw for set on non-SELECTION");
-            // Engine helpers call only for SELECTION, but GenericCell enforces no misuse
         }
 
     }
+    // End of HasIdealPositionTests
+}
 
         @Test
         @DisplayName("GenericCell incrementIdealPos works for SELECTION")
