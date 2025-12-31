@@ -44,11 +44,13 @@ public class TraditionalSortEngine<T extends Comparable<T>> {
      * OUTPUTS: New TraditionalSortEngine instance
      * DEPENDENCIES: TraditionalSortMetrics class
      * INTEGRATION: Called by test cases and experiment runners
+     * 
+     * IMPLEMENTATION NOTE (Phase Two): This is the main entry point for creating
+     * a traditional sort engine. Each engine instance has its own metrics tracker
+     * to ensure thread-safety and isolated metric collection across experiments.
      */
     public TraditionalSortEngine() {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE TWO will implement constructor logic
-        this.metrics = null;
+        this.metrics = new TraditionalSortMetrics();
     }
     
     /**
@@ -67,10 +69,36 @@ public class TraditionalSortEngine<T extends Comparable<T>> {
      * DEPENDENCIES: bubbleSort(), insertionSort(), selectionSort() methods
      * INTEGRATION: Main entry point for experiments comparing traditional vs cell-view
      * THROWS: IllegalArgumentException if algorithm name is invalid
+     * 
+     * IMPLEMENTATION NOTE (Phase Two): This dispatcher method coordinates the sorting
+     * operation. It ensures metrics are reset before each sort and routes to the
+     * appropriate algorithm implementation. The algorithm name is case-insensitive
+     * for convenience.
      */
     public void sort(T[] array, String algorithm) {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE TWO will implement routing logic
+        // Reset metrics before starting new sort
+        metrics.reset();
+        
+        // Normalize algorithm name to uppercase for matching
+        String algoUpper = algorithm.toUpperCase();
+        
+        // Route to appropriate algorithm implementation
+        switch (algoUpper) {
+            case "BUBBLE":
+                bubbleSort(array);
+                break;
+            case "INSERTION":
+                insertionSort(array);
+                break;
+            case "SELECTION":
+                selectionSort(array);
+                break;
+            default:
+                throw new IllegalArgumentException(
+                    "Unknown algorithm: " + algorithm + 
+                    ". Valid options are: BUBBLE, INSERTION, SELECTION"
+                );
+        }
     }
     
     /**
@@ -195,10 +223,12 @@ public class TraditionalSortEngine<T extends Comparable<T>> {
      * OUTPUTS: TraditionalSortMetrics - current metrics state
      * DEPENDENCIES: metrics must be initialized
      * INTEGRATION: Used by test cases and experiment runners to compare with cell-view
+     * 
+     * IMPLEMENTATION NOTE (Phase Two): Returns a reference to the internal metrics
+     * object, allowing callers to query comparison count, swap count, and total
+     * operations after a sort completes.
      */
     public TraditionalSortMetrics getMetrics() {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE TWO will implement getter logic
-        return null;
+        return metrics;
     }
 }

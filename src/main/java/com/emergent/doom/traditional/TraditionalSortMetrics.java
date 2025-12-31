@@ -49,10 +49,15 @@ public class TraditionalSortMetrics {
      * OUTPUTS: New TraditionalSortMetrics instance
      * DEPENDENCIES: None
      * INTEGRATION: Called at the start of each traditional sort operation
+     * 
+     * IMPLEMENTATION NOTE (Phase Two): This is the main entry point for creating
+     * a metrics tracker. All counters start at zero to provide a clean baseline
+     * for each sorting operation.
      */
     public TraditionalSortMetrics() {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE TWO will implement actual initialization logic
+        this.comparisonCount = 0;
+        this.swapCount = 0;
+        this.totalOperations = 0;
     }
     
     /**
@@ -100,11 +105,13 @@ public class TraditionalSortMetrics {
      * OUTPUTS: int - total comparisons performed
      * DEPENDENCIES: recordComparison() must have been called during sorting
      * INTEGRATION: Used by test cases and experiment runners
+     * 
+     * IMPLEMENTATION NOTE (Phase Two): Simple getter that provides read-only
+     * access to the comparison count. This enables analysis without exposing
+     * internal mutability.
      */
     public int getComparisonCount() {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE TWO will implement getter logic
-        return 0;
+        return comparisonCount;
     }
     
     /**
@@ -116,11 +123,13 @@ public class TraditionalSortMetrics {
      * OUTPUTS: int - total swaps performed
      * DEPENDENCIES: recordSwap() must have been called during sorting
      * INTEGRATION: Used for direct comparison with cell-view swap counts
+     * 
+     * IMPLEMENTATION NOTE (Phase Two): This is the primary metric for comparing
+     * traditional vs cell-view efficiency, corresponding directly to the swap_count
+     * in cell_research's StatusProbe.
      */
     public int getSwapCount() {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE TWO will implement getter logic
-        return 0;
+        return swapCount;
     }
     
     /**
@@ -132,11 +141,13 @@ public class TraditionalSortMetrics {
      * OUTPUTS: int - total operations performed
      * DEPENDENCIES: recordComparison() and recordSwap() must track operations
      * INTEGRATION: Enables dual cost model analysis per Levin et al. paper (p.10)
+     * 
+     * IMPLEMENTATION NOTE (Phase Two): This getter returns the cached total
+     * operations count which is maintained incrementally by recordComparison()
+     * and recordSwap() methods.
      */
     public int getTotalOperations() {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE TWO will implement getter logic
-        return 0;
+        return totalOperations;
     }
     
     /**
