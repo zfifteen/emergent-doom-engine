@@ -253,6 +253,127 @@ class LockBasedExecutionEngineTest {
     }
 
     // ========================================================================
+    // Convergence Detector Integration Tests
+    // ========================================================================
+
+    @Nested
+    @DisplayName("Convergence detector integration")
+    class ConvergenceDetectorTests {
+
+        @Test
+        @DisplayName("Uses configured convergence detector")
+        void usesConvergenceDetector() {
+            cells = new TestBubbleCell[] {
+                new TestBubbleCell(1),
+                new TestBubbleCell(2)
+            };
+
+            FrozenCellStatus frozenStatus = new ThreadSafeFrozenCellStatus();
+            swapEngine = new SwapEngine<>(frozenStatus);
+            probe = new ThreadSafeProbe<>();
+
+            // Custom detector that tracks if it was called
+            TrackingConvergenceDetector<TestBubbleCell> trackingDetector = new TrackingConvergenceDetector<>();
+
+            engine = new LockBasedExecutionEngine<>(cells, swapEngine, probe, trackingDetector);
+            engine.runUntilConvergence(1000);
+            engine.shutdown();
+
+            assertTrue(trackingDetector.wasChecked(), "Convergence detector should be consulted");
+        }
+
+        @Test
+        @DisplayName("Respects detector convergence decision")
+        void respectsDetectorDecision() {
+            cells = new TestBubbleCell[] {
+                new TestBubbleCell(2),
+                new TestBubbleCell(1)
+            };
+
+            FrozenCellStatus frozenStatus = new ThreadSafeFrozenCellStatus();
+            swapEngine = new SwapEngine<>(frozenStatus);
+            probe = new ThreadSafeProbe<>();
+
+            // Detector that always says converged after being checked once
+            ImmediateConvergenceDetector<TestBubbleCell> immediateDetector =
+                new ImmediateConvergenceDetector<>();
+
+            engine = new LockBasedExecutionEngine<>(cells, swapEngine, probe, immediateDetector);
+            engine.runUntilConvergence(10000);
+            engine.shutdown();
+
+            assertTrue(engine.hasConverged(), "Should converge when detector says so");
+            // May or may not have had time for swaps depending on timing
+        }
+
+        @Test
+        @DisplayName("Uses custom polling configuration")
+        void usesCustomPollingConfig() {
+            cells = new TestBubbleCell[] {
+                new TestBubbleCell(1),
+                new TestBubbleCell(2)
+            };
+
+            FrozenCellStatus frozenStatus = new ThreadSafeFrozenCellStatus();
+            swapEngine = new SwapEngine<>(frozenStatus);
+            probe = new ThreadSafeProbe<>();
+            ConvergenceDetector<TestBubbleCell> detector = new NoSwapConvergence<>(3);
+
+            // Custom polling: 5ms interval, 10 stable polls required
+            engine = new LockBasedExecutionEngine<>(
+                cells, swapEngine, probe, detector, 5, 10);
+            engine.runUntilConvergence(100);
+            engine.shutdown();
+
+            assertTrue(engine.hasConverged(), "Should converge with custom polling config");
+        }
+    }
+
+    // ========================================================================
+    // Test Helper Classes
+    // ========================================================================
+
+    /**
+     * Convergence detector that tracks if it was checked.
+     */
+    static class TrackingConvergenceDetector<T extends Cell<T>> implements ConvergenceDetector<T> {
+        private volatile boolean checked = false;
+        private volatile int checkCount = 0;
+
+        @Override
+        public boolean hasConverged(com.emergent.doom.probe.Probe<T> probe, int currentStep) {
+            checked = true;
+            checkCount++;
+            // Let stable polling handle convergence
+            return checkCount > 10; // Eventually converge after enough checks
+        }
+
+        public boolean wasChecked() {
+            return checked;
+        }
+
+        public int getCheckCount() {
+            return checkCount;
+        }
+    }
+
+    /**
+     * Convergence detector that returns true immediately after first check.
+     */
+    static class ImmediateConvergenceDetector<T extends Cell<T>> implements ConvergenceDetector<T> {
+        private volatile boolean firstCheck = true;
+
+        @Override
+        public boolean hasConverged(com.emergent.doom.probe.Probe<T> probe, int currentStep) {
+            if (firstCheck) {
+                firstCheck = false;
+                return false;
+            }
+            return true;
+        }
+    }
+
+    // ========================================================================
     // Test Helper Cell
     // ========================================================================
 

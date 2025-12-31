@@ -63,25 +63,55 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
     // Snapshot interval for recording (every N swaps)
     private static final int SNAPSHOT_INTERVAL = 1;
 
+    // Convergence polling configuration
+    private static final int DEFAULT_POLL_INTERVAL_MS = 10;
+    private static final int DEFAULT_REQUIRED_STABLE_POLLS = 30; // 30 * 10ms = 300ms of no swaps
+
+    private final int convergencePollIntervalMs;
+    private final int requiredStablePolls;
+
     /**
-     * Create a new lock-based execution engine.
+     * Create a new lock-based execution engine with default polling configuration.
      *
      * @param cells the cell array to sort
      * @param swapEngine the swap engine for executing swaps
      * @param probe the probe for recording snapshots
      * @param convergenceDetector the convergence detector
      */
-    @SuppressWarnings("unchecked")
     public LockBasedExecutionEngine(
             T[] cells,
             SwapEngine<T> swapEngine,
             Probe<T> probe,
             ConvergenceDetector<T> convergenceDetector) {
+        this(cells, swapEngine, probe, convergenceDetector,
+                DEFAULT_POLL_INTERVAL_MS, DEFAULT_REQUIRED_STABLE_POLLS);
+    }
+
+    /**
+     * Create a new lock-based execution engine with custom polling configuration.
+     *
+     * @param cells the cell array to sort
+     * @param swapEngine the swap engine for executing swaps
+     * @param probe the probe for recording snapshots
+     * @param convergenceDetector the convergence detector
+     * @param pollIntervalMs polling interval in milliseconds for convergence checks
+     * @param requiredStablePolls number of consecutive stable polls required for fallback convergence
+     */
+    @SuppressWarnings("unchecked")
+    public LockBasedExecutionEngine(
+            T[] cells,
+            SwapEngine<T> swapEngine,
+            Probe<T> probe,
+            ConvergenceDetector<T> convergenceDetector,
+            int pollIntervalMs,
+            int requiredStablePolls) {
 
         this.cells = cells;
         this.swapEngine = swapEngine;
         this.probe = probe;
         this.convergenceDetector = convergenceDetector;
+        this.convergencePollIntervalMs = pollIntervalMs;
+        this.requiredStablePolls = requiredStablePolls;
         this.random = new Random();
 
         // Single global lock (matches Python cell_research)
@@ -121,6 +151,9 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
     /**
      * Run until convergence or max steps reached.
      *
+     * <p>Uses the configured {@link ConvergenceDetector} to determine when convergence
+     * has been reached, falling back to no-swap stability if the detector cannot determine.</p>
+     *
      * @param maxSteps maximum number of swap operations
      * @return total number of swap operations
      */
@@ -129,23 +162,30 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
             start();
         }
 
-        // Poll for convergence
+        // Poll for convergence using the configured detector
         int lastSwapCount = 0;
         int stableCount = 0;
-        int requiredStable = 3; // Require 3 consecutive checks with no swaps
 
         while (!converged && totalSwaps.get() < maxSteps) {
             try {
-                Thread.sleep(10); // Poll interval
+                Thread.sleep(convergencePollIntervalMs);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
 
+            // First, check with the configured convergence detector
+            if (convergenceDetector.hasConverged(probe, currentStep.get())) {
+                converged = true;
+                break;
+            }
+
+            // Secondary check: if no swaps for extended period, also converge
+            // This handles cases where detector requires specific snapshot patterns
             int currentSwaps = totalSwaps.get();
             if (currentSwaps == lastSwapCount) {
                 stableCount++;
-                if (stableCount >= requiredStable * 10) { // 10ms * 30 = 300ms of no swaps
+                if (stableCount >= requiredStablePolls) {
                     converged = true;
                 }
             } else {

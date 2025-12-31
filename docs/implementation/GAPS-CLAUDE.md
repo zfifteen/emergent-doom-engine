@@ -71,6 +71,8 @@ a single `ReentrantLock` exactly matching the Python cell_research threading mod
 `ParallelExecutionEngine` with `CyclicBarrier` remains available as `ExecutionMode.PARALLEL` for
 deterministic parallel execution.
 
+**Verified by**: `LockBasedExecutionEngineTest` (16 tests including convergence detector integration)
+
 ---
 
 ## Category 2: Cell Algorithms
@@ -106,6 +108,8 @@ if (algotype == Algotype.BUBBLE) {
 
 **Status**: IMPLEMENTED. Each BUBBLE cell now randomly picks ONE direction per iteration (50/50 when
 both neighbors exist), exactly matching the Python cell_research behavior.
+
+**Verified by**: `ExecutionEngineTest` and `LockBasedExecutionEngineTest` basic sorting tests
 
 ---
 
@@ -281,6 +285,8 @@ public boolean canBeDisplaced(int position) {
 |--------|---------------------|-------------|
 | Can initiate swap | No | No ✓ |
 | Can be moved by others | Yes | Yes ✓ |
+
+**Verified by**: `SwapEngineTest` (T04-T09 frozen cell swap tests)
 
 ---
 
