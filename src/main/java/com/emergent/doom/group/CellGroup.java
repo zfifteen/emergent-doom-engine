@@ -57,20 +57,36 @@ public class CellGroup<T extends Cell<T> & GroupAwareCell<T>> extends Thread {
         int countDown,
         int phasePeriod
     ) {
-        // PURPOSE: Initialize CellGroup with all required parameters
-        // INPUTS: All constructor parameters as described above
-        // PROCESS:
-        //   1. Store all parameters as instance fields
-        //   2. Set thread name for debugging
-        //   3. Validate boundaries (leftBoundary <= rightBoundary)
-        //   4. Validate cellsInGroup not empty
-        //   5. Validate phasePeriod > 0
-        // OUTPUTS: None (constructor)
-        // DEPENDENCIES: None
-        // SIDE EFFECTS: Thread created but not started
-        // NOTE: Cells are assigned to this group separately via setGroup()
+        // Validate inputs
+        if (cellsInGroup == null || cellsInGroup.isEmpty()) {
+            throw new IllegalArgumentException("cellsInGroup must not be null or empty");
+        }
+        if (globalCells == null || globalCells.length == 0) {
+            throw new IllegalArgumentException("globalCells must not be null or empty");
+        }
+        if (leftBoundary > rightBoundary) {
+            throw new IllegalArgumentException("leftBoundary must be <= rightBoundary");
+        }
+        if (phasePeriod <= 0) {
+            throw new IllegalArgumentException("phasePeriod must be > 0");
+        }
+        if (lock == null) {
+            throw new IllegalArgumentException("lock must not be null");
+        }
         
-        throw new UnsupportedOperationException("SCAFFOLD: Constructor not yet implemented");
+        // Initialize all fields
+        this.cellsInGroup = cellsInGroup;
+        this.globalCells = globalCells;
+        this.groupId = groupId;
+        this.leftBoundaryPosition = leftBoundary;
+        this.rightBoundaryPosition = rightBoundary;
+        this.status = status;
+        this.lock = lock;
+        this.countDown = countDown;
+        this.phasePeriod = phasePeriod;
+        
+        // Set thread name for debugging (matches Python threading.Thread.__init__)
+        setName("CellGroup-" + groupId);
     }
     
     // ========== SORTED DETECTION ==========
