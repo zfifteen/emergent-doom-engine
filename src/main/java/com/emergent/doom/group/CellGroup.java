@@ -122,20 +122,20 @@ public class CellGroup<T extends Cell<T> & GroupAwareCell<T>> extends Thread {
     // ========== ADJACENT GROUP FINDING ==========
     
     public CellGroup<T> findNextGroup() {
-        // PURPOSE: Locate the CellGroup managing the cell immediately to the right
-        // INPUTS: None (uses rightBoundaryPosition, globalCells)
-        // PROCESS:
-        //   1. Calculate nextIndex = rightBoundaryPosition + 1
-        //   2. Check if nextIndex < globalCells.length
-        //   3. If out of bounds: return null (we're the rightmost group)
-        //   4. Get cell at globalCells[nextIndex]
-        //   5. Return cell.getGroup()
-        // OUTPUTS: CellGroup<T> or null
-        // DEPENDENCIES: globalCells array, cell.getGroup()
-        // SIDE EFFECTS: None (read-only)
-        // NOTE: Assumes all cells have been assigned to groups via setGroup()
+        // Find the adjacent group to the right
+        // Returns null if this is the rightmost group
+        // Matches cell_research CellGroup.py:50-52
         
-        throw new UnsupportedOperationException("SCAFFOLD: findNextGroup() not yet implemented");
+        int nextIndex = rightBoundaryPosition + 1;
+        
+        // Check if we're at the array boundary
+        if (nextIndex >= globalCells.length) {
+            return null; // No group to the right
+        }
+        
+        // Get the cell immediately to our right and return its group
+        T nextCell = globalCells[nextIndex];
+        return nextCell.getGroup();
     }
     
     // ========== GROUP MERGING ==========
