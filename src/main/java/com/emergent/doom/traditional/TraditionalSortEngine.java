@@ -167,10 +167,42 @@ public class TraditionalSortEngine<T extends Comparable<T>> {
      * DEPENDENCIES: compareAndTrack(), swapAndTrack()
      * INTEGRATION: Matches cell-view InsertionSortCell behavior for comparison
      * NOTE: Paper (p.10, Table 1) shows traditional insertion ~2500 swaps vs cell-view ~2500
+     * 
+     * IMPLEMENTATION NOTE (Phase Three - insertionSort): This is the classic
+     * insertion sort algorithm where elements from the unsorted portion are
+     * inserted into their correct position in the sorted portion. The sorted
+     * portion grows from left to right. Unlike cell-view insertion sort which
+     * checks if left portion is sorted before moving, this traditional
+     * implementation maintains the sorted invariant by construction.
      */
     private void insertionSort(T[] array) {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE THREE will implement insertion sort algorithm
+        int n = array.length;
+        
+        // Iterate through unsorted portion (starting at index 1)
+        for (int i = 1; i < n; i++) {
+            T key = array[i];
+            int j = i - 1;
+            
+            // Shift elements of sorted portion that are greater than key
+            // to one position ahead of their current position
+            while (j >= 0) {
+                metrics.recordComparison();
+                if (array[j].compareTo(key) > 0) {
+                    // array[j] > key, so shift array[j] right
+                    array[j + 1] = array[j];
+                    metrics.recordSwap(); // Count the shift as a swap
+                    j--;
+                } else {
+                    // Found correct position
+                    break;
+                }
+            }
+            
+            // Insert key at its correct position
+            array[j + 1] = key;
+            // Note: If key didn't move (j == i-1), no swap is counted
+            // If key moved, the shifts already counted as swaps
+        }
     }
     
     /**
