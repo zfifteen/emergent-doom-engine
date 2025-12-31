@@ -20,7 +20,7 @@ import com.emergent.doom.cell.Cell;
  * 
  * @param <T> the type of cell
  */
-public interface GroupAwareCell<T extends Cell<T>> extends Cell<T> {
+public interface GroupAwareCell<T extends Cell<T> & GroupAwareCell<T>> extends Cell<T> {
     
     // ========== GROUP MEMBERSHIP ==========
     
