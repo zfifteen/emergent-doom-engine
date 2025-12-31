@@ -186,11 +186,16 @@ public class TraditionalSortEngine<T extends Comparable<T>> {
      * DEPENDENCIES: TraditionalSortMetrics.recordComparison()
      * INTEGRATION: Called by all sorting algorithms to track comparison cost
      * NOTE: Every comparison is explicit in traditional algorithms, unlike cell-view
+     * 
+     * IMPLEMENTATION NOTE (Phase Three - compareAndTrack): This is a critical
+     * helper method that wraps the standard compareTo() operation with metrics
+     * tracking. By recording every comparison, we capture the "reading" cost
+     * in the dual cost model. This enables fair comparison with cell-view
+     * implementations where comparisons are also tracked.
      */
     private int compareAndTrack(T[] array, int i, int j) {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE THREE will implement comparison tracking logic
-        return 0;
+        metrics.recordComparison();
+        return array[i].compareTo(array[j]);
     }
     
     /**
@@ -208,10 +213,18 @@ public class TraditionalSortEngine<T extends Comparable<T>> {
      * DEPENDENCIES: TraditionalSortMetrics.recordSwap()
      * INTEGRATION: Called by all sorting algorithms to track swap cost
      * NOTE: Traditional swaps are atomic and immediate, unlike cell-view's threaded swaps
+     * 
+     * IMPLEMENTATION NOTE (Phase Three - swapAndTrack): This helper method wraps
+     * the standard array element exchange with metrics tracking. By recording
+     * every swap, we capture the "writing" cost in the dual cost model. Swaps
+     * are the primary metric for efficiency comparisons (see paper Table 1, p.10).
+     * The swap is performed using a temporary variable for clarity.
      */
     private void swapAndTrack(T[] array, int i, int j) {
-        // Implementation placeholder - Phase One: Scaffold only
-        // PHASE THREE will implement swap tracking logic
+        metrics.recordSwap();
+        T temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
     }
     
     /**
