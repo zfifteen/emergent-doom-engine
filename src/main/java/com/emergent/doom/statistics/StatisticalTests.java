@@ -461,13 +461,56 @@ public class StatisticalTests {
      * @throws IllegalArgumentException if samples are null, have different sizes, or fewer than 2 values
      */
     public static double tTestPaired(List<Double> sample1, List<Double> sample2) {
-        // TODO: Implementation in Phase 3, Iteration 6
+        // IMPLEMENTED in Phase 3, Iteration 6
+        // This method performs a paired t-test to determine if two related samples
+        // have significantly different means.
+        //
+        // Paired t-test is used for before/after comparisons or matched pairs,
+        // and is more powerful than unpaired t-test when appropriate.
+        
         // 1. Validate both samples: check not null, same size, size >= 2
+        if (sample1 == null) {
+            throw new IllegalArgumentException("Sample 1 cannot be null");
+        }
+        if (sample2 == null) {
+            throw new IllegalArgumentException("Sample 2 cannot be null");
+        }
+        if (sample1.size() != sample2.size()) {
+            throw new IllegalArgumentException(
+                "Samples must have the same size for paired t-test. Got sizes: " + 
+                sample1.size() + " and " + sample2.size()
+            );
+        }
+        if (sample1.size() < 2) {
+            throw new IllegalArgumentException("Samples must contain at least 2 values, got: " + sample1.size());
+        }
+        
         // 2. Convert both List<Double> to double[] arrays
+        double[] sample1Array = new double[sample1.size()];
+        for (int i = 0; i < sample1.size(); i++) {
+            if (sample1.get(i) == null) {
+                throw new IllegalArgumentException("Sample 1 cannot contain null values");
+            }
+            sample1Array[i] = sample1.get(i);
+        }
+        
+        double[] sample2Array = new double[sample2.size()];
+        for (int i = 0; i < sample2.size(); i++) {
+            if (sample2.get(i) == null) {
+                throw new IllegalArgumentException("Sample 2 cannot contain null values");
+            }
+            sample2Array[i] = sample2.get(i);
+        }
+        
         // 3. Create TTest instance
+        TTest tTest = new TTest();
+        
         // 4. Call tTest.pairedTTest(sample1Array, sample2Array)
+        // This computes differences and performs one-sample t-test on differences
+        double pValue = tTest.pairedTTest(sample1Array, sample2Array);
+        
         // 5. Return p-value
-        throw new UnsupportedOperationException("Not implemented yet");
+        return pValue;
     }
     
     /**
