@@ -12,6 +12,46 @@
 
 ## Changelog
 
+### 2025-12-31: Traditional Algorithms Implementation Complete ✅
+**Major Update**: Traditional (top-down) sorting algorithms fully implemented (Category 8).
+
+**New Classes Created** (350 lines total):
+- `com.emergent.doom.traditional.TraditionalSortEngine` - Main engine with bubble, insertion, selection sort (220 lines)
+- `com.emergent.doom.traditional.TraditionalSortMetrics` - Dual cost model tracker (130 lines)
+
+**Features Implemented**:
+1. ✅ **8.1 Traditional Sorting Implementations** - Complete bubble, insertion, selection sort
+2. ✅ **8.2 Dual Cost Model** - Tracks both comparisons (reading) and swaps (writing)
+
+**Tests Created**:
+- `TraditionalSortEngineTest.java` (417 lines, 29 tests) - All passing ✅
+
+**Implementation Approach**: Followed Incremental Coder v2 workflow:
+- Phase One: Scaffold - TraditionalSortEngine and TraditionalSortMetrics structure (1 commit)
+- Phase Two: Main entry points - constructors, getters, sort() dispatcher (1 commit)
+- Phase Three: Iterative implementation (5 commits):
+  1. recordComparison(), recordSwap(), reset() methods
+  2. compareAndTrack() helper method
+  3. swapAndTrack() helper method
+  4. bubbleSort() algorithm
+  5. insertionSort() algorithm
+  6. selectionSort() algorithm
+
+**Build Status**: ✅ SUCCESS (`mvn test` - 232/232 tests passing)
+
+**Key Findings**:
+- Traditional selection sort uses ~100 swaps (global minimum search)
+- Cell-view selection sort uses ~1100 swaps (lacks global knowledge) 
+- 10x efficiency difference demonstrates cost of distributed decision-making
+- Dual cost model enables comprehensive comparison of reading + writing operations
+
+**Gap Summary Update**:
+- Total gaps remaining: 7 → 5 (2 features closed)
+- Traditional Algorithms: 2 MISSING → 2 IMPLEMENTED
+- All sorting algorithm comparisons: Enabled ✅
+
+---
+
 ### 2025-12-31: Cross-Purpose Sorting Implementation Complete ✅
 **Major Update**: Cross-purpose sorting (conflicting directions) feature fully implemented (Category 6.2).
 
@@ -94,9 +134,9 @@
 | Metrics/Probe | 0 | 0 | 0 | 5 | 0 |
 | Chimeric Features | 0 | 0 | 0 | 2 | 0 |
 | Statistical Analysis | 2 | 0 | 0 | 0 | 2 |
-| Traditional Algorithms | 2 | 0 | 0 | 0 | 2 |
+| Traditional Algorithms | 0 | 0 | 0 | 2 | 0 |
 | Visualization | 3 | 0 | 0 | 0 | 3 |
-| **TOTAL** | **7** | **0** | **0** | **17** | **7** |
+| **TOTAL** | **5** | **0** | **0** | **19** | **5** |
 
 ---
 
@@ -686,23 +726,78 @@ boolean shouldSwap = shouldSwapWithDirection(i, j, algotype, direction);
 
 ## Category 8: Traditional Algorithms
 
-### 8.1 Traditional Sorting Implementations [MISSING]
+### 8.1 Traditional Sorting Implementations [IMPLEMENTED ✓]
 
 **Paper** (p.6-7, p.10): Compares cell-view vs traditional (top-down) algorithms.
 
-**EDE**: Only has cell-view implementations.
+**EDE implementation** (`TraditionalSortEngine.java`, `TraditionalSortMetrics.java`):
 
-**Recommendation**: Create `TraditionalSortEngine` for comparison studies.
+**Implementation Date:** 2025-12-31
+
+```java
+package com.emergent.doom.traditional;
+
+public class TraditionalSortEngine<T extends Comparable<T>> {
+    // Traditional implementations of:
+    // - bubbleSort() - Standard bubble sort with deterministic left-to-right scan
+    // - insertionSort() - Standard insertion sort with shift-based insertion
+    // - selectionSort() - Standard selection sort with global minimum search
+    
+    // All algorithms track metrics via TraditionalSortMetrics
+}
+
+public class TraditionalSortMetrics {
+    private int comparisonCount;  // Reading operations
+    private int swapCount;        // Writing operations
+    private int totalOperations;  // comparisons + swaps
+}
+```
+
+**Key Differences from Cell-View:**
+
+| Aspect | Traditional (Top-Down) | Cell-View (Emergent) |
+|--------|----------------------|---------------------|
+| **Visibility** | Global - sees entire array | Local - only neighbors |
+| **Control** | Centralized - single controller | Distributed - each cell decides |
+| **Execution** | Sequential - one operation at a time | Parallel - cells act simultaneously |
+| **Determinism** | Fully deterministic | Non-deterministic (random elements) |
+| **Selection Sort Efficiency** | ~100 swaps (global minimum) | ~1100 swaps (lacks global view) |
+
+**Status**: IMPLEMENTED. Complete traditional implementations of bubble sort, insertion sort, 
+and selection sort with dual cost model tracking. These provide baseline comparison for 
+cell-view approaches, particularly highlighting the 10x efficiency difference in selection 
+sort due to lack of global knowledge in cell-view (as documented in paper Table 1, p.10).
+
+**Verified by**: `TraditionalSortEngineTest` (29 tests, all passing)
 
 ---
 
-### 8.2 Dual Cost Model (Swaps + Comparisons) [MISSING]
+### 8.2 Dual Cost Model (Swaps + Comparisons) [IMPLEMENTED ✓]
 
 **Paper** (p.10): Analyzes efficiency counting "both reading (comparison) and writing (swapping)".
 
-**EDE**: Only tracks swap count.
+**EDE implementation** (`TraditionalSortMetrics.java`):
 
-**Recommendation**: Add comparison counter to execution engine.
+```java
+public class TraditionalSortMetrics {
+    public int getComparisonCount()   // Tracks "reading" operations
+    public int getSwapCount()         // Tracks "writing" operations  
+    public int getTotalOperations()   // comparisons + swaps for dual cost model
+}
+```
+
+**Integration with Algorithms:**
+
+- **compareAndTrack()** - Wraps compareTo() with comparison tracking
+- **swapAndTrack()** - Wraps array element exchange with swap tracking
+- **Automatic tracking** - Every comparison and swap is recorded automatically
+
+**Status**: IMPLEMENTED. Full dual cost model tracking enables analysis of total 
+computational cost (reading + writing) as described in the paper. This allows fair 
+comparison between traditional and cell-view implementations accounting for both 
+comparison and swap operations.
+
+**Verified by**: `TraditionalSortEngineTest.MetricsTests` (5 tests, all passing)
 
 ---
 
@@ -799,7 +894,16 @@ After implementing fixes, verify against cell_research:
 - [x] frozen_swap_attempts ✓ (Probe.java, SwapEngine.java)
 
 ### Chimeric
-- [ ] Per-cell sort direction (reverse_direction) - requires Cell interface extension
+- [x] Cross-purpose sorting with per-cell sort direction ✓ (SortDirection.java, HasSortDirection.java, GenericCell.java)
+
+### Traditional Algorithms ✅ COMPLETED 2025-12-31
+- [x] Traditional bubble sort implementation ✓ (TraditionalSortEngine.java)
+- [x] Traditional insertion sort implementation ✓ (TraditionalSortEngine.java)
+- [x] Traditional selection sort implementation ✓ (TraditionalSortEngine.java)
+- [x] Dual cost model tracking (comparisons + swaps) ✓ (TraditionalSortMetrics.java)
+- [x] Comparison tracking (reading operations) ✓ (compareAndTrack())
+- [x] Swap tracking (writing operations) ✓ (swapAndTrack())
+- [x] Algorithm dispatcher ✓ (sort() method)
 
 ---
 
@@ -822,8 +926,8 @@ After implementing fixes, verify against cell_research:
 ## Implementation Summary
 
 **Total Gaps Identified**: 12  
-**Gaps Closed**: 17 features implemented (including sub-features)  
-**Gaps Remaining**: 7 (non-critical features)
+**Gaps Closed**: 19 features implemented (including sub-features)  
+**Gaps Remaining**: 5 (non-critical features)
 
 **Major Achievements**:
 - ✅ Complete CellGroup System (4 features, 2025-12-31)
@@ -832,10 +936,10 @@ After implementing fixes, verify against cell_research:
 - ✅ Comprehensive metrics tracking
 - ✅ Lock-based threading model
 - ✅ Cross-purpose sorting with per-cell directions (2025-12-31)
+- ✅ Traditional algorithms with dual cost model (2 features, 2025-12-31)
 
 **Remaining Work** (non-blocking):
 - Statistical analysis utilities (Z-test, T-test)
-- Traditional algorithm implementations
 - Visualization and export
 
 ---
