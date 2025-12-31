@@ -3,7 +3,9 @@ package com.emergent.doom.execution;
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.HasIdealPosition;
+import com.emergent.doom.cell.HasSortDirection;
 import com.emergent.doom.cell.SelectionCell;
+import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.topology.BubbleTopology;
@@ -309,6 +311,98 @@ public class ExecutionEngine<T extends Cell<T>> {
             default:
                 return false;
         }
+    }
+
+    /**
+     * Helper: Get the sort direction of a cell, if it implements HasSortDirection.
+     * 
+     * <p>PURPOSE: Provides safe access to cell sort direction for cross-purpose
+     * sorting support. Returns ASCENDING as default for cells without direction.</p>
+     * 
+     * <p>INPUTS: cell (T) - the cell to query for direction</p>
+     * 
+     * <p>PROCESS:
+     * <ol>
+     *   <li>Check if cell implements HasSortDirection interface</li>
+     *   <li>If yes, call getSortDirection() and return result</li>
+     *   <li>If no, return SortDirection.ASCENDING as default</li>
+     * </ol>
+     * </p>
+     * 
+     * <p>OUTPUTS: SortDirection - cell's preference or ASCENDING default</p>
+     * 
+     * <p>DEPENDENCIES: SortDirection enum, HasSortDirection interface</p>
+     * 
+     * <p>ARCHITECTURE NOTE: This provides backward compatibility for cells that
+     * don't implement HasSortDirection while enabling cross-purpose sorting for
+     * cells that do (e.g., GenericCell with direction support).</p>
+     * 
+     * @param cell the cell to query
+     * @return the cell's sort direction, or ASCENDING if not direction-aware
+     */
+    private SortDirection getCellDirection(T cell) {
+        // UNIMPLEMENTED: Check if cell has direction, return ASCENDING default otherwise
+        // TODO: Implement in Phase Three
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    /**
+     * Helper: Determine if swap should occur using direction-aware comparison.
+     * 
+     * <p>PURPOSE: Enables cross-purpose sorting by respecting each cell's individual
+     * sort direction preference during swap evaluation.</p>
+     * 
+     * <p>INPUTS:
+     * <ul>
+     *   <li>i (int) - index of cell initiating swap</li>
+     *   <li>j (int) - index of target neighbor cell</li>
+     *   <li>algotype (Algotype) - algorithm policy of initiating cell</li>
+     *   <li>direction (SortDirection) - sort direction of initiating cell</li>
+     * </ul>
+     * </p>
+     * 
+     * <p>PROCESS:
+     * <ol>
+     *   <li>Determine relative position (j < i means left neighbor, j > i means right)</li>
+     *   <li>Get comparison result: cells[i].compareTo(cells[j])</li>
+     *   <li>Apply algotype-specific swap rules</li>
+     *   <li>Adjust comparison polarity based on direction:
+     *       <ul>
+     *         <li>ASCENDING: move left if smaller, right if larger</li>
+     *         <li>DESCENDING: move left if larger, right if smaller</li>
+     *       </ul>
+     *   </li>
+     *   <li>Return true if swap should proceed, false otherwise</li>
+     * </ol>
+     * </p>
+     * 
+     * <p>OUTPUTS: boolean - true if swap satisfies algotype and direction rules</p>
+     * 
+     * <p>DEPENDENCIES:
+     * <ul>
+     *   <li>Cell.compareTo() for value comparison</li>
+     *   <li>isLeftSorted() for INSERTION algotype</li>
+     *   <li>incrementIdealPosition() for SELECTION algotype</li>
+     * </ul>
+     * </p>
+     * 
+     * <p>ARCHITECTURE NOTE: This method is the heart of cross-purpose sorting.
+     * It replaces hardcoded ascending logic with direction-aware decisions that
+     * allow cells with different goals to compete and reach equilibrium.</p>
+     * 
+     * <p>GROUND TRUTH REFERENCE: cell_research Python checks reverse_direction
+     * throughout swap logic in BubbleSortCell.py, SelectionSortCell.py, InsertionSortCell.py</p>
+     * 
+     * @param i index of initiating cell
+     * @param j index of target neighbor
+     * @param algotype algorithm policy
+     * @param direction sort direction preference
+     * @return true if swap should occur
+     */
+    private boolean shouldSwapWithDirection(int i, int j, Algotype algotype, SortDirection direction) {
+        // UNIMPLEMENTED: Direction-aware swap logic for all algotypes
+        // TODO: Implement in Phase Three - one algotype at a time
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
 
