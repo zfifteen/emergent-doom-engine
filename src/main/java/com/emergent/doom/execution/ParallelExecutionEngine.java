@@ -251,11 +251,8 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             case INSERTION:
                 return insertionTopology.getNeighbors(i, cellArray.length, algotype);
             case SELECTION:
-                // TODO: Phase Two - Use HasIdealPosition
-                // if (!(cellArray[i] instanceof HasIdealPosition)) return emptyList or throw;
-                // int target = Math.min(getIdealPosition(cellArray[i]), cellArray.length - 1);
-                // return Arrays.asList(target);
-                throw new UnsupportedOperationException("Scaffold: Implement SELECTION neighbors using HasIdealPosition");
+                int target = Math.min(getIdealPosition(cellArray[i]), cellArray.length - 1);
+                return Arrays.asList(target);
             default:
                 throw new IllegalStateException("Unknown algotype: " + algotype);
         }
@@ -281,17 +278,18 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
                 return false;
 
             case SELECTION:
-                // TODO: Phase Two - Use HasIdealPosition
                 if (i == j) {
                     return false;
                 }
                 if (cellArray[i].compareTo(cellArray[j]) < 0) {
                     return true;
                 } else {
-                    // Denied: Increment using interface
-                    // if (!(cellArray[i] instanceof HasIdealPosition)) throw ...;
-                    // HasIdealPosition sel = (HasIdealPosition) cellArray[i];
-                    // if (getIdealPosition(cellArray[i]) < cellArray.length - 1) incrementIdealPosition(cellArray[i]);
+                    // Denied: Increment idealPos if SELECTION and not at end
+                    if (cellArray[i].getAlgotype() == Algotype.SELECTION) {
+                        if (getIdealPosition(cellArray[i]) < cellArray.length - 1) {
+                            incrementIdealPosition(cellArray[i]);
+                        }
+                    }
                     return false;
                 }
 
@@ -379,21 +377,36 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
      */
     // Helper methods for HasIdealPosition (scaffold; implement in phase two)
     private int getIdealPosition(T cell) {
-        // TODO: Phase Two - if (cell instanceof HasIdealPosition) return ((HasIdealPosition) cell).getIdealPos();
-        // else throw new UnsupportedOperationException("Cell " + cell.getClass() + " does not support idealPos for SELECTION");
-        throw new UnsupportedOperationException("Scaffold: Implement getIdealPosition using HasIdealPosition");
+        if (!(cell instanceof HasIdealPosition)) {
+            throw new UnsupportedOperationException(
+                "Cell type " + cell.getClass().getSimpleName() + 
+                " does not support idealPos for SELECTION algotype. Ensure cell implements HasIdealPosition."
+            );
+        }
+        HasIdealPosition sel = (HasIdealPosition) cell;
+        return sel.getIdealPos();
     }
 
     private void incrementIdealPosition(T cell) {
-        // TODO: Phase Two - if (cell instanceof HasIdealPosition) ((HasIdealPosition) cell).incrementIdealPos();
-        // else throw new UnsupportedOperationException(...);
-        throw new UnsupportedOperationException("Scaffold: Implement incrementIdealPosition using HasIdealPosition");
+        if (!(cell instanceof HasIdealPosition)) {
+            throw new UnsupportedOperationException(
+                "Cell type " + cell.getClass().getSimpleName() + 
+                " does not support idealPos for SELECTION algotype. Ensure cell implements HasIdealPosition."
+            );
+        }
+        HasIdealPosition sel = (HasIdealPosition) cell;
+        sel.incrementIdealPos();
     }
 
     private void setIdealPosition(T cell, int pos) {
-        // TODO: Phase Two - if (cell instanceof HasIdealPosition) ((HasIdealPosition) cell).setIdealPos(pos);
-        // else throw new UnsupportedOperationException(...);
-        throw new UnsupportedOperationException("Scaffold: Implement setIdealPosition using HasIdealPosition");
+        if (!(cell instanceof HasIdealPosition)) {
+            throw new UnsupportedOperationException(
+                "Cell type " + cell.getClass().getSimpleName() + 
+                " does not support idealPos for SELECTION algotype. Ensure cell implements HasIdealPosition."
+            );
+        }
+        HasIdealPosition sel = (HasIdealPosition) cell;
+        sel.setIdealPos(pos);
     }
 
     public void reset() {
