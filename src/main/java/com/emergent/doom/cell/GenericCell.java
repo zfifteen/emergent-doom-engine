@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * }
  * }</pre></p>
  */
-public class GenericCell implements Cell<GenericCell> {
+public class GenericCell implements Cell<GenericCell>, HasIdealPosition {
 
     private final int value;
     private final Algotype algotype;

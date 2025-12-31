@@ -49,4 +49,30 @@ public interface HasIdealPosition {
      * @return true if the set was successful
      */
     boolean compareAndSetIdealPos(int expected, int newValue);
+
+    /**
+     * Update ideal position based on group boundaries.
+     * Matches Python cell_research SelectionSortCell.update() behavior.
+     *
+     * <p>Python reference (SelectionSortCell.py:77-81):</p>
+     * <pre>
+     * def update(self):
+     *     # Called when group merges - reset ideal position
+     *     if self.reverse_direction:
+     *         self.ideal_position = self.right_boundary
+     *     else:
+     *         self.ideal_position = self.left_boundary
+     * </pre>
+     *
+     * @param leftBoundary the left boundary position (0-based)
+     * @param rightBoundary the right boundary position (0-based)
+     * @param reverseDirection true for descending sort, false for ascending
+     */
+    default void updateForBoundary(int leftBoundary, int rightBoundary, boolean reverseDirection) {
+        if (reverseDirection) {
+            setIdealPos(rightBoundary);
+        } else {
+            setIdealPos(leftBoundary);
+        }
+    }
 }

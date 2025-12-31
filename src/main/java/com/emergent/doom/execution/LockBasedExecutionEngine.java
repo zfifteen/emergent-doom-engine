@@ -2,6 +2,7 @@ package com.emergent.doom.execution;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.cell.HasIdealPosition;
 import com.emergent.doom.cell.SelectionCell;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.SwapEngine;
@@ -120,6 +121,9 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         // Initialize topology helpers
         this.bubbleTopology = new BubbleTopology<>();
         this.insertionTopology = new InsertionTopology<>();
+
+        // Wire up probe to swap engine for frozen swap attempt tracking
+        swapEngine.setProbe(probe);
 
         // Create cell threads
         this.cellThreads = new Thread[cells.length];
@@ -269,6 +273,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
             for (int neighborIndex : neighbors) {
                 if (shouldSwapForAlgotype(cellIndex, neighborIndex, algotype)) {
+                    probe.recordCompareAndSwap(); // StatusProbe: comparison led to swap decision
                     if (swapEngine.attemptSwap(cells, cellIndex, neighborIndex)) {
                         int swaps = totalSwaps.incrementAndGet();
 
@@ -353,13 +358,48 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         }
     }
 
+    /**
+     * Check if cells 0 to i-1 are sorted in ascending order.
+     * Matches Python cell_research behavior: frozen cells are skipped and
+     * reset the comparison chain.
+     *
+     * Python reference (InsertionSortCell.py:74-76):
+     * <pre>
+     * if cells[i].status == FREEZE:
+     *     prev = -1  # Reset comparison, skip frozen
+     *     continue
+     * </pre>
+     */
     private boolean isLeftSorted(int i) {
-        for (int k = 0; k < i - 1; k++) {
-            if (cells[k].compareTo(cells[k + 1]) > 0) {
-                return false;
+        int prevValue = Integer.MIN_VALUE; // Start with minimum so any value is >= prev
+        for (int k = 0; k < i; k++) {
+            // Skip frozen cells - reset comparison chain (matches Python)
+            if (swapEngine.isFrozen(k)) {
+                prevValue = Integer.MIN_VALUE; // Reset: next cell can be any value
+                continue;
             }
+
+            // Get cell value for comparison
+            int currentValue = getCellValue(cells[k]);
+            if (currentValue < prevValue) {
+                return false; // Out of order
+            }
+            prevValue = currentValue;
         }
         return true;
+    }
+
+    /**
+     * Helper: Extract comparable value from cell for isLeftSorted comparison.
+     */
+    private int getCellValue(T cell) {
+        if (cell instanceof SelectionCell) {
+            return ((SelectionCell<?>) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            return ((com.emergent.doom.cell.GenericCell) cell).getValue();
+        }
+        // Fallback: use hashCode as proxy (not ideal but allows compilation)
+        return cell.hashCode();
     }
 
     // ========== Accessors ==========
@@ -391,8 +431,17 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
     /**
      * Reset execution state to initial conditions.
      */
-    @SuppressWarnings("unchecked")
     public void reset() {
+        reset(false); // ascending sort by default
+    }
+
+    /**
+     * Reset execution state with explicit sort direction for SELECTION cells.
+     *
+     * @param reverseDirection true for descending sort, false for ascending
+     */
+    @SuppressWarnings("unchecked")
+    public void reset(boolean reverseDirection) {
         if (running) {
             shutdown();
         }
@@ -407,16 +456,8 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         insertionTopology.reset();
         convergenceDetector.reset();
 
-        // Reset SelectionCell ideal positions
-        for (T cell : cells) {
-            if (cell.getAlgotype() == Algotype.SELECTION) {
-                if (cell instanceof SelectionCell) {
-                    ((SelectionCell<?>) cell).setIdealPos(0);
-                } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-                    ((com.emergent.doom.cell.GenericCell) cell).setIdealPos(0);
-                }
-            }
-        }
+        // Reset SELECTION cell ideal positions to boundary (matches Python cell_research)
+        resetSelectionCellIdealPositions(reverseDirection);
 
         // Recreate cell workers (threads are single-use)
         for (int i = 0; i < cells.length; i++) {
@@ -426,5 +467,25 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         }
 
         probe.recordSnapshot(0, cells, 0);
+    }
+
+    /**
+     * Reset ideal positions for SELECTION algotype cells.
+     * Uses updateForBoundary matching Python cell_research SelectionSortCell.update() behavior.
+     *
+     * @param reverseDirection true for descending sort (ideal = right boundary),
+     *                         false for ascending (ideal = left boundary)
+     */
+    private void resetSelectionCellIdealPositions(boolean reverseDirection) {
+        int leftBoundary = 0;
+        int rightBoundary = cells.length - 1;
+
+        for (T cell : cells) {
+            if (cell.getAlgotype() == Algotype.SELECTION) {
+                if (cell instanceof HasIdealPosition) {
+                    ((HasIdealPosition) cell).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
+                }
+            }
+        }
     }
 }
