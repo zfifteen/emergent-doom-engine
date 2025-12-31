@@ -404,9 +404,57 @@ public class ExecutionEngine<T extends Cell<T>> {
      * @return true if swap should occur
      */
     private boolean shouldSwapWithDirection(int i, int j, Algotype algotype, SortDirection direction) {
-        // UNIMPLEMENTED: Direction-aware swap logic for all algotypes
-        // TODO: Implement in Phase Three - one algotype at a time
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Get comparison result: negative if cells[i] < cells[j], positive if cells[i] > cells[j]
+        int cmp = cells[i].compareTo(cells[j]);
+        boolean isAscending = direction.isAscending();
+        
+        switch (algotype) {
+            case BUBBLE:
+                // BUBBLE: Move based on value comparison and direction
+                // For ascending: move left if smaller, right if larger
+                // For descending: move left if larger, right if smaller
+                
+                if (j == i - 1) { // Left neighbor
+                    // Ascending: swap if i < j (cmp < 0), Descending: swap if i > j (cmp > 0)
+                    return isAscending ? (cmp < 0) : (cmp > 0);
+                } else if (j == i + 1) { // Right neighbor
+                    // Ascending: swap if i > j (cmp > 0), Descending: swap if i < j (cmp < 0)
+                    return isAscending ? (cmp > 0) : (cmp < 0);
+                }
+                return false;
+                
+            case INSERTION:
+                // INSERTION: Only move left, and only if left side is sorted
+                if (j == i - 1 && isLeftSorted(i, !isAscending)) {
+                    // Ascending: swap if i < j (cmp < 0), Descending: swap if i > j (cmp > 0)
+                    return isAscending ? (cmp < 0) : (cmp > 0);
+                }
+                return false;
+                
+            case SELECTION:
+                // Guard: Skip if targeting self
+                if (i == j) {
+                    return false;
+                }
+                
+                // SELECTION: Swap with ideal target if in correct order
+                // Ascending: swap if i < j (cmp < 0), Descending: swap if i > j (cmp > 0)
+                boolean shouldSwap = isAscending ? (cmp < 0) : (cmp > 0);
+                
+                if (shouldSwap) {
+                    return true;
+                } else {
+                    // Swap denied: increment ideal position if not at end
+                    int currentIdealPos = getIdealPosition(cells[i]);
+                    if (currentIdealPos < cells.length - 1) {
+                        incrementIdealPosition(cells[i]);
+                    }
+                    return false;
+                }
+                
+            default:
+                return false;
+        }
     }
 
 
