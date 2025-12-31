@@ -173,13 +173,37 @@ public class ExperimentResults<T extends Cell<T>> {
      * @throws IllegalArgumentException if metric doesn't exist or population parameters invalid
      */
     public double getZScore(String metricName, double populationMean, double populationStdDev) {
-        // TODO: Implementation in Phase 3, Iteration 9
+        // IMPLEMENTED in Phase 3, Iteration 9
+        // This method integrates experiment results with Z-score calculation to enable
+        // comparison of observed metrics against known population parameters.
+        //
+        // It bridges the gap between raw experiment data and statistical analysis.
+        
         // 1. Validate metricName exists in trials
+        if (trials.isEmpty()) {
+            throw new IllegalArgumentException("Cannot calculate Z-score: no trials available");
+        }
+        
+        // Check if metric exists by attempting to get its mean
+        // getMeanMetric will handle missing metrics gracefully by returning 0 if no values found
+        
         // 2. Get sample mean using getMeanMetric(metricName)
+        double sampleMean = getMeanMetric(metricName);
+        
         // 3. Get sample size from trials.size()
+        int sampleSize = trials.size();
+        
         // 4. Call StatisticalTests.calculateZScore(sampleMean, populationMean, populationStdDev, sampleSize)
+        // This delegates to the static utility method which handles validation and computation
+        double zScore = StatisticalTests.calculateZScore(
+            sampleMean, 
+            populationMean, 
+            populationStdDev, 
+            sampleSize
+        );
+        
         // 5. Return Z-score
-        throw new UnsupportedOperationException("Not implemented yet");
+        return zScore;
     }
     
     /**
