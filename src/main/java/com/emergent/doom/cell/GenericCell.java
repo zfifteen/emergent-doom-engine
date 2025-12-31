@@ -60,9 +60,7 @@ public class GenericCell implements Cell<GenericCell>, HasIdealPosition, HasSort
      * @throws IllegalArgumentException if algotype is null
      */
     public GenericCell(int value, Algotype algotype) {
-        // UNIMPLEMENTED: Delegate to three-parameter constructor
-        // TODO: Implement in Phase Two - call this(value, algotype, SortDirection.ASCENDING)
-        throw new UnsupportedOperationException("Not yet implemented");
+        this(value, algotype, SortDirection.ASCENDING);
     }
 
     /**
@@ -105,12 +103,16 @@ public class GenericCell implements Cell<GenericCell>, HasIdealPosition, HasSort
      * @throws IllegalArgumentException if algotype or sortDirection is null
      */
     public GenericCell(int value, Algotype algotype, SortDirection sortDirection) {
-        // UNIMPLEMENTED: Full constructor logic
-        // TODO: Implement in Phase Two
-        //   1. Validate algotype not null
-        //   2. Validate sortDirection not null
-        //   3. Initialize all fields
-        throw new UnsupportedOperationException("Not yet implemented");
+        if (algotype == null) {
+            throw new IllegalArgumentException("Algotype cannot be null");
+        }
+        if (sortDirection == null) {
+            throw new IllegalArgumentException("SortDirection cannot be null");
+        }
+        this.value = value;
+        this.algotype = algotype;
+        this.sortDirection = sortDirection;
+        this.idealPos = new AtomicInteger(0);  // Levin: initial ideal position is leftmost (0)
     }
 
     /**
@@ -236,8 +238,6 @@ public class GenericCell implements Cell<GenericCell>, HasIdealPosition, HasSort
      */
     @Override
     public SortDirection getSortDirection() {
-        // UNIMPLEMENTED: Return sortDirection field
-        // TODO: Implement in Phase Two - return this.sortDirection;
-        throw new UnsupportedOperationException("Not yet implemented");
+        return this.sortDirection;
     }
 }

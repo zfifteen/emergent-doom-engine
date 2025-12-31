@@ -69,10 +69,8 @@ public enum SortDirection {
      * 
      * @return true if this direction is ASCENDING, false otherwise
      */
-    // UNIMPLEMENTED: Logic to be added in Phase Three
     public boolean isAscending() {
-        // TODO: Implement in Phase Three
-        throw new UnsupportedOperationException("Not yet implemented");
+        return this == ASCENDING;
     }
     
     /**
@@ -85,9 +83,7 @@ public enum SortDirection {
      * 
      * @return true if this direction is DESCENDING, false otherwise
      */
-    // UNIMPLEMENTED: Logic to be added in Phase Three
     public boolean isDescending() {
-        // TODO: Implement in Phase Three
-        throw new UnsupportedOperationException("Not yet implemented");
+        return this == DESCENDING;
     }
 }
