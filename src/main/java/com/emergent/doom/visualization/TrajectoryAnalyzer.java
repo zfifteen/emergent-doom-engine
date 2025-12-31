@@ -141,10 +141,39 @@ public class TrajectoryAnalyzer<T extends Cell<T>> {
      *   - Uses existing AlgotypeAggregationIndex metric for consistency
      *   - Returns list for easy integration with plotting and export utilities
      *   - Critical for understanding emergent self-sorting in chimeric arrays
+     * 
+     * IMPLEMENTATION:
+     *   This section computes aggregation trajectory using the same pattern as
+     *   computeSortednessTrajectory. It integrates with the TrajectoryAnalyzer by
+     *   following the established pattern of validation, metric instantiation,
+     *   iteration, and list building. Uses AlgotypeAggregationIndex to measure
+     *   spatial clustering of cells by algotype.
      */
     public List<Double> computeAggregationTrajectory(Probe<T> probe) {
-        // UNIMPLEMENTED: Trajectory computation logic goes here
-        return null;
+        // Step 1: Validate inputs
+        if (probe == null) {
+            throw new IllegalArgumentException("Probe cannot be null");
+        }
+        if (probe.getSnapshotCount() == 0) {
+            throw new IllegalArgumentException("Probe contains no snapshots");
+        }
+        
+        // Step 2: Create metric instance
+        AlgotypeAggregationIndex<T> metric = new AlgotypeAggregationIndex<>();
+        
+        // Step 3: Build trajectory by computing metric at each snapshot
+        java.util.ArrayList<Double> trajectory = new java.util.ArrayList<>();
+        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
+        
+        // Step 4: Iterate through snapshots and compute aggregation
+        for (StepSnapshot<T> snapshot : snapshots) {
+            T[] cellStates = snapshot.getCellStates();
+            double aggregation = metric.compute(cellStates);
+            trajectory.add(aggregation);
+        }
+        
+        // Step 5: Return complete trajectory
+        return trajectory;
     }
     
     /**
@@ -177,10 +206,39 @@ public class TrajectoryAnalyzer<T extends Cell<T>> {
      *   - Uses existing MonotonicityError metric for consistency
      *   - Inversion count is a classical measure in sorting analysis
      *   - Decreasing inversions indicate progress toward sorted state
+     * 
+     * IMPLEMENTATION:
+     *   This section computes monotonicity error trajectory using the same pattern.
+     *   It integrates with the TrajectoryAnalyzer by following the established pattern.
+     *   Uses MonotonicityError to count inversions (pairs out of order).
+     *   The direction parameter is included for API consistency but not currently used
+     *   by MonotonicityError (reserved for future directional inversion counting).
      */
     public List<Double> computeMonotonicityTrajectory(Probe<T> probe, SortDirection direction) {
-        // UNIMPLEMENTED: Trajectory computation logic goes here
-        return null;
+        // Step 1: Validate inputs
+        if (probe == null) {
+            throw new IllegalArgumentException("Probe cannot be null");
+        }
+        if (probe.getSnapshotCount() == 0) {
+            throw new IllegalArgumentException("Probe contains no snapshots");
+        }
+        
+        // Step 2: Create metric instance
+        MonotonicityError<T> metric = new MonotonicityError<>();
+        
+        // Step 3: Build trajectory by computing metric at each snapshot
+        java.util.ArrayList<Double> trajectory = new java.util.ArrayList<>();
+        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
+        
+        // Step 4: Iterate through snapshots and compute monotonicity error
+        for (StepSnapshot<T> snapshot : snapshots) {
+            T[] cellStates = snapshot.getCellStates();
+            double error = metric.compute(cellStates);
+            trajectory.add(error);
+        }
+        
+        // Step 5: Return complete trajectory
+        return trajectory;
     }
     
     /**
@@ -210,10 +268,34 @@ public class TrajectoryAnalyzer<T extends Cell<T>> {
      *   - Swap count is already recorded in snapshots, just needs extraction
      *   - No metric computation required, just data access
      *   - Useful for understanding algorithm behavior and efficiency
+     * 
+     * IMPLEMENTATION:
+     *   This section extracts swap counts from snapshots without metric computation.
+     *   It integrates with the TrajectoryAnalyzer by following a simplified version
+     *   of the established pattern (no metric instantiation needed).
+     *   Simply extracts the swap count field from each snapshot.
      */
     public List<Integer> computeSwapCountTrajectory(Probe<T> probe) {
-        // UNIMPLEMENTED: Swap count extraction logic goes here
-        return null;
+        // Step 1: Validate inputs
+        if (probe == null) {
+            throw new IllegalArgumentException("Probe cannot be null");
+        }
+        if (probe.getSnapshotCount() == 0) {
+            throw new IllegalArgumentException("Probe contains no snapshots");
+        }
+        
+        // Step 2: Build trajectory by extracting swap counts
+        java.util.ArrayList<Integer> trajectory = new java.util.ArrayList<>();
+        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
+        
+        // Step 3: Iterate through snapshots and extract swap counts
+        for (StepSnapshot<T> snapshot : snapshots) {
+            int swapCount = snapshot.getSwapCount();
+            trajectory.add(swapCount);
+        }
+        
+        // Step 4: Return complete trajectory
+        return trajectory;
     }
     
     /**
@@ -236,9 +318,15 @@ public class TrajectoryAnalyzer<T extends Cell<T>> {
      * DESIGN RATIONALE:
      *   - Centralizes validation logic to reduce code duplication
      *   - Enables consistent error handling across all methods
+     * 
+     * IMPLEMENTATION:
+     *   This section validates probe data before computation.
+     *   It integrates with all trajectory methods by providing a centralized
+     *   validation check. Note: This method is currently not used by the
+     *   implemented trajectory methods (they perform inline validation),
+     *   but is kept for potential future refactoring or external use.
      */
     private boolean isProbeValid(Probe<T> probe) {
-        // UNIMPLEMENTED: Validation logic goes here
-        return false;
+        return probe != null && probe.getSnapshotCount() > 0;
     }
 }
