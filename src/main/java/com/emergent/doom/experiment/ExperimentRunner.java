@@ -4,6 +4,7 @@ import com.emergent.doom.cell.Cell;
 import com.emergent.doom.execution.ConvergenceDetector;
 import com.emergent.doom.execution.ExecutionEngine;
 import com.emergent.doom.execution.ExecutionMode;
+import com.emergent.doom.execution.LockBasedExecutionEngine;
 import com.emergent.doom.execution.NoSwapConvergence;
 import com.emergent.doom.execution.ParallelExecutionEngine;
 import com.emergent.doom.metrics.Metric;
@@ -65,13 +66,13 @@ public class ExperimentRunner<T extends Cell<T>> {
         // Create fresh instances for this trial
         T[] cells = cellArrayFactory.get();
 
-        // Use thread-safe components for parallel execution
-        boolean isParallel = config.isParallelExecution();
-        FrozenCellStatus frozenStatus = isParallel
+        // Use thread-safe components for parallel/lock-based execution
+        boolean needsThreadSafe = config.isParallelExecution() || config.isLockBasedExecution();
+        FrozenCellStatus frozenStatus = needsThreadSafe
                 ? new ThreadSafeFrozenCellStatus()
                 : new FrozenCellStatus();
         SwapEngine<T> swapEngine = new SwapEngine<>(frozenStatus);
-        Probe<T> probe = isParallel ? new ThreadSafeProbe<>() : new Probe<>();
+        Probe<T> probe = needsThreadSafe ? new ThreadSafeProbe<>() : new Probe<>();
         probe.setRecordingEnabled(config.isRecordTrajectory());
         ConvergenceDetector<T> convergenceDetector =
                 new NoSwapConvergence<>(config.getRequiredStableSteps());
@@ -81,8 +82,8 @@ public class ExperimentRunner<T extends Cell<T>> {
         int finalStep;
         boolean converged;
 
-        if (isParallel) {
-            // Parallel execution: one thread per cell
+        if (config.isParallelExecution()) {
+            // Parallel execution: barrier-based synchronization
             ParallelExecutionEngine<T> parallelEngine = new ParallelExecutionEngine<>(
                     cells, swapEngine, probe, convergenceDetector);
             try {
@@ -91,6 +92,17 @@ public class ExperimentRunner<T extends Cell<T>> {
                 converged = parallelEngine.hasConverged();
             } finally {
                 parallelEngine.shutdown();
+            }
+        } else if (config.isLockBasedExecution()) {
+            // Lock-based execution: matches Python cell_research behavior
+            LockBasedExecutionEngine<T> lockEngine = new LockBasedExecutionEngine<>(
+                    cells, swapEngine, probe, convergenceDetector);
+            try {
+                lockEngine.start();
+                finalStep = lockEngine.runUntilConvergence(config.getMaxSteps());
+                converged = lockEngine.hasConverged();
+            } finally {
+                lockEngine.shutdown();
             }
         } else {
             // Sequential execution: original behavior

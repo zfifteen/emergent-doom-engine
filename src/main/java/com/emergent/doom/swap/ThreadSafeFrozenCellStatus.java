@@ -56,22 +56,29 @@ public class ThreadSafeFrozenCellStatus extends FrozenCellStatus {
     }
 
     /**
-     * Check if a cell can move to new positions.
+     * Check if a cell can initiate a swap (move to new positions).
      * Thread-safe.
+     *
+     * <p>Only NONE cells can initiate swaps. MOVABLE cells cannot initiate
+     * but can be displaced (matches Python cell_research FREEZE behavior).</p>
      */
     @Override
     public boolean canMove(int position) {
         FrozenType type = getFrozen(position);
-        return type == FrozenType.NONE || type == FrozenType.MOVABLE;
+        return type == FrozenType.NONE;  // Only NONE can initiate swaps
     }
 
     /**
      * Check if a cell can be displaced by another cell.
      * Thread-safe.
+     *
+     * <p>NONE and MOVABLE cells can be displaced. Only IMMOVABLE cells
+     * cannot be displaced (matches Python cell_research FREEZE behavior).</p>
      */
     @Override
     public boolean canBeDisplaced(int position) {
-        return getFrozen(position) == FrozenType.NONE;
+        FrozenType type = getFrozen(position);
+        return type == FrozenType.NONE || type == FrozenType.MOVABLE;
     }
 
     /**

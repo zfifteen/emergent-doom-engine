@@ -3,8 +3,9 @@ package com.emergent.doom.execution;
 /**
  * Execution mode for the sorting engine.
  *
- * <p>Determines whether cells are evaluated sequentially (original behavior)
- * or in parallel (per Levin paper specification).</p>
+ * <p>Determines whether cells are evaluated sequentially (original behavior),
+ * in parallel with barriers (Levin paper specification), or with lock-based
+ * synchronization (cell_research Python behavior).</p>
  */
 public enum ExecutionMode {
 
@@ -31,5 +32,30 @@ public enum ExecutionMode {
      *   <li>Main thread coordinates and resolves conflicts</li>
      * </ul>
      */
-    PARALLEL
+    PARALLEL,
+
+    /**
+     * Lock-based execution mode (cell_research Python behavior).
+     *
+     * <p>Each cell runs in its own thread with a single global lock.
+     * Cells acquire the lock, evaluate, swap (if appropriate), and release.
+     * This matches the Python cell_research implementation exactly.</p>
+     *
+     * <p><strong>Thread Model:</strong></p>
+     * <ul>
+     *   <li>One thread per cell</li>
+     *   <li>Single ReentrantLock for mutual exclusion</li>
+     *   <li>No phase synchronization - cells swap asynchronously</li>
+     *   <li>Non-deterministic execution order</li>
+     * </ul>
+     *
+     * <p><strong>Python Reference:</strong> (BubbleSortCell.py:58-74)</p>
+     * <pre>
+     * def move(self):
+     *     self.lock.acquire()    # Single global lock
+     *     # ... evaluation and swap ...
+     *     self.lock.release()
+     * </pre>
+     */
+    LOCK_BASED
 }

@@ -74,30 +74,34 @@ class SwapEngineTest {
     class MovableNoneTests {
 
         @Test
-        @DisplayName("T04: MOVABLE/NONE - Swaps regardless of value")
-        void t04_movableNone_swaps() {
+        @DisplayName("T04: MOVABLE/NONE - Blocked (MOVABLE cannot initiate)")
+        void t04_movableNone_blocked() {
             IntCell[] cells = createCells(10, 5);
             frozenStatus.setFrozen(0, FrozenType.MOVABLE);
             // Cell 1 defaults to NONE
 
             boolean result = swapEngine.attemptSwap(cells, 0, 1);
 
-            assertTrue(result, "Should return true when not frozen");
-            assertEquals(5, cells[0].getValue(), "cells[0] should now be 5");
-            assertEquals(10, cells[1].getValue(), "cells[1] should now be 10");
+            // MOVABLE cells cannot initiate swaps (matches Python FREEZE)
+            assertFalse(result, "Should return false - MOVABLE cannot initiate");
+            assertEquals(10, cells[0].getValue(), "cells[0] should remain 10");
+            assertEquals(5, cells[1].getValue(), "cells[1] should remain 5");
+            assertEquals(0, swapEngine.getSwapCount(), "Swap count should be 0");
         }
 
         @Test
-        @DisplayName("T05: MOVABLE/NONE - Swaps even if i < j")
-        void t05_movableNone_lessThan_swaps() {
+        @DisplayName("T05: MOVABLE/NONE with i < j - Blocked (MOVABLE cannot initiate)")
+        void t05_movableNone_lessThan_blocked() {
             IntCell[] cells = createCells(5, 10);
             frozenStatus.setFrozen(0, FrozenType.MOVABLE);
 
             boolean result = swapEngine.attemptSwap(cells, 0, 1);
 
-            assertTrue(result, "Should return true (dumb executor)");
-            assertEquals(10, cells[0].getValue(), "cells[0] should now be 10");
-            assertEquals(5, cells[1].getValue(), "cells[1] should now be 5");
+            // MOVABLE cells cannot initiate swaps (matches Python FREEZE)
+            assertFalse(result, "Should return false - MOVABLE cannot initiate");
+            assertEquals(5, cells[0].getValue(), "cells[0] should remain 5");
+            assertEquals(10, cells[1].getValue(), "cells[1] should remain 10");
+            assertEquals(0, swapEngine.getSwapCount(), "Swap count should be 0");
         }
     }
 
@@ -110,35 +114,37 @@ class SwapEngineTest {
     class FrozenBlocksTests {
 
         @Test
-        @DisplayName("T07: NONE/MOVABLE with i > j - Blocked by frozen")
-        void t07_noneMovable_blocked() {
+        @DisplayName("T07: NONE/MOVABLE - Swaps (MOVABLE can be displaced)")
+        void t07_noneMovable_swaps() {
             IntCell[] cells = createCells(10, 5);
             frozenStatus.setFrozen(1, FrozenType.MOVABLE);
 
             boolean result = swapEngine.attemptSwap(cells, 0, 1);
 
-            assertFalse(result, "Should return false - j cannot be displaced");
-            assertEquals(10, cells[0].getValue(), "cells[0] should remain 10");
-            assertEquals(5, cells[1].getValue(), "cells[1] should remain 5");
-            assertEquals(0, swapEngine.getSwapCount(), "Swap count should be 0");
+            // MOVABLE cells CAN be displaced (matches Python FREEZE)
+            assertTrue(result, "Should return true - MOVABLE can be displaced");
+            assertEquals(5, cells[0].getValue(), "cells[0] should now be 5");
+            assertEquals(10, cells[1].getValue(), "cells[1] should now be 10");
+            assertEquals(1, swapEngine.getSwapCount(), "Swap count should be 1");
         }
 
         @Test
-        @DisplayName("T08: NONE/MOVABLE with i < j - Blocked by frozen")
-        void t08_noneMovable_lessThan_blocked() {
+        @DisplayName("T08: NONE/MOVABLE with i < j - Swaps (MOVABLE can be displaced)")
+        void t08_noneMovable_lessThan_swaps() {
             IntCell[] cells = createCells(5, 10);
             frozenStatus.setFrozen(1, FrozenType.MOVABLE);
 
             boolean result = swapEngine.attemptSwap(cells, 0, 1);
 
-            assertFalse(result, "Should return false - j cannot be displaced");
-            assertEquals(5, cells[0].getValue(), "cells[0] should remain 5");
-            assertEquals(10, cells[1].getValue(), "cells[1] should remain 10");
-            assertEquals(0, swapEngine.getSwapCount(), "Swap count should be 0");
+            // MOVABLE cells CAN be displaced (matches Python FREEZE)
+            assertTrue(result, "Should return true - MOVABLE can be displaced");
+            assertEquals(10, cells[0].getValue(), "cells[0] should now be 10");
+            assertEquals(5, cells[1].getValue(), "cells[1] should now be 5");
+            assertEquals(1, swapEngine.getSwapCount(), "Swap count should be 1");
         }
 
         @Test
-        @DisplayName("T09: MOVABLE/MOVABLE - Blocked by frozen")
+        @DisplayName("T09: MOVABLE/MOVABLE - Blocked (MOVABLE cannot initiate)")
         void t09_movableMovable_blocked() {
             IntCell[] cells = createCells(10, 5);
             frozenStatus.setFrozen(0, FrozenType.MOVABLE);
@@ -146,7 +152,8 @@ class SwapEngineTest {
 
             boolean result = swapEngine.attemptSwap(cells, 0, 1);
 
-            assertFalse(result, "Should return false - j cannot be displaced");
+            // i=MOVABLE cannot initiate (j=MOVABLE could be displaced, but i can't initiate)
+            assertFalse(result, "Should return false - MOVABLE cannot initiate");
             assertEquals(10, cells[0].getValue(), "cells[0] should remain 10");
             assertEquals(5, cells[1].getValue(), "cells[1] should remain 5");
             assertEquals(0, swapEngine.getSwapCount(), "Swap count should be 0");

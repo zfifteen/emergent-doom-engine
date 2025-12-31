@@ -109,6 +109,15 @@ public class ExperimentConfig {
         return executionMode == ExecutionMode.PARALLEL;
     }
 
+    /**
+     * Check if lock-based execution mode is enabled.
+     *
+     * @return true if execution mode is LOCK_BASED
+     */
+    public boolean isLockBasedExecution() {
+        return executionMode == ExecutionMode.LOCK_BASED;
+    }
+
     public Map<String, Object> getCustomParameters() {
         return new HashMap<>(customParameters); // Defensive copy
     }

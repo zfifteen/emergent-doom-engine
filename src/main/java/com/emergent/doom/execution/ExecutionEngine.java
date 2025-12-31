@@ -10,8 +10,8 @@ import com.emergent.doom.topology.InsertionTopology;
 import com.emergent.doom.topology.SelectionTopology;
 
 import java.util.Arrays;
-
 import java.util.List;
+import java.util.Random;
 
 /**
  * Main execution engine that orchestrates cell dynamics.
@@ -37,7 +37,8 @@ public class ExecutionEngine<T extends Cell<T>> {
     private final SwapEngine<T> swapEngine;
     private final Probe<T> probe;
     private final ConvergenceDetector<T> convergenceDetector;
-    
+    private final Random random;
+
     private int currentStep;
     private boolean converged;
     
@@ -49,6 +50,24 @@ public class ExecutionEngine<T extends Cell<T>> {
             SwapEngine<T> swapEngine,
             Probe<T> probe,
             ConvergenceDetector<T> convergenceDetector) {
+        this(cells, swapEngine, probe, convergenceDetector, new Random());
+    }
+
+    /**
+     * Initialize the execution engine with a specific random seed for reproducibility.
+     *
+     * @param cells the cell array to sort
+     * @param swapEngine the swap engine
+     * @param probe the probe for recording
+     * @param convergenceDetector the convergence detector
+     * @param random the random instance for direction selection
+     */
+    public ExecutionEngine(
+            T[] cells,
+            SwapEngine<T> swapEngine,
+            Probe<T> probe,
+            ConvergenceDetector<T> convergenceDetector,
+            Random random) {
         this.cells = cells;
         this.bubbleTopology = new BubbleTopology<>();
         this.insertionTopology = new InsertionTopology<>();
@@ -56,6 +75,7 @@ public class ExecutionEngine<T extends Cell<T>> {
         this.swapEngine = swapEngine;
         this.probe = probe;
         this.convergenceDetector = convergenceDetector;
+        this.random = random;
         this.currentStep = 0;
         this.converged = false;
 
@@ -79,10 +99,26 @@ public class ExecutionEngine<T extends Cell<T>> {
         // For each cell in iteration order, try swapping with neighbors based on algotype
         for (int i : iterationOrder) {
             Algotype algotype = cells[i].getAlgotype();
-            List<Integer> neighbors = getNeighborsForAlgotype(i, algotype);
-            for (int j : neighbors) {
-                if (shouldSwapForAlgotype(i, j, algotype)) {
-                    swapEngine.attemptSwap(cells, i, j);
+
+            if (algotype == Algotype.BUBBLE) {
+                // Random 50/50 direction choice - matches cell_research Python behavior
+                // Each iteration, cell randomly picks ONE direction (left or right), not both
+                List<Integer> allNeighbors = getNeighborsForAlgotype(i, algotype);
+                if (!allNeighbors.isEmpty()) {
+                    // Pick ONE random neighbor (50% left, 50% right if both exist)
+                    int randomIndex = random.nextInt(allNeighbors.size());
+                    int j = allNeighbors.get(randomIndex);
+                    if (shouldSwapForAlgotype(i, j, algotype)) {
+                        swapEngine.attemptSwap(cells, i, j);
+                    }
+                }
+            } else {
+                // Other algotypes: iterate all neighbors as before
+                List<Integer> neighbors = getNeighborsForAlgotype(i, algotype);
+                for (int j : neighbors) {
+                    if (shouldSwapForAlgotype(i, j, algotype)) {
+                        swapEngine.attemptSwap(cells, i, j);
+                    }
                 }
             }
         }

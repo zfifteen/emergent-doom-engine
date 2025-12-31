@@ -31,7 +31,7 @@ public class FrozenCellStatus {
         /** Cell is completely mobile and can participate in all swaps */
         NONE,
         
-        /** Cell can move to new positions but cannot be displaced by other cells */
+        /** Cell cannot initiate swaps but CAN be displaced by other cells (matches Python FREEZE) */
         MOVABLE,
         
         /** Cell is completely frozen and cannot participate in any swaps */
@@ -73,18 +73,26 @@ public class FrozenCellStatus {
     }
     
     /**
-     * IMPLEMENTED: Check if a cell can move to new positions
+     * IMPLEMENTED: Check if a cell can initiate a swap (move to new positions)
+     *
+     * <p>Only NONE cells can initiate swaps. MOVABLE cells cannot initiate
+     * but can be displaced (matches Python cell_research FREEZE behavior).</p>
      */
     public boolean canMove(int position) {
         FrozenType type = getFrozen(position);
-        return type == FrozenType.NONE || type == FrozenType.MOVABLE;
+        return type == FrozenType.NONE;  // Only NONE can initiate swaps
     }
     
     /**
      * IMPLEMENTED: Check if a cell can be displaced by another cell
+     *
+     * <p>NONE and MOVABLE cells can be displaced. Only IMMOVABLE cells
+     * cannot be displaced (matches Python cell_research FREEZE behavior
+     * where frozen cells can be moved by active cells).</p>
      */
     public boolean canBeDisplaced(int position) {
-        return getFrozen(position) == FrozenType.NONE;
+        FrozenType type = getFrozen(position);
+        return type == FrozenType.NONE || type == FrozenType.MOVABLE;
     }
     
     /**
