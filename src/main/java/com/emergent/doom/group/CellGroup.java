@@ -92,22 +92,31 @@ public class CellGroup<T extends Cell<T> & GroupAwareCell<T>> extends Thread {
     // ========== SORTED DETECTION ==========
     
     public boolean isGroupSorted() {
-        // PURPOSE: Determine if all cells in group are in sorted order
-        // INPUTS: None (uses globalCells, leftBoundaryPosition, rightBoundaryPosition)
-        // PROCESS:
-        //   1. Get first cell at leftBoundaryPosition
-        //   2. Iterate from leftBoundaryPosition to rightBoundaryPosition (inclusive)
-        //   3. For each cell:
-        //      a. If status == SLEEP or MOVING: return false (can't determine)
-        //      b. If cell.compareTo(prevCell) < 0: return false (out of order)
-        //      c. Update prevCell = current cell
-        //   4. If loop completes: return true (all sorted)
-        // OUTPUTS: boolean - true if sorted, false otherwise
-        // DEPENDENCIES: globalCells array, cell.compareTo(), cell.getStatus()
-        // SIDE EFFECTS: None (read-only check)
-        // NOTE: Must handle FREEZE cells appropriately (compare value regardless)
+        // Check if all cells in group are in sorted order
+        // Returns false if any cell is SLEEP/MOVING (indeterminate state)
+        // Matches cell_research CellGroup.py:37-44
         
-        throw new UnsupportedOperationException("SCAFFOLD: isGroupSorted() not yet implemented");
+        T prevCell = globalCells[leftBoundaryPosition];
+        
+        for (int i = leftBoundaryPosition; i <= rightBoundaryPosition; i++) {
+            T cell = globalCells[i];
+            
+            // Cannot determine sortedness if cell is sleeping or animating
+            CellStatus cellStatus = cell.getStatus();
+            if (cellStatus == CellStatus.SLEEP || cellStatus == CellStatus.MOVING) {
+                return false;
+            }
+            
+            // Check if cells are in sorted order (current >= previous)
+            // Note: compareTo returns negative if this < other
+            if (cell.compareTo(prevCell) < 0) {
+                return false; // Out of order
+            }
+            
+            prevCell = cell;
+        }
+        
+        return true; // All cells sorted
     }
     
     // ========== ADJACENT GROUP FINDING ==========
