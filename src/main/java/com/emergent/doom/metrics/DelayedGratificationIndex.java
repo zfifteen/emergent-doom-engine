@@ -13,21 +13,50 @@ import com.emergent.doom.cell.Cell;
  */
 public class DelayedGratificationIndex<T extends Cell<T>> implements Metric<T> {
     
-    // PURPOSE: Compute weighted position-quality correlation
-    // INPUTS: cells (T[]) - the array to analyze
-    // PROCESS:
-    //   1. For each position i, compute a quality score based on cell comparisons
-    //   2. Weight the quality by position (later positions get higher weight)
-    //   3. Sum the weighted qualities
-    //   4. Normalize by array size
-    // OUTPUTS: double - the delayed gratification index
-    // DEPENDENCIES: Cell.compareTo() [DEFINED IN INTERFACE]
-    // NOTE: Higher values indicate more delayed gratification
-    //       (better cells concentrated at end)
+    /**
+     * Computes a position-weighted quality index as a proxy for delayed gratification.
+     *
+     * <p>For single-array analysis, weights deviation from average by position.
+     * Higher values suggest better cells later (delayed discovery).</p>
+     *
+     * <p>PROCESS:
+     * <ol>
+     *   <li>Compute average cell value</li>
+     *   <li>For each position i, quality = |cell.value - avg|</li>
+     *   <li>Weighted sum: sum((i+1) * quality)</li>
+     *   <li>Normalize: sum / (n*(n+1)/2)</li>
+     * </ol>
+     * </p>
+     *
+     * @param cells the array to analyze
+     * @return normalized index (higher = more delayed)
+     */
     @Override
     public double compute(T[] cells) {
-        // Implementation will go here
-        return 0.0;
+        if (cells == null || cells.length == 0) {
+            return 0.0;
+        }
+        double totalQuality = 0.0;
+        int n = cells.length;
+        double avgValue = computeAverageValue(cells);
+        for (int i = 0; i < n; i++) {
+            T cell = cells[i];
+            double quality = Math.abs(cell.getValue() - avgValue); // Deviation as proxy for "quality difference"
+            totalQuality += (i + 1) * quality; // Weight by position (1-based for later emphasis)
+        }
+        return totalQuality / (n * (n + 1) / 2.0); // Normalize by avg position weight
+    }
+
+    private double computeAverageValue(T[] cells) {
+        double sum = 0.0;
+        int count = 0;
+        for (T cell : cells) {
+            if (cell != null) {
+                sum += cell.getValue();
+                count++;
+            }
+        }
+        return count > 0 ? sum / count : 0.0;
     }
     
     @Override
