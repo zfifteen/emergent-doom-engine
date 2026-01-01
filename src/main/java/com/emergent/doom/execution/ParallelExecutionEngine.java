@@ -3,7 +3,9 @@ package com.emergent.doom.execution;
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.HasIdealPosition;
+import com.emergent.doom.cell.HasSortDirection;
 import com.emergent.doom.cell.SelectionCell;
+import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.ConcurrentSwapCollector;
 import com.emergent.doom.swap.SwapEngine;
@@ -242,7 +244,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     private Optional<SwapProposal> evaluateCell(int cellIndex, T[] cellArray) {
         T cell = cellArray[cellIndex];
         Algotype algotype = cell.getAlgotype();
-        com.emergent.doom.cell.SortDirection direction = getCellDirection(cell);
+        SortDirection direction = getCellDirection(cell);
 
         List<Integer> neighbors;
 
@@ -334,14 +336,14 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
      * @param cell the cell to query
      * @return the cell's sort direction, or ASCENDING if not direction-aware
      */
-    private com.emergent.doom.cell.SortDirection getCellDirection(T cell) {
+    private SortDirection getCellDirection(T cell) {
         // Check if cell implements HasSortDirection interface
-        if (cell instanceof com.emergent.doom.cell.HasSortDirection) {
+        if (cell instanceof HasSortDirection) {
             // Cell supports direction - return its preference
-            return ((com.emergent.doom.cell.HasSortDirection) cell).getSortDirection();
+            return ((HasSortDirection) cell).getSortDirection();
         }
         // Cell doesn't support direction - default to ascending
-        return com.emergent.doom.cell.SortDirection.ASCENDING;
+        return SortDirection.ASCENDING;
     }
 
     /**
@@ -358,7 +360,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
      * @return true if swap should occur
      */
     private boolean shouldSwapWithDirection(int i, int j, Algotype algotype, 
-                                           com.emergent.doom.cell.SortDirection direction, T[] cellArray) {
+                                           SortDirection direction, T[] cellArray) {
         // Get comparison result: negative if cells[i] < cells[j], positive if cells[i] > cells[j]
         int cmp = cellArray[i].compareTo(cellArray[j]);
         boolean isAscending = direction.isAscending();
