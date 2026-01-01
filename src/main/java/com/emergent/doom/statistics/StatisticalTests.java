@@ -890,22 +890,81 @@ public class StatisticalTests {
         if (x == null || y == null || x.size() != y.size() || x.size() < 2) {
             throw new IllegalArgumentException("Samples must be non-null, same size >=2");
         }
-        // Simple impl: assume no ties for brevity; full ranking needed for production
+        
         int n = x.size();
-        double[] rankX = new double[n];
-        double[] rankY = new double[n];
-        // Basic ranking (sort and assign; handle ties minimally)
-        java.util.Arrays.sort(rankX = x.stream().mapToDouble(Double::doubleValue).toArray()); // Placeholder: full rank calc omitted for scaffold
-        // TODO: Implement full ranking with tie handling as in Python scipy.stats.spearmanr
-        // For now, return placeholder based on Pearson on ranks
-        // Use Commons Math Pearsons on sorted ranks
-        org.apache.commons.math3.stat.correlation.PearsonsCorrelation corr = new org.apache.commons.math3.stat.correlation.PearsonsCorrelation();
-        double[][] data = new double[2][n];
-        for (int i = 0; i < n; i++) {
-            data[0][i] = i + 1; // Simple rank 1 to n (assumes unique, no ties)
-            data[1][i] = i + 1;
+        
+        // Convert to arrays for ranking
+        double[] xArray = x.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] yArray = y.stream().mapToDouble(Double::doubleValue).toArray();
+        
+        // Calculate ranks for both arrays
+        double[] rankX = calculateRanks(xArray);
+        double[] rankY = calculateRanks(yArray);
+        
+        // Calculate Pearson correlation on the ranks
+        org.apache.commons.math3.stat.correlation.PearsonsCorrelation corr = 
+            new org.apache.commons.math3.stat.correlation.PearsonsCorrelation();
+        return corr.correlation(rankX, rankY);
+    }
+    
+    /**
+     * Calculate ranks for an array of values, handling ties using average ranks.
+     * 
+     * <p>Ties are handled by assigning the average of the ranks that would have been assigned
+     * to the tied values. For example, if values at positions 2, 3, and 4 are tied, they each
+     * get rank (2+3+4)/3 = 3.0.</p>
+     * 
+     * @param values the array of values to rank
+     * @return array of ranks (1-indexed, with ties averaged)
+     */
+    private static double[] calculateRanks(double[] values) {
+        int n = values.length;
+        
+        // Create array of (value, original_index) pairs
+        class IndexedValue implements Comparable<IndexedValue> {
+            double value;
+            int originalIndex;
+            
+            IndexedValue(double value, int originalIndex) {
+                this.value = value;
+                this.originalIndex = originalIndex;
+            }
+            
+            @Override
+            public int compareTo(IndexedValue other) {
+                return Double.compare(this.value, other.value);
+            }
         }
-        return corr.correlation(data[0], data[1]); // Dummy; replace with actual rank arrays
-        // Full impl: Rank x and y separately, compute d^2 sum
+        
+        IndexedValue[] indexed = new IndexedValue[n];
+        for (int i = 0; i < n; i++) {
+            indexed[i] = new IndexedValue(values[i], i);
+        }
+        
+        // Sort by value
+        java.util.Arrays.sort(indexed);
+        
+        // Assign ranks, handling ties with average ranks
+        double[] ranks = new double[n];
+        int i = 0;
+        while (i < n) {
+            // Find extent of tied values
+            int j = i + 1;
+            while (j < n && Double.compare(indexed[j].value, indexed[i].value) == 0) {
+                j++;
+            }
+            
+            // Calculate average rank for tied values (ranks are 1-indexed)
+            double averageRank = (i + 1 + j) / 2.0;
+            
+            // Assign average rank to all tied values
+            for (int k = i; k < j; k++) {
+                ranks[indexed[k].originalIndex] = averageRank;
+            }
+            
+            i = j;
+        }
+        
+        return ranks;
     }
 }
