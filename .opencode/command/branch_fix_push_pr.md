@@ -1,1 +1,1 @@
-Create a new branch, fix, push and issue a PR.
+Create a new branch, fix, mvn clean test, push and issue a PR.
