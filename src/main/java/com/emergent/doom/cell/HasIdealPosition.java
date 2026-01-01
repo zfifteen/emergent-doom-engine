@@ -16,7 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Expected outputs: Ideal position values and updates.
  * Data flow: ExecutionEngine queries/updates via these methods during swap decisions.</p>
  *
- * @author opencode
+ * @see SelectionCell
+ * @see GenericCell
  */
 public interface HasIdealPosition {
     /**

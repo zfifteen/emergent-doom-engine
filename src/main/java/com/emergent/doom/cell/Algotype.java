@@ -7,7 +7,7 @@ package com.emergent.doom.cell;
 public enum Algotype {
     BUBBLE("Local adjacent bidirectional value-based sorting"),
     INSERTION("Prefix left view with conservative left-only swaps"),
-    SELECTION("Ideal target position chasing with long-range swaps");
+    SELECTION("Ideal target position chasing with incremental convergence");
 
     private final String description;
 
