@@ -146,17 +146,17 @@ public class VisualizationDemo {
         
         String csvFile = "visualization_demo_trajectories.csv";
         TrajectoryDataExporter.exportToCSV(csvFile, trajectories);
-        System.out.println("  ✓ CSV exported: " + csvFile);
-        
+        System.out.println("  [OK] CSV exported: " + csvFile);
+
         // Export trajectories to JSON
         String jsonFile = "visualization_demo_trajectories.json";
         TrajectoryDataExporter.exportToJSON(jsonFile, trajectories);
-        System.out.println("  ✓ JSON exported: " + jsonFile);
-        
+        System.out.println("  [OK] JSON exported: " + jsonFile);
+
         // Export raw snapshots
         String snapshotsFile = "visualization_demo_snapshots.json";
         TrajectoryDataExporter.exportSnapshotsToJSON(snapshotsFile, probe);
-        System.out.println("  ✓ Snapshots exported: " + snapshotsFile);
+        System.out.println("  [OK] Snapshots exported: " + snapshotsFile);
         System.out.println();
         
         // Step 6: Show how to visualize in Python

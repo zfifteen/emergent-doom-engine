@@ -1,6 +1,5 @@
 package com.emergent.doom.examples;
 
-import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.InsertionCell;
 import com.emergent.doom.execution.ExecutionEngine;
 import com.emergent.doom.probe.Probe;

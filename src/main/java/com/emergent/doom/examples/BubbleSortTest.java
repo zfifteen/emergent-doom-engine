@@ -1,6 +1,5 @@
 package com.emergent.doom.examples;
 
-import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.BubbleCell;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.execution.ExecutionEngine;

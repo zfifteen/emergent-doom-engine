@@ -18,7 +18,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 
@@ -244,6 +243,7 @@ public class ChimericClusteringExperiment {
                 if (trajectory == null) continue;
 
                 // Sample every 10 steps to keep file size manageable
+                int lastSampledIndex = -1;
                 for (int i = 0; i < trajectory.size(); i += 10) {
                     StepSnapshot<GenericCell> snapshot = trajectory.get(i);
                     GenericCell[] cells = snapshot.getCellStates();
@@ -251,15 +251,19 @@ public class ChimericClusteringExperiment {
                     double sort = sortednessMetric.compute(cells);
                     writer.printf("%d,%d,%.4f,%.4f%n",
                             trialNum, snapshot.getStepNumber(), agg, sort);
+                    lastSampledIndex = i;
                 }
 
-                // Always include final step
-                StepSnapshot<GenericCell> finalSnapshot = trajectory.get(trajectory.size() - 1);
-                GenericCell[] cells = finalSnapshot.getCellStates();
-                double agg = aggregationMetric.compute(cells);
-                double sort = sortednessMetric.compute(cells);
-                writer.printf("%d,%d,%.4f,%.4f%n",
-                        trialNum, finalSnapshot.getStepNumber(), agg, sort);
+                // Include final step only if not already written (avoid duplicate)
+                int finalIndex = trajectory.size() - 1;
+                if (lastSampledIndex != finalIndex) {
+                    StepSnapshot<GenericCell> finalSnapshot = trajectory.get(finalIndex);
+                    GenericCell[] cells = finalSnapshot.getCellStates();
+                    double agg = aggregationMetric.compute(cells);
+                    double sort = sortednessMetric.compute(cells);
+                    writer.printf("%d,%d,%.4f,%.4f%n",
+                            trialNum, finalSnapshot.getStepNumber(), agg, sort);
+                }
 
                 trialNum++;
             }
@@ -281,7 +285,8 @@ public class ChimericClusteringExperiment {
         double sumSquaredDiff = values.stream()
                 .mapToDouble(v -> (v - mean) * (v - mean))
                 .sum();
-        return Math.sqrt(sumSquaredDiff / values.size());
+        // Use sample standard deviation (Bessel's correction: n-1) for unbiased estimate
+        return Math.sqrt(sumSquaredDiff / (values.size() - 1));
     }
 
     /**
