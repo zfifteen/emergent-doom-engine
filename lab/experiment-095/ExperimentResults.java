@@ -222,39 +222,40 @@ public class ExperimentResults {
      * Private constructor - use Builder to create instances.
      */
     private ExperimentResults(Builder builder) {
-        // Implementation pending - Phase Three
-        this.accuracy = 0.0;
-        this.precision = 0.0;
-        this.recall = 0.0;
-        this.f1Score = 0.0;
-        this.auroc = 0.0;
-        this.auprc = 0.0;
-        this.spearmanCorrelation = 0.0;
-        this.accuracyConfidenceInterval = null;
-        this.permutationTestPValue = 0.0;
-        this.delongTestResults = null;
-        this.baselinePerformance = null;
-        this.tierCounts = null;
-        this.tierAccuracies = null;
-        this.tierStabilityKappa = 0.0;
-        this.indelFrequencies = null;
-        this.kruskalWallisPValue = 0.0;
-        this.txtlCleavageFoldChange = 0.0;
-        this.hybridModelAUPRC = 0.0;
-        this.waveletOnlyAUPRC = 0.0;
-        this.phiOnlyAUPRC = 0.0;
-        this.hybridSynergyAchieved = false;
-        this.crossChemistryAccuracyDrop = 0.0;
-        this.crossSpeciesAccuracyDrop = 0.0;
-        this.lowSNRAccuracy = 0.0;
-        this.laptopLatency = 0.0;
-        this.jetsonLatency = 0.0;
-        this.memoryFootprintMB = 0.0;
-        this.readUntilEnrichment = 0.0;
-        this.challengingContextAccuracyDrop = null;
-        this.adversarialRobustnessAccuracy = 0.0;
-        this.allCriteriaMet = false;
-        this.failedCriteria = null;
+        // PHASE THREE IMPLEMENTATION - Constructor
+        // Copy all values from builder
+        this.accuracy = builder.accuracy;
+        this.precision = builder.precision;
+        this.recall = builder.recall;
+        this.f1Score = builder.f1Score;
+        this.auroc = builder.auroc;
+        this.auprc = builder.auprc;
+        this.spearmanCorrelation = builder.spearmanCorrelation;
+        this.accuracyConfidenceInterval = builder.accuracyConfidenceInterval;
+        this.permutationTestPValue = builder.permutationTestPValue;
+        this.delongTestResults = new java.util.HashMap<>(builder.delongTestResults);
+        this.baselinePerformance = new java.util.HashMap<>(builder.baselinePerformance);
+        this.tierCounts = builder.tierCounts.clone();
+        this.tierAccuracies = builder.tierAccuracies.clone();
+        this.tierStabilityKappa = builder.tierStabilityKappa;
+        this.indelFrequencies = new java.util.HashMap<>(builder.indelFrequencies);
+        this.kruskalWallisPValue = builder.kruskalWallisPValue;
+        this.txtlCleavageFoldChange = builder.txtlCleavageFoldChange;
+        this.hybridModelAUPRC = builder.hybridModelAUPRC;
+        this.waveletOnlyAUPRC = builder.waveletOnlyAUPRC;
+        this.phiOnlyAUPRC = builder.phiOnlyAUPRC;
+        this.hybridSynergyAchieved = builder.hybridSynergyAchieved;
+        this.crossChemistryAccuracyDrop = builder.crossChemistryAccuracyDrop;
+        this.crossSpeciesAccuracyDrop = builder.crossSpeciesAccuracyDrop;
+        this.lowSNRAccuracy = builder.lowSNRAccuracy;
+        this.laptopLatency = builder.laptopLatency;
+        this.jetsonLatency = builder.jetsonLatency;
+        this.memoryFootprintMB = builder.memoryFootprintMB;
+        this.readUntilEnrichment = builder.readUntilEnrichment;
+        this.challengingContextAccuracyDrop = new java.util.HashMap<>(builder.challengingContextAccuracyDrop);
+        this.adversarialRobustnessAccuracy = builder.adversarialRobustnessAccuracy;
+        this.allCriteriaMet = builder.allCriteriaMet;
+        this.failedCriteria = new java.util.ArrayList<>(builder.failedCriteria);
     }
     
     /**
@@ -268,7 +269,73 @@ public class ExperimentResults {
      * new Builder() → add metrics from each phase → build() → ExperimentResults
      */
     public static class Builder {
-        // Implementation pending - Phase Three
+        // PHASE THREE IMPLEMENTATION - Builder
+        // All fields initialized to sensible defaults
+        private double accuracy = 0.0;
+        private double precision = 0.0;
+        private double recall = 0.0;
+        private double f1Score = 0.0;
+        private double auroc = 0.0;
+        private double auprc = 0.0;
+        private double spearmanCorrelation = 0.0;
+        private double[] accuracyConfidenceInterval = new double[2];
+        private double permutationTestPValue = 1.0;
+        private Map<String, Double> delongTestResults = new java.util.HashMap<>();
+        private Map<String, Map<String, Double>> baselinePerformance = new java.util.HashMap<>();
+        private int[] tierCounts = new int[3];
+        private double[] tierAccuracies = new double[3];
+        private double tierStabilityKappa = 0.0;
+        private Map<Integer, List<Double>> indelFrequencies = new java.util.HashMap<>();
+        private double kruskalWallisPValue = 1.0;
+        private double txtlCleavageFoldChange = 0.0;
+        private double hybridModelAUPRC = 0.0;
+        private double waveletOnlyAUPRC = 0.0;
+        private double phiOnlyAUPRC = 0.0;
+        private boolean hybridSynergyAchieved = false;
+        private double crossChemistryAccuracyDrop = 0.0;
+        private double crossSpeciesAccuracyDrop = 0.0;
+        private double lowSNRAccuracy = 0.0;
+        private double laptopLatency = 0.0;
+        private double jetsonLatency = 0.0;
+        private double memoryFootprintMB = 0.0;
+        private double readUntilEnrichment = 0.0;
+        private Map<String, Double> challengingContextAccuracyDrop = new java.util.HashMap<>();
+        private double adversarialRobustnessAccuracy = 0.0;
+        private boolean allCriteriaMet = false;
+        private List<String> failedCriteria = new java.util.ArrayList<>();
+        
+        public Builder setAccuracy(double val) { this.accuracy = val; return this; }
+        public Builder setPrecision(double val) { this.precision = val; return this; }
+        public Builder setRecall(double val) { this.recall = val; return this; }
+        public Builder setF1Score(double val) { this.f1Score = val; return this; }
+        public Builder setAuroc(double val) { this.auroc = val; return this; }
+        public Builder setAuprc(double val) { this.auprc = val; return this; }
+        public Builder setSpearmanCorrelation(double val) { this.spearmanCorrelation = val; return this; }
+        public Builder setAccuracyConfidenceInterval(double[] val) { this.accuracyConfidenceInterval = val; return this; }
+        public Builder setPermutationTestPValue(double val) { this.permutationTestPValue = val; return this; }
+        public Builder setDelongTestResults(Map<String, Double> val) { this.delongTestResults = val; return this; }
+        public Builder setBaselinePerformance(Map<String, Map<String, Double>> val) { this.baselinePerformance = val; return this; }
+        public Builder setTierCounts(int[] val) { this.tierCounts = val; return this; }
+        public Builder setTierAccuracies(double[] val) { this.tierAccuracies = val; return this; }
+        public Builder setTierStabilityKappa(double val) { this.tierStabilityKappa = val; return this; }
+        public Builder setIndelFrequencies(Map<Integer, List<Double>> val) { this.indelFrequencies = val; return this; }
+        public Builder setKruskalWallisPValue(double val) { this.kruskalWallisPValue = val; return this; }
+        public Builder setTxtlCleavageFoldChange(double val) { this.txtlCleavageFoldChange = val; return this; }
+        public Builder setHybridModelAUPRC(double val) { this.hybridModelAUPRC = val; return this; }
+        public Builder setWaveletOnlyAUPRC(double val) { this.waveletOnlyAUPRC = val; return this; }
+        public Builder setPhiOnlyAUPRC(double val) { this.phiOnlyAUPRC = val; return this; }
+        public Builder setHybridSynergyAchieved(boolean val) { this.hybridSynergyAchieved = val; return this; }
+        public Builder setCrossChemistryAccuracyDrop(double val) { this.crossChemistryAccuracyDrop = val; return this; }
+        public Builder setCrossSpeciesAccuracyDrop(double val) { this.crossSpeciesAccuracyDrop = val; return this; }
+        public Builder setLowSNRAccuracy(double val) { this.lowSNRAccuracy = val; return this; }
+        public Builder setLaptopLatency(double val) { this.laptopLatency = val; return this; }
+        public Builder setJetsonLatency(double val) { this.jetsonLatency = val; return this; }
+        public Builder setMemoryFootprintMB(double val) { this.memoryFootprintMB = val; return this; }
+        public Builder setReadUntilEnrichment(double val) { this.readUntilEnrichment = val; return this; }
+        public Builder setChallengingContextAccuracyDrop(Map<String, Double> val) { this.challengingContextAccuracyDrop = val; return this; }
+        public Builder setAdversarialRobustnessAccuracy(double val) { this.adversarialRobustnessAccuracy = val; return this; }
+        public Builder setAllCriteriaMet(boolean val) { this.allCriteriaMet = val; return this; }
+        public Builder setFailedCriteria(List<String> val) { this.failedCriteria = val; return this; }
         
         /**
          * Build the final ExperimentResults instance.
@@ -283,8 +350,8 @@ public class ExperimentResults {
          * @return Immutable ExperimentResults
          */
         public ExperimentResults build() {
-            // Implementation pending - Phase Three
-            return null;
+            // PHASE THREE IMPLEMENTATION - build()
+            return new ExperimentResults(this);
         }
     }
     
