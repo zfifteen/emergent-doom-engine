@@ -113,7 +113,6 @@ com.emergent.doom
 ### Build
 
 ```bash
-cd experiments/emergent_doom_engine
 mvn clean compile
 ```
 
