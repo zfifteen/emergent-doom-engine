@@ -67,6 +67,10 @@ public class ExperimentResults<T extends Cell<T>> {
     
     /**
      * IMPLEMENTED: Compute standard deviation of a metric across trials
+     * 
+     * <p>Uses sample standard deviation (Bessel's correction with n-1 denominator)
+     * to provide an unbiased estimate of population variance, consistent with
+     * {@link StatisticalTests#calculateStdDev(List)}.</p>
      */
     public double getStdDevMetric(String metricName) {
         if (trials.size() < 2) return 0.0;
@@ -82,7 +86,8 @@ public class ExperimentResults<T extends Cell<T>> {
             }
         }
         
-        return Math.sqrt(sumSquaredDiff / trials.size());
+        // Use sample standard deviation (n-1) for unbiased variance estimate
+        return Math.sqrt(sumSquaredDiff / (trials.size() - 1));
     }
     
     /**
