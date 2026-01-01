@@ -4,7 +4,6 @@ import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.topology.Topology;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
