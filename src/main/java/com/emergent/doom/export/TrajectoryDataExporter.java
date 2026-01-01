@@ -82,8 +82,8 @@ public class TrajectoryDataExporter {
      * IMPLEMENTATION NOTES:
      *   This is the MAIN ENTRY POINT for data export. It orchestrates the complete
      *   CSV export workflow by:
-     *   - Validating inputs via validateTrajectoriesHaveSameLength() (to be implemented)
-     *   - Ensuring directory exists via ensureDirectoryExists() (to be implemented)
+     *   - Validating inputs via validateTrajectoriesHaveSameLength()
+     *   - Ensuring directory exists via ensureDirectoryExists()
      *   - Writing CSV header and data rows
      *   - Handling I/O operations with proper resource management
      *   
@@ -438,9 +438,7 @@ public class TrajectoryDataExporter {
         // Step 3: Ensure parent directories exist
         ensureDirectoryExists(filepath);
         
-        // Step 4: Get snapshots
-        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
-        
+        // Step 4: Get snapshots\n        List<StepSnapshot<T>> snapshots = probe.getSnapshots();\n        \n        // Validate chronological order and consistent array size\n        if (snapshots.size() > 1) {\n            for (int i = 1; i < snapshots.size(); i++) {\n                if (snapshots.get(i).getTimestamp() < snapshots.get(i - 1).getTimestamp()) {\n                    throw new IllegalArgumentException(\"Snapshots are not in chronological order\");\n                }\n            }\n        }\n        if (!snapshots.isEmpty()) {\n            int expectedSize = snapshots.get(0).getCellStates().length;\n            for (StepSnapshot<T> s : snapshots) {\n                if (s.getCellStates().length != expectedSize) {\n                    throw new IllegalArgumentException(\"Inconsistent array size across snapshots\");\n                }\n            }\n        }\n        
         // Step 5: Open file writer and write JSON
         try (java.io.BufferedWriter writer = new java.io.BufferedWriter(
                 new java.io.OutputStreamWriter(
@@ -477,7 +475,7 @@ public class TrajectoryDataExporter {
                 T[] cells = snapshot.getCellStates();
                 for (int j = 0; j < cells.length; j++) {
                     writer.write("\"");
-                    writer.write(cells[j].toString().replace("\"", "\\\""));
+                    String valStr = cells[j].toString();\n                    try {\n                        Double.parseDouble(valStr);\n                        writer.write(valStr);\n                    } catch (NumberFormatException e) {\n                        writer.write(\"\\\"\" + valStr.replace(\"\\\"\", \"\\\\\\\"\") + \"\\\"\");\n                    }
                     writer.write("\"");
                     if (j < cells.length - 1) {
                         writer.write(", ");
