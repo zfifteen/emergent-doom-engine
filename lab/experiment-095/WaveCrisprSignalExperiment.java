@@ -1,10 +1,7 @@
 package lab.experiment095;
 
-import lab.experiment095.logging.StructuredLogger;
-import lab.experiment095.logging.StructuredLogger.OperationTimer;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Main Entry Point for Wave-CRISPR-Signal Experiment (Experiment-095)
@@ -40,13 +37,6 @@ import java.util.HashMap;
  * Dataset → Feature Extraction → Emergent Sorting → Classification → Validation → Results
  */
 public class WaveCrisprSignalExperiment {
-    
-    /**
-     * Structured logger for experiment observability.
-     * Logs all operations with timing, context, and structured fields.
-     */
-    private static final StructuredLogger logger = 
-        new StructuredLogger("WaveCrisprSignalExperiment", StructuredLogger.LogLevel.INFO);
     
     /**
      * Main entry point for the experiment.
@@ -87,47 +77,17 @@ public class WaveCrisprSignalExperiment {
      * @throws Exception if any component fails during execution
      */
     public static void main(String[] args) throws Exception {
-        // PHASE TWO IMPLEMENTATION (COMPLETED)
+        // PHASE TWO IMPLEMENTATION
         // This main entry point coordinates the complete experimental pipeline,
         // triggering each scaffolded component in sequence as defined in the protocol.
-        // 
-        // PRODUCTION ENHANCEMENTS:
-        // - Integrated structured logging for observability
-        // - Timing for each major operation
-        // - Context tracking for debugging
-        // - Preparation for CLI integration
-        
-        // Initialize logging context with experiment metadata
-        logger.addContext("experiment_id", "experiment-095");
-        logger.addContext("version", "0.1.0-alpha");
-        logger.addContext("timestamp", java.time.Instant.now().toString());
-        
-        // Log experiment start
-        Map<String, Object> startFields = new HashMap<>();
-        startFields.put("args_count", args.length);
-        startFields.put("java_version", System.getProperty("java.version"));
-        logger.info("Experiment started", startFields);
         
         System.out.println("=== Wave-CRISPR-Signal Experiment (Experiment-095) ===");
         System.out.println("Validating emergent PAM detection via wavelet-leader tiering\n");
         
-        // Start overall timing
-        OperationTimer experimentTimer = logger.startTimer("full_experiment");
-        
         // Step 1: Parse command-line arguments and load configuration
         // This validates user inputs and loads all experimental parameters
-        // PRODUCTION: Would use ConfigLoader to load from YAML/JSON
         System.out.println("[1/8] Initializing configuration...");
-        OperationTimer configTimer = logger.startTimer("load_configuration");
         ExperimentConfig config = initializeConfig(args);
-        configTimer.stop();
-        
-        Map<String, Object> configFields = new HashMap<>();
-        configFields.put("wavelet_type", config.getWaveletType());
-        configFields.put("num_scales", config.getNumScales());
-        configFields.put("sorter_iterations", config.getSorterIterations());
-        logger.info("Configuration loaded", configFields);
-        
         System.out.println("  ✓ Configuration loaded successfully");
         System.out.println("  - Wavelet type: " + config.getWaveletType());
         System.out.println("  - Number of scales: " + config.getNumScales());
@@ -143,28 +103,14 @@ public class WaveCrisprSignalExperiment {
         // Step 3: Execute the complete experimental workflow
         // This runs all phases: data loading, feature extraction, sorting,
         // classification, validation, and results generation
-        // PRODUCTION: Would use Slow5Reader for data I/O, StationaryWaveletTransform for features
         System.out.println("[3/8] Executing experimental pipeline...");
-        OperationTimer pipelineTimer = logger.startTimer("execute_pipeline");
         ExperimentResults results = experiment.executeExperiment(config);
-        pipelineTimer.stop();
-        
-        Map<String, Object> pipelineFields = new HashMap<>();
-        pipelineFields.put("accuracy", results.getAccuracy());
-        pipelineFields.put("auroc", results.getAuroc());
-        pipelineFields.put("tier_1_count", results.getTierCounts()[0]);
-        pipelineFields.put("tier_2_count", results.getTierCounts()[1]);
-        pipelineFields.put("tier_3_count", results.getTierCounts()[2]);
-        logger.info("Pipeline completed", pipelineFields);
-        
         System.out.println("  ✓ Experiment completed successfully\n");
         
         // Step 4: Generate and save comprehensive results report
         // Compiles all metrics, statistical tests, and validation results
         System.out.println("[4/8] Generating results report...");
-        OperationTimer reportTimer = logger.startTimer("generate_report");
         experiment.generateReport(results, config);
-        reportTimer.stop();
         System.out.println("  ✓ Report saved to output directory\n");
         
         // Step 5: Display summary of key metrics
@@ -183,28 +129,14 @@ public class WaveCrisprSignalExperiment {
         System.out.println("\n=== Success Criteria Evaluation ===");
         if (results.isAllCriteriaMet()) {
             System.out.println("✓ All success criteria met!");
-            logger.info("All success criteria met", new HashMap<>());
         } else {
             System.out.println("⚠ Some criteria not met:");
             for (String criterion : results.getFailedCriteria()) {
                 System.out.println("  - " + criterion);
             }
-            logger.warn("Some success criteria not met", new HashMap<>());
         }
         
-        // Stop overall timing and log completion
-        long totalTimeMs = experimentTimer.stop();
-        
-        Map<String, Object> completionFields = new HashMap<>();
-        completionFields.put("total_time_ms", totalTimeMs);
-        completionFields.put("success", results.isAllCriteriaMet());
-        logger.info("Experiment completed", completionFields);
-        
         System.out.println("\n=== Experiment Complete ===");
-        System.out.println("Total execution time: " + (totalTimeMs / 1000.0) + " seconds");
-        
-        // Clear logging context
-        logger.clearContext();
     }
     
     /**
