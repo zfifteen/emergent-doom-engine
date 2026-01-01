@@ -1,6 +1,11 @@
 package com.emergent.doom.metrics;
 
+import com.emergent.doom.cell.HasValue;
+
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.probe.StepSnapshot;
+
+import java.util.List;
 
 /**
  * Measures the degree to which better cells appear later in the array.
@@ -45,6 +50,28 @@ public class DelayedGratificationIndex<T extends Cell<T>> implements Metric<T> {
             totalQuality += (i + 1) * quality; // Weight by position (1-based for later emphasis)
         }
         return totalQuality / (n * (n + 1) / 2.0); // Normalize by avg position weight
+    }
+
+    @Override
+    public double compute(StepSnapshot<T> snapshot) {
+        List<Integer> values = snapshot.getValues();
+        if (values == null || values.isEmpty()) {
+            return 0.0;
+        }
+        double totalQuality = 0.0;
+        int n = values.size();
+        
+        double sum = 0.0;
+        for (Integer val : values) {
+            sum += val;
+        }
+        double avgValue = n > 0 ? sum / n : 0.0;
+
+        for (int i = 0; i < n; i++) {
+            double quality = Math.abs(values.get(i) - avgValue);
+            totalQuality += (i + 1) * quality;
+        }
+        return totalQuality / (n * (n + 1) / 2.0);
     }
 
     private double computeAverageValue(T[] cells) {

@@ -2,6 +2,7 @@ package com.emergent.doom.metrics;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.group.GroupAwareCell;
 import com.emergent.doom.experiment.SortDirection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -61,7 +62,7 @@ class SortednessValueTest {
         @Test
         @DisplayName("Null array returns 100.0")
         void nullArray_returns100() {
-            double result = metric.compute(null);
+            double result = metric.compute((IntCell[]) null);
 
             assertEquals(100.0, result, 0.001, "Null array is trivially sorted");
         }
@@ -531,14 +532,14 @@ class SortednessValueTest {
     /**
      * Simple integer-based cell for testing purposes.
      */
-    static class IntCell implements Cell<IntCell> {
+    static class IntCell implements Cell<IntCell>, GroupAwareCell<IntCell> {
         private final int value;
 
         IntCell(int value) {
             this.value = value;
         }
 
-        int getValue() {
+        public int getValue() {
             return value;
         }
 
@@ -546,6 +547,29 @@ class SortednessValueTest {
         public Algotype getAlgotype() {
             return Algotype.BUBBLE;
         }
+
+        @Override
+        public com.emergent.doom.group.CellGroup<IntCell> getGroup() { return null; }
+        @Override
+        public com.emergent.doom.group.CellStatus getStatus() { return com.emergent.doom.group.CellStatus.ACTIVE; }
+        @Override
+        public com.emergent.doom.group.CellStatus getPreviousStatus() { return com.emergent.doom.group.CellStatus.ACTIVE; }
+        @Override
+        public void setStatus(com.emergent.doom.group.CellStatus status) {}
+        @Override
+        public void setPreviousStatus(com.emergent.doom.group.CellStatus status) {}
+        @Override
+        public void setGroup(com.emergent.doom.group.CellGroup<IntCell> group) {}
+        @Override
+        public int getLeftBoundary() { return 0; }
+        @Override
+        public void setLeftBoundary(int leftBoundary) {}
+        @Override
+        public int getRightBoundary() { return 0; }
+        @Override
+        public void setRightBoundary(int rightBoundary) {}
+        @Override
+        public void updateForGroupMerge() {}
 
         @Override
         public int compareTo(IntCell other) {

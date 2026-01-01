@@ -37,7 +37,7 @@ class SpearmanDistanceTest {
         @Test
         @DisplayName("null array returns 0.0")
         void nullArray() {
-            assertEquals(0.0, metric.compute(null));
+            assertEquals(0.0, metric.compute((IntCell[]) null));
         }
 
         @Test

@@ -1,5 +1,12 @@
 package com.emergent.doom.probe;
 
+import com.emergent.doom.group.CellStatus;
+import com.emergent.doom.cell.HasValue;
+import com.emergent.doom.cell.HasGroup;
+import com.emergent.doom.cell.HasStatus;
+import com.emergent.doom.cell.HasAlgotype;
+import com.emergent.doom.group.CellGroup;
+
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
 import java.util.ArrayList;
@@ -19,10 +26,10 @@ import java.util.Map;
  *
  * @param <T> the type of cell (for compatibility)
  */
-public class StepSnapshot<T extends Cell<T>> {
+public class StepSnapshot<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
 
     private final int stepNumber;
-    private final List<Comparable<?>> values;
+    private final List<Integer> values;
     private final List<Object[]> types;
     private final int swapCount;
     private final long timestamp;
@@ -30,7 +37,7 @@ public class StepSnapshot<T extends Cell<T>> {
     /**
      * Create snapshot with extracted values and types (primary constructor).
      */
-    public StepSnapshot(int stepNumber, List<Comparable<?>> values, List<Object[]> types, int swapCount) {
+    public StepSnapshot(int stepNumber, List<Integer> values, List<Object[]> types, int swapCount) {
         this.stepNumber = stepNumber;
         this.values = Collections.unmodifiableList(new ArrayList<>(values));
         this.types = Collections.unmodifiableList(new ArrayList<>(types));
@@ -45,13 +52,13 @@ public class StepSnapshot<T extends Cell<T>> {
     public StepSnapshot(int stepNumber, T[] cellStates, int swapCount, Map<Algotype, Integer> cellTypeDistribution) {
         this.stepNumber = stepNumber;
         // Extract for fidelity
-        List<Comparable<?>> vals = new ArrayList<>();
+        List<Integer> vals = new ArrayList<>();
         List<Object[]> tys = new ArrayList<>();
         for (T cell : cellStates) {
             vals.add(cell.getValue());
             int groupId = (cell.getGroup() != null) ? cell.getGroup().getGroupId() : -1;
             int label = cell.getAlgotype().ordinal();
-            int frozen = cell.getStatus() == com.emergent.doom.cell.CellStatus.FREEZE ? 1 : 0;
+            int frozen = cell.getStatus() == com.emergent.doom.group.CellStatus.FREEZE ? 1 : 0;
             tys.add(new Object[]{groupId, label, cell.getValue(), frozen});
         }
         this.values = Collections.unmodifiableList(vals);
@@ -64,7 +71,7 @@ public class StepSnapshot<T extends Cell<T>> {
         return stepNumber;
     }
 
-    public List<Comparable<?>> getValues() {
+    public List<Integer> getValues() {
         return Collections.unmodifiableList(values);
     }
 

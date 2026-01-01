@@ -1,5 +1,13 @@
 package com.emergent.doom.cell;
 
+import com.emergent.doom.cell.HasValue;
+import com.emergent.doom.cell.HasGroup;
+import com.emergent.doom.cell.HasStatus;
+import com.emergent.doom.cell.HasAlgotype;
+import com.emergent.doom.group.CellGroup;
+import com.emergent.doom.group.CellStatus;
+import com.emergent.doom.group.GroupAwareCell;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -44,9 +52,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * }
  * }</pre></p>
  */
-public class GenericCell implements Cell<GenericCell>, HasIdealPosition, HasSortDirection {
+public class GenericCell implements Cell<GenericCell>, GroupAwareCell<GenericCell>, HasIdealPosition, HasSortDirection, HasValue, HasGroup, HasStatus, HasAlgotype {
 
     private final int value;
+    private CellGroup<GenericCell> group = null;
+    private CellStatus status = CellStatus.ACTIVE;
+    private CellStatus previousStatus = CellStatus.ACTIVE;
+    private int leftBoundary;
+    private int rightBoundary;
     private final Algotype algotype;
     private final SortDirection sortDirection;  // Direction preference (ascending or descending)
     private final AtomicInteger idealPos;  // Thread-safe: used only for SELECTION algotype
@@ -246,5 +259,43 @@ public class GenericCell implements Cell<GenericCell>, HasIdealPosition, HasSort
     @Override
     public SortDirection getSortDirection() {
         return this.sortDirection;
+    }
+
+    // Implementation of HasGroup, HasStatus
+    public CellGroup<GenericCell> getGroup() { return group; }
+
+    public CellStatus getStatus() { return status; }
+
+    public CellStatus getPreviousStatus() { return previousStatus; }
+
+    public void setStatus(CellStatus status) { previousStatus = this.status; this.status = status; }
+
+    public void setPreviousStatus(CellStatus previousStatus) { this.previousStatus = previousStatus; }
+
+    public void setGroup(CellGroup<GenericCell> group) { this.group = group; }
+
+    // Implementation of GroupAwareCell
+    @Override
+    public int getLeftBoundary() { return leftBoundary; }
+
+    @Override
+    public void setLeftBoundary(int leftBoundary) { this.leftBoundary = leftBoundary; }
+
+    @Override
+    public int getRightBoundary() { return rightBoundary; }
+
+    @Override
+    public void setRightBoundary(int rightBoundary) { this.rightBoundary = rightBoundary; }
+
+    @Override
+    public void updateForGroupMerge() {
+        // GenericCell: Reset idealPos if Selection type
+        if (algotype == Algotype.SELECTION) {
+            if (sortDirection == SortDirection.DESCENDING) {
+                setIdealPos(rightBoundary);
+            } else {
+                setIdealPos(leftBoundary);
+            }
+        }
     }
 }

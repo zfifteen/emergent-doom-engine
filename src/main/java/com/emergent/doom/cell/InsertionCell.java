@@ -1,5 +1,14 @@
 package com.emergent.doom.cell;
 
+import com.emergent.doom.cell.HasValue;
+import com.emergent.doom.cell.HasGroup;
+import com.emergent.doom.cell.HasStatus;
+import com.emergent.doom.cell.HasAlgotype;
+import com.emergent.doom.group.CellGroup;
+import com.emergent.doom.group.CellStatus;
+
+import com.emergent.doom.group.GroupAwareCell;
+
 /**
  * Abstract base for Levin cell-view Insertion Sort cells.
  * Baked-in: Algotype.INSERTION (prefix left view, left swaps).
@@ -23,8 +32,13 @@ package com.emergent.doom.cell;
  * return self.value < self.cells[int(target_position[0])].value
  * </pre>
  */
-public abstract class InsertionCell<T extends InsertionCell<T>> implements Cell<T>, HasSortDirection {
+public abstract class InsertionCell<T extends InsertionCell<T>> implements Cell<T>, GroupAwareCell<T>, HasSortDirection, HasValue, HasGroup, HasStatus, HasAlgotype {
     protected final int value;
+    protected CellGroup<T> group = null;
+    protected CellStatus status = CellStatus.ACTIVE;
+    protected CellStatus previousStatus = CellStatus.ACTIVE;
+    protected int leftBoundary;
+    protected int rightBoundary;
     protected final SortDirection sortDirection;  // Sort direction for cross-purpose experiments
 
     /**
@@ -64,6 +78,42 @@ public abstract class InsertionCell<T extends InsertionCell<T>> implements Cell<
         return sortDirection;
     }
 
-    @Override
     public abstract int compareTo(T other);
+
+    // Implementation of HasGroup, HasStatus
+    @Override
+    public CellGroup<T> getGroup() { return group; }
+
+    @Override
+    public CellStatus getStatus() { return status; }
+
+    @Override
+    public CellStatus getPreviousStatus() { return previousStatus; }
+
+    @Override
+    public void setStatus(CellStatus status) { previousStatus = this.status; this.status = status; }
+
+    @Override
+    public void setPreviousStatus(CellStatus previousStatus) { this.previousStatus = previousStatus; }
+
+    @Override
+    public void setGroup(CellGroup<T> group) { this.group = group; }
+
+    // Implementation of GroupAwareCell
+    @Override
+    public int getLeftBoundary() { return leftBoundary; }
+
+    @Override
+    public void setLeftBoundary(int leftBoundary) { this.leftBoundary = leftBoundary; }
+
+    @Override
+    public int getRightBoundary() { return rightBoundary; }
+
+    @Override
+    public void setRightBoundary(int rightBoundary) { this.rightBoundary = rightBoundary; }
+
+    @Override
+    public void updateForGroupMerge() {
+        // InsertionCell: No action required on merge
+    }
 }

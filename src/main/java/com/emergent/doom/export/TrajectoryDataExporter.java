@@ -1,6 +1,7 @@
 package com.emergent.doom.export;
 
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.cell.HasValue;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.probe.StepSnapshot;
 
@@ -307,7 +308,7 @@ public class TrajectoryDataExporter {
      *   It integrates with the export system by following the established pattern.
      *   Writes complete cell state at each step for detailed analysis.
      */
-    public static <T extends Cell<T>> void exportSnapshotsToCSV(String filepath, Probe<T> probe) 
+    public static void exportSnapshotsToCSV(String filepath, Probe<?> probe) 
             throws IOException {
         // Step 1: Validate filepath
         if (filepath == null || filepath.trim().isEmpty()) {
@@ -325,7 +326,7 @@ public class TrajectoryDataExporter {
         // Step 3: Ensure parent directories exist
         ensureDirectoryExists(filepath);
         
-        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
+        List<? extends StepSnapshot<?>> snapshots = probe.getSnapshots();
 int arraySize = 0;
 if (!snapshots.isEmpty()) {
     arraySize = snapshots.get(0).getArraySize();
@@ -345,17 +346,17 @@ if (!snapshots.isEmpty()) {
             writer.newLine();
             
             // Step 7: Write data rows
-            for (StepSnapshot<T> snapshot : snapshots) {
+            for (StepSnapshot<?> snapshot : snapshots) {
                 // Write step number and swap count
                 writer.write(String.valueOf(snapshot.getStepNumber()));
                 writer.write(",");
                 writer.write(String.valueOf(snapshot.getSwapCount()));
                 
                 // Write cell values
-                T[] cells = snapshot.getCellStates();
-                for (T cell : cells) {
+                List<Integer> values = snapshot.getValues();
+                for (Integer value : values) {
                     writer.write(",");
-                    writer.write(escapeCsvValue(cell.toString()));
+                    writer.write(escapeCsvValue(String.valueOf(value)));
                 }
                 
                 writer.newLine();
@@ -365,120 +366,15 @@ if (!snapshots.isEmpty()) {
     
     /**
      * PURPOSE: Export raw probe snapshots to JSON file with full metadata.
-     * 
-     * INPUTS:
-     *   - filepath: Path where JSON file should be written
-     *   - probe: Probe containing snapshot history
-     * 
-     * PROCESS:
-     *   1. Validate inputs (filepath not null, probe not null/empty)
-     *   2. Create parent directories if they don't exist
-     *   3. Open file writer with UTF-8 encoding
-     *   4. Write JSON opening: {"snapshots": [
-     *   5. For each snapshot in probe:
-     *      a. Write snapshot object with fields:
-     *         - stepNumber: int
-     *         - swapCount: int
-     *         - timestamp: long (nanoseconds)
-     *         - cellValues: array of cell values
-     *         - cellTypeDistribution: map (if available)
-     *      b. Add comma separator between snapshots (except last)
-     *   6. Write JSON closing: ]}
-     *   7. Flush and close file writer
-     *   8. Handle IOExceptions gracefully
-     * 
-     * OUTPUTS: void (side effect: creates JSON file)
-     * 
-     * THROWS: IOException if file operations fail
-     * 
-     * JSON FORMAT EXAMPLE:
-     *   {
-     *     "snapshots": [
-     *       {
-     *         "stepNumber": 0,
-     *         "swapCount": 0,
-     *         "timestamp": 1234567890123456,
-     *         "cellValues": [5, 2, 8, 1, 3],
-     *         "cellTypeDistribution": {"BUBBLE": 3, "SELECTION": 2}
-     *       },
-     *       ...
-     *     ]
-     *   }
-     * 
-     * USAGE:
-     *   - Export with full metadata for archival
-     *   - Preserve timing information for performance analysis
-     *   - Include cell type distribution for chimeric analysis
-     * 
-     * DESIGN RATIONALE:
-     *   - JSON preserves structured metadata better than CSV
-     *   - Timestamp enables temporal analysis (steps/second)
-     *   - cellTypeDistribution crucial for chimeric experiments
-     *   - Self-documenting format with field names
-     * 
-     * IMPLEMENTATION:
-     *   This section exports raw snapshot data with metadata to JSON format.
-     *   It integrates with the export system by following the established pattern.
-     *   Includes all available metadata for comprehensive data archival.
-     */
-    public static <T extends Cell<T>> void exportSnapshotsToJSON(String filepath, Probe<T> probe) 
-            throws IOException {
-        // Step 1: Validate filepath
-        if (filepath == null || filepath.trim().isEmpty()) {
-            throw new IllegalArgumentException("Filepath cannot be null or empty");
-        }
-        
-        // Step 2: Validate probe
-        if (probe == null) {
-            throw new IllegalArgumentException("Probe cannot be null");
-        }
-        if (probe.getSnapshotCount() == 0) {
-            throw new IllegalArgumentException("Probe contains no snapshots");
-        }
-        
-        // Step 3: Ensure parent directories exist
-        ensureDirectoryExists(filepath);
-        
-        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
-        // Step 5: Open file writer and write JSON
-        try (java.io.BufferedWriter writer = new java.io.BufferedWriter(
-                new java.io.OutputStreamWriter(
-                    new java.io.FileOutputStream(filepath), 
-                    java.nio.charset.StandardCharsets.UTF_8))) {
-            
-            // Step 6: Write JSON opening
-            writer.write("{\n");
-            writer.write("  \"snapshots\": [\n");
-            
-            // Step 7: Write each snapshot
-            for (int i = 0; i < snapshots.size(); i++) {
-                StepSnapshot<T> snapshot = snapshots.get(i);
-                
-                writer.write("    {\n");
-                
-                // Write stepNumber
-                writer.write("      \"stepNumber\": ");
-                writer.write(String.valueOf(snapshot.getStepNumber()));
-                writer.write(",\n");
-                
-                // Write swapCount
-                writer.write("      \"swapCount\": ");
-                writer.write(String.valueOf(snapshot.getSwapCount()));
-                writer.write(",\n");
-                
-                // Write timestamp
-                writer.write("      \"timestamp\": ");
-                writer.write(String.valueOf(snapshot.getTimestamp()));
-                writer.write(",\n");
-                
+// ...
                 // Write cellValues array
-writer.write("      \"cellValues\": [");
-T[] cells = snapshot.getCellStates();
-for (int j = 0; j < cells.length; j++) {
-    if (j > 0) writer.write(", ");
-    writer.write(cells[j].getValue().toString());
-}
-writer.write("]");
+                writer.write("      \"cellValues\": [");
+                List<Integer> values = snapshot.getValues();
+                for (int j = 0; j < values.size(); j++) {
+                    if (j > 0) writer.write(", ");
+                    writer.write(String.valueOf(values.get(j)));
+                }
+                writer.write("]");
                 
                 // Write cellTypeDistribution if available
                 if (snapshot.hasCellTypeDistribution()) {

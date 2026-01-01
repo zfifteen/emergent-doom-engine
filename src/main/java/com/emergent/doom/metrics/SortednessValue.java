@@ -2,9 +2,13 @@ package com.emergent.doom.metrics;
 
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.experiment.SortDirection;
+import com.emergent.doom.probe.StepSnapshot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Measures the percentage of cells in their correct sorted position.
@@ -100,6 +104,33 @@ public class SortednessValue<T extends Cell<T>> implements Metric<T> {
         }
 
         return (correctCount * 100.0) / cells.length;
+    }
+
+    @Override
+    public double compute(StepSnapshot<T> snapshot) {
+        List<Integer> values = snapshot.getValues();
+        if (values == null || values.isEmpty()) {
+            return 100.0;
+        }
+        if (values.size() == 1) {
+            return 100.0;
+        }
+
+        List<Integer> sorted = new ArrayList<>(values);
+        if (direction == SortDirection.DECREASING) {
+            sorted.sort(Collections.reverseOrder());
+        } else {
+            Collections.sort(sorted);
+        }
+
+        int correctCount = 0;
+        for (int i = 0; i < values.size(); i++) {
+            if (values.get(i).equals(sorted.get(i))) {
+                correctCount++;
+            }
+        }
+
+        return (correctCount * 100.0) / values.size();
     }
 
     @Override

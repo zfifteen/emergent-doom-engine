@@ -1,6 +1,9 @@
 package com.emergent.doom.metrics;
 
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.probe.StepSnapshot;
+
+import java.util.List;
 
 /**
  * Measures the percentage of cells that follow monotonic (sorted) order.
@@ -68,6 +71,30 @@ public class Monotonicity<T extends Cell<T>> implements Metric<T> {
         }
 
         return (monotonicityCount * 100.0) / cells.length;
+    }
+
+    @Override
+    public double compute(StepSnapshot<T> snapshot) {
+        List<Integer> values = snapshot.getValues();
+        if (values == null || values.isEmpty()) {
+            return 100.0;
+        }
+        if (values.size() == 1) {
+            return 100.0;
+        }
+
+        int monotonicityCount = 1;
+        Integer prev = values.get(0);
+
+        for (int i = 1; i < values.size(); i++) {
+            Integer curr = values.get(i);
+            if (curr.compareTo(prev) >= 0) {
+                monotonicityCount++;
+            }
+            prev = curr;
+        }
+
+        return (monotonicityCount * 100.0) / values.size();
     }
 
     @Override

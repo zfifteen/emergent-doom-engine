@@ -1,8 +1,13 @@
 package com.emergent.doom.metrics;
 
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.probe.StepSnapshot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Measures the Spearman footrule distance from a sorted array.
@@ -78,6 +83,31 @@ public class SpearmanDistance<T extends Cell<T>> implements Metric<T> {
     }
 
     @Override
+    public double compute(StepSnapshot<T> snapshot) {
+        List<Integer> values = snapshot.getValues();
+        if (values == null || values.isEmpty()) {
+            return 0.0;
+        }
+        if (values.size() == 1) {
+            return 0.0;
+        }
+
+        List<IndexedValue> indexed = new ArrayList<>(values.size());
+        for (int i = 0; i < values.size(); i++) {
+            indexed.add(new IndexedValue(values.get(i), i));
+        }
+
+        indexed.sort(Comparator.comparingInt(a -> a.value));
+
+        double distance = 0.0;
+        for (int expectedPos = 0; expectedPos < indexed.size(); expectedPos++) {
+            int actualPos = indexed.get(expectedPos).originalIndex;
+            distance += Math.abs(actualPos - expectedPos);
+        }
+        return distance;
+    }
+
+    @Override
     public String getName() {
         return "Spearman Distance";
     }
@@ -96,6 +126,16 @@ public class SpearmanDistance<T extends Cell<T>> implements Metric<T> {
 
         IndexedCell(T cell, int originalIndex) {
             this.cell = cell;
+            this.originalIndex = originalIndex;
+        }
+    }
+
+    private static class IndexedValue {
+        final int value;
+        final int originalIndex;
+
+        IndexedValue(int value, int originalIndex) {
+            this.value = value;
             this.originalIndex = originalIndex;
         }
     }

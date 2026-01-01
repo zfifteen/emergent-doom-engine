@@ -1,6 +1,9 @@
 package com.emergent.doom.metrics;
 
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.probe.StepSnapshot;
+
+import java.util.List;
 
 /**
  * Measures deviation from perfect monotonic (sorted) order.
@@ -45,6 +48,22 @@ public class MonotonicityError<T extends Cell<T>> implements Metric<T> {
             }
         }
 
+        return (double) count;
+    }
+
+    @Override
+    public double compute(StepSnapshot<T> snapshot) {
+        List<Integer> values = snapshot.getValues();
+        if (values == null || values.size() < 2) {
+            return 0.0;
+        }
+
+        int count = 0;
+        for (int i = 0; i < values.size() - 1; i++) {
+            if (values.get(i).compareTo(values.get(i + 1)) > 0) {
+                count++;
+            }
+        }
         return (double) count;
     }
     

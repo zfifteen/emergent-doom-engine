@@ -2,6 +2,7 @@ package com.emergent.doom.execution;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.group.GroupAwareCell;
 import com.emergent.doom.probe.ThreadSafeProbe;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.swap.SwapEngine;
@@ -316,14 +317,14 @@ class ParallelExecutionEngineTest {
     /**
      * Simple bubble sort cell for testing.
      */
-    static class TestBubbleCell implements Cell<TestBubbleCell> {
+    static class TestBubbleCell implements Cell<TestBubbleCell>, GroupAwareCell<TestBubbleCell> {
         private final int value;
 
         TestBubbleCell(int value) {
             this.value = value;
         }
 
-        int getValue() {
+        public int getValue() {
             return value;
         }
 
@@ -331,6 +332,29 @@ class ParallelExecutionEngineTest {
         public Algotype getAlgotype() {
             return Algotype.BUBBLE;
         }
+
+        @Override
+        public com.emergent.doom.group.CellGroup<TestBubbleCell> getGroup() { return null; }
+        @Override
+        public com.emergent.doom.group.CellStatus getStatus() { return com.emergent.doom.group.CellStatus.ACTIVE; }
+        @Override
+        public com.emergent.doom.group.CellStatus getPreviousStatus() { return com.emergent.doom.group.CellStatus.ACTIVE; }
+        @Override
+        public void setStatus(com.emergent.doom.group.CellStatus status) {}
+        @Override
+        public void setPreviousStatus(com.emergent.doom.group.CellStatus status) {}
+        @Override
+        public void setGroup(com.emergent.doom.group.CellGroup<TestBubbleCell> group) {}
+        @Override
+        public int getLeftBoundary() { return 0; }
+        @Override
+        public void setLeftBoundary(int leftBoundary) {}
+        @Override
+        public int getRightBoundary() { return 0; }
+        @Override
+        public void setRightBoundary(int rightBoundary) {}
+        @Override
+        public void updateForGroupMerge() {}
 
         @Override
         public int compareTo(TestBubbleCell other) {
