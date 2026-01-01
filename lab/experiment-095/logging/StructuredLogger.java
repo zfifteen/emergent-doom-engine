@@ -230,10 +230,11 @@ public class StructuredLogger {
      * Escape string for JSON.
      * 
      * PURPOSE:
-     * Escapes special characters and control characters in JSON strings.
+     * Escapes special characters in JSON strings according to RFC 8259.
      * 
      * IMPLEMENTATION:
-     * Escapes quotes, backslashes, newlines, tabs, and all control characters (U+0000 to U+001F).
+     * Handles all control characters (U+0000 through U+001F) and special characters.
+     * Uses Unicode escape sequences for control characters to ensure valid JSON.
      */
     private String escapeJson(String str) {
         if (str == null) {
@@ -327,17 +328,17 @@ public class StructuredLogger {
     }
     
     /**
-     * Clear all context fields and remove thread-local entry.
+     * Clear all context fields.
      * 
      * PURPOSE:
-     * Removes all context fields from current thread and cleans up ThreadLocal entry.
-     * Should be called at end of operation to prevent context leakage and memory leaks.
+     * Removes the thread-local entry so the context can be garbage collected.
+     * Should be called at end of operation to prevent context leakage in thread pools.
      * 
      * DATA FLOW:
-     * Remove thread-local entry so the context can be garbage collected.
+     * Remove thread-local entry completely
      * 
      * IMPLEMENTATION:
-     * Calls context.remove() to properly clean up ThreadLocal storage.
+     * Uses ThreadLocal.remove() to prevent memory leaks in thread-pooled environments.
      */
     public void clearContext() {
         context.remove();

@@ -72,62 +72,53 @@ public class StationaryWaveletTransform {
      * 
      * IMPLEMENTATION:
      * Pre-defined coefficients from standard wavelet families.
-     * db4 coefficients from Daubechies (1992).
+     * db4 coefficients from Daubechies (1992), normalized to sum to √2.
+     * Highpass filter is quadrature mirror filter (QMF): h[n] = (-1)^n * g[N-1-n]
      */
     private double[][] loadFilterCoefficients(String basis) {
         if ("db4".equals(basis)) {
             // Daubechies-4 filter coefficients (8 coefficients)
-            // Lowpass (scaling) filter - from PyWavelets db4.dec_lo
+            // Normalized lowpass (scaling) filter - sum = √2 ≈ 1.414
+            // Values from standard references (PyWavelets, Matlab)
             double[] lowpass = {
-                -0.010597401785002120,
-                 0.032883011666982945,
-                 0.030841381835986965,
-                -0.187034811719288110,
-                -0.027983769416983900,
-                 0.630880767929590400,
-                 0.714846570552915400,
-                 0.230377813308896400
+                0.23037781330885523,
+                0.7148465705525415,
+                0.6308807679295904,
+                -0.02798376941685985,
+                -0.18703481171909309,
+                0.030841381835986965,
+                0.032883011666982945,
+                -0.010597401785069032
             };
             
-            // Highpass (wavelet) filter - quadrature mirror filter of lowpass
-            // Computed as h[n] = (-1)^n * g[N-1-n] where g is lowpass filter
-            double[] highpass = {
-                -0.230377813308896400,
-                 0.714846570552915400,
-                -0.630880767929590400,
-                -0.027983769416983900,
-                 0.187034811719288110,
-                 0.030841381835986965,
-                -0.032883011666982945,
-                -0.010597401785002120
-            };
+            // Highpass (wavelet) filter - quadrature mirror filter
+            // h[n] = (-1)^n * g[N-1-n] where g is lowpass filter
+            double[] highpass = new double[8];
+            for (int i = 0; i < 8; i++) {
+                highpass[i] = (i % 2 == 0 ? 1 : -1) * lowpass[7 - i];
+            }
             
             return new double[][] { lowpass, highpass };
         } else if ("sym4".equals(basis)) {
             // Symlet-4 coefficients (8 coefficients)
-            // Lowpass (scaling) filter - from PyWavelets sym4.dec_lo
+            // Nearly symmetric, normalized to sum to √2
+            // Values from standard references (PyWavelets)
             double[] lowpass = {
-                -0.075765714789356700,
-                -0.029635527645998490,
-                 0.497618667632015500,
-                 0.803738751805916100,
-                 0.297857795605542200,
-                -0.099219543576847200,
-                -0.012603967262263800,
-                 0.032223100604042700
+                -0.07576571478927333,
+                -0.02963552764599851,
+                0.49761866763201545,
+                0.8037387518059161,
+                0.29785779560527736,
+                -0.09921954357684722,
+                -0.012603967262037833,
+                0.0322231006040427
             };
             
-            // Highpass (wavelet) filter - from PyWavelets sym4.dec_hi
-            double[] highpass = {
-                -0.032223100604042700,
-                -0.012603967262263800,
-                 0.099219543576847200,
-                 0.297857795605542200,
-                -0.803738751805916100,
-                 0.497618667632015500,
-                 0.029635527645998490,
-                -0.075765714789356700
-            };
+            // Highpass filter - quadrature mirror filter
+            double[] highpass = new double[8];
+            for (int i = 0; i < 8; i++) {
+                highpass[i] = (i % 2 == 0 ? 1 : -1) * lowpass[7 - i];
+            }
             
             return new double[][] { lowpass, highpass };
         } else {
@@ -242,6 +233,7 @@ public class StationaryWaveletTransform {
      * 
      * IMPLEMENTATION:
      * Standard discrete convolution with modulo arithmetic for circularity.
+     * No assumption about filter symmetry or center position.
      */
     private double[] convolveCircular(double[] signal, double[] filter) {
         int signalLength = signal.length;
@@ -313,7 +305,7 @@ public class StationaryWaveletTransform {
                     
                     for (int offset = 0; offset < neighborhoodSize; offset++) {
                         int pos = start + offset;
-                        // Wrap index into [0, signalLength)
+                        // Wrap index into [0, signalLength) with proper modulo
                         pos %= signalLength;
                         if (pos < 0) {
                             pos += signalLength;

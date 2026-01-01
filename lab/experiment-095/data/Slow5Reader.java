@@ -173,15 +173,12 @@ public class Slow5Reader implements AutoCloseable {
      * Close native library handle OR terminate CLI process → Release memory
      * 
      * IMPLEMENTATION NOTE:
-     * This is a scaffold implementation. The actual implementation will:
-     * - Close JNI library handle if useJNI is true
-     * - Terminate CLI bridge process if useJNI is false
-     * - Release any buffered data
+     * This is a no-op scaffold. Real implementation will close native library or terminate CLI bridge.
      */
     @Override
     public void close() {
-        // SCAFFOLD ONLY - Implementation pending
-        // This will close native library or terminate CLI bridge process
+        // SCAFFOLD ONLY - No-op until implementation is complete
+        // Real implementation will close native library handle or terminate CLI bridge process
     }
     
     /**
