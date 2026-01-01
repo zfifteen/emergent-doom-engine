@@ -1,0 +1,1 @@
+Comprehend docs/requirements/REQUIREMENTS.md and examine this reference implementation: /Users/velocityworks/IdeaProjects/cell_research then dig deep into the following subfolder and identify any logical, documentation or computational errors. Then, where possible research appropriate remedies for the goal and context of the PR. Then, provide a detailed code review: 

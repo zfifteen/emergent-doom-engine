@@ -167,57 +167,75 @@ class AlgotypeAggregationIndexTest {
     @DisplayName("Clustered arrays")
     class ClusteredArrayTests {
 
-        // TODO: Phase Three - Fix test name and docs to 80.0% (scaffold comment only)
         @Test
-        @DisplayName("[B,B,B,S,S,S] returns 80.0%")
-        void perfectlyClustered_returns80() {
-            // [B,B,B,S,S,S] has pairs: BB, BB, BS, SS, SS
-            // Matching: BB, BB, SS, SS = 4/5 = 80%
+        @DisplayName("[B,B,B,S,S,S] returns 100.0% (all cells have same-type neighbor)")
+        void perfectlyClustered_returns100() {
+            // [B,B,B,S,S,S]: Every cell has at least one same-type neighbor
+            // B0: right=B ✓, B1: left=B ✓, B2: left=B ✓
+            // S3: right=S ✓, S4: left=S ✓, S5: left=S ✓
+            // 6/6 = 100%
             GenericCell[] cells = createCells(
                 Algotype.BUBBLE, Algotype.BUBBLE, Algotype.BUBBLE,
                 Algotype.SELECTION, Algotype.SELECTION, Algotype.SELECTION
             );
             double result = metric.compute(cells);
-            assertEquals(80.0, result, 0.001, "4/5 matching pairs = 80% aggregation");
+            assertEquals(100.0, result, 0.001, "All cells have same-type neighbor = 100%");
         }
 
         @Test
-        @DisplayName("[B,S,S,S,B,B] returns 60.0%")
-        void partialClustering_returns60() {
-            // [B,S,S,S,B,B] has pairs: BS, SS, SS, SB, BB
-            // Matching: SS, SS, BB = 3/5 = 60%
+        @DisplayName("[B,S,S,S,B,B] returns 83.3% (5/6 cells have same-type neighbor)")
+        void partialClustering_returns83() {
+            // [B,S,S,S,B,B]:
+            // B0: right=S ✗ → not counted
+            // S1: left=B ✗, right=S ✓ → counted
+            // S2: left=S ✓ → counted
+            // S3: left=S ✓ → counted
+            // B4: left=S ✗, right=B ✓ → counted
+            // B5: left=B ✓ → counted
+            // 5/6 = 83.33%
             GenericCell[] cells = createCells(
                 Algotype.BUBBLE, Algotype.SELECTION, Algotype.SELECTION,
                 Algotype.SELECTION, Algotype.BUBBLE, Algotype.BUBBLE
             );
             double result = metric.compute(cells);
-            assertEquals(60.0, result, 0.001, "3/5 matching pairs = 60%");
+            assertEquals(83.333, result, 0.01, "5/6 cells have same-type neighbor = 83.33%");
         }
 
         @Test
-        @DisplayName("[B,B,S,B,B] returns 50.0%")
-        void singleIntrusion_returns50() {
-            // [B,B,S,B,B] has pairs: BB, BS, SB, BB
-            // Matching: BB, BB = 2/4 = 50%
+        @DisplayName("[B,B,S,B,B] returns 80.0% (4/5 cells have same-type neighbor)")
+        void singleIntrusion_returns80() {
+            // [B,B,S,B,B]:
+            // B0: right=B ✓ → counted
+            // B1: left=B ✓ → counted
+            // S2: left=B ✗, right=B ✗ → not counted (isolated)
+            // B3: right=B ✓ → counted
+            // B4: left=B ✓ → counted
+            // 4/5 = 80%
             GenericCell[] cells = createCells(
                 Algotype.BUBBLE, Algotype.BUBBLE, Algotype.SELECTION,
                 Algotype.BUBBLE, Algotype.BUBBLE
             );
             double result = metric.compute(cells);
-            assertEquals(50.0, result, 0.001, "2/4 matching pairs = 50%");
+            assertEquals(80.0, result, 0.001, "4/5 cells have same-type neighbor = 80%");
         }
 
         @Test
-        @DisplayName("[I,I,I,B,S,S] three algotypes")
+        @DisplayName("[I,I,I,B,S,S] three algotypes returns 83.3%")
         void threeAlgotypesClustered() {
-            // [I,I,I,B,S,S] has pairs: II, II, IB, BS, SS
-            // Matching: II, II, SS = 3/5 = 60%
+            // [I,I,I,B,S,S]:
+            // I0: right=I ✓ → counted
+            // I1: left=I ✓ → counted
+            // I2: left=I ✓ → counted
+            // B3: left=I ✗, right=S ✗ → not counted (isolated)
+            // S4: right=S ✓ → counted
+            // S5: left=S ✓ → counted
+            // 5/6 = 83.33%
             GenericCell[] cells = createCells(
                 Algotype.INSERTION, Algotype.INSERTION, Algotype.INSERTION,
                 Algotype.BUBBLE, Algotype.SELECTION, Algotype.SELECTION
             );
             double result = metric.compute(cells);
-            assertEquals(60.0, result, 0.001, "3/5 matching pairs = 60%");
+            assertEquals(83.333, result, 0.01, "5/6 cells have same-type neighbor = 83.33%");
         }
     }
 
@@ -230,8 +248,8 @@ class AlgotypeAggregationIndexTest {
     class StatisticalTests {
 
         @Test
-        @DisplayName("Random 50/50 mix averages around 50%")
-        void random5050Mix_averagesAround50() {
+        @DisplayName("Random 50/50 mix averages around 75%")
+        void random5050Mix_averagesAround75() {
             Random rng = new Random(42);
             int trials = 1000;
             int arraySize = 100;
@@ -248,15 +266,17 @@ class AlgotypeAggregationIndexTest {
 
             double average = sum / trials;
 
-            // For random 50/50 mix, expected aggregation ~50%
-            // (each pair has 50% chance of matching)
-            assertTrue(average > 45.0, "Average should be above 45%: " + average);
-            assertTrue(average < 55.0, "Average should be below 55%: " + average);
+            // For random 50/50 mix, expected aggregation ~75%
+            // Each cell has: P(at least one matching neighbor) = 1 - P(both different)
+            // = 1 - 0.5 * 0.5 = 0.75 for interior cells
+            // Edge cells have ~50% chance, so average is slightly below 75%
+            assertTrue(average > 70.0, "Average should be above 70%: " + average);
+            assertTrue(average < 80.0, "Average should be below 80%: " + average);
         }
 
         @Test
-        @DisplayName("Random 33/33/34 three-way mix averages around 33%")
-        void randomThreeWayMix_averagesAround33() {
+        @DisplayName("Random 33/33/34 three-way mix averages around 55%")
+        void randomThreeWayMix_averagesAround55() {
             Random rng = new Random(42);
             int trials = 1000;
             int arraySize = 99; // Divisible by 3
@@ -275,10 +295,11 @@ class AlgotypeAggregationIndexTest {
 
             double average = sum / trials;
 
-            // For random three-way mix, expected aggregation ~33%
-            // (each pair has 1/3 chance of matching)
-            assertTrue(average > 28.0, "Average should be above 28%: " + average);
-            assertTrue(average < 38.0, "Average should be below 38%: " + average);
+            // For random three-way mix, expected aggregation ~55%
+            // Each cell has: P(at least one matching neighbor) = 1 - P(both different)
+            // = 1 - (2/3) * (2/3) = 1 - 4/9 = 5/9 ≈ 55.5% for interior cells
+            assertTrue(average > 50.0, "Average should be above 50%: " + average);
+            assertTrue(average < 60.0, "Average should be below 60%: " + average);
         }
     }
 
@@ -312,9 +333,10 @@ class AlgotypeAggregationIndexTest {
     class PaperScenarioTests {
 
         @Test
-        @DisplayName("Initial random 50/50 mix should be ~50%")
-        void initialRandom5050_shouldBe50() {
-            // From Levin paper: "at the beginning the Aggregation Value for a 50/50 mix was 50%"
+        @DisplayName("Initial random 50/50 mix should be ~75%")
+        void initialRandom5050_shouldBe75() {
+            // For a random 50/50 mix, each interior cell has ~75% chance of having
+            // at least one same-type neighbor (1 - 0.5 * 0.5)
             Random rng = new Random(42);
             GenericCell[] cells = new GenericCell[100];
 
@@ -336,15 +358,15 @@ class AlgotypeAggregationIndexTest {
 
             double result = metric.compute(cells);
 
-            // Should be close to 50% for random distribution
-            assertTrue(result > 40.0 && result < 60.0,
-                "Random 50/50 should yield ~50% aggregation, got: " + result);
+            // Should be around 75% for random distribution
+            assertTrue(result > 65.0 && result < 85.0,
+                "Random 50/50 should yield ~75% aggregation, got: " + result);
         }
 
         @Test
-        @DisplayName("Perfect clustering should exceed 50%")
-        void perfectClustering_shouldExceed50() {
-            // Simulates mid-sort state where cells have clustered
+        @DisplayName("Perfect clustering should be 100%")
+        void perfectClustering_shouldBe100() {
+            // Simulates mid-sort state where cells have perfectly clustered
             GenericCell[] cells = new GenericCell[100];
 
             // First 50 are BUBBLE, last 50 are SELECTION (perfect clustering)
@@ -357,9 +379,10 @@ class AlgotypeAggregationIndexTest {
 
             double result = metric.compute(cells);
 
-            // Only 1 non-matching pair (B-S at position 49-50)
-            // 98/99 = 98.99%
-            assertTrue(result > 95.0, "Perfect clustering should yield >95%, got: " + result);
+            // Every cell has at least one same-type neighbor except boundary cells
+            // But in a 50/50 split, even the boundary cells (49 and 50) have same-type neighbors
+            // So all 100 cells have at least one same-type neighbor = 100%
+            assertEquals(100.0, result, 0.001, "Perfect clustering should yield 100%");
         }
     }
 }
