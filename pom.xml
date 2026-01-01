@@ -59,7 +59,7 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>lab</source>
+                                <source>lab/experiment-095</source>
                             </sources>
                         </configuration>
                     </execution>

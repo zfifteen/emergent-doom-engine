@@ -9,11 +9,11 @@ import java.util.HashMap;
  * 
  * PURPOSE:
  * Measures throughput, latency, and memory footprint of critical operations.
- * Uses JMH-style approach for accurate micro-benchmarking.
+ * Uses a JMH-inspired manual approach for accurate micro-benchmarking.
  * Validates scalability requirements (laptop <5ms, GPU <2ms per PAM).
  * 
  * REQUIREMENTS SATISFIED:
- * - Section 4 (Engineering): JMH micro-benchmarks for hot paths
+ * - Section 4 (Engineering): micro-benchmarks for hot paths (JMH-inspired design)
  * - Performance optimization and GC pressure monitoring
  * - Throughput (reads/second) and latency benchmarks
  * 

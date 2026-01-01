@@ -87,7 +87,7 @@ public class WaveCrisprSignalExperiment {
      * @throws Exception if any component fails during execution
      */
     public static void main(String[] args) throws Exception {
-        // PHASE TWO IMPLEMENTATION - COMPLETED
+        // PHASE TWO IMPLEMENTATION (COMPLETED)
         // This main entry point coordinates the complete experimental pipeline,
         // triggering each scaffolded component in sequence as defined in the protocol.
         // 

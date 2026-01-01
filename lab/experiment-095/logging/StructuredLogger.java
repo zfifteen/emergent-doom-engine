@@ -176,14 +176,14 @@ public class StructuredLogger {
         Map<String, Object> contextMap = context.get();
         if (!contextMap.isEmpty()) {
             for (Map.Entry<String, Object> entry : contextMap.entrySet()) {
-                json.append(",\"").append(entry.getKey()).append("\":").append(formatValue(entry.getValue()));
+                json.append(",\"").append(escapeJson(entry.getKey())).append("\":").append(formatValue(entry.getValue()));
             }
         }
         
         // Add custom fields
         if (fields != null && !fields.isEmpty()) {
             for (Map.Entry<String, Object> entry : fields.entrySet()) {
-                json.append(",\"").append(entry.getKey()).append("\":").append(formatValue(entry.getValue()));
+                json.append(",\"").append(escapeJson(entry.getKey())).append("\":").append(formatValue(entry.getValue()));
             }
         }
         
@@ -230,20 +230,51 @@ public class StructuredLogger {
      * Escape string for JSON.
      * 
      * PURPOSE:
-     * Escapes special characters in JSON strings.
+     * Escapes special characters in JSON strings according to RFC 8259.
      * 
      * IMPLEMENTATION:
-     * Escapes quotes, backslashes, newlines, tabs.
+     * Handles all control characters (U+0000 through U+001F) and special characters.
+     * Uses Unicode escape sequences for control characters to ensure valid JSON.
      */
     private String escapeJson(String str) {
         if (str == null) {
             return "";
         }
-        return str.replace("\\", "\\\\")
-                 .replace("\"", "\\\"")
-                 .replace("\n", "\\n")
-                 .replace("\r", "\\r")
-                 .replace("\t", "\\t");
+        StringBuilder sb = new StringBuilder(str.length() + 16);
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            switch (c) {
+                case '"':
+                    sb.append("\\\"");
+                    break;
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case '\b':
+                    sb.append("\\b");
+                    break;
+                case '\f':
+                    sb.append("\\f");
+                    break;
+                case '\n':
+                    sb.append("\\n");
+                    break;
+                case '\r':
+                    sb.append("\\r");
+                    break;
+                case '\t':
+                    sb.append("\\t");
+                    break;
+                default:
+                    if (c >= 0x00 && c <= 0x1F) {
+                        sb.append(String.format("\\u%04x", (int) c));
+                    } else {
+                        sb.append(c);
+                    }
+                    break;
+            }
+        }
+        return sb.toString();
     }
     
     /**
@@ -300,17 +331,17 @@ public class StructuredLogger {
      * Clear all context fields.
      * 
      * PURPOSE:
-     * Removes all context fields from current thread.
-     * Should be called at end of operation to prevent context leakage.
+     * Removes the thread-local entry so the context can be garbage collected.
+     * Should be called at end of operation to prevent context leakage in thread pools.
      * 
      * DATA FLOW:
-     * Clear thread-local context map
+     * Remove thread-local entry completely
      * 
      * IMPLEMENTATION:
-     * Clears the thread-local HashMap.
+     * Uses ThreadLocal.remove() to prevent memory leaks in thread-pooled environments.
      */
     public void clearContext() {
-        context.get().clear();
+        context.remove();
     }
     
     /**

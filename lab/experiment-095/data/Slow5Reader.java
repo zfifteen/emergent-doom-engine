@@ -171,11 +171,14 @@ public class Slow5Reader implements AutoCloseable {
      * 
      * DATA FLOW:
      * Close native library handle OR terminate CLI process → Release memory
+     * 
+     * IMPLEMENTATION NOTE:
+     * This is a no-op scaffold. Real implementation will close native library or terminate CLI bridge.
      */
     @Override
     public void close() {
-        // SCAFFOLD ONLY - Implementation pending
-        // This will close native library or terminate CLI bridge process
+        // SCAFFOLD ONLY - No-op until implementation is complete
+        // Real implementation will close native library handle or terminate CLI bridge process
     }
     
     /**

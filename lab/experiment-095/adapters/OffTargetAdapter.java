@@ -115,6 +115,8 @@ public abstract class OffTargetAdapter {
  * 
  * PURPOSE:
  * Loads CHANGE-seq data with validated off-target sites and activity levels.
+ * Public visibility would require separate file (ChangeSeqAdapter.java).
+ * Currently package-private as inner class for scaffold simplicity.
  * 
  * REQUIREMENTS SATISFIED:
  * - CHANGE-seq ground truth integration
@@ -123,6 +125,9 @@ public abstract class OffTargetAdapter {
  * DATA FLOW:
  * BED/CSV file → Parse columns → Extract chr, start, end, activity →
  * Create PAMSite objects → Return list
+ * 
+ * NOTE: In production, consider moving to separate file for public access
+ * or adding factory method in OffTargetAdapter.
  */
 class ChangeSeqAdapter extends OffTargetAdapter {
     
@@ -162,10 +167,14 @@ class ChangeSeqAdapter extends OffTargetAdapter {
  * 
  * PURPOSE:
  * Loads GUIDE-seq data with off-target sites detected by double-strand break capture.
+ * Package-private as inner class for scaffold simplicity.
  * 
  * DATA FLOW:
  * GUIDE-seq output → Parse detected sites → Extract coordinates →
  * Label with read counts → Return PAMSite list
+ * 
+ * NOTE: In production, consider moving to separate file for public access
+ * or adding factory method in OffTargetAdapter.
  */
 class GuideSeqAdapter extends OffTargetAdapter {
     
@@ -198,10 +207,14 @@ class GuideSeqAdapter extends OffTargetAdapter {
  * 
  * PURPOSE:
  * Loads nanopore-based off-target detection results.
+ * Package-private as inner class for scaffold simplicity.
  * 
  * DATA FLOW:
  * Nano-OTS output → Parse nanopore alignments → Extract off-target sites →
  * Return PAMSite list
+ * 
+ * NOTE: In production, consider moving to separate file for public access
+ * or adding factory method in OffTargetAdapter.
  */
 class NanoOTSAdapter extends OffTargetAdapter {
     
