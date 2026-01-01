@@ -24,7 +24,8 @@ public class GenericCellFactory implements CellFactory<GenericCell> {
     private final ValueStrategy valueStrategy;
     private final DirectionStrategy directionStrategy;
     private final int[] shuffledValues;
-    private final Random random;
+    private final Random valueRandom;
+    private final Random directionRandom;
 
     /**
      * Value assignment strategy.
@@ -73,6 +74,9 @@ public class GenericCellFactory implements CellFactory<GenericCell> {
     /**
      * Create a factory with specified value and direction strategies.
      *
+     * <p>Uses separate Random instances for value and direction generation to ensure
+     * reproducible behavior when using RANDOM strategies for both.</p>
+     *
      * @param valueStrategy the value assignment strategy
      * @param directionStrategy the sort direction assignment strategy
      * @param arraySize the total array size (for SHUFFLED strategy)
@@ -81,7 +85,9 @@ public class GenericCellFactory implements CellFactory<GenericCell> {
     public GenericCellFactory(ValueStrategy valueStrategy, DirectionStrategy directionStrategy, int arraySize, long seed) {
         this.valueStrategy = valueStrategy;
         this.directionStrategy = directionStrategy;
-        this.random = new Random(seed);
+        // Use separate Random instances to avoid coupling between value and direction generation
+        this.valueRandom = new Random(seed);
+        this.directionRandom = new Random(seed + 1);  // Different seed for independent stream
 
         if (valueStrategy == ValueStrategy.SHUFFLED && arraySize > 0) {
             // Pre-generate shuffled values
@@ -91,7 +97,7 @@ public class GenericCellFactory implements CellFactory<GenericCell> {
             }
             // Fisher-Yates shuffle
             for (int i = arraySize - 1; i > 0; i--) {
-                int j = random.nextInt(i + 1);
+                int j = valueRandom.nextInt(i + 1);
                 int temp = shuffledValues[i];
                 shuffledValues[i] = shuffledValues[j];
                 shuffledValues[j] = temp;
@@ -133,6 +139,9 @@ public class GenericCellFactory implements CellFactory<GenericCell> {
 
     @Override
     public GenericCell createCell(int position, String algotypeStr) {
+        if (algotypeStr == null) {
+            throw new IllegalArgumentException("Algotype string cannot be null");
+        }
         Algotype algotype = Algotype.valueOf(algotypeStr.toUpperCase());
         int value = getValue(position);
         SortDirection direction = getDirection(position);
@@ -144,7 +153,7 @@ public class GenericCellFactory implements CellFactory<GenericCell> {
             case SEQUENTIAL:
                 return position + 1;
             case RANDOM:
-                return random.nextInt(1000) + 1;
+                return valueRandom.nextInt(1000) + 1;
             case SHUFFLED:
                 if (shuffledValues != null && position < shuffledValues.length) {
                     return shuffledValues[position];
@@ -164,7 +173,7 @@ public class GenericCellFactory implements CellFactory<GenericCell> {
             case ALTERNATING:
                 return (position % 2 == 0) ? SortDirection.ASCENDING : SortDirection.DESCENDING;
             case RANDOM:
-                return random.nextBoolean() ? SortDirection.ASCENDING : SortDirection.DESCENDING;
+                return directionRandom.nextBoolean() ? SortDirection.ASCENDING : SortDirection.DESCENDING;
             default:
                 return SortDirection.ASCENDING;
         }

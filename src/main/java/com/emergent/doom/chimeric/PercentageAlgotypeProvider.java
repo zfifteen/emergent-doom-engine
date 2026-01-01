@@ -4,6 +4,7 @@ import com.emergent.doom.cell.Algotype;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -61,7 +62,10 @@ public class PercentageAlgotypeProvider implements AlgotypeProvider {
         assignments = new ArrayList<>(arraySize);
         int remaining = arraySize;
 
+        // Sort entries by algotype name for deterministic ordering regardless of Map implementation
         List<Map.Entry<Algotype, Double>> entries = new ArrayList<>(distribution.entrySet());
+        entries.sort(Comparator.comparing(e -> e.getKey().name()));
+
         for (int i = 0; i < entries.size(); i++) {
             Map.Entry<Algotype, Double> entry = entries.get(i);
             int count;

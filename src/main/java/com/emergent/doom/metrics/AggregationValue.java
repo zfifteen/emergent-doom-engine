@@ -33,19 +33,36 @@ public class AggregationValue<T extends Cell<T>> implements Metric<T> {
         this.extractor = extractor;
     }
     
-    // PURPOSE: Sum the extracted values from all cells
-    // INPUTS: cells (T[]) - the array to analyze
-    // PROCESS:
-    //   1. Initialize sum = 0.0
-    //   2. For each cell, call extractor.extractValue(cell)
-    //   3. Add the extracted value to sum
-    //   4. Return sum
-    // OUTPUTS: double - total aggregated value
-    // DEPENDENCIES: CellValueExtractor.extractValue() [FUNCTIONAL INTERFACE]
+    /**
+     * Sum the extracted values from all cells.
+     *
+     * <p>PURPOSE: Compute the aggregate (sum) of cell-specific values.</p>
+     *
+     * <p>PROCESS:
+     * <ol>
+     *   <li>Handle null/empty arrays by returning 0.0</li>
+     *   <li>Initialize sum = 0.0</li>
+     *   <li>For each cell, call extractor.extractValue(cell)</li>
+     *   <li>Add the extracted value to sum</li>
+     *   <li>Return sum</li>
+     * </ol>
+     * </p>
+     *
+     * @param cells the array to analyze
+     * @return total aggregated value (sum of all extracted values)
+     */
     @Override
     public double compute(T[] cells) {
-        // Implementation will go here
-        return 0.0;
+        if (cells == null || cells.length == 0) {
+            return 0.0;
+        }
+        double sum = 0.0;
+        for (T cell : cells) {
+            if (cell != null) {
+                sum += extractor.extractValue(cell);
+            }
+        }
+        return sum;
     }
     
     @Override
