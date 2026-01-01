@@ -96,27 +96,24 @@ public class CellGroup<T extends Cell<T> & GroupAwareCell<T>> extends Thread {
         // Returns false if any cell is SLEEP/MOVING (indeterminate state)
         // Matches cell_research CellGroup.py:37-44
         
-        T prevCell = globalCells[leftBoundaryPosition];
-        
-        for (int i = leftBoundaryPosition; i <= rightBoundaryPosition; i++) {
+        T firstCell = globalCells[leftBoundaryPosition];
+        CellStatus firstStatus = firstCell.getStatus();
+        if (firstStatus == CellStatus.SLEEP || firstStatus == CellStatus.MOVING) {
+            return false;
+        }
+        T prevCell = firstCell;
+        for (int i = leftBoundaryPosition + 1; i <= rightBoundaryPosition; i++) {
             T cell = globalCells[i];
-            
-            // Cannot determine sortedness if cell is sleeping or animating
             CellStatus cellStatus = cell.getStatus();
             if (cellStatus == CellStatus.SLEEP || cellStatus == CellStatus.MOVING) {
                 return false;
             }
-            
-            // Check if cells are in sorted order (current >= previous)
-            // Note: compareTo returns negative if this < other
             if (cell.compareTo(prevCell) < 0) {
-                return false; // Out of order
+                return false;
             }
-            
             prevCell = cell;
         }
-        
-        return true; // All cells sorted
+        return true;
     }
     
     // ========== ADJACENT GROUP FINDING ==========
@@ -166,23 +163,6 @@ public class CellGroup<T extends Cell<T> & GroupAwareCell<T>> extends Thread {
             cell.updateForGroupMerge(); // Algorithm-specific updates (e.g., SelectionCell resets idealPos)
         }
         
-        // Special handling for Insertion cells: disable all in merged group
-        // Python code has duplicate loop - we'll match the behavior
-        for (T cell : this.cellsInGroup) {
-            if (cell.getAlgotype() == com.emergent.doom.cell.Algotype.INSERTION) {
-                // Note: This requires cells to expose enable_to_move flag
-                // For now, updateForGroupMerge() handles this
-            }
-        }
-        
-        // Re-enable first insertion cell (only one insertion cell moves at a time)
-        for (T cell : this.cellsInGroup) {
-            if (cell.getAlgotype() == com.emergent.doom.cell.Algotype.INSERTION) {
-                // First insertion cell gets enabled via updateForGroupMerge()
-                break; // Python code breaks after first one
-            }
-        }
-        
         // After merge, this group manages expanded region [leftBoundary, nextGroup.rightBoundary]
         // Next group's thread exits because status == MERGED
     }
@@ -217,6 +197,7 @@ public class CellGroup<T extends Cell<T> & GroupAwareCell<T>> extends Thread {
             
             // Don't interrupt MOVING (animation) or INACTIVE (terminated) cells
             if (cellStatus != CellStatus.MOVING && cellStatus != CellStatus.INACTIVE) {
+                cell.setPreviousStatus(cellStatus);
                 cell.setStatus(CellStatus.SLEEP);
             }
         }
