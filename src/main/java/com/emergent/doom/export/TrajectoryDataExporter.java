@@ -325,7 +325,11 @@ public class TrajectoryDataExporter {
         // Step 3: Ensure parent directories exist
         ensureDirectoryExists(filepath);
         
-        // Step 4: Get snapshots and determine array size from first snapshot\n        List<StepSnapshot<T>> snapshots = probe.getSnapshots();\n        \n        // Validate chronological order and consistent array size\n        if (snapshots.size() > 1) {\n            for (int i = 1; i < snapshots.size(); i++) {\n                StepSnapshot<T> previous = snapshots.get(i - 1);\n                StepSnapshot<T> current = snapshots.get(i);\n                if (current.getTimestamp() < previous.getTimestamp()) {\n                    throw new IllegalArgumentException(\n                        \"Snapshots are not in chronological order: \" +\n                        \"snapshot index \" + (i - 1) + \" (timestamp=\" + previous.getTimestamp() + \") \" +\n                        \"comes after snapshot index \" + i + \" (timestamp=\" + current.getTimestamp() + \")\"\n                    );\n                }\n            }\n        }\n        if (!snapshots.isEmpty()) {\n            int expectedSize = snapshots.get(0).getCellStates().length;\n            for (int idx = 0; idx < snapshots.size(); idx++) {\n                StepSnapshot<T> s = snapshots.get(idx);\n                int actualSize = s.getCellStates().length;\n                if (actualSize != expectedSize) {\n                    throw new IllegalArgumentException(\n                        \"Inconsistent array size across snapshots: \" +\n                        \"snapshotIndex=\" + idx + \", \" +\n                        \"stepNumber=\" + s.getStepNumber() + \", \" +\n                        \"expectedLength=\" + expectedSize + \", \" +\n                        \"actualLength=\" + actualSize\n                    );\n                }\n            }\n            int arraySize = expectedSize;\n        } else {\n            int arraySize = 0;\n        }\n        
+        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
+int arraySize = 0;
+if (!snapshots.isEmpty()) {
+    arraySize = snapshots.get(0).getArraySize();
+}
         // Step 5: Open file writer and write CSV
         try (java.io.BufferedWriter writer = new java.io.BufferedWriter(
                 new java.io.OutputStreamWriter(
@@ -435,7 +439,7 @@ public class TrajectoryDataExporter {
         // Step 3: Ensure parent directories exist
         ensureDirectoryExists(filepath);
         
-        // Step 4: Get snapshots\n        List<StepSnapshot<T>> snapshots = probe.getSnapshots();\n        \n        // Validate chronological order and consistent array size\n        if (snapshots.size() > 1) {\n            for (int i = 1; i < snapshots.size(); i++) {\n                StepSnapshot<T> previous = snapshots.get(i - 1);\n                StepSnapshot<T> current = snapshots.get(i);\n                if (current.getTimestamp() < previous.getTimestamp()) {\n                    throw new IllegalArgumentException(\n                        \"Snapshots are not in chronological order: \" +\n                        \"snapshot index \" + (i - 1) + \" (timestamp=\" + previous.getTimestamp() + \") \" +\n                        \"comes after snapshot index \" + i + \" (timestamp=\" + current.getTimestamp() + \")\"\n                    );\n                }\n            }\n        }\n        if (!snapshots.isEmpty()) {\n            int expectedSize = snapshots.get(0).getCellStates().length;\n            for (int idx = 0; idx < snapshots.size(); idx++) {\n                StepSnapshot<T> s = snapshots.get(idx);\n                int actualSize = s.getCellStates().length;\n                if (actualSize != expectedSize) {\n                    throw new IllegalArgumentException(\n                        \"Inconsistent array size across snapshots: \" +\n                        \"snapshotIndex=\" + idx + \", \" +\n                        \"stepNumber=\" + s.getStepNumber() + \", \" +\n                        \"expectedLength=\" + expectedSize + \", \" +\n                        \"actualLength=\" + actualSize\n                    );\n                }\n            }\n        }\n        
+        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
         // Step 5: Open file writer and write JSON
         try (java.io.BufferedWriter writer = new java.io.BufferedWriter(
                 new java.io.OutputStreamWriter(
@@ -468,17 +472,13 @@ public class TrajectoryDataExporter {
                 writer.write(",\n");
                 
                 // Write cellValues array
-                writer.write("      \"cellValues\": [");
-                T[] cells = snapshot.getCellStates();
-                for (int j = 0; j < cells.length; j++) {
-                    writer.write("\"");
-                    String valStr = cells[j].toString();\n                    try {\n                        Double.parseDouble(valStr);\n                        writer.write(valStr);\n                    } catch (NumberFormatException e) {\n                        writer.write(\"\\\"\" + valStr.replace(\"\\\"\", \"\\\\\\\"\") + \"\\\"\");\n                    }
-                    writer.write("\"");
-                    if (j < cells.length - 1) {
-                        writer.write(", ");
-                    }
-                }
-                writer.write("]");
+writer.write("      \"cellValues\": [");
+T[] cells = snapshot.getCellStates();
+for (int j = 0; j < cells.length; j++) {
+    if (j > 0) writer.write(", ");
+    writer.write(cells[j].getValue().toString());
+}
+writer.write("]");
                 
                 // Write cellTypeDistribution if available
                 if (snapshot.hasCellTypeDistribution()) {

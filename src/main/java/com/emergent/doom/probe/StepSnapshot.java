@@ -2,110 +2,110 @@ package com.emergent.doom.probe;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Immutable snapshot of cell states at a specific execution step.
  *
  * <p>Step snapshots enable trajectory analysis and visualization by
- * capturing the complete state of the cell array at each iteration.</p>
+ * capturing extracted values and types at each iteration, matching Python take_snapshot().</p>
  *
- * <p><strong>Cell Type Distribution:</strong> Optionally tracks the
- * distribution of cell algotypes at each step, matching the cell_research
- * Python implementation's cell_types[] tracking.</p>
+ * <p>Format: values = List of cell values; types = List of [groupId, algotypeLabel, value, isFrozen].</p>
  *
- * @param <T> the type of cell
+ * @param <T> the type of cell (for compatibility)
  */
 public class StepSnapshot<T extends Cell<T>> {
 
     private final int stepNumber;
-    private final T[] cellStates;
+    private final List<Comparable<?>> values;
+    private final List<Object[]> types;
     private final int swapCount;
     private final long timestamp;
-    private final Map<Algotype, Integer> cellTypeDistribution;
-    
+
     /**
-     * IMPLEMENTED: Create an immutable snapshot of current execution state
+     * Create snapshot with extracted values and types (primary constructor).
      */
-    public StepSnapshot(int stepNumber, T[] cellStates, int swapCount) {
-        this(stepNumber, cellStates, swapCount, null);
+    public StepSnapshot(int stepNumber, List<Comparable<?>> values, List<Object[]> types, int swapCount) {
+        this.stepNumber = stepNumber;
+        this.values = Collections.unmodifiableList(new ArrayList<>(values));
+        this.types = Collections.unmodifiableList(new ArrayList<>(types));
+        this.swapCount = swapCount;
+        this.timestamp = System.nanoTime();
     }
 
     /**
-     * Create an immutable snapshot with cell type distribution tracking.
-     *
-     * @param stepNumber the step number
-     * @param cellStates the cell array state
-     * @param swapCount swaps in this step
-     * @param cellTypeDistribution map of algotype to count (may be null)
+     * Deprecated compatibility constructor with full cells (shallow copy).
      */
-    public StepSnapshot(int stepNumber, T[] cellStates, int swapCount,
-                        Map<Algotype, Integer> cellTypeDistribution) {
+    @Deprecated
+    public StepSnapshot(int stepNumber, T[] cellStates, int swapCount, Map<Algotype, Integer> cellTypeDistribution) {
         this.stepNumber = stepNumber;
-        // Create defensive copy to ensure immutability
-        this.cellStates = Arrays.copyOf(cellStates, cellStates.length);
+        // Extract for fidelity
+        List<Comparable<?>> vals = new ArrayList<>();
+        List<Object[]> tys = new ArrayList<>();
+        for (T cell : cellStates) {
+            vals.add(cell.getValue());
+            int groupId = (cell.getGroup() != null) ? cell.getGroup().getGroupId() : -1;
+            int label = cell.getAlgotype().ordinal();
+            int frozen = cell.getStatus() == com.emergent.doom.cell.CellStatus.FREEZE ? 1 : 0;
+            tys.add(new Object[]{groupId, label, cell.getValue(), frozen});
+        }
+        this.values = Collections.unmodifiableList(vals);
+        this.types = Collections.unmodifiableList(tys);
         this.swapCount = swapCount;
         this.timestamp = System.nanoTime();
-        // Defensive copy of distribution map
-        this.cellTypeDistribution = cellTypeDistribution != null
-                ? Collections.unmodifiableMap(new HashMap<>(cellTypeDistribution))
-                : null;
     }
-    
-    /**
-     * IMPLEMENTED: Get the step number for this snapshot
-     */
+
     public int getStepNumber() {
         return stepNumber;
     }
-    
-    /**
-     * IMPLEMENTED: Get a copy of the cell states at this step
-     * Returns a defensive copy to preserve immutability
-     */
-    public T[] getCellStates() {
-        return Arrays.copyOf(cellStates, cellStates.length);
+
+    public List<Comparable<?>> getValues() {
+        return Collections.unmodifiableList(values);
     }
-    
-    /**
-     * IMPLEMENTED: Get the number of swaps that occurred in this step
-     */
+
+    public List<Object[]> getTypes() {
+        return Collections.unmodifiableList(types);
+    }
+
     public int getSwapCount() {
         return swapCount;
     }
-    
-    /**
-     * IMPLEMENTED: Get the timestamp when this snapshot was created
-     */
+
     public long getTimestamp() {
         return timestamp;
     }
-    
-    /**
-     * IMPLEMENTED: Get the size of the cell array
-     */
+
     public int getArraySize() {
-        return cellStates.length;
+        return values.size();
     }
 
     /**
-     * Get the cell type distribution at this step.
-     *
-     * @return unmodifiable map of algotype to count, or null if not tracked
+     * Deprecated: Use getValues() for extracted values.
+     */
+    @Deprecated
+    public T[] getCellStates() {
+        throw new UnsupportedOperationException("Use getValues() and getTypes() for immutability and fidelity");
+    }
+
+    /**
+     * Aggregate distribution for backward compatibility.
      */
     public Map<Algotype, Integer> getCellTypeDistribution() {
-        return cellTypeDistribution;
+        Map<Algotype, Integer> dist = new HashMap<>();
+        for (Object[] t : types) {
+            int label = (Integer) t[1];
+            Algotype type = Algotype.values()[label];
+            dist.merge(type, 1, Integer::sum);
+        }
+        return Collections.unmodifiableMap(dist);
     }
 
-    /**
-     * Check if cell type distribution was recorded for this snapshot.
-     *
-     * @return true if cell type distribution is available
-     */
     public boolean hasCellTypeDistribution() {
-        return cellTypeDistribution != null;
+        return true;
     }
 }

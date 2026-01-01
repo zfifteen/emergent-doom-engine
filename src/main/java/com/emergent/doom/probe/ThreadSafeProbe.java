@@ -1,7 +1,10 @@
 package com.emergent.doom.probe;
 
+import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
-
+import com.emergent.doom.cell.CellStatus;
+import com.emergent.doom.group.CellGroup;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -9,53 +12,42 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * Thread-safe implementation of the Probe for parallel execution.
  *
- * <p>Uses {@link CopyOnWriteArrayList} for thread-safe snapshot storage.
- * This provides safe concurrent reads and writes at the cost of copy-on-write
- * overhead for modifications.</p>
+ * <p>Uses CopyOnWriteArrayList for concurrent snapshot adds and iterations.</p>
  *
- * <p>This class extends {@link Probe} to provide a drop-in replacement
- * with thread safety guarantees for parallel execution mode.</p>
- *
- * <p><strong>Thread Safety:</strong> All methods are safe for concurrent
- * access. The {@link #recordSnapshot} method can be called from the main
- * thread while other threads read from the probe.</p>
- *
- * @param <T> the type of cell
+ * <p>Overrides extraction in recordSnapshot for consistency.</p>
  */
 public class ThreadSafeProbe<T extends Cell<T>> extends Probe<T> {
 
     private final CopyOnWriteArrayList<StepSnapshot<T>> concurrentSnapshots;
-    private volatile boolean recordingEnabled = true;
 
     public ThreadSafeProbe() {
         super();
         this.concurrentSnapshots = new CopyOnWriteArrayList<>();
     }
 
-    /**
-     * Record a snapshot of the current cell state.
-     * Thread-safe for concurrent access.
-     */
     @Override
-    public void recordSnapshot(int stepNumber, T[] cells, int swapCount) {
-        if (recordingEnabled) {
-            concurrentSnapshots.add(new StepSnapshot<>(stepNumber, cells, swapCount));
+    public void recordSnapshot(int stepNumber, T[] cells, int localSwapCount) {
+        if (super.isRecordingEnabled()) {
+            List<Comparable<?>> values = new ArrayList<>();
+            List<Object[]> types = new ArrayList<>();
+            for (T cell : cells) {
+                values.add(cell.getValue());
+                int groupId = (cell.getGroup() != null) ? cell.getGroup().getGroupId() : -1;
+                int algotypeLabel = cell.getAlgotype().ordinal();
+                Comparable<?> value = cell.getValue();
+                int isFrozen = (cell.getStatus() == CellStatus.FREEZE) ? 1 : 0;
+                types.add(new Object[]{groupId, algotypeLabel, value, isFrozen});
+            }
+            super.swapCount.addAndGet(localSwapCount);
+            concurrentSnapshots.add(new StepSnapshot<>(stepNumber, values, types, localSwapCount));
         }
     }
 
-    /**
-     * Get all recorded snapshots.
-     * Returns an unmodifiable view that is safe for concurrent iteration.
-     */
     @Override
     public List<StepSnapshot<T>> getSnapshots() {
         return Collections.unmodifiableList(concurrentSnapshots);
     }
 
-    /**
-     * Get snapshot at a specific step number.
-     * Thread-safe.
-     */
     @Override
     public StepSnapshot<T> getSnapshot(int stepNumber) {
         for (StepSnapshot<T> snapshot : concurrentSnapshots) {
@@ -66,10 +58,6 @@ public class ThreadSafeProbe<T extends Cell<T>> extends Probe<T> {
         return null;
     }
 
-    /**
-     * Get the most recent snapshot.
-     * Thread-safe.
-     */
     @Override
     public StepSnapshot<T> getLastSnapshot() {
         int size = concurrentSnapshots.size();
@@ -79,40 +67,70 @@ public class ThreadSafeProbe<T extends Cell<T>> extends Probe<T> {
         return concurrentSnapshots.get(size - 1);
     }
 
-    /**
-     * Get the total number of recorded snapshots.
-     * Thread-safe.
-     */
     @Override
     public int getSnapshotCount() {
         return concurrentSnapshots.size();
     }
 
-    /**
-     * Clear all recorded snapshots and reset counters.
-     * Thread-safe.
-     */
     @Override
     public void clear() {
         concurrentSnapshots.clear();
-        resetCounters();  // Reset parent's compareAndSwapCount and frozenSwapAttempts
+        super.resetCounters();
     }
 
-    /**
-     * Enable or disable snapshot recording.
-     * Thread-safe via volatile.
-     */
+    // Delegate to super for recordingEnabled (no shadowing)
     @Override
     public void setRecordingEnabled(boolean enabled) {
-        this.recordingEnabled = enabled;
+        super.setRecordingEnabled(enabled);
     }
 
-    /**
-     * Check if recording is currently enabled.
-     * Thread-safe via volatile.
-     */
     @Override
     public boolean isRecordingEnabled() {
-        return recordingEnabled;
+        return super.isRecordingEnabled();
+    }
+
+    @Override
+    public void recordSwap() {
+        super.recordSwap();
+    }
+
+    @Override
+    public void recordCompareAndSwap() {
+        super.recordCompareAndSwap();
+    }
+
+    @Override
+    public void countFrozenSwapAttempt() {
+        super.countFrozenSwapAttempt();
+    }
+
+    @Override
+    public int getSwapCount() {
+        return super.getSwapCount();
+    }
+
+    @Override
+    public int getCompareAndSwapCount() {
+        return super.getCompareAndSwapCount();
+    }
+
+    @Override
+    public int getFrozenSwapAttempts() {
+        return super.getFrozenSwapAttempts();
+    }
+
+    @Override
+    public List<Object[]> getTypesSnapshot(int stepNumber) {
+        return super.getTypesSnapshot(stepNumber);
+    }
+
+    @Override
+    public Map<Algotype, Integer> getCellTypeDistribution(int stepNumber) {
+        return super.getCellTypeDistribution(stepNumber);
+    }
+
+    @Override
+    public void resetCounters() {
+        super.resetCounters();
     }
 }
