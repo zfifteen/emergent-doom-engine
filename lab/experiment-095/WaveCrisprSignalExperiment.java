@@ -103,10 +103,10 @@ public class WaveCrisprSignalExperiment {
         logger.addContext("timestamp", java.time.Instant.now().toString());
         
         // Log experiment start
-        logger.info("Experiment started", new HashMap<String, Object>() {{
-            put("args_count", args.length);
-            put("java_version", System.getProperty("java.version"));
-        }});
+        Map<String, Object> startFields = new HashMap<>();
+        startFields.put("args_count", args.length);
+        startFields.put("java_version", System.getProperty("java.version"));
+        logger.info("Experiment started", startFields);
         
         System.out.println("=== Wave-CRISPR-Signal Experiment (Experiment-095) ===");
         System.out.println("Validating emergent PAM detection via wavelet-leader tiering\n");
@@ -122,11 +122,11 @@ public class WaveCrisprSignalExperiment {
         ExperimentConfig config = initializeConfig(args);
         configTimer.stop();
         
-        logger.info("Configuration loaded", new HashMap<String, Object>() {{
-            put("wavelet_type", config.getWaveletType());
-            put("num_scales", config.getNumScales());
-            put("sorter_iterations", config.getSorterIterations());
-        }});
+        Map<String, Object> configFields = new HashMap<>();
+        configFields.put("wavelet_type", config.getWaveletType());
+        configFields.put("num_scales", config.getNumScales());
+        configFields.put("sorter_iterations", config.getSorterIterations());
+        logger.info("Configuration loaded", configFields);
         
         System.out.println("  ✓ Configuration loaded successfully");
         System.out.println("  - Wavelet type: " + config.getWaveletType());
@@ -149,13 +149,13 @@ public class WaveCrisprSignalExperiment {
         ExperimentResults results = experiment.executeExperiment(config);
         pipelineTimer.stop();
         
-        logger.info("Pipeline completed", new HashMap<String, Object>() {{
-            put("accuracy", results.getAccuracy());
-            put("auroc", results.getAuroc());
-            put("tier_1_count", results.getTierCounts()[0]);
-            put("tier_2_count", results.getTierCounts()[1]);
-            put("tier_3_count", results.getTierCounts()[2]);
-        }});
+        Map<String, Object> pipelineFields = new HashMap<>();
+        pipelineFields.put("accuracy", results.getAccuracy());
+        pipelineFields.put("auroc", results.getAuroc());
+        pipelineFields.put("tier_1_count", results.getTierCounts()[0]);
+        pipelineFields.put("tier_2_count", results.getTierCounts()[1]);
+        pipelineFields.put("tier_3_count", results.getTierCounts()[2]);
+        logger.info("Pipeline completed", pipelineFields);
         
         System.out.println("  ✓ Experiment completed successfully\n");
         
@@ -189,18 +189,16 @@ public class WaveCrisprSignalExperiment {
             for (String criterion : results.getFailedCriteria()) {
                 System.out.println("  - " + criterion);
             }
-            logger.warn("Some success criteria not met", new HashMap<String, Object>() {{
-                put("failed_count", results.getFailedCriteria().size());
-            }});
+            logger.warn("Some success criteria not met", new HashMap<>());
         }
         
         // Stop overall timing and log completion
         long totalTimeMs = experimentTimer.stop();
         
-        logger.info("Experiment completed", new HashMap<String, Object>() {{
-            put("total_time_ms", totalTimeMs);
-            put("success", results.isAllCriteriaMet());
-        }});
+        Map<String, Object> completionFields = new HashMap<>();
+        completionFields.put("total_time_ms", totalTimeMs);
+        completionFields.put("success", results.isAllCriteriaMet());
+        logger.info("Experiment completed", completionFields);
         
         System.out.println("\n=== Experiment Complete ===");
         System.out.println("Total execution time: " + (totalTimeMs / 1000.0) + " seconds");

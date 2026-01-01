@@ -369,10 +369,10 @@ public class StructuredLogger {
             Instant endTime = Instant.now();
             long durationMs = Duration.between(startTime, endTime).toMillis();
             
-            logger.info("Operation completed", new HashMap<String, Object>() {{
-                put("operation_name", operationName);
-                put("duration_ms", durationMs);
-            }});
+            Map<String, Object> logFields = new HashMap<>();
+            logFields.put("operation_name", operationName);
+            logFields.put("duration_ms", durationMs);
+            logger.info("Operation completed", logFields);
             
             return durationMs;
         }
