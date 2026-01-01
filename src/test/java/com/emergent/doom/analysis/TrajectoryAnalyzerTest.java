@@ -41,7 +41,7 @@ class TrajectoryAnalyzerTest {
         List<StepSnapshot<IntCell>> snapshots = new ArrayList<>();
         for (int i = 0; i < cellValuesByStep.length; i++) {
             IntCell[] cells = createCells(cellValuesByStep[i]);
-            snapshots.add(new StepSnapshot<>(i, cells, swapCounts[i]));
+            snapshots.add(new StepSnapshot<>(i, cells, swapCounts[i], null));
         }
         return snapshots;
     }
@@ -310,8 +310,8 @@ class TrajectoryAnalyzerTest {
             // Create snapshots in quick succession; System.nanoTime() should yield different timestamps
             IntCell[] cells = createCells(1, 2, 3);
             List<StepSnapshot<IntCell>> trajectory = new ArrayList<>();
-            trajectory.add(new StepSnapshot<>(0, cells, 0));
-            trajectory.add(new StepSnapshot<>(1, cells, 0));
+            trajectory.add(new StepSnapshot<>(0, cells, 0, null));
+            trajectory.add(new StepSnapshot<>(1, cells, 0, null));
 
             long duration = analyzer.getTotalExecutionTime(trajectory);
             // Duration should be non-negative (timestamps are monotonically increasing)

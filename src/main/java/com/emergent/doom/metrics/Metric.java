@@ -1,6 +1,7 @@
 package com.emergent.doom.metrics;
 
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.probe.StepSnapshot;
 
 /**
  * Interface for computing metrics over cell arrays.
@@ -21,6 +22,21 @@ public interface Metric<T extends Cell<T>> {
     // DEPENDENCIES: Cell.compareTo() [DEFINED IN INTERFACE]
     // NOTE: Higher or lower values may be better depending on the metric
     double compute(T[] cells);
+
+    /**
+     * Compute the metric value from a step snapshot.
+     * 
+     * <p>Allows metrics to be computed from extracted data (values/types)
+     * without reconstructing cell objects. Default implementation delegates
+     * to {@link #compute(Cell[])} using {@link StepSnapshot#getCellStates()},
+     * which may throw UnsupportedOperationException if objects aren't stored.</p>
+     * 
+     * @param snapshot the snapshot to analyze
+     * @return the computed metric value
+     */
+    default double compute(StepSnapshot<T> snapshot) {
+        return compute(snapshot.getCellStates());
+    }
     
     // PURPOSE: Get a human-readable name for this metric
     // INPUTS: None

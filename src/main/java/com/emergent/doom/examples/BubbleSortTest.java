@@ -1,5 +1,13 @@
 package com.emergent.doom.examples;
 
+import com.emergent.doom.cell.HasValue;
+import com.emergent.doom.cell.HasGroup;
+import com.emergent.doom.cell.HasStatus;
+import com.emergent.doom.cell.HasAlgotype;
+import com.emergent.doom.cell.Algotype;
+import com.emergent.doom.group.CellGroup;
+import com.emergent.doom.group.CellStatus;
+
 import com.emergent.doom.cell.BubbleCell;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.execution.ExecutionEngine;
@@ -15,13 +23,28 @@ import java.util.Arrays;
  */
 public class BubbleSortTest {
 
-    static class TestCell extends BubbleCell<TestCell> {
+    static class TestCell extends BubbleCell<TestCell> implements HasGroup, HasStatus, HasAlgotype {
         public TestCell(int value) {
             super(value);
         }
 
         @Override
-        public int compareTo(TestCell other) {
+        public CellGroup<TestCell> getGroup() { return null; }
+
+    public CellStatus getStatus() { return CellStatus.ACTIVE; }
+
+    public CellStatus getPreviousStatus() { return CellStatus.ACTIVE; }
+
+    public void setStatus(CellStatus status) { /* no-op */ }
+
+    public void setPreviousStatus(CellStatus previousStatus) { /* no-op */ }
+
+    public void setGroup(CellGroup<TestCell> group) { /* no-op */ }
+
+    @Override
+    public Algotype getAlgotype() { return Algotype.BUBBLE; }
+
+    public int compareTo(TestCell other) {
             return Integer.compare(this.getValue(), other.getValue());
         }
     }

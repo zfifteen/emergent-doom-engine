@@ -1,8 +1,21 @@
 package com.emergent.doom.probe;
 
+import com.emergent.doom.group.CellStatus;
+import com.emergent.doom.cell.HasValue;
+import com.emergent.doom.cell.HasGroup;
+import com.emergent.doom.cell.HasStatus;
+import com.emergent.doom.cell.HasAlgotype;
+
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
-import com.emergent.doom.cell.CellStatus;
+import com.emergent.doom.group.CellStatus;
 import com.emergent.doom.group.CellGroup;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +29,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * <p>Overrides extraction in recordSnapshot for consistency.</p>
  */
-public class ThreadSafeProbe<T extends Cell<T>> extends Probe<T> {
+public class ThreadSafeProbe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> extends Probe<T> {
 
     private final CopyOnWriteArrayList<StepSnapshot<T>> concurrentSnapshots;
 
@@ -28,17 +41,17 @@ public class ThreadSafeProbe<T extends Cell<T>> extends Probe<T> {
     @Override
     public void recordSnapshot(int stepNumber, T[] cells, int localSwapCount) {
         if (super.isRecordingEnabled()) {
-            List<Comparable<?>> values = new ArrayList<>();
+            List<Integer> values = new ArrayList<>();
             List<Object[]> types = new ArrayList<>();
             for (T cell : cells) {
                 values.add(cell.getValue());
                 int groupId = (cell.getGroup() != null) ? cell.getGroup().getGroupId() : -1;
                 int algotypeLabel = cell.getAlgotype().ordinal();
-                Comparable<?> value = cell.getValue();
+                int value = cell.getValue();
                 int isFrozen = (cell.getStatus() == CellStatus.FREEZE) ? 1 : 0;
                 types.add(new Object[]{groupId, algotypeLabel, value, isFrozen});
             }
-            super.swapCount.addAndGet(localSwapCount);
+            swapCount.addAndGet(localSwapCount); // Direct access now protected
             concurrentSnapshots.add(new StepSnapshot<>(stepNumber, values, types, localSwapCount));
         }
     }

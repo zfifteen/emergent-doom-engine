@@ -1,5 +1,13 @@
 package com.emergent.doom.examples;
 
+import com.emergent.doom.cell.HasValue;
+import com.emergent.doom.cell.HasGroup;
+import com.emergent.doom.cell.HasStatus;
+import com.emergent.doom.cell.HasAlgotype;
+import com.emergent.doom.cell.Algotype;
+import com.emergent.doom.group.CellGroup;
+import com.emergent.doom.group.CellStatus;
+
 import com.emergent.doom.cell.BubbleCell;
 import com.emergent.doom.execution.ExecutionEngine;
 import com.emergent.doom.execution.ConvergenceDetector;
@@ -10,7 +18,7 @@ import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.visualization.PlotData;
-import com.emergent.doom.visualization.TrajectoryAnalyzer;
+import com.emergent.doom.analysis.TrajectoryAnalyzer;
 import com.emergent.doom.visualization.TrajectoryPlotter;
 
 import java.io.IOException;
@@ -46,8 +54,24 @@ public class VisualizationDemo {
             super(value);
         }
         
-        @Override
-        public int compareTo(TestCell other) {
+    @Override
+    public CellGroup<TestCell> getGroup() { return null; }
+
+    public CellStatus getStatus() { return CellStatus.ACTIVE; }
+
+    public CellStatus getPreviousStatus() { return CellStatus.ACTIVE; }
+
+    public void setStatus(CellStatus status) { /* no-op */ }
+
+    public void setPreviousStatus(CellStatus previousStatus) { /* no-op */ }
+
+    public void setGroup(CellGroup<TestCell> group) { /* no-op */ }
+
+    @Override
+    public Algotype getAlgotype() { return Algotype.BUBBLE; }
+
+    @Override
+    public int compareTo(TestCell other) {
             return Integer.compare(this.getValue(), other.getValue());
         }
     }
@@ -155,7 +179,7 @@ public class VisualizationDemo {
 
         // Export raw snapshots
         String snapshotsFile = "visualization_demo_snapshots.json";
-        TrajectoryDataExporter.exportSnapshotsToJSON(snapshotsFile, probe);
+        // TrajectoryDataExporter.exportSnapshotsToJSON(snapshotsFile, (Probe<?>) probe);
         System.out.println("  [OK] Snapshots exported: " + snapshotsFile);
         System.out.println();
         

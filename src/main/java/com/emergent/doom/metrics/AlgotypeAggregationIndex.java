@@ -2,6 +2,9 @@ package com.emergent.doom.metrics;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.probe.StepSnapshot;
+
+import java.util.List;
 
 /**
  * Measures spatial clustering of cells by algotype in chimeric populations.
@@ -88,6 +91,31 @@ public class AlgotypeAggregationIndex<T extends Cell<T>> implements Metric<T> {
         }
 
         return (sameTypeNeighborCount * 100.0) / cells.length;
+    }
+
+    @Override
+    public double compute(StepSnapshot<T> snapshot) {
+        List<Object[]> types = snapshot.getTypes();
+        if (types == null || types.isEmpty()) {
+            return 100.0;
+        }
+        if (types.size() == 1) {
+            return 100.0;
+        }
+
+        int sameTypeNeighborCount = 0;
+        for (int i = 0; i < types.size(); i++) {
+            // types[i] = [groupId, algotypeLabel, value, isFrozen]
+            int currentLabel = (Integer) types.get(i)[1];
+
+            boolean hasLeftSame = (i > 0) && (((Integer) types.get(i - 1)[1]) == currentLabel);
+            boolean hasRightSame = (i < types.size() - 1) && (((Integer) types.get(i + 1)[1]) == currentLabel);
+
+            if (hasLeftSame || hasRightSame) {
+                sameTypeNeighborCount++;
+            }
+        }
+        return (sameTypeNeighborCount * 100.0) / types.size();
     }
 
     @Override

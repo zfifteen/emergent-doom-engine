@@ -1,5 +1,11 @@
 package com.emergent.doom.cell;
 
+import com.emergent.doom.cell.HasValue;
+import com.emergent.doom.cell.HasGroup;
+import com.emergent.doom.cell.HasStatus;
+import com.emergent.doom.cell.HasAlgotype;
+import com.emergent.doom.group.CellGroup;
+import com.emergent.doom.group.CellStatus;
 /**
  * Minimal contract for cells in the Emergent Doom Engine.
  * 
@@ -13,7 +19,7 @@ package com.emergent.doom.cell;
  * 
  * @param <T> the type of cell (must be comparable to itself)
  */
-public interface Cell<T extends Cell<T>> extends Comparable<T> {
+public interface Cell<T extends Cell<T>> extends Comparable<T>, HasValue, HasGroup, HasStatus, HasAlgotype {
     // PURPOSE: Compare this cell to another cell
     // INPUTS: other (T) - the cell to compare against
     // PROCESS:

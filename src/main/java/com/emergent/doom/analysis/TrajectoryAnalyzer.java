@@ -61,7 +61,7 @@ public class TrajectoryAnalyzer<T extends Cell<T>> {
         Objects.requireNonNull(metric, "Metric cannot be null when computing trajectory");
         List<Double> values = new ArrayList<>(snapshots.size());
         for (StepSnapshot<T> snapshot : snapshots) {
-            values.add(metric.compute(snapshot.getCellStates()));
+            values.add(metric.compute(snapshot));
         }
         return values;
     }

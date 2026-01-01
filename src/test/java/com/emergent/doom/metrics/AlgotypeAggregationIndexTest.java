@@ -49,7 +49,7 @@ class AlgotypeAggregationIndexTest {
         @Test
         @DisplayName("Null array returns 100.0")
         void nullArray_returns100() {
-            double result = metric.compute(null);
+            double result = metric.compute((GenericCell[]) null);
             assertEquals(100.0, result, 0.001, "Null array trivially aggregated");
         }
 

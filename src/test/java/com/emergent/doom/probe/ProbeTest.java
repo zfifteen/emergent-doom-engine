@@ -145,8 +145,8 @@ class ProbeTest {
         }
 
         @Test
-        @DisplayName("StepSnapshot hasCellTypeDistribution returns false for regular snapshots")
-        void regularSnapshotHasNoCellTypeDistribution() {
+        @DisplayName("StepSnapshot hasCellTypeDistribution returns true for regular snapshots (unified behavior)")
+        void regularSnapshotHasCellTypeDistribution() {
             GenericCell[] cells = {
                 new GenericCell(1, Algotype.BUBBLE)
             };
@@ -154,8 +154,8 @@ class ProbeTest {
             probe.recordSnapshot(0, cells, 0);
 
             StepSnapshot<GenericCell> snapshot = probe.getSnapshot(0);
-            assertFalse(snapshot.hasCellTypeDistribution());
-            assertNull(snapshot.getCellTypeDistribution());
+            assertTrue(snapshot.hasCellTypeDistribution());
+            assertNotNull(snapshot.getCellTypeDistribution());
         }
 
         @Test

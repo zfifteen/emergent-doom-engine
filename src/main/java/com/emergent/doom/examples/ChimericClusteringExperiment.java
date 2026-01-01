@@ -173,12 +173,12 @@ public class ChimericClusteringExperiment {
             // Compute aggregation at each step
             double peak = 0.0;
             int peakStep = 0;
-            double initial = aggregationMetric.compute(trajectory.get(0).getCellStates());
+            double initial = aggregationMetric.compute(trajectory.get(0));
             double finalVal = aggregationMetric.compute(
-                    trajectory.get(trajectory.size() - 1).getCellStates());
+                    trajectory.get(trajectory.size() - 1));
 
             for (StepSnapshot<GenericCell> snapshot : trajectory) {
-                double agg = aggregationMetric.compute(snapshot.getCellStates());
+                double agg = aggregationMetric.compute(snapshot);
                 if (agg > peak) {
                     peak = agg;
                     peakStep = snapshot.getStepNumber();
@@ -246,9 +246,8 @@ public class ChimericClusteringExperiment {
                 int lastSampledIndex = -1;
                 for (int i = 0; i < trajectory.size(); i += 10) {
                     StepSnapshot<GenericCell> snapshot = trajectory.get(i);
-                    GenericCell[] cells = snapshot.getCellStates();
-                    double agg = aggregationMetric.compute(cells);
-                    double sort = sortednessMetric.compute(cells);
+                    double agg = aggregationMetric.compute(snapshot);
+                    double sort = sortednessMetric.compute(snapshot);
                     writer.printf("%d,%d,%.4f,%.4f%n",
                             trialNum, snapshot.getStepNumber(), agg, sort);
                     lastSampledIndex = i;
@@ -258,9 +257,8 @@ public class ChimericClusteringExperiment {
                 int finalIndex = trajectory.size() - 1;
                 if (lastSampledIndex != finalIndex) {
                     StepSnapshot<GenericCell> finalSnapshot = trajectory.get(finalIndex);
-                    GenericCell[] cells = finalSnapshot.getCellStates();
-                    double agg = aggregationMetric.compute(cells);
-                    double sort = sortednessMetric.compute(cells);
+                    double agg = aggregationMetric.compute(finalSnapshot);
+                    double sort = sortednessMetric.compute(finalSnapshot);
                     writer.printf("%d,%d,%.4f,%.4f%n",
                             trialNum, finalSnapshot.getStepNumber(), agg, sort);
                 }

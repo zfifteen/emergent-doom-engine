@@ -37,7 +37,7 @@ class MonotonicityTest {
         @Test
         @DisplayName("null array returns 100.0")
         void nullArray() {
-            assertEquals(100.0, metric.compute(null));
+            assertEquals(100.0, metric.compute((IntCell[]) null));
         }
 
         @Test

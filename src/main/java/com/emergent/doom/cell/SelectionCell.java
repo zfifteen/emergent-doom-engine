@@ -1,5 +1,13 @@
 package com.emergent.doom.cell;
 
+import com.emergent.doom.cell.HasValue;
+import com.emergent.doom.cell.HasGroup;
+import com.emergent.doom.cell.HasStatus;
+import com.emergent.doom.cell.HasAlgotype;
+import com.emergent.doom.group.CellGroup;
+import com.emergent.doom.group.CellStatus;
+import com.emergent.doom.group.GroupAwareCell;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -33,8 +41,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     self.ideal_position = left_boundary
  * </pre>
  */
-public abstract class SelectionCell<T extends SelectionCell<T>> implements Cell<T>, HasIdealPosition, HasSortDirection {
+public abstract class SelectionCell<T extends SelectionCell<T>> implements Cell<T>, GroupAwareCell<T>, HasIdealPosition, HasSortDirection, HasValue, HasGroup, HasStatus, HasAlgotype {
     protected final int value;
+    protected CellGroup<T> group = null;
+    protected CellStatus status = CellStatus.ACTIVE;
+    protected CellStatus previousStatus = CellStatus.ACTIVE;
+    protected int leftBoundary;
+    protected int rightBoundary;
     protected final SortDirection sortDirection;  // Sort direction for cross-purpose experiments
     private final AtomicInteger idealPos;  // Thread-safe: starts at 0 for ascending, increments on swap denial
 
@@ -106,8 +119,49 @@ public abstract class SelectionCell<T extends SelectionCell<T>> implements Cell<
         return sortDirection;
     }
 
-    @Override
     public abstract int compareTo(T other);
+
+    // Implementation of HasGroup, HasStatus
+    @Override
+    public CellGroup<T> getGroup() { return group; }
+
+    @Override
+    public CellStatus getStatus() { return status; }
+
+    @Override
+    public CellStatus getPreviousStatus() { return previousStatus; }
+
+    @Override
+    public void setStatus(CellStatus status) { previousStatus = this.status; this.status = status; }
+
+    @Override
+    public void setPreviousStatus(CellStatus previousStatus) { this.previousStatus = previousStatus; }
+
+    @Override
+    public void setGroup(CellGroup<T> group) { this.group = group; }
+
+    // Implementation of GroupAwareCell
+    @Override
+    public int getLeftBoundary() { return leftBoundary; }
+
+    @Override
+    public void setLeftBoundary(int leftBoundary) { this.leftBoundary = leftBoundary; }
+
+    @Override
+    public int getRightBoundary() { return rightBoundary; }
+
+    @Override
+    public void setRightBoundary(int rightBoundary) { this.rightBoundary = rightBoundary; }
+
+    @Override
+    public void updateForGroupMerge() {
+        // SelectionCell: Reset idealPos to new boundary
+        if (sortDirection == SortDirection.DESCENDING) {
+            setIdealPos(rightBoundary);
+        } else {
+            setIdealPos(leftBoundary);
+        }
+    }
 
     // HasIdealPosition already implemented via existing methods; no additional stubs needed
     // Existing: getIdealPos(), incrementIdealPos(), setIdealPos(), compareAndSetIdealPos()

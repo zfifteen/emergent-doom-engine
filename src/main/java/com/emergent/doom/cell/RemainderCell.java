@@ -1,5 +1,7 @@
 package com.emergent.doom.cell;
 
+import com.emergent.doom.group.CellGroup;
+import com.emergent.doom.group.CellStatus;
 import java.math.BigInteger;
 import java.util.Objects;
 
@@ -15,7 +17,7 @@ import java.util.Objects;
  * this cell stores N mod p. The sorting behavior naturally drives
  * better factors to the front when cells are swapped by the engine.</p>
  */
-public class RemainderCell extends BubbleCell<RemainderCell> {
+public class RemainderCell extends BubbleCell<RemainderCell> implements HasGroup, HasStatus, HasAlgotype {
     
     private final BigInteger remainder;
     private final int position;
@@ -72,6 +74,18 @@ public class RemainderCell extends BubbleCell<RemainderCell> {
     /**
      * IMPLEMENTED: Get the remainder value for metrics/analysis
      */
+    public CellGroup<RemainderCell> getGroup() { return null; } // RemainderCell not group-aware
+
+    public CellStatus getStatus() { return CellStatus.ACTIVE; }
+
+    public CellStatus getPreviousStatus() { return CellStatus.ACTIVE; }
+
+    public void setStatus(CellStatus status) { /* no-op */ }
+
+    public void setPreviousStatus(CellStatus previousStatus) { /* no-op */ }
+
+    public void setGroup(CellGroup<RemainderCell> group) { /* no-op */ }
+
     public BigInteger getRemainder() {
         return remainder;
     }

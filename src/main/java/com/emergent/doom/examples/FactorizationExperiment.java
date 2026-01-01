@@ -107,15 +107,23 @@ public class FactorizationExperiment {
         if (lastTrial.getTrajectory() != null && !lastTrial.getTrajectory().isEmpty()) {
             List<StepSnapshot<RemainderCell>> trajectory = lastTrial.getTrajectory();
             StepSnapshot<RemainderCell> finalSnapshot = trajectory.get(trajectory.size() - 1);
-            RemainderCell[] finalCells = finalSnapshot.getCellStates();
+            List<Integer> finalValues = finalSnapshot.getValues();
             
             System.out.println("\nFactors found (remainder = 0):");
             System.out.println("-".repeat(40));
-            for (RemainderCell cell : finalCells) {
-                if (cell.isFactor()) {
-                    System.out.printf("  Position %d is a factor (remainder = %s)%n", 
-                            cell.getPosition(), cell.getRemainder());
+            // Note: With lightweight probe, we only have remainder values, not original positions.
+            // We can only report IF factors were found (remainder 0).
+            int factorCount = 0;
+            for (Integer remainder : finalValues) {
+                if (remainder == 0) {
+                    factorCount++;
                 }
+            }
+            if (factorCount > 0) {
+                System.out.printf("  Found %d factors (remainder = 0) in the top positions.%n", factorCount);
+                System.out.println("  (Note: Exact factor values require full cell state logging)");
+            } else {
+                System.out.println("  No factors found in final configuration.");
             }
         }
     }
