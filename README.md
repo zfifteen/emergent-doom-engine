@@ -29,11 +29,11 @@ The most significant insight is that problem-solving capacities emerge in simple
 
 The EDE is implemented in Java and built around the standard java.lang.Comparable interface. Users define domain-specific Cells that implement Comparable, allowing the engine to order and process them using well-understood Java sorting contracts.
 
-The engine provides three built-in sorting algorithm implementations:
+The engine provides three built-in sorting algorithm implementations, corresponding to the three algotypes studied in the Levin et al. (2024) research:
 
-- Selection Sort
-- Bubble Sort
-- Merge Sort
+- Selection Sort (SELECTION algotype)
+- Bubble Sort (BUBBLE algotype)
+- Insertion Sort (INSERTION algotype)
 
 The Engine API allows users to configure which sorting algorithm is applied to their Cells, making the sorting strategy a tunable parameter of the emergent system.
 
@@ -42,7 +42,7 @@ The Engine API allows users to configure which sorting algorithm is applied to t
 The EDE exposes two major user-facing components:
 
 ### Engine API
-The Engine API allows implementors to customize engine parameters and behavior, including selection of the sorting algorithm (Selection Sort, Bubble Sort, or Merge Sort) to be applied during Cell processing. This provides flexibility to adapt the engine to specific emergent phenomena and experimental setups.
+The Engine API allows implementors to customize engine parameters and behavior, including selection of the sorting algorithm (Selection Sort, Bubble Sort, or Insertion Sort) to be applied during Cell processing. This provides flexibility to adapt the engine to specific emergent phenomena and experimental setups.
 
 ### Implementation API
 The Implementation API facilitates the creation of domain-specific Cells that implement the java.lang.Comparable interface. This ensures modularity, interoperability, and the ability to compose complex systems from well-defined, sortable components.
