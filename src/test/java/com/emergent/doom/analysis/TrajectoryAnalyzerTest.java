@@ -65,6 +65,26 @@ class TrajectoryAnalyzerTest {
         }
 
         @Test
+        @DisplayName("null metric with non-empty snapshots throws NullPointerException")
+        void nullMetric() {
+            List<StepSnapshot<IntCell>> trajectory = createTrajectory(
+                    new int[][]{{3, 1, 2}},
+                    new int[]{0}
+            );
+            assertThrows(NullPointerException.class, () ->
+                analyzer.computeMetricTrajectory(trajectory, null)
+            );
+        }
+
+        @Test
+        @DisplayName("null metric with empty snapshots returns empty list (no exception)")
+        void nullMetricEmptySnapshots() {
+            // When snapshots is empty, we return early before checking metric
+            List<Double> result = analyzer.computeMetricTrajectory(Collections.emptyList(), null);
+            assertTrue(result.isEmpty());
+        }
+
+        @Test
         @DisplayName("computes sortedness for each step")
         void computesSortednessTrajectory() {
             // SortednessValue counts cells in their CORRECT FINAL sorted position
@@ -88,9 +108,10 @@ class TrajectoryAnalyzerTest {
         @Test
         @DisplayName("computes monotonicity error for each step")
         void computesMonotonicityTrajectory() {
-            // Step 0: [3,1,2] - 2 inversions (3>1, 3>2)
-            // Step 1: [1,3,2] - 1 inversion (3>2)
-            // Step 2: [1,2,3] - 0 inversions
+            // MonotonicityError counts ADJACENT inversions only (per cell_research reference)
+            // Step 0: [3,1,2] - 1 adjacent inversion (3>1, but 1<2)
+            // Step 1: [1,3,2] - 1 adjacent inversion (1<3, 3>2)
+            // Step 2: [1,2,3] - 0 adjacent inversions
             List<StepSnapshot<IntCell>> trajectory = createTrajectory(
                     new int[][]{{3, 1, 2}, {1, 3, 2}, {1, 2, 3}},
                     new int[]{0, 1, 1}
@@ -99,9 +120,9 @@ class TrajectoryAnalyzerTest {
             List<Double> errors = analyzer.computeMetricTrajectory(trajectory, new MonotonicityError<>());
 
             assertEquals(3, errors.size());
-            assertEquals(2.0, errors.get(0), 0.01);
-            assertEquals(1.0, errors.get(1), 0.01);
-            assertEquals(0.0, errors.get(2), 0.01);
+            assertEquals(1.0, errors.get(0), 0.01);  // [3,1,2]: only 3>1 is adjacent
+            assertEquals(1.0, errors.get(1), 0.01);  // [1,3,2]: only 3>2 is adjacent
+            assertEquals(0.0, errors.get(2), 0.01);  // [1,2,3]: no adjacent inversions
         }
     }
 
@@ -142,7 +163,8 @@ class TrajectoryAnalyzerTest {
         @Test
         @DisplayName("null snapshots returns -1")
         void nullSnapshots() {
-            assertEquals(-1, analyzer.findConvergenceStep(null, 3));
+            List<StepSnapshot<IntCell>> nullList = null;
+            assertEquals(-1, analyzer.findConvergenceStep(nullList, 3));
         }
 
         @Test
