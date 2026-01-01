@@ -37,7 +37,12 @@ import java.util.List;
  * @see Probe
  * @see StepSnapshot
  * @see TrajectoryPlotter
+ * @deprecated Use {@link com.emergent.doom.analysis.TrajectoryAnalyzer} instead.
+ *             This class will be removed in a future release. The analysis package
+ *             version provides both Probe-based convenience methods (matching this class)
+ *             and flexible low-level APIs with custom Metric support.
  */
+@Deprecated
 public class TrajectoryAnalyzer<T extends Cell<T>> {
     
     /**
