@@ -12,6 +12,53 @@
 
 ## Changelog
 
+### 2025-12-31: Analysis Package Code Review Fixes ✅
+**Code Review**: Fixes for issues identified in `com.emergent.doom.analysis` package review.
+
+**Issues Fixed**:
+
+1. **MonotonicityError now counts ADJACENT inversions** (matching cell_research)
+   - Previously: O(n²) counting all inversions (pairs i,j where i<j and arr[i]>arr[j])
+   - Now: O(n) counting only adjacent inversions (pairs i,i+1 where arr[i]>arr[i+1])
+   - Matches `cell_research/analysis/utils.py` reference implementation
+
+2. **New Monotonicity metric** (percentage of cells in monotonic order)
+   - `Monotonicity.java` - Returns (cells >= predecessor / total) × 100
+   - Directly matches Python `get_monotonicity()` from cell_research
+   - Example: [1,2,3,4,5] → 100%, [5,4,3,2,1] → 20%
+
+3. **New SpearmanDistance metric** (footrule distance from sorted order)
+   - `SpearmanDistance.java` - Returns Σ|actual_position - expected_position|
+   - Matches Python `get_spearman_distance()` from cell_research
+   - Example: sorted array → 0, maximally unsorted → higher values
+
+4. **Consolidated duplicate TrajectoryAnalyzer classes**
+   - `com.emergent.doom.analysis.TrajectoryAnalyzer` is now canonical
+   - Added Probe-based convenience methods matching visualization version
+   - `com.emergent.doom.visualization.TrajectoryAnalyzer` deprecated with @Deprecated annotation
+
+5. **Added null-safety for metric parameter**
+   - `computeMetricTrajectory()` now throws NullPointerException if metric is null
+   - Only when snapshots is non-empty (early return for empty/null snapshots)
+
+**New Files**:
+- `Monotonicity.java` - New metric (75 lines)
+- `SpearmanDistance.java` - New metric (92 lines)
+- `MonotonicityTest.java` - Unit tests (114 lines)
+- `SpearmanDistanceTest.java` - Unit tests (131 lines)
+
+**Modified Files**:
+- `MonotonicityError.java` - Fixed to count adjacent inversions only
+- `TrajectoryAnalyzer.java` (analysis) - Added Probe-based methods, null-safety
+- `TrajectoryAnalyzer.java` (visualization) - Marked @Deprecated
+- `TrajectoryAnalyzerTest.java` - Updated tests for new behavior
+
+**Tests**: 259 tests passing (up from 235)
+
+**Build Status**: ✅ SUCCESS (`mvn test` - all tests passing)
+
+---
+
 ### 2025-12-31: Visualization & Data Export Implementation Complete ✅
 **Major Update**: All visualization and data export features fully implemented (Category 9).
 
