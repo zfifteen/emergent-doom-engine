@@ -950,7 +950,7 @@ public class StatisticalTests {
         while (i < n) {
             // Find extent of tied values
             int j = i + 1;
-            while (j < n && indexed[j].value == indexed[i].value) {
+            while (j < n && Double.compare(indexed[j].value, indexed[i].value) == 0) {
                 j++;
             }
             
