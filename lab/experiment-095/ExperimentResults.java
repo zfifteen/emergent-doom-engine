@@ -289,5 +289,36 @@ public class ExperimentResults {
     }
     
     // Getter methods for all fields
-    // Implementation pending - Phase Three
+    public double getAccuracy() { return accuracy; }
+    public double getPrecision() { return precision; }
+    public double getRecall() { return recall; }
+    public double getF1Score() { return f1Score; }
+    public double getAuroc() { return auroc; }
+    public double getAuprc() { return auprc; }
+    public double getSpearmanCorrelation() { return spearmanCorrelation; }
+    public double[] getAccuracyConfidenceInterval() { return accuracyConfidenceInterval; }
+    public double getPermutationTestPValue() { return permutationTestPValue; }
+    public Map<String, Double> getDelongTestResults() { return delongTestResults; }
+    public Map<String, Map<String, Double>> getBaselinePerformance() { return baselinePerformance; }
+    public int[] getTierCounts() { return tierCounts; }
+    public double[] getTierAccuracies() { return tierAccuracies; }
+    public double getTierStabilityKappa() { return tierStabilityKappa; }
+    public Map<Integer, List<Double>> getIndelFrequencies() { return indelFrequencies; }
+    public double getKruskalWallisPValue() { return kruskalWallisPValue; }
+    public double getTxtlCleavageFoldChange() { return txtlCleavageFoldChange; }
+    public double getHybridModelAUPRC() { return hybridModelAUPRC; }
+    public double getWaveletOnlyAUPRC() { return waveletOnlyAUPRC; }
+    public double getPhiOnlyAUPRC() { return phiOnlyAUPRC; }
+    public boolean isHybridSynergyAchieved() { return hybridSynergyAchieved; }
+    public double getCrossChemistryAccuracyDrop() { return crossChemistryAccuracyDrop; }
+    public double getCrossSpeciesAccuracyDrop() { return crossSpeciesAccuracyDrop; }
+    public double getLowSNRAccuracy() { return lowSNRAccuracy; }
+    public double getLaptopLatency() { return laptopLatency; }
+    public double getJetsonLatency() { return jetsonLatency; }
+    public double getMemoryFootprintMB() { return memoryFootprintMB; }
+    public double getReadUntilEnrichment() { return readUntilEnrichment; }
+    public Map<String, Double> getChallengingContextAccuracyDrop() { return challengingContextAccuracyDrop; }
+    public double getAdversarialRobustnessAccuracy() { return adversarialRobustnessAccuracy; }
+    public boolean isAllCriteriaMet() { return allCriteriaMet; }
+    public List<String> getFailedCriteria() { return failedCriteria; }
 }

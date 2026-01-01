@@ -236,5 +236,27 @@ public class ExperimentConfig {
     }
     
     // Getter methods for all fields
-    // Implementation pending - Phase Three
+    public String getWaveletType() { return waveletType; }
+    public int getNumScales() { return numScales; }
+    public int getSorterIterations() { return sorterIterations; }
+    public String getChangeSeqDatasetPath() { return changeSeqDatasetPath; }
+    public String getNanoporeDatasetPath() { return nanoporeDatasetPath; }
+    public String getSyntheticDatasetPath() { return syntheticDatasetPath; }
+    public int getWindowSize() { return windowSize; }
+    public int getSamplingRate() { return samplingRate; }
+    public String getDistanceMetric() { return distanceMetric; }
+    public double[] getTierThresholds() { return tierThresholds; }
+    public int[] getHiddenLayers() { return hiddenLayers; }
+    public double getDropoutRate() { return dropoutRate; }
+    public double getLearningRate() { return learningRate; }
+    public int getEarlyStoppingPatience() { return earlyStoppingPatience; }
+    public double getTrainRatio() { return trainRatio; }
+    public double getValidationRatio() { return validationRatio; }
+    public double getTestRatio() { return testRatio; }
+    public int getBootstrapResamples() { return bootstrapResamples; }
+    public int getPermutationTests() { return permutationTests; }
+    public double getSignificanceThreshold() { return significanceThreshold; }
+    public String getOutputDirectory() { return outputDirectory; }
+    public boolean getSaveIntermediateResults() { return saveIntermediateResults; }
+    public long getRandomSeed() { return randomSeed; }
 }

@@ -77,7 +77,66 @@ public class WaveCrisprSignalExperiment {
      * @throws Exception if any component fails during execution
      */
     public static void main(String[] args) throws Exception {
-        // Implementation pending - Phase Two
+        // PHASE TWO IMPLEMENTATION
+        // This main entry point coordinates the complete experimental pipeline,
+        // triggering each scaffolded component in sequence as defined in the protocol.
+        
+        System.out.println("=== Wave-CRISPR-Signal Experiment (Experiment-095) ===");
+        System.out.println("Validating emergent PAM detection via wavelet-leader tiering\n");
+        
+        // Step 1: Parse command-line arguments and load configuration
+        // This validates user inputs and loads all experimental parameters
+        System.out.println("[1/8] Initializing configuration...");
+        ExperimentConfig config = initializeConfig(args);
+        System.out.println("  ✓ Configuration loaded successfully");
+        System.out.println("  - Wavelet type: " + config.getWaveletType());
+        System.out.println("  - Number of scales: " + config.getNumScales());
+        System.out.println("  - Sorter iterations: " + config.getSorterIterations());
+        System.out.println();
+        
+        // Step 2: Create experiment instance and execute full pipeline
+        // The experiment object manages state and coordinates all components
+        System.out.println("[2/8] Creating experiment instance...");
+        WaveCrisprSignalExperiment experiment = new WaveCrisprSignalExperiment();
+        System.out.println("  ✓ Experiment initialized\n");
+        
+        // Step 3: Execute the complete experimental workflow
+        // This runs all phases: data loading, feature extraction, sorting,
+        // classification, validation, and results generation
+        System.out.println("[3/8] Executing experimental pipeline...");
+        ExperimentResults results = experiment.executeExperiment(config);
+        System.out.println("  ✓ Experiment completed successfully\n");
+        
+        // Step 4: Generate and save comprehensive results report
+        // Compiles all metrics, statistical tests, and validation results
+        System.out.println("[4/8] Generating results report...");
+        experiment.generateReport(results, config);
+        System.out.println("  ✓ Report saved to output directory\n");
+        
+        // Step 5: Display summary of key metrics
+        System.out.println("=== Experiment Summary ===");
+        System.out.println("Accuracy: " + String.format("%.2f%%", results.getAccuracy() * 100));
+        System.out.println("AUROC: " + String.format("%.4f", results.getAuroc()));
+        System.out.println("AUPRC: " + String.format("%.4f", results.getAuprc()));
+        System.out.println("Spearman correlation with CHANGE-seq: " + 
+                           String.format("%.4f", results.getSpearmanCorrelation()));
+        System.out.println("\nTier assignments:");
+        System.out.println("  Tier 1: " + results.getTierCounts()[0] + " PAMs");
+        System.out.println("  Tier 2: " + results.getTierCounts()[1] + " PAMs");
+        System.out.println("  Tier 3: " + results.getTierCounts()[2] + " PAMs");
+        
+        // Step 6: Check success criteria from Section 12 of protocol
+        System.out.println("\n=== Success Criteria Evaluation ===");
+        if (results.isAllCriteriaMet()) {
+            System.out.println("✓ All success criteria met!");
+        } else {
+            System.out.println("⚠ Some criteria not met:");
+            for (String criterion : results.getFailedCriteria()) {
+                System.out.println("  - " + criterion);
+            }
+        }
+        
+        System.out.println("\n=== Experiment Complete ===");
     }
     
     /**
