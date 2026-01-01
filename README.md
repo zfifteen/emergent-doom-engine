@@ -295,6 +295,6 @@ Potential areas for expansion:
 
 ## References
 
-[1] Zhang, T., Goldstein, A., Levin, M. (2024). "Classical Sorting Algorithms as a Model of Morphogenesis: self-sorting arrays reveal unexpected competencies in a minimal model of basal intelligence." Available at: https://github.com/zfifteen/emergent-doom-engine/blob/main/docs/2401.05375v1.pdf
+[1] Zhang, T., Goldstein, A., Levin, M. (2024). "Classical Sorting Algorithms as a Model of Morphogenesis: self-sorting arrays reveal unexpected competencies in a minimal model of basal intelligence." Available at: https://github.com/zfifteen/emergent-doom-engine/blob/main/docs/theory/2401.05375v1.pdf
 
 [2] Emergent Doom Engine - Implementation Repository. https://github.com/zfifteen/emergent-doom-engine
