@@ -47,7 +47,7 @@ The Engine API allows implementors to customize engine parameters and behavior, 
 ### Implementation API
 The Implementation API facilitates the creation of domain-specific Cells that implement the java.lang.Comparable interface. This ensures modularity, interoperability, and the ability to compose complex systems from well-defined, sortable components.
 
-For more information and to contribute, visit the project repository at https://github.com/zfifteen/emergent-factorization-engine.
+For more information and to contribute, visit the project repository at https://github.com/zfifteen/emergent-doom-engine.
 
 ## Java Architecture
 
@@ -296,6 +296,6 @@ Potential areas for expansion:
 
 ## References
 
-[1] Zhang, T., Goldstein, A., Levin, M. (2024). "Classical Sorting Algorithms as a Model of Morphogenesis: self-sorting arrays reveal unexpected competencies in a minimal model of basal intelligence." Available at: https://github.com/zfifteen/emergent-factorization-engine/blob/main/docs/2401.05375v1.pdf
+[1] Zhang, T., Goldstein, A., Levin, M. (2024). "Classical Sorting Algorithms as a Model of Morphogenesis: self-sorting arrays reveal unexpected competencies in a minimal model of basal intelligence." Available at: https://github.com/zfifteen/emergent-doom-engine/blob/main/docs/2401.05375v1.pdf
 
-[2] Emergent Factorization Engine - Implementation Repository. https://github.com/zfifteen/emergent-factorization-engine
+[2] Emergent Doom Engine - Implementation Repository. https://github.com/zfifteen/emergent-doom-engine
