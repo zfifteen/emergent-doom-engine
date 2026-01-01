@@ -62,12 +62,14 @@ public class FactorizationExperiment {
      * Main experiment runner with command-line argument support.
      *
      * Usage:
-     *   java FactorizationExperiment              # Default: test ~1e5 semiprime
-     *   java FactorizationExperiment <target>     # Test specific target number
+     *   java FactorizationExperiment                    # Default: test ~1e5 semiprime
+     *   java FactorizationExperiment <target>           # Test specific target number
+     *   java FactorizationExperiment <target> <trials>  # Custom target with trial count
      *
      * Examples:
-     *   java FactorizationExperiment                        # FACT-EXP-001 (default)
-     *   java FactorizationExperiment 1000000000000000000    # FACT-EXP-002 (1e18)
+     *   java FactorizationExperiment                                # FACT-EXP-001 (default)
+     *   java FactorizationExperiment 1000000000000000000            # FACT-EXP-002 (1e18)
+     *   java FactorizationExperiment 1000000000000000091 100        # FACT-EXP-003 (100 trials)
      */
     public static void main(String[] args) {
         System.out.println("Emergent Doom Engine - Factorization Experiment");
@@ -77,6 +79,7 @@ public class FactorizationExperiment {
         List<BigInteger> targets;
         int arraySize = DEFAULT_ARRAY_SIZE;
         long seed = DEFAULT_SEED;
+        int numTrials = 30; // Default increased from 5 to 30
 
         if (args.length == 0) {
             // Default mode: generate semiprime in 1e5 range (FACT-EXP-001 behavior)
@@ -97,6 +100,21 @@ public class FactorizationExperiment {
                 printUsage();
                 return;
             }
+        } else if (args.length == 2) {
+            // Target and trial count provided
+            try {
+                BigInteger target = new BigInteger(args[0]);
+                numTrials = Integer.parseInt(args[1]);
+                targets = Collections.singletonList(target);
+                System.out.println("Mode: CUSTOM TARGET WITH TRIALS");
+                System.out.printf("Target: %s%n", target);
+                System.out.printf("Target magnitude: ~1e%.0f%n", Math.log10(target.doubleValue()));
+                System.out.printf("Trials: %d%n", numTrials);
+            } catch (NumberFormatException e) {
+                System.err.println("Error: Invalid number format in arguments");
+                printUsage();
+                return;
+            }
         } else {
             System.err.println("Error: Invalid number of arguments");
             printUsage();
@@ -108,7 +126,7 @@ public class FactorizationExperiment {
             return;
         }
 
-        final int numTrials = 30; // Increased from 5 to 30 for better statistical significance
+        final int trialsToRun = numTrials; // Make effectively final for lambda
 
         // Shared experiment configuration (sequential execution to avoid nested threading)
         ExperimentConfig config = new ExperimentConfig(
@@ -120,7 +138,7 @@ public class FactorizationExperiment {
 
         // Option B: run tasks in a thread pool sized to available processors
         final int threads = Math.max(1, Runtime.getRuntime().availableProcessors());
-        System.out.printf("Running %d trials per target using %d threads...%n", numTrials, threads);
+        System.out.printf("Running %d trials per target using %d threads...%n", trialsToRun, threads);
         ExecutorService pool = Executors.newFixedThreadPool(threads);
 
         List<Callable<TargetOutcome>> tasks = new ArrayList<>();
@@ -133,7 +151,7 @@ public class FactorizationExperiment {
                 runner.addMetric("Monotonicity", new MonotonicityError<>());
                 runner.addMetric("Sortedness", new SortednessValue<>());
 
-                ExperimentResults<RemainderCell> results = runner.runExperiment(config, numTrials);
+                ExperimentResults<RemainderCell> results = runner.runExperiment(config, trialsToRun);
                 return new TargetOutcome(target, results);
             });
         }
@@ -394,10 +412,12 @@ public class FactorizationExperiment {
         System.err.println("\nUsage:");
         System.err.println("  java FactorizationExperiment              # Default: test ~1e5 semiprime");
         System.err.println("  java FactorizationExperiment <target>     # Test specific target number");
+        System.err.println("  java FactorizationExperiment <target> <trials>  # Custom target with trial count");
         System.err.println();
         System.err.println("Examples:");
         System.err.println("  java FactorizationExperiment                        # FACT-EXP-001 (default)");
         System.err.println("  java FactorizationExperiment 1000000000000000000    # FACT-EXP-002 (1e18)");
         System.err.println("  java FactorizationExperiment 100039                 # Test specific number");
+        System.err.println("  java FactorizationExperiment 1000000000000000091 100  # Custom target and trials");
     }
 }
