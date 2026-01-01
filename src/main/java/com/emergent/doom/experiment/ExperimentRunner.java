@@ -125,14 +125,15 @@ public class ExperimentRunner<T extends Cell<T>> {
                 ? probe.getSnapshots()
                 : null;
 
-        // Create and return result
+        // Create and return result with final cell array
         return new TrialResult<>(
                 trialNumber,
                 finalStep,
                 converged,
                 trajectory,
                 metricValues,
-                endTime - startTime
+                endTime - startTime,
+                cells  // Store final cell array for domain-specific analysis
         );
     }
     

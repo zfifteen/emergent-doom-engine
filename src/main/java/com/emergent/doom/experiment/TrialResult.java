@@ -23,7 +23,8 @@ public class TrialResult<T extends Cell<T>> {
     private final List<StepSnapshot<T>> trajectory;
     private final Map<String, Double> metrics;
     private final long executionTimeNanos;
-    
+    private final T[] finalCells;  // Store final cell array for domain-specific analysis
+
     /**
      * IMPLEMENTED: Create a trial result record
      */
@@ -34,12 +35,29 @@ public class TrialResult<T extends Cell<T>> {
             List<StepSnapshot<T>> trajectory,
             Map<String, Double> metrics,
             long executionTimeNanos) {
+        this(trialNumber, finalStep, converged, trajectory, metrics, executionTimeNanos, null);
+    }
+
+    /**
+     * Create a trial result record with final cell array.
+     *
+     * @param finalCells the final state of the cell array (optional, can be null)
+     */
+    public TrialResult(
+            int trialNumber,
+            int finalStep,
+            boolean converged,
+            List<StepSnapshot<T>> trajectory,
+            Map<String, Double> metrics,
+            long executionTimeNanos,
+            T[] finalCells) {
         this.trialNumber = trialNumber;
         this.finalStep = finalStep;
         this.converged = converged;
         this.trajectory = trajectory != null ? new ArrayList<>(trajectory) : null;
         this.metrics = new HashMap<>(metrics);
         this.executionTimeNanos = executionTimeNanos;
+        this.finalCells = finalCells;  // Store reference (not a copy for memory efficiency)
     }
     
     // Getters
@@ -76,5 +94,14 @@ public class TrialResult<T extends Cell<T>> {
      */
     public Double getMetric(String metricName) {
         return metrics.get(metricName);
+    }
+
+    /**
+     * Get the final cell array state.
+     *
+     * @return the final cell array, or null if not stored
+     */
+    public T[] getFinalCells() {
+        return finalCells;
     }
 }

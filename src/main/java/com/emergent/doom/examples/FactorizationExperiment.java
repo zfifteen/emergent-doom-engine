@@ -168,7 +168,7 @@ public class FactorizationExperiment {
     }
 
     /**
-     * IMPLEMENTED: Display factors found - CORRECTED to actually verify against target
+     * Display factors found in the results - FIXED to use final cell array.
      */
     private static void displayFactors(ExperimentResults<RemainderCell> results) {
         if (results.getTrials().isEmpty()) {
@@ -180,44 +180,55 @@ public class FactorizationExperiment {
         List<TrialResult<RemainderCell>> trials = results.getTrials();
         TrialResult<RemainderCell> lastTrial = trials.get(trials.size() - 1);
         
-        // Get final snapshot
-        if (lastTrial.getTrajectory() != null && !lastTrial.getTrajectory().isEmpty()) {
-            List<StepSnapshot<RemainderCell>> trajectory = lastTrial.getTrajectory();
-            StepSnapshot<RemainderCell> finalSnapshot = trajectory.get(trajectory.size() - 1);
-            List<Integer> finalValues = finalSnapshot.getValues();
-            
-            System.out.println("\nDEBUG: Final snapshot analysis:");
-            System.out.println("-".repeat(60));
+        // Get final cell array
+        RemainderCell[] finalCells = lastTrial.getFinalCells();
 
-            // Show first 10 positions in sorted order
-            System.out.println("First 10 positions (sorted by remainder):");
-            for (int idx = 0; idx < Math.min(10, finalValues.size()); idx++) {
-                Integer remainder = finalValues.get(idx);
-                System.out.printf("  Index %d: remainder = %s%n", idx, remainder);
+        if (finalCells == null) {
+            System.out.println("Final cell array not available.");
+            return;
+        }
+
+        System.out.println("\nFactors found (remainder = 0), excluding trivial position 1:");
+        System.out.println("-".repeat(60));
+
+        // Collect factors by examining each cell's position and remainder
+        List<Integer> factorPositions = new ArrayList<>();
+        List<String> factorDetails = new ArrayList<>();
+
+        for (int idx = 0; idx < finalCells.length; idx++) {
+            RemainderCell cell = finalCells[idx];
+            int position = cell.getPosition();  // Original candidate factor
+            BigInteger remainder = cell.getRemainder();
+
+            // Skip trivial factor 1
+            if (position == 1) continue;
+
+            // Check if this is a factor (remainder = 0)
+            if (remainder.equals(BigInteger.ZERO)) {
+                factorPositions.add(position);
+                BigInteger cofactor = cell.getTarget().divide(BigInteger.valueOf(position));
+                factorDetails.add(String.format("  Position %d (array index %d): %d × %s = %s",
+                    position, idx, position, cofactor, cell.getTarget()));
             }
+        }
 
-            System.out.println("\nFactors found (remainder = 0) in sorted array:");
-            System.out.println("-".repeat(40));
-
-            // WRONG INTERPRETATION: This finds which INDEX has remainder=0,
-            // not which POSITION (candidate factor) has remainder=0!
-            // After sorting, we've lost the position information.
-            List<Integer> zeroIndices = new ArrayList<>();
-            for (int idx = 0; idx < finalValues.size(); idx++) {
-                Integer remainder = finalValues.get(idx);
-                if (remainder != null && remainder == 0) {
-                    zeroIndices.add(idx);
-                }
+        if (factorPositions.isEmpty()) {
+            System.out.println("  No non-trivial factors found in final configuration.");
+        } else {
+            System.out.printf("  Found %d non-trivial factor(s): %s%n",
+                factorPositions.size(), factorPositions);
+            System.out.println("\n  Factor details:");
+            for (String detail : factorDetails) {
+                System.out.println(detail);
             }
+        }
 
-            if (!zeroIndices.isEmpty()) {
-                System.out.printf("  Found remainder=0 at %d array indices: %s%n",
-                    zeroIndices.size(), zeroIndices);
-                System.out.println("  WARNING: These are array indices AFTER sorting, NOT the candidate factors!");
-                System.out.println("  The actual factors need to be determined differently.");
-            } else {
-                System.out.println("  No remainder=0 found in sorted array.");
-            }
+        // Show first few cells for debugging
+        System.out.println("\n  First 10 cells in sorted array:");
+        for (int i = 0; i < Math.min(10, finalCells.length); i++) {
+            RemainderCell cell = finalCells[i];
+            System.out.printf("    Index %d: position=%d, remainder=%s%n",
+                i, cell.getPosition(), cell.getRemainder());
         }
     }
 
@@ -261,20 +272,20 @@ public class FactorizationExperiment {
     }
 
     /**
-     * Check if any trial in the results contains a remainder==0 in its final snapshot
+     * Check if any trial contains a non-trivial factor (remainder=0, position > 1).
      */
     private static boolean resultsContainFactor(ExperimentResults<RemainderCell> results) {
         if (results == null || results.getTrials().isEmpty()) return false;
+
         for (TrialResult<RemainderCell> trial : results.getTrials()) {
-            if (trial.getTrajectory() == null || trial.getTrajectory().isEmpty()) continue;
-            List<StepSnapshot<RemainderCell>> traj = trial.getTrajectory();
-            StepSnapshot<RemainderCell> finalSnap = traj.get(traj.size() - 1);
-            List<Integer> vals = finalSnap.getValues();
-            for (int i = 0; i < vals.size(); i++) {
-                int position = i + 1; // positions are 1-based
-                if (position == 1) continue; // ignore trivial divisor 1
-                Integer v = vals.get(i);
-                if (v != null && v == 0) return true;
+            RemainderCell[] finalCells = trial.getFinalCells();
+            if (finalCells == null) continue;
+
+            // Check each cell for remainder=0 and position > 1
+            for (RemainderCell cell : finalCells) {
+                if (cell.getPosition() > 1 && cell.getRemainder().equals(BigInteger.ZERO)) {
+                    return true;  // Found a non-trivial factor
+                }
             }
         }
         return false;
