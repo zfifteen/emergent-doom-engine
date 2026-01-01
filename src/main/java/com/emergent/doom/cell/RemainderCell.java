@@ -23,20 +23,33 @@ public class RemainderCell extends BubbleCell<RemainderCell> {
     
     /**
      * IMPLEMENTED: Construct a RemainderCell with target number and position
+     *
+     * <p>Note: The value passed to BubbleCell is derived from the remainder for
+     * compatibility with getValue() calls in execution engines (e.g., isLeftSorted).</p>
      */
     public RemainderCell(BigInteger target, int position) {
-        super(0);  // Dummy value; compareTo overridden to use remainder
+        // Pass remainder as value for getValue() compatibility with execution engines
+        // Validation and calculation done in static helper to ensure super() is called first
+        super(computeRemainderValue(target, position));
+
+        this.target = target;
+        this.position = position;
+        this.remainder = target.mod(BigInteger.valueOf(position));
+    }
+
+    /**
+     * Helper method to compute remainder value with validation.
+     * Called before super() to ensure proper initialization order.
+     */
+    private static int computeRemainderValue(BigInteger target, int position) {
         if (target == null || target.compareTo(BigInteger.ZERO) <= 0) {
             throw new IllegalArgumentException("Target must be positive");
         }
         if (position < 1) {
             throw new IllegalArgumentException("Position must be >= 1");
         }
-
-        this.target = target;
-        this.position = position;
-        // Calculate remainder = target mod position
-        this.remainder = target.mod(BigInteger.valueOf(position));
+        // Using intValue() is safe since remainders are bounded by position (< Integer.MAX_VALUE for typical use)
+        return target.mod(BigInteger.valueOf(position)).intValue();
     }
     
     /**

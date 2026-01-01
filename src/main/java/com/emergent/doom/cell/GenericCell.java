@@ -19,8 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * *decreasing* order while the other sorted in *increasing* order."</p>
  *
  * <p>For SELECTION algotype cells, GenericCell maintains an idealPos field that tracks
- * the cell's target position, matching the behavior of SelectionCell. This field starts
- * at 0 and increments when swap attempts are denied, per Levin p.9.</p>
+ * the cell's target position, matching the behavior of SelectionCell. For ascending sort,
+ * this field starts at 0 (leftBoundary) and increments when swap attempts are denied.
+ * For descending sort, it should be initialized to rightBoundary via
+ * {@link HasIdealPosition#updateForBoundary(int, int, boolean)}, per Levin p.9.</p>
  *
  * <p>Usage:
  * <pre>{@code
@@ -188,12 +190,16 @@ public class GenericCell implements Cell<GenericCell>, HasIdealPosition, HasSort
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         GenericCell that = (GenericCell) obj;
-        return value == that.value && algotype == that.algotype;
+        return value == that.value
+            && algotype == that.algotype
+            && sortDirection == that.sortDirection;
     }
 
     @Override
     public int hashCode() {
-        return 31 * value + algotype.hashCode();
+        int result = 31 * value + algotype.hashCode();
+        result = 31 * result + sortDirection.hashCode();
+        return result;
     }
 
     @Override
