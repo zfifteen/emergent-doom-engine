@@ -3,7 +3,9 @@ package com.emergent.doom.execution;
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.HasIdealPosition;
+import com.emergent.doom.cell.HasSortDirection;
 import com.emergent.doom.cell.SelectionCell;
+import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.ConcurrentSwapCollector;
 import com.emergent.doom.swap.SwapEngine;
@@ -242,6 +244,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     private Optional<SwapProposal> evaluateCell(int cellIndex, T[] cellArray) {
         T cell = cellArray[cellIndex];
         Algotype algotype = cell.getAlgotype();
+        SortDirection direction = getCellDirection(cell);
 
         List<Integer> neighbors;
 
@@ -263,7 +266,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             // Record comparison (matches Python should_move() -> record_compare_and_swap())
             probe.recordCompareAndSwap();
 
-            if (shouldSwapForAlgotype(cellIndex, neighborIndex, algotype, cellArray)) {
+            if (shouldSwapWithDirection(cellIndex, neighborIndex, algotype, direction, cellArray)) {
                 // Create proposal with initiator's position as priority (leftmost first)
                 return Optional.of(new SwapProposal(cellIndex, neighborIndex));
             }
@@ -325,29 +328,77 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     }
 
     /**
-     * Determine if a swap should occur based on Levin algotype rules.
+     * Helper: Get the sort direction of a cell, if it implements HasSortDirection.
+     * 
+     * <p>PURPOSE: Provides safe access to cell sort direction for cross-purpose
+     * sorting support. Returns ASCENDING as default for cells without direction.</p>
+     * 
+     * @param cell the cell to query
+     * @return the cell's sort direction, or ASCENDING if not direction-aware
      */
-    private boolean shouldSwapForAlgotype(int i, int j, Algotype algotype, T[] cellArray) {
+    private SortDirection getCellDirection(T cell) {
+        // Check if cell implements HasSortDirection interface
+        if (cell instanceof HasSortDirection) {
+            // Cell supports direction - return its preference
+            return ((HasSortDirection) cell).getSortDirection();
+        }
+        // Cell doesn't support direction - default to ascending
+        return SortDirection.ASCENDING;
+    }
+
+    /**
+     * Determine if a swap should occur using direction-aware comparison.
+     * 
+     * <p>PURPOSE: Enables cross-purpose sorting by respecting each cell's individual
+     * sort direction preference during swap evaluation.</p>
+     * 
+     * @param i index of cell initiating swap
+     * @param j index of target neighbor
+     * @param algotype algorithm policy
+     * @param direction sort direction preference
+     * @param cellArray the cell array
+     * @return true if swap should occur
+     */
+    private boolean shouldSwapWithDirection(int i, int j, Algotype algotype, 
+                                           SortDirection direction, T[] cellArray) {
+        // Get comparison result: negative if cells[i] < cells[j], positive if cells[i] > cells[j]
+        int cmp = cellArray[i].compareTo(cellArray[j]);
+        boolean isAscending = direction.isAscending();
+        
         switch (algotype) {
             case BUBBLE:
-                if (j == i - 1 && cellArray[i].compareTo(cellArray[j]) < 0) {
-                    return true;
-                } else if (j == i + 1 && cellArray[i].compareTo(cellArray[j]) > 0) {
-                    return true;
+                // BUBBLE: Move based on value comparison and direction
+                // For ascending: move left if smaller, right if larger
+                // For descending: move left if larger, right if smaller
+                
+                if (j == i - 1) { // Left neighbor
+                    // Ascending: swap if i < j (cmp < 0), Descending: swap if i > j (cmp > 0)
+                    return isAscending ? (cmp < 0) : (cmp > 0);
+                } else if (j == i + 1) { // Right neighbor
+                    // Ascending: swap if i > j (cmp > 0), Descending: swap if i < j (cmp < 0)
+                    return isAscending ? (cmp > 0) : (cmp < 0);
                 }
                 return false;
-
+                
             case INSERTION:
-                if (j == i - 1 && isLeftSorted(i, cellArray) && cellArray[i].compareTo(cellArray[j]) < 0) {
-                    return true;
+                // INSERTION: Only move left, and only if left side is sorted
+                if (j == i - 1 && isLeftSorted(i, !isAscending, cellArray)) {
+                    // Ascending: swap if i < j (cmp < 0), Descending: swap if i > j (cmp > 0)
+                    return isAscending ? (cmp < 0) : (cmp > 0);
                 }
                 return false;
-
+                
             case SELECTION:
+                // Guard: Skip if targeting self
                 if (i == j) {
                     return false;
                 }
-                if (cellArray[i].compareTo(cellArray[j]) < 0) {
+                
+                // SELECTION: Swap with ideal target if in correct order
+                // Ascending: swap if i < j (cmp < 0), Descending: swap if i > j (cmp > 0)
+                boolean shouldSwap = isAscending ? (cmp < 0) : (cmp > 0);
+                
+                if (shouldSwap) {
                     return true;
                 } else {
                     // Swap denied: increment ideal position if not at end
@@ -357,7 +408,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
                     }
                     return false;
                 }
-
+                
             default:
                 return false;
         }
@@ -376,10 +427,11 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
      * </pre>
      *
      * @param i the position to check (checks cells 0 to i-1)
+     * @param reverseDirection true for descending sort, false for ascending
      * @param cellArray the cell array
      * @return true if cells 0 to i-1 are sorted in the current direction
      */
-    private boolean isLeftSorted(int i, T[] cellArray) {
+    private boolean isLeftSorted(int i, boolean reverseDirection, T[] cellArray) {
         // Start with sentinel: MIN for ascending (any value >= MIN), MAX for descending (any value <= MAX)
         int prevValue = reverseDirection ? Integer.MAX_VALUE : Integer.MIN_VALUE;
 
