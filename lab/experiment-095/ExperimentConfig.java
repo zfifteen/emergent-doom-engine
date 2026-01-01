@@ -176,30 +176,31 @@ public class ExperimentConfig {
      * allowing for validation and immutability guarantees.
      */
     private ExperimentConfig(Builder builder) {
-        // Implementation pending - Phase Three
-        this.changeSeqDatasetPath = null;
-        this.nanoporeDatasetPath = null;
-        this.syntheticDatasetPath = null;
-        this.waveletType = null;
-        this.numScales = 0;
-        this.windowSize = 0;
-        this.samplingRate = 0;
-        this.sorterIterations = 0;
-        this.distanceMetric = null;
-        this.tierThresholds = null;
-        this.hiddenLayers = null;
-        this.dropoutRate = 0.0;
-        this.learningRate = 0.0;
-        this.earlyStoppingPatience = 0;
-        this.trainRatio = 0.0;
-        this.validationRatio = 0.0;
-        this.testRatio = 0.0;
-        this.bootstrapResamples = 0;
-        this.permutationTests = 0;
-        this.significanceThreshold = 0.0;
-        this.outputDirectory = null;
-        this.saveIntermediateResults = false;
-        this.randomSeed = 0L;
+        // PHASE THREE IMPLEMENTATION - Constructor
+        // Copy all values from builder to create immutable config
+        this.changeSeqDatasetPath = builder.changeSeqDatasetPath;
+        this.nanoporeDatasetPath = builder.nanoporeDatasetPath;
+        this.syntheticDatasetPath = builder.syntheticDatasetPath;
+        this.waveletType = builder.waveletType;
+        this.numScales = builder.numScales;
+        this.windowSize = builder.windowSize;
+        this.samplingRate = builder.samplingRate;
+        this.sorterIterations = builder.sorterIterations;
+        this.distanceMetric = builder.distanceMetric;
+        this.tierThresholds = builder.tierThresholds.clone();  // Defensive copy
+        this.hiddenLayers = builder.hiddenLayers.clone();      // Defensive copy
+        this.dropoutRate = builder.dropoutRate;
+        this.learningRate = builder.learningRate;
+        this.earlyStoppingPatience = builder.earlyStoppingPatience;
+        this.trainRatio = builder.trainRatio;
+        this.validationRatio = builder.validationRatio;
+        this.testRatio = builder.testRatio;
+        this.bootstrapResamples = builder.bootstrapResamples;
+        this.permutationTests = builder.permutationTests;
+        this.significanceThreshold = builder.significanceThreshold;
+        this.outputDirectory = builder.outputDirectory;
+        this.saveIntermediateResults = builder.saveIntermediateResults;
+        this.randomSeed = builder.randomSeed;
     }
     
     /**
@@ -213,7 +214,55 @@ public class ExperimentConfig {
      * new Builder() → set parameters → validate() → build() → ExperimentConfig
      */
     public static class Builder {
-        // Implementation pending - Phase Three
+        // PHASE THREE IMPLEMENTATION - Builder
+        // All fields with defaults from protocol
+        private String changeSeqDatasetPath = "";
+        private String nanoporeDatasetPath = "";
+        private String syntheticDatasetPath = "";
+        private String waveletType = "db4";
+        private int numScales = 8;
+        private int windowSize = 250;
+        private int samplingRate = 4000;
+        private int sorterIterations = 2000;
+        private String distanceMetric = "euclidean";
+        private double[] tierThresholds = {0.05, 0.25, 0.70};
+        private int[] hiddenLayers = {16, 8};
+        private double dropoutRate = 0.3;
+        private double learningRate = 0.001;
+        private int earlyStoppingPatience = 10;
+        private double trainRatio = 0.70;
+        private double validationRatio = 0.15;
+        private double testRatio = 0.15;
+        private int bootstrapResamples = 10000;
+        private int permutationTests = 5000;
+        private double significanceThreshold = 0.0125;
+        private String outputDirectory = "results/";
+        private boolean saveIntermediateResults = true;
+        private long randomSeed = 42L;
+        
+        public Builder setChangeSeqDatasetPath(String path) { this.changeSeqDatasetPath = path; return this; }
+        public Builder setNanoporeDatasetPath(String path) { this.nanoporeDatasetPath = path; return this; }
+        public Builder setSyntheticDatasetPath(String path) { this.syntheticDatasetPath = path; return this; }
+        public Builder setWaveletType(String type) { this.waveletType = type; return this; }
+        public Builder setNumScales(int scales) { this.numScales = scales; return this; }
+        public Builder setWindowSize(int size) { this.windowSize = size; return this; }
+        public Builder setSamplingRate(int rate) { this.samplingRate = rate; return this; }
+        public Builder setSorterIterations(int iterations) { this.sorterIterations = iterations; return this; }
+        public Builder setDistanceMetric(String metric) { this.distanceMetric = metric; return this; }
+        public Builder setTierThresholds(double[] thresholds) { this.tierThresholds = thresholds; return this; }
+        public Builder setHiddenLayers(int[] layers) { this.hiddenLayers = layers; return this; }
+        public Builder setDropoutRate(double rate) { this.dropoutRate = rate; return this; }
+        public Builder setLearningRate(double rate) { this.learningRate = rate; return this; }
+        public Builder setEarlyStoppingPatience(int patience) { this.earlyStoppingPatience = patience; return this; }
+        public Builder setTrainRatio(double ratio) { this.trainRatio = ratio; return this; }
+        public Builder setValidationRatio(double ratio) { this.validationRatio = ratio; return this; }
+        public Builder setTestRatio(double ratio) { this.testRatio = ratio; return this; }
+        public Builder setBootstrapResamples(int resamples) { this.bootstrapResamples = resamples; return this; }
+        public Builder setPermutationTests(int tests) { this.permutationTests = tests; return this; }
+        public Builder setSignificanceThreshold(double threshold) { this.significanceThreshold = threshold; return this; }
+        public Builder setOutputDirectory(String dir) { this.outputDirectory = dir; return this; }
+        public Builder setSaveIntermediateResults(boolean save) { this.saveIntermediateResults = save; return this; }
+        public Builder setRandomSeed(long seed) { this.randomSeed = seed; return this; }
         
         /**
          * Build the final ExperimentConfig instance.
@@ -230,8 +279,24 @@ public class ExperimentConfig {
          * @throws IllegalStateException if required parameters are missing or invalid
          */
         public ExperimentConfig build() {
-            // Implementation pending - Phase Three
-            return null;
+            // PHASE THREE IMPLEMENTATION - build()
+            // Validate that ratios sum to 1.0
+            if (Math.abs(trainRatio + validationRatio + testRatio - 1.0) > 0.001) {
+                throw new IllegalStateException("Train/validation/test ratios must sum to 1.0");
+            }
+            
+            // Validate tier thresholds sum to 1.0
+            double tierSum = 0.0;
+            for (double threshold : tierThresholds) {
+                tierSum += threshold;
+            }
+            if (Math.abs(tierSum - 1.0) > 0.001) {
+                throw new IllegalStateException("Tier thresholds must sum to 1.0");
+            }
+            
+            // Create and return immutable config
+            ExperimentConfig config = new ExperimentConfig(this);
+            return config;
         }
     }
     
