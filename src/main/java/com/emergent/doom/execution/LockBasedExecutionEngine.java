@@ -11,7 +11,7 @@ import com.emergent.doom.topology.InsertionTopology;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -50,7 +50,6 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
     private final SwapEngine<T> swapEngine;
     private final Probe<T> probe;
     private final ConvergenceDetector<T> convergenceDetector;
-    private final Random random;
 
     // Topology helpers for evaluation
     private final BubbleTopology<T> bubbleTopology;
@@ -61,6 +60,8 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
     private volatile boolean reverseDirection = false;  // Track sort direction for isLeftSorted
     private final AtomicInteger currentStep = new AtomicInteger(0);
     private final AtomicInteger totalSwaps = new AtomicInteger(0);
+
+    // Note: ThreadLocalRandom is used in cell workers instead of shared Random for thread safety
 
     // Snapshot interval for recording (every N swaps)
     private static final int SNAPSHOT_INTERVAL = 1;
@@ -114,7 +115,6 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         this.convergenceDetector = convergenceDetector;
         this.convergencePollIntervalMs = pollIntervalMs;
         this.requiredStablePolls = requiredStablePolls;
-        this.random = new Random();
 
         // Single global lock (matches Python cell_research)
         this.globalLock = new ReentrantLock();
@@ -262,19 +262,23 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
             List<Integer> neighbors;
             if (algotype == Algotype.BUBBLE) {
                 // Random 50/50 direction choice - matches cell_research Python
+                // Use ThreadLocalRandom for thread-safe random number generation
                 List<Integer> allNeighbors = getNeighborsForAlgotype(cellIndex, algotype);
                 if (allNeighbors.isEmpty()) {
                     return;
                 }
-                int randomIndex = random.nextInt(allNeighbors.size());
+                int randomIndex = ThreadLocalRandom.current().nextInt(allNeighbors.size());
                 neighbors = Arrays.asList(allNeighbors.get(randomIndex));
             } else {
                 neighbors = getNeighborsForAlgotype(cellIndex, algotype);
             }
 
             for (int neighborIndex : neighbors) {
+                // Record comparison for every evaluation attempt
+                // (matches Python should_move() -> record_compare_and_swap())
+                probe.recordCompareAndSwap();
+
                 if (shouldSwapForAlgotype(cellIndex, neighborIndex, algotype)) {
-                    probe.recordCompareAndSwap(); // StatusProbe: comparison led to swap decision
                     if (swapEngine.attemptSwap(cells, cellIndex, neighborIndex)) {
                         int swaps = totalSwaps.incrementAndGet();
 

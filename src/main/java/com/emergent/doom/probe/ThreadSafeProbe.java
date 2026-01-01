@@ -89,12 +89,13 @@ public class ThreadSafeProbe<T extends Cell<T>> extends Probe<T> {
     }
 
     /**
-     * Clear all recorded snapshots.
+     * Clear all recorded snapshots and reset counters.
      * Thread-safe.
      */
     @Override
     public void clear() {
         concurrentSnapshots.clear();
+        resetCounters();  // Reset parent's compareAndSwapCount and frozenSwapAttempts
     }
 
     /**
