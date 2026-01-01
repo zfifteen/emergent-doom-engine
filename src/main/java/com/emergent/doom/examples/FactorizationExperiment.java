@@ -59,25 +59,56 @@ public class FactorizationExperiment {
     }
 
     /**
-     * UPDATED: Batch runner for 100 seeded semiprimes, parallelized over targets.
+     * Main experiment runner with command-line argument support.
+     *
+     * Usage:
+     *   java FactorizationExperiment              # Default: test ~1e5 semiprime
+     *   java FactorizationExperiment <target>     # Test specific target number
+     *
+     * Examples:
+     *   java FactorizationExperiment                        # FACT-EXP-001 (default)
+     *   java FactorizationExperiment 1000000000000000000    # FACT-EXP-002 (1e18)
      */
     public static void main(String[] args) {
-        System.out.println("Emergent Doom Engine - Factorization Experiment (batch semiprimes)");
+        System.out.println("Emergent Doom Engine - Factorization Experiment");
         System.out.println("=".repeat(60));
 
-        // CLI / configuration (simple, with defaults)
-        final int semiprimeCount = DEFAULT_SEMIPRIME_COUNT;
-        final int min = DEFAULT_MIN;
-        final int max = DEFAULT_MAX;
-        final long seed = DEFAULT_SEED;
-        final int arraySize = DEFAULT_ARRAY_SIZE;
-        final int numTrials = 5; // per-target trials
+        // Parse command-line arguments
+        List<BigInteger> targets;
+        int arraySize = DEFAULT_ARRAY_SIZE;
+        long seed = DEFAULT_SEED;
 
-        System.out.printf("Generating %d semiprimes in [%d, %d] with seed=%d...%n",
-                semiprimeCount, min, max, seed);
+        if (args.length == 0) {
+            // Default mode: generate semiprime in 1e5 range (FACT-EXP-001 behavior)
+            System.out.println("Mode: DEFAULT (generating semiprime near 1e5)");
+            targets = generateSemiPrimes(DEFAULT_SEMIPRIME_COUNT, DEFAULT_MIN, DEFAULT_MAX, seed, arraySize);
+            System.out.printf("Generated %d targets in [%d, %d] with seed=%d%n",
+                targets.size(), DEFAULT_MIN, DEFAULT_MAX, seed);
+        } else if (args.length == 1) {
+            // Single target number provided (for EXP-002 and beyond)
+            try {
+                BigInteger target = new BigInteger(args[0]);
+                targets = Collections.singletonList(target);
+                System.out.println("Mode: CUSTOM TARGET");
+                System.out.printf("Target: %s%n", target);
+                System.out.printf("Target magnitude: ~1e%.0f%n", Math.log10(target.doubleValue()));
+            } catch (NumberFormatException e) {
+                System.err.println("Error: Invalid number format: " + args[0]);
+                printUsage();
+                return;
+            }
+        } else {
+            System.err.println("Error: Invalid number of arguments");
+            printUsage();
+            return;
+        }
 
-        List<BigInteger> targets = generateSemiPrimes(semiprimeCount, min, max, seed, arraySize);
-        System.out.printf("Generated %d targets.%n", targets.size());
+        if (targets.isEmpty()) {
+            System.err.println("Error: No targets generated");
+            return;
+        }
+
+        final int numTrials = 30; // Increased from 5 to 30 for better statistical significance
 
         // Shared experiment configuration (sequential execution to avoid nested threading)
         ExperimentConfig config = new ExperimentConfig(
@@ -89,7 +120,7 @@ public class FactorizationExperiment {
 
         // Option B: run tasks in a thread pool sized to available processors
         final int threads = Math.max(1, Runtime.getRuntime().availableProcessors());
-        System.out.printf("Running experiments in parallel using %d threads (one task per target)...%n", threads);
+        System.out.printf("Running %d trials per target using %d threads...%n", numTrials, threads);
         ExecutorService pool = Executors.newFixedThreadPool(threads);
 
         List<Callable<TargetOutcome>> tasks = new ArrayList<>();
@@ -354,5 +385,19 @@ public class FactorizationExperiment {
         }
 
         return semiprimes;
+    }
+
+    /**
+     * Print usage information for command-line arguments.
+     */
+    private static void printUsage() {
+        System.err.println("\nUsage:");
+        System.err.println("  java FactorizationExperiment              # Default: test ~1e5 semiprime");
+        System.err.println("  java FactorizationExperiment <target>     # Test specific target number");
+        System.err.println();
+        System.err.println("Examples:");
+        System.err.println("  java FactorizationExperiment                        # FACT-EXP-001 (default)");
+        System.err.println("  java FactorizationExperiment 1000000000000000000    # FACT-EXP-002 (1e18)");
+        System.err.println("  java FactorizationExperiment 100039                 # Test specific number");
     }
 }

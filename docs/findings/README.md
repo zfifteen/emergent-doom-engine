@@ -51,6 +51,24 @@ Each experiment gets its own subfolder containing all related documentation and 
   - Shows correct factor reporting (position 71)
   - Demonstrates 100% convergence
 
+#### Factorization Experiment (FACT-EXP-002)
+**Folder:** `factorization-exp-002/`  
+**Date:** January 1, 2026  
+**Status:** ✅ SUCCESSFUL - Large Number Scaling
+
+**Documents:**
+- **[Main Report](./factorization-exp-002/README.md)** - Experiment overview and results
+  - Target: 1e18 (1,000,000,000,000,000,000 = 2^18 × 5^18)
+  - Key Result: 100% convergence, 28 factors discovered
+  - Performance: 98.45% sortedness, 0.57 monotonicity error, mean 1,279 steps
+  - Scalability: Only 10.6% increase in steps despite 10^13× larger target!
+  - New Feature: Command-line argument support added
+  - Trials: 30 (increased from 5 for better statistics)
+
+- **[Raw Output](./factorization-exp-002/exp002_run_output.txt)** - Console output from run
+  - Shows all 28 factors discovered
+  - Demonstrates 100% convergence across 30 trials
+
 ---
 
 ## Document Standards
@@ -85,4 +103,3 @@ Each experiment should have its own subfolder named with a descriptive identifie
 
 **Maintained by:** Emergent Doom Engine Research Team  
 **Last updated:** January 1, 2026
-
