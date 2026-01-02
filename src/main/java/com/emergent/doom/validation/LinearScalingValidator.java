@@ -49,8 +49,8 @@ public class LinearScalingValidator {
     /**
      * Main entry point for scaling validation experiments.
      * 
-     * <p><strong>Not yet implemented.</strong> This is the primary entry point
-     * that will orchestrate the entire experimental workflow.</p>
+     * <p><strong>Implementation (Phase 2):</strong> This method orchestrates the entire
+     * experimental workflow by coordinating target generation, trial execution, and reporting.</p>
      * 
      * <p><strong>Responsibilities:</strong>
      * <ul>
@@ -61,6 +61,22 @@ public class LinearScalingValidator {
      *   <li>Aggregate results and compute B metric</li>
      *   <li>Generate console report and CSV export</li>
      *   <li>Implement early termination if B > 0.5 detected</li>
+     * </ul>
+     * </p>
+     * 
+     * <p><strong>Why this satisfies the entry point role:</strong>
+     * The main method serves as the coordinator that triggers all other unimplemented
+     * sections. It defines the workflow: parse args → generate target → run trials →
+     * generate report → export results. Each step delegates to specialized methods
+     * that will be implemented in Phase 3.</p>
+     * 
+     * <p><strong>How it coordinates unimplemented sections:</strong>
+     * <ul>
+     *   <li>Calls parseArguments() to extract configuration (Phase 3)</li>
+     *   <li>Calls generateTarget() to create semiprimes (Phase 3)</li>
+     *   <li>Calls runTrialBatch() to execute experiments (Phase 3)</li>
+     *   <li>Calls generateReport() to analyze results (Phase 3)</li>
+     *   <li>Calls exportToCsv() to save data (Phase 3)</li>
      * </ul>
      * </p>
      * 
@@ -83,9 +99,131 @@ public class LinearScalingValidator {
      * @param args Command-line arguments specifying stage, options, output paths
      */
     public static void main(String[] args) {
-        // TODO: Phase 2 - implement main entry point
-        // This will be the first method implemented in Phase 2
-        throw new UnsupportedOperationException("Not yet implemented - Phase 2");
+        // Phase 2 Implementation: Main orchestration logic
+        
+        System.out.println("=".repeat(70));
+        System.out.println("LINEAR SCALING VALIDATION EXPERIMENT");
+        System.out.println("Testing O(n) hypothesis on progressively harder semiprimes");
+        System.out.println("=".repeat(70));
+        System.out.println();
+        
+        // Step 1: Parse command-line arguments (delegates to Phase 3 method)
+        ExperimentOptions options;
+        try {
+            options = parseArguments(args);
+        } catch (UnsupportedOperationException e) {
+            // parseArguments not yet implemented - use defaults for Phase 2
+            System.out.println("INFO: Using default configuration (parseArguments not yet implemented)");
+            options = new ExperimentOptions();
+            options.stage = ScalingStage.STAGE_1_E6;
+            options.numTrials = DEFAULT_TRIALS_PER_CONFIG;
+            options.outputPath = "scaling_validation_results.csv";
+            options.runAllStages = false;
+            options.customTarget = null;
+        }
+        
+        System.out.printf("Configuration:%n");
+        System.out.printf("  Stage: %s%n", options.stage);
+        System.out.printf("  Trials per array size: %d%n", options.numTrials);
+        System.out.printf("  Output path: %s%n", options.outputPath);
+        System.out.println();
+        
+        // Step 2: Determine which stages to run
+        ScalingStage[] stagesToRun;
+        if (options.runAllStages) {
+            stagesToRun = ScalingStage.values();
+        } else {
+            stagesToRun = new ScalingStage[]{options.stage};
+        }
+        
+        // Step 3: Execute each stage sequentially
+        for (ScalingStage stage : stagesToRun) {
+            System.out.println("=".repeat(70));
+            System.out.printf("RUNNING STAGE: %s%n", stage);
+            System.out.println("=".repeat(70));
+            System.out.println();
+            
+            // Step 3a: Generate or use custom target
+            BigInteger target;
+            if (options.customTarget != null) {
+                target = options.customTarget;
+                System.out.printf("Using custom target: %s%n", target);
+            } else {
+                try {
+                    target = generateTarget(stage);
+                    System.out.printf("Generated target: %s%n", target);
+                } catch (UnsupportedOperationException e) {
+                    System.out.println("ERROR: generateTarget not yet implemented (Phase 3)");
+                    System.out.println("Cannot proceed with experiment.");
+                    return;
+                }
+            }
+            
+            System.out.printf("Target magnitude: ~10^%.1f%n", Math.log10(target.doubleValue()));
+            System.out.println();
+            
+            // Step 3b: Run trial batch (delegates to Phase 3 method)
+            List<ScalingTrialResult> results;
+            try {
+                System.out.printf("Running %d trials across multiple array sizes...%n", 
+                                options.numTrials);
+                results = runTrialBatch(target, stage, options.numTrials);
+                System.out.printf("Completed %d trials%n", results.size());
+            } catch (UnsupportedOperationException e) {
+                System.out.println("ERROR: runTrialBatch not yet implemented (Phase 3)");
+                System.out.println("Skipping this stage.");
+                continue;
+            }
+            
+            System.out.println();
+            
+            // Step 3c: Generate analysis report (delegates to Phase 3 method)
+            ScalingReport report;
+            try {
+                report = generateReport(stage, results);
+            } catch (UnsupportedOperationException e) {
+                System.out.println("ERROR: generateReport not yet implemented (Phase 3)");
+                System.out.println("Cannot analyze results.");
+                continue;
+            }
+            
+            // Step 3d: Display report
+            try {
+                System.out.println(report.generateConsoleReport());
+            } catch (UnsupportedOperationException e) {
+                System.out.println("ERROR: report.generateConsoleReport() not yet implemented (Phase 3)");
+            }
+            
+            // Step 3e: Export to CSV (delegates to Phase 3 method)
+            try {
+                String outputPath = options.outputPath.replace(".csv", 
+                    "_" + stage.toString() + ".csv");
+                exportToCsv(results, outputPath);
+                System.out.printf("Results exported to: %s%n", outputPath);
+            } catch (UnsupportedOperationException e) {
+                System.out.println("WARNING: exportToCsv not yet implemented (Phase 3)");
+            }
+            
+            System.out.println();
+            
+            // Step 3f: Check if should proceed to next stage
+            if (options.runAllStages) {
+                try {
+                    if (!report.shouldProceedToNextStage()) {
+                        System.out.println("EARLY TERMINATION: Failure boundary detected (B > 0.5)");
+                        System.out.println("Not proceeding to harder stages.");
+                        break;
+                    }
+                } catch (UnsupportedOperationException e) {
+                    System.out.println("INFO: Early termination check not yet implemented");
+                    System.out.println("Proceeding to next stage...");
+                }
+            }
+        }
+        
+        System.out.println("=".repeat(70));
+        System.out.println("EXPERIMENT COMPLETE");
+        System.out.println("=".repeat(70));
     }
     
     /**
