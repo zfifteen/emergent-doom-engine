@@ -98,12 +98,17 @@ public class BasicProbe<T extends HasValue & HasGroup & HasStatus & HasAlgotype>
 
     @Override
     public Map<Algotype, Integer> getCellTypeDistribution(int step) {
-        Algotype[] types = getTypesSnapshot(step);
-        Map<Algotype, Integer> distribution = new HashMap<>();
-        for (Algotype type : types) {
-            distribution.put(type, distribution.getOrDefault(type, 0) + 1);
+        List<Object[]> types = getTypesSnapshot(step);
+        if (types != null) {
+            Map<Algotype, Integer> dist = new HashMap<>();
+            for (Object[] t : types) {
+                int label = (Integer) t[1];
+                Algotype type = Algotype.values()[label];
+                dist.merge(type, 1, Integer::sum);
+            }
+            return dist;
         }
-        return distribution;
+        return null;
     }
 
     @Override

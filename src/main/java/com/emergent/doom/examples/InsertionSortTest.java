@@ -11,6 +11,7 @@ import com.emergent.doom.group.CellStatus;
 import com.emergent.doom.cell.InsertionCell;
 import com.emergent.doom.execution.ExecutionEngine;
 import com.emergent.doom.probe.Probe;
+import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.execution.ConvergenceDetector;

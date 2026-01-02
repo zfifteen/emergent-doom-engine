@@ -15,6 +15,7 @@ import com.emergent.doom.execution.NoSwapConvergence;
 import com.emergent.doom.experiment.SortDirection;
 import com.emergent.doom.export.TrajectoryDataExporter;
 import com.emergent.doom.probe.Probe;
+import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.visualization.PlotData;
