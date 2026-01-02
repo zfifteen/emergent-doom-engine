@@ -27,8 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.logging.Logger;
 
 /**
  * Orchestrates experiment execution across multiple trials.
@@ -52,7 +51,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ExperimentRunner<T extends Cell<T>> {
     
-    private static final Logger logger = LoggerFactory.getLogger(ExperimentRunner.class);
+    private static final Logger logger = Logger.getLogger(ExperimentRunner.class.getName());
     
     private final Supplier<T[]> cellArrayFactory;
     private final Supplier<Topology<T>> topologyFactory;
@@ -173,7 +172,7 @@ public class ExperimentRunner<T extends Cell<T>> {
         ExperimentResults<T> results = new ExperimentResults<>(config);
         
         for (int i = 0; i < numTrials; i++) {
-            logger.info("Running trial {}/{}", i + 1, numTrials);
+            logger.info(String.format("Running trial %d/%d", i + 1, numTrials));
             TrialResult<T> trialResult = runTrial(config, i);
             results.addTrialResult(trialResult);
         }
@@ -281,9 +280,9 @@ public class ExperimentRunner<T extends Cell<T>> {
                     TrialResult<T> result = futures.get(i).get();
                     results.add(result);
                     
-                    // Progress logging every 10 trials using SLF4J
+                    // Progress logging every 10 trials
                     if ((i + 1) % 10 == 0) {
-                        logger.info("Completed {}/{} trials", i + 1, numRepetitions);
+                        logger.info(String.format("Completed %d/%d trials", i + 1, numRepetitions));
                     }
                 } catch (InterruptedException e) {
                     failureOccurred = true;
@@ -319,7 +318,7 @@ public class ExperimentRunner<T extends Cell<T>> {
                 if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
                     executor.shutdownNow();
                     if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                        logger.error("Executor did not terminate");
+                        logger.severe("Executor did not terminate");
                     }
                 }
             } catch (InterruptedException e) {
