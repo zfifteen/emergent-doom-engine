@@ -119,7 +119,7 @@ public class CrossPurposeSortingTest {
         // Execute sorting
         FrozenCellStatus frozenStatus = new FrozenCellStatus();
         SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
-        Probe<GenericCell> probe = new BasicProbe<>();
+        Probe<GenericCell> probe = new Probe<>();
         NoSwapConvergence<GenericCell> convergence = new NoSwapConvergence<>(3);
         
         ExecutionEngine<GenericCell> engine = new ExecutionEngine<>(

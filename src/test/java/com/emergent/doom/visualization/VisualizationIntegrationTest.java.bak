@@ -34,7 +34,7 @@ class VisualizationIntegrationTest {
     @Test
     void testCompleteVisualizationWorkflow(@TempDir Path tempDir) throws IOException {
         // Step 1: Create a probe with some test data
-        Probe<GenericCell> probe = new BasicProbe<>();
+        Probe<GenericCell> probe = new Probe<>();
         
         // Simulate a sorting process with improving sortedness
         GenericCell[] cells1 = {
