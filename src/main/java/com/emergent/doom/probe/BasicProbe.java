@@ -93,7 +93,7 @@ public class BasicProbe<T extends HasValue & HasGroup & HasStatus & HasAlgotype>
     @Override
     public List<Object[]> getTypesSnapshot(int step) {
         StepSnapshot<T> snapshot = getSnapshot(step);
-        return (snapshot != null) ? snapshot.getTypes() : null;
+        return snapshot != null ? snapshot.getTypes() : null;
     }
 
     @Override
