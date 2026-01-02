@@ -80,7 +80,6 @@ public class ThreadSafeProbe<T extends HasValue & HasGroup & HasStatus & HasAlgo
         return concurrentSnapshots.get(size - 1);
     }
 
-    @Override
     public int getSnapshotCount() {
         return concurrentSnapshots.size();
     }
