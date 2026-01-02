@@ -146,7 +146,7 @@ class VisualizationIntegrationTest {
     @Test
     void testSnapshotExport(@TempDir Path tempDir) throws IOException {
         // Create a probe with snapshots
-        Probe<GenericCell> probe = new Probe<>();
+        Probe<GenericCell> probe = new BasicProbe<>();
         GenericCell[] cells = {
             new GenericCell(3, Algotype.BUBBLE), 
             new GenericCell(1, Algotype.BUBBLE), 
