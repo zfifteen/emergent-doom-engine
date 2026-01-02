@@ -229,8 +229,9 @@ public class LinearScalingValidator {
     /**
      * Generate a semiprime target for the specified stage.
      * 
-     * <p><strong>Not yet implemented.</strong> Will implement the nextprime-based
-     * semiprime generation as specified in the experimental protocol.</p>
+     * <p><strong>Implementation:</strong> Implements the nextprime-based
+     * semiprime generation as specified in the experimental protocol. Creates
+     * balanced semiprimes (p ≈ q) which are the hardest to factor.</p>
      * 
      * <p><strong>Algorithm:</strong>
      * <ol>
@@ -242,12 +243,36 @@ public class LinearScalingValidator {
      * </ol>
      * </p>
      * 
+     * <p><strong>Integration:</strong> Called by main() to generate test targets.
+     * The resulting semiprime is used across all array sizes for that stage,
+     * ensuring consistent target difficulty when measuring B coefficient.</p>
+     * 
      * @param stage The experimental stage (determines prime magnitude)
      * @return A semiprime target of appropriate magnitude
      */
     public static BigInteger generateTarget(ScalingStage stage) {
-        // TODO: Phase 3 - implement target generation
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Get configuration from stage
+        int primeMagnitude = stage.getPrimeMagnitude();
+        int gap = stage.getPrimeGap();
+        
+        // Compute base value: 10^primeMagnitude
+        BigInteger base = BigInteger.TEN.pow(primeMagnitude);
+        
+        // Find first prime >= base
+        BigInteger p = nextPrime(base);
+        
+        // Find second prime >= p + gap
+        BigInteger q = nextPrime(p.add(BigInteger.valueOf(gap)));
+        
+        // Compute semiprime
+        BigInteger target = p.multiply(q);
+        
+        // Log for verification
+        System.out.printf("  Generated semiprime: %s × %s = %s%n", p, q, target);
+        System.out.printf("  Prime magnitudes: p ≈ 10^%.2f, q ≈ 10^%.2f%n",
+                         Math.log10(p.doubleValue()), Math.log10(q.doubleValue()));
+        
+        return target;
     }
     
     /**
@@ -281,8 +306,9 @@ public class LinearScalingValidator {
     /**
      * Compute the next prime greater than or equal to n.
      * 
-     * <p><strong>Not yet implemented.</strong> Will implement Miller-Rabin
-     * probabilistic primality test for efficient nextprime computation.</p>
+     * <p><strong>Implementation:</strong> Uses Miller-Rabin probabilistic primality
+     * test for efficient nextprime computation. This is the standard algorithm for
+     * generating cryptographic-grade primes.</p>
      * 
      * <p><strong>Algorithm:</strong>
      * <ol>
@@ -297,12 +323,35 @@ public class LinearScalingValidator {
      * <p><strong>Correctness:</strong> Miller-Rabin with 20 rounds has error
      * probability < 2^-40, acceptable for experimental purposes.</p>
      * 
+     * <p><strong>Integration:</strong> Used by generateTarget() to create
+     * balanced semiprimes p × q where both factors are prime.</p>
+     * 
      * @param n The starting value
      * @return The next prime >= n
      */
     public static BigInteger nextPrime(BigInteger n) {
-        // TODO: Phase 3 - implement nextprime using Miller-Rabin
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Handle edge cases
+        if (n.compareTo(BigInteger.TWO) < 0) {
+            return BigInteger.TWO;
+        }
+        
+        // Start with odd candidate
+        BigInteger candidate = n;
+        if (candidate.mod(BigInteger.TWO).equals(BigInteger.ZERO)) {
+            candidate = candidate.add(BigInteger.ONE);
+        }
+        
+        // Search for prime
+        while (true) {
+            // Use built-in probable prime test (Miller-Rabin with certainty parameter)
+            // certainty=20 gives error probability < 2^-40
+            if (candidate.isProbablePrime(20)) {
+                return candidate;
+            }
+            
+            // Try next odd number
+            candidate = candidate.add(BigInteger.TWO);
+        }
     }
     
     /**
