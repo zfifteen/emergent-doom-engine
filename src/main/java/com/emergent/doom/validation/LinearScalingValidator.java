@@ -278,18 +278,24 @@ public class LinearScalingValidator {
     /**
      * Run a batch of trials for given configuration.
      * 
-     * <p><strong>Not yet implemented.</strong> Will execute multiple trials
+     * <p><strong>Implementation:</strong> Executes multiple trials
      * (default 30) for each array size, collecting results for analysis.</p>
      * 
      * <p><strong>Execution strategy:</strong>
      * <ul>
      *   <li>For each array size in stage configuration</li>
-     *   <li>Run N trials using ExperimentRunner</li>
+     *   <li>Run N trials using executeSingleTrial()</li>
      *   <li>Collect steps, convergence, factor discovery for each trial</li>
-     *   <li>Compute remainder statistics from final cell arrays</li>
      *   <li>Return list of ScalingTrialResult for aggregation</li>
      * </ul>
      * </p>
+     * 
+     * <p><strong>Reasoning:</strong> Multiple trials per array size enable
+     * statistical analysis (mean, variance) and reliable B coefficient calculation.
+     * Array size variation is the independent variable for measuring B.</p>
+     * 
+     * <p><strong>Integration:</strong> Called by main() for each stage.
+     * Results passed to generateReport() for B calculation.</p>
      * 
      * @param target The semiprime to factor
      * @param stage The experimental stage (determines array sizes, max steps)
@@ -299,8 +305,43 @@ public class LinearScalingValidator {
     public static List<ScalingTrialResult> runTrialBatch(BigInteger target, 
                                                           ScalingStage stage,
                                                           int numTrials) {
-        // TODO: Phase 3 - implement batch execution
-        throw new UnsupportedOperationException("Not yet implemented");
+        List<ScalingTrialResult> results = new java.util.ArrayList<>();
+        
+        int[] arraySizes = stage.getArraySizes();
+        int maxSteps = stage.getMaxSteps();
+        
+        System.out.printf("Testing %d array sizes with %d trials each:%n", 
+                         arraySizes.length, numTrials);
+        
+        for (int arraySize : arraySizes) {
+            System.out.printf("  Array size %d: ", arraySize);
+            
+            for (int trial = 0; trial < numTrials; trial++) {
+                // Create configuration for this trial
+                ScalingTrialConfig config = new ScalingTrialConfig(
+                    target,
+                    arraySize,
+                    maxSteps,
+                    DEFAULT_REQUIRED_STABLE_STEPS,
+                    DEFAULT_RECORD_TRAJECTORY,
+                    stage
+                );
+                
+                // Execute trial
+                ScalingTrialResult result = executeSingleTrial(config);
+                results.add(result);
+                
+                // Progress indicator
+                if ((trial + 1) % 10 == 0) {
+                    System.out.printf("%d ", trial + 1);
+                    System.out.flush();
+                }
+            }
+            
+            System.out.println(" completed");
+        }
+        
+        return results;
     }
     
     /**
@@ -357,26 +398,97 @@ public class LinearScalingValidator {
     /**
      * Execute a single trial with given configuration.
      * 
-     * <p><strong>Not yet implemented.</strong> Will run one instance of the
-     * factorization experiment and collect detailed results.</p>
+     * <p><strong>Implementation:</strong> Runs one instance of the factorization
+     * experiment and collects detailed results using existing experiment infrastructure.</p>
      * 
      * <p><strong>Execution:</strong>
      * <ol>
      *   <li>Create RemainderCell array for target and array size</li>
-     *   <li>Initialize ExecutionEngine with config parameters</li>
-     *   <li>Run execution until convergence or max steps</li>
+     *   <li>Set up ExperimentRunner with LinearNeighborhood topology</li>
+     *   <li>Configure execution mode (SEQUENTIAL for now) and parameters</li>
+     *   <li>Run trial until convergence or max steps</li>
      *   <li>Extract metrics: steps, convergence status, discovered factors</li>
      *   <li>Compute remainder statistics from final configuration</li>
      *   <li>Package into ScalingTrialResult</li>
      * </ol>
      * </p>
      * 
+     * <p><strong>Reasoning:</strong> Reuses existing ExperimentRunner to avoid
+     * duplicating execution logic. Wraps results in ScalingTrialResult for
+     * B metric analysis.</p>
+     * 
+     * <p><strong>Integration:</strong> Called by runTrialBatch() for each trial.
+     * Results aggregated into ScalingReport for analysis.</p>
+     * 
      * @param config The trial configuration
      * @return Result of the trial execution
      */
     public static ScalingTrialResult executeSingleTrial(ScalingTrialConfig config) {
-        // TODO: Phase 3 - implement single trial execution
-        throw new UnsupportedOperationException("Not yet implemented");
+        long startTime = System.currentTimeMillis();
+        
+        // Use existing ExperimentRunner infrastructure
+        com.emergent.doom.experiment.ExperimentRunner<com.emergent.doom.cell.RemainderCell> runner =
+            new com.emergent.doom.experiment.ExperimentRunner<>(
+                () -> {
+                    com.emergent.doom.cell.RemainderCell[] newCells = 
+                        new com.emergent.doom.cell.RemainderCell[config.getArraySize()];
+                    for (int i = 0; i < newCells.length; i++) {
+                        newCells[i] = new com.emergent.doom.cell.RemainderCell(
+                            config.getTarget(), i + 1);
+                    }
+                    return newCells;
+                },
+                () -> new com.emergent.doom.examples.LinearNeighborhood<>(1)
+            );
+        
+        // Configure experiment
+        com.emergent.doom.experiment.ExperimentConfig expConfig = 
+            new com.emergent.doom.experiment.ExperimentConfig(
+                config.getArraySize(),
+                config.getMaxSteps(),
+                config.getRequiredStableSteps(),
+                config.isRecordTrajectory(),
+                com.emergent.doom.execution.ExecutionMode.SEQUENTIAL
+            );
+        
+        // Run single trial
+        com.emergent.doom.experiment.TrialResult<com.emergent.doom.cell.RemainderCell> trialResult =
+            runner.runTrial(expConfig, 0);
+        
+        // Extract results
+        int steps = trialResult.getFinalStep();
+        boolean converged = trialResult.isConverged();
+        
+        // Find factors in final configuration
+        com.emergent.doom.cell.RemainderCell[] finalCells = trialResult.getFinalCells();
+        BigInteger discoveredFactor = null;
+        boolean foundFactor = false;
+        
+        if (finalCells != null) {
+            for (com.emergent.doom.cell.RemainderCell cell : finalCells) {
+                if (cell.getPosition() > 1 && cell.isFactor()) {
+                    discoveredFactor = BigInteger.valueOf(cell.getPosition());
+                    foundFactor = true;
+                    break;  // Found a factor
+                }
+            }
+        }
+        
+        // Compute remainder statistics
+        RemainderStatistics stats = RemainderStatistics.fromCells(finalCells);
+        
+        long endTime = System.currentTimeMillis();
+        long executionTime = endTime - startTime;
+        
+        return new ScalingTrialResult(
+            config,
+            steps,
+            converged,
+            foundFactor,
+            discoveredFactor,
+            executionTime,
+            stats
+        );
     }
     
     /**
