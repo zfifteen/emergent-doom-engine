@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factorization Experiment Dashboard</title>
+    <style>
+        :root {
+            --color-primary: #208080;
+            --color-primary-hover: #1a6666;
+            --color-primary-active: #144d4d;
+            --color-bg: #fcfcf9;
+            --color-surface: #fffffe;
+            --color-text: #134252;
+            --color-text-secondary: #626c6c;
+            --color-border: #5e5240;
+            --color-success: #218d8d;
+            --color-error: #c01530;
+            --color-warning: #a84b2f;
+            --focus-ring: 0 0 0 3px rgba(33, 128, 141, 0.4);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        header {
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .subtitle {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: var(--color-surface);
+            border: 1px solid rgba(94, 82, 64, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+
+        .panel h2 {
+            margin: 0 0 16px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--color-text);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid rgba(94, 82, 64, 0.2);
+            border-radius: 6px;
+            background: var(--color-surface);
+            color: var(--color-text);
+            font-family: inherit;
+            transition: border-color 200ms, box-shadow 200ms;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: var(--focus-ring);
+        }
+
+        input::placeholder {
+            color: var(--color-text-secondary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 640px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-top: 4px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 150ms;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: #fcfcf9;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-primary:active {
+            background: var(--color-primary-active);
+        }
+
+        .btn-secondary {
+            background: rgba(94, 82, 64, 0.12);
+            color: var(--color-text);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(94, 82, 64, 0.2);
+        }
+
+        .btn-primary:disabled, .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        /* Visualization panels */
+        .viz-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 1024px) {
+            .viz-container { grid-template-columns: 1fr; }
+        }
+
+        .cell-grid {
+            background: linear-gradient(135deg, rgba(33, 128, 141, 0.05), rgba(94, 82, 64, 0.03));
+            border-radius: 6px;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
+            gap: 6px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 500;
+            color: white;
+            transition: all 100ms;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            cursor: help;
+        }
+
+        .cell:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+        }
+
+        /* Remainder value coloring (hue based on value modulo) */
+        .cell.remainder-0 { background: #c01530; } /* Zero remainder = potential factor */
+        .cell.remainder-low { background: #ff9800; } /* Small remainder */
+        .cell.remainder-mid { background: #2196F3; } /* Mid remainder */
+        .cell.remainder-high { background: #9C27B0; } /* High remainder */
+
+        .trajectory-chart {
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .trajectory-line {
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(33, 128, 141, 0.08), rgba(94, 82, 64, 0.05));
+            border: 1px solid rgba(94, 82, 64, 0.12);
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .status {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 12px;
+        }
+
+        .status.idle {
+            background: rgba(98, 108, 113, 0.12);
+            color: var(--color-text-secondary);
+        }
+
+        .status.running {
+            background: rgba(33, 200, 200, 0.15);
+            color: var(--color-success);
+            animation: pulse 2s infinite;
+        }
+
+        .status.complete {
+            background: rgba(33, 128, 141, 0.15);
+            color: var(--color-primary);
+        }
+
+        .status.error {
+            background: rgba(192, 21, 47, 0.15);
+            color: var(--color-error);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+            font-size: 12px;
+            margin-top: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-swatch {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .trial-list {
+            display: grid;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .trial-item {
+            background: rgba(94, 82, 64, 0.05);
+            border: 1px solid rgba(94, 82, 64, 0.12);
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .trial-item.success {
+            border-color: rgba(33, 128, 141, 0.3);
+            background: rgba(33, 128, 141, 0.08);
+        }
+
+        .trial-steps {
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Factorization Experiment Dashboard</h1>
+            <p class="subtitle">Emergent Doom Engine: Cell State Visualization & Trial Runner</p>
+        </header>
+
+        <div class="grid">
+            <!-- Configuration Panel -->
+            <div class="panel">
+                <h2>Experiment Configuration</h2>
+                
+                <div class="form-group">
+                    <label for="semiprime">Target Semiprime</label>
+                    <input type="text" id="semiprime" placeholder="e.g., 100099" value="100099">
+                    <div class="form-hint">Product of two prime factors (99,000 – 101,000 range)</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="arraySize">Array Size</label>
+                        <input type="number" id="arraySize" value="1000" min="100" max="10000" step="100">
+                        <div class="form-hint">Cell count per trial</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="numTrials">Number of Trials</label>
+                        <input type="number" id="numTrials" value="5" min="1" max="50">
+                        <div class="form-hint">Trial runs</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="maxSteps">Max Steps</label>
+                        <input type="number" id="maxSteps" value="50000" min="1000" max="500000" step="1000">
+                        <div class="form-hint">Max iterations per trial</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="stableSteps">Stable Steps</label>
+                        <input type="number" id="stableSteps" value="3" min="1" max="20">
+                        <div class="form-hint">Convergence threshold</div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" id="runBtn" onclick="startExperiment()">Run Experiment</button>
+                    <button class="btn-secondary" id="resetBtn" onclick="resetDashboard()">Reset</button>
+                </div>
+
+                <div class="status idle" id="status">Ready</div>
+            </div>
+
+            <!-- Metrics Summary -->
+            <div class="panel">
+                <h2>Summary Metrics</h2>
+                
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-label">Factor Found</div>
+                        <div class="stat-value" id="factorFoundStat">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Mean Steps</div>
+                        <div class="stat-value" id="meanStepsStat">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Conv. Rate</div>
+                        <div class="stat-value" id="convRateStat">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Trials Run</div>
+                        <div class="stat-value" id="trialsRunStat">0</div>
+                    </div>
+                </div>
+
+                <div class="legend" style="margin-top: 16px;">
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #c01530;"></div>
+                        <span>Remainder = 0</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #ff9800;"></div>
+                        <span>Low</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #2196F3;"></div>
+                        <span>Mid</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #9C27B0;"></div>
+                        <span>High</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualization Container -->
+        <div class="viz-container">
+            <!-- Cell State Grid -->
+            <div class="panel">
+                <h2>Cell State (Current Trial)</h2>
+                <div class="cell-grid" id="cellGrid"></div>
+                <div class="form-hint" style="margin-top: 12px;">
+                    Showing RemainderCell remainder values. Hover for details.
+                </div>
+            </div>
+
+            <!-- Trial Results -->
+            <div class="panel">
+                <h2>Trial Results</h2>
+                <div class="trial-list" id="trialList"></div>
+            </div>
+        </div>
+
+        <!-- Trajectory Panel -->
+        <div class="panel" style="margin-top: 24px;">
+            <h2>Convergence Trajectory (Current Trial)</h2>
+            <div class="trajectory-chart" id="trajectory">
+                <div class="trajectory-line" style="color: var(--color-text-secondary);">Trajectory will appear here…</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data store
+        let currentExperiment = null;
+        let currentTrial = 0;
+        let allTrials = [];
+
+        async function startExperiment() {
+            const semiprime = document.getElementById('semiprime').value;
+            const arraySize = parseInt(document.getElementById('arraySize').value);
+            const numTrials = parseInt(document.getElementById('numTrials').value);
+            const maxSteps = parseInt(document.getElementById('maxSteps').value);
+            const stableSteps = parseInt(document.getElementById('stableSteps').value);
+
+            if (!semiprime || isNaN(parseInt(semiprime))) {
+                setStatus('error', 'Invalid semiprime');
+                return;
+            }
+
+            setStatus('running', 'Running experiment…');
+            document.getElementById('runBtn').disabled = true;
+
+            allTrials = [];
+            currentTrial = 0;
+
+            // Simulate experiment runs
+            for (let i = 0; i < numTrials; i++) {
+                currentTrial = i + 1;
+                
+                const trial = generateMockTrial(
+                    parseInt(semiprime),
+                    arraySize,
+                    maxSteps,
+                    stableSteps
+                );
+
+                allTrials.push(trial);
+                updateDashboard(trial, i + 1, numTrials);
+
+                // Visual feedback for each trial
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            // Compute summary
+            const summary = computeSummary(allTrials, parseInt(semiprime));
+            updateSummaryMetrics(summary);
+
+            setStatus('complete', `Complete! ${numTrials} trials finished.`);
+            document.getElementById('runBtn').disabled = false;
+        }
+
+        function generateMockTrial(semiprime, arraySize, maxSteps, stableSteps) {
+            // Generate synthetic trial data mimicking RemainderCell behavior
+            const steps = Math.floor(Math.random() * (maxSteps * 0.7)) + Math.floor(maxSteps * 0.3);
+            const converged = Math.random() > 0.3; // 70% convergence rate by default
+
+            // Generate cell state trajectory
+            const trajectory = [];
+            for (let s = 0; s < Math.min(steps, 100); s++) {
+                const snapshot = [];
+                for (let i = 0; i < Math.min(arraySize, 20); i++) {
+                    const remainder = Math.floor(Math.random() * semiprime * (1 - s / steps * 0.8));
+                    snapshot.push(remainder);
+                }
+                trajectory.push(snapshot);
+            }
+
+            // Final cell state (potential clustering)
+            const finalCells = [];
+            for (let i = 0; i < arraySize; i++) {
+                let remainder = i;
+                if (converged && Math.random() > 0.7) {
+                    remainder = 0; // Some cells found a factor
+                } else {
+                    remainder = Math.floor(Math.random() * semiprime * 0.5);
+                }
+                finalCells.push({ position: i + 1, remainder: remainder });
+            }
+
+            const factorFound = finalCells.some(c => c.remainder === 0);
+
+            return {
+                semiprime,
+                arraySize,
+                steps,
+                converged,
+                trajectory,
+                finalCells,
+                factorFound,
+                convergenceRate: converged ? (0.5 + Math.random() * 0.5) : (Math.random() * 0.3)
+            };
+        }
+
+        function updateDashboard(trial, trialNum, totalTrials) {
+            // Update cell grid with final state
+            const cellGrid = document.getElementById('cellGrid');
+            cellGrid.innerHTML = '';
+
+            trial.finalCells.slice(0, 100).forEach(cell => {
+                const cellEl = document.createElement('div');
+                cellEl.className = 'cell';
+                cellEl.textContent = cell.remainder === 0 ? '✓' : '·';
+                cellEl.title = `Pos ${cell.position}: remainder ${cell.remainder}`;
+
+                if (cell.remainder === 0) {
+                    cellEl.classList.add('remainder-0');
+                } else {
+                    const ratio = cell.remainder / trial.semiprime;
+                    if (ratio < 0.33) cellEl.classList.add('remainder-low');
+                    else if (ratio < 0.67) cellEl.classList.add('remainder-mid');
+                    else cellEl.classList.add('remainder-high');
+                }
+
+                cellGrid.appendChild(cellEl);
+            });
+
+            // Update trajectory
+            const trajectoryEl = document.getElementById('trajectory');
+            let trajectoryHTML = '';
+            trial.trajectory.forEach((snapshot, step) => {
+                const line = `Step ${step}: [${snapshot.map(r => r.toFixed(0).padStart(6)).join(', ')}]`;
+                trajectoryHTML += `<div class="trajectory-line">${line}</div>`;
+            });
+            trajectoryEl.innerHTML = trajectoryHTML;
+
+            // Update trial results
+            const trialList = document.getElementById('trialList');
+            const trialEl = document.createElement('div');
+            trialEl.className = `trial-item ${trial.factorFound ? 'success' : ''}`;
+            trialEl.innerHTML = `
+                <span>Trial ${trialNum} / ${totalTrials}</span>
+                <span class="trial-steps">${trial.steps} steps</span>
+            `;
+            trialList.insertBefore(trialEl, trialList.firstChild);
+
+            document.getElementById('trialsRunStat').textContent = trialNum;
+        }
+
+        function computeSummary(trials, semiprime) {
+            const factorFound = trials.some(t => t.factorFound);
+            const meanSteps = trials.reduce((sum, t) => sum + t.steps, 0) / trials.length;
+            const convRate = trials.reduce((sum, t) => sum + t.convergenceRate, 0) / trials.length;
+
+            return { factorFound, meanSteps, convRate };
+        }
+
+        function updateSummaryMetrics(summary) {
+            document.getElementById('factorFoundStat').textContent = summary.factorFound ? 'YES' : 'NO';
+            document.getElementById('meanStepsStat').textContent = summary.meanSteps.toFixed(0);
+            document.getElementById('convRateStat').textContent = (summary.convRate * 100).toFixed(1) + '%';
+        }
+
+        function setStatus(type, message) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `status ${type}`;
+            statusEl.textContent = message;
+        }
+
+        function resetDashboard() {
+            document.getElementById('cellGrid').innerHTML = '';
+            document.getElementById('trajectory').innerHTML = '<div class="trajectory-line" style="color: var(--color-text-secondary);">Trajectory will appear here…</div>';
+            document.getElementById('trialList').innerHTML = '';
+            document.getElementById('factorFoundStat').textContent = '—';
+            document.getElementById('meanStepsStat').textContent = '—';
+            document.getElementById('convRateStat').textContent = '—';
+            document.getElementById('trialsRunStat').textContent = '0';
+            setStatus('idle', 'Ready');
+            allTrials = [];
+            currentTrial = 0;
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            setStatus('idle', 'Ready');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergent Doom Engine - Factorization Experiment Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #bb86fc;
+        }
+        .dashboard {
+            max-width: 1400px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 20px;
+        }
+        .config-panel {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .config-panel label {
+            display: block;
+            margin-top: 15px;
+        }
+        .config-panel input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+        }
+        .config-panel button {
+            margin-top: 30px;
+            padding: 12px;
+            width: 100%;
+            background: #03dac6;
+            color: #000;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .config-panel button:hover {
+            background: #018786;
+        }
+        .main-content {
+            display: grid;
+            grid-template-rows: auto auto auto;
+            gap: 20px;
+        }
+        .cell-grid {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            overflow: auto;
+            max-height: 600px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(50, 1fr);
+            gap: 2px;
+        }
+        .cell {
+            width: 12px;
+            height: 12px;
+            background: #333;
+            position: relative;
+        }
+        .cell:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000;
+            padding: 5px 10px;
+            border-radius: 4px;
+            white-space: nowrap;
+            font-size: 12px;
+            z-index: 10;
+        }
+        .remainder-0 { background: #e74c3c !important; box-shadow: 0 0 10px #ff0000; }
+        .remainder-low { background: #f39c12; }
+        .remainder-med { background: #3498db; }
+        .remainder-high { background: #9b59b6; }
+        .summary-metrics, .trial-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .card {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .success { border-left: 5px solid #00ff00; }
+        .failure { border-left: 5px solid #ff0000; }
+        .factor-indicator {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        @media (max-width: 1024px) {
+            .dashboard { grid-template-columns: 1fr; }
+            .grid-container { grid-template-columns: repeat(40, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<h1 style="text-align:center;">Emergent Doom Engine – Factorization Experiment Dashboard</h1>
+
+<div class="dashboard">
+    <div class="config-panel">
+        <h2>Configuration</h2>
+        <label>
+            Target Semiprime
+            <input type="number" id="semiprime" value="100099">
+        </label>
+        <label>
+            Array Size
+            <input type="number" id="arraySize" value="1000">
+        </label>
+        <label>
+            Number of Trials
+            <input type="number" id="trials" value="5">
+        </label>
+        <label>
+            Max Steps
+            <input type="number" id="maxSteps" value="50000">
+        </label>
+        <label>
+            Stable Steps (convergence threshold)
+            <input type="number" id="stableSteps" value="3">
+        </label>
+        <button id="runBtn">Run Experiment</button>
+        <p style="font-size:0.9em; margin-top:20px;">
+            <strong>Note:</strong> This is a static mock UI. In the real implementation, clicking "Run Experiment" would trigger the Java backend and display live/post-hoc results.
+        </p>
+    </div>
+
+    <div class="main-content">
+        <!-- Cell State Grid (Primary Visualization) -->
+        <div class="cell-grid">
+            <h2>Final RemainderCell States (Latest Trial)</h2>
+            <div class="grid-container" id="cellGrid">
+                <!-- Cells populated via mock data -->
+            </div>
+            <p style="margin-top:10px; font-size:0.9em;">
+                Red glowing cells = remainder 0 (factor found). Hover for position & exact remainder.
+            </p>
+        </div>
+
+        <!-- Summary Metrics -->
+        <div>
+            <h2>Summary Metrics (Across 5 Trials)</h2>
+            <div class="summary-metrics">
+                <div class="card factor-indicator success">
+                    <strong>Factor Found</strong><br>YES (in 4/5 trials)
+                </div>
+                <div class="card">
+                    <strong>Mean Steps to Convergence</strong><br>18,420
+                </div>
+                <div class="card">
+                    <strong>Convergence Rate</strong><br>80%
+                </div>
+                <div class="card">
+                    <strong>Total Trials Run</strong><br>5
+                </div>
+            </div>
+        </div>
+
+        <!-- Trial Results List -->
+        <div class="trial-results">
+            <h2>Trial Results</h2>
+            <div class="card success">
+                <strong>Trial 1</strong><br>Steps: 12,300<br>Factor found at position 31
+            </div>
+            <div class="card success">
+                <strong>Trial 2</strong><br>Steps: 21,500<br>Factor found at position 3229
+            </div>
+            <div class="card failure">
+                <strong>Trial 3</strong><br>Steps: 50,000 (max)<br>No factor found
+            </div>
+            <div class="card success">
+                <strong>Trial 4</strong><br>Steps: 15,200<br>Factor found at position 31
+            </div>
+            <div class="card success">
+                <strong>Trial 5</strong><br>Steps: 16,680<br>Factor found at position 3229
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mock data generation for cell grid (simulating final states for target=100099, arraySize=1000)
+    const grid = document.getElementById('cellGrid');
+    const target = 100099;
+    const arraySize = 1000;
+
+    for (let pos = 1; pos <= arraySize; pos++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+
+        const remainder = target % pos;
+        cell.setAttribute('data-tooltip', `Pos: ${pos} | Rem: ${remainder}`);
+
+        if (remainder === 0 && pos > 1) {
+            cell.classList.add('remainder-0');
+        } else {
+            const ratio = remainder / target;
+            if (ratio === 0) {
+                cell.style.background = '#e74c3c';
+            } else if (ratio < 0.1) {
+                cell.classList.add('remainder-low');
+            } else if (ratio < 0.5) {
+                cell.classList.add('remainder-med');
+            } else {
+                cell.classList.add('remainder-high');
+            }
+        }
+        grid.appendChild(cell);
+    }
+
+    // Highlight known factors in this mock
+    // Factors: 31 and 3229 (but 3229 > 1000, so only 31 visible in grid)
+    // Position 1 always remainder 0, but not counted as factor
+</script>
+</body>
+</html>
