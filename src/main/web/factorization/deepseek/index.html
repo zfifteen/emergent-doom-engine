@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergent Doom Engine - Factorization Experiment</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* EDE Color Palette */
+            --primary-dark: #0f172a;
+            --secondary-dark: #1e293b;
+            --accent-red: #e74c3c;
+            --accent-orange: #f39c12;
+            --accent-blue: #3498db;
+            --accent-purple: #9b59b6;
+            --accent-green: #2ecc71;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --border-color: #334155;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --grid-bg: #0f172a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--primary-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+        }
+        
+        .logo-icon {
+            color: var(--accent-red);
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            grid-template-rows: auto auto 1fr;
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .panel {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .panel-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .panel-title i {
+            font-size: 1.2rem;
+        }
+        
+        /* Configuration Panel */
+        .config-panel {
+            grid-row: 1 / span 3;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .hint {
+            color: var(--accent-blue);
+            cursor: help;
+            font-size: 0.9rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .run-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        
+        .run-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        
+        .run-button:active {
+            transform: translateY(0);
+        }
+        
+        .run-button.running {
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+        }
+        
+        /* Cell State Grid */
+        .cell-grid-container {
+            grid-column: 2;
+            grid-row: 1;
+            padding: 20px;
+        }
+        
+        .grid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .grid-title {
+            font-size: 1.3rem;
+            color: var(--accent-blue);
+        }
+        
+        .legend {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .cell-grid {
+            background-color: var(--grid-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+            gap: 3px;
+            max-height: 350px;
+            overflow-y: auto;
+            min-height: 350px;
+            justify-items: center;
+        }
+        
+        .cell {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        
+        .cell:hover {
+            transform: scale(1.3);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        .cell.factor-found {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+        
+        .cell-tooltip {
+            position: absolute;
+            background-color: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 0.9rem;
+            width: 200px;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .cell:hover .cell-tooltip {
+            opacity: 1;
+        }
+        
+        /* Trajectory Panel */
+        .trajectory-panel {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        
+        .trajectory-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .trajectory-chart {
+            height: 200px;
+            background-color: var(--grid-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .trajectory-line {
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        .step-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .step-slider {
+            flex-grow: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        .step-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--accent-orange);
+            cursor: pointer;
+            border: 2px solid white;
+        }
+        
+        .step-value {
+            font-weight: 600;
+            color: var(--accent-orange);
+            min-width: 60px;
+        }
+        
+        /* Trial Results */
+        .trial-results-panel {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        
+        .trial-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .trial-card {
+            background-color: rgba(15, 23, 42, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.3s;
+        }
+        
+        .trial-card.success {
+            border-left-color: var(--accent-green);
+        }
+        
+        .trial-card.failure {
+            border-left-color: var(--accent-red);
+        }
+        
+        .trial-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .trial-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .trial-success {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--accent-green);
+        }
+        
+        .trial-failure {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--accent-red);
+        }
+        
+        .trial-steps {
+            font-weight: 600;
+            color: var(--accent-orange);
+        }
+        
+        /* Summary Metrics */
+        .summary-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .metric-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .metric-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        .factor-found-card .metric-icon {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--accent-red);
+        }
+        
+        .mean-steps-card .metric-icon {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: var(--accent-blue);
+        }
+        
+        .convergence-card .metric-icon {
+            background-color: rgba(155, 89, 182, 0.2);
+            color: var(--accent-purple);
+        }
+        
+        .trials-card .metric-icon {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--accent-green);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto;
+            }
+            
+            .config-panel {
+                grid-row: 1;
+            }
+            
+            .cell-grid-container {
+                grid-column: 1;
+                grid-row: 2;
+            }
+            
+            .trajectory-panel {
+                grid-column: 1;
+                grid-row: 3;
+            }
+            
+            .trial-results-panel {
+                grid-column: 1;
+                grid-row: 4;
+            }
+            
+            .cell-grid {
+                grid-template-columns: repeat(auto-fill, minmax(25px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .grid-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .legend {
+                flex-wrap: wrap;
+            }
+            
+            .summary-metrics {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .cell {
+                width: 24px;
+                height: 24px;
+                font-size: 0.6rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .summary-metrics {
+                grid-template-columns: 1fr;
+            }
+            
+            .cell-grid {
+                grid-template-columns: repeat(auto-fill, minmax(22px, 1fr));
+            }
+            
+            .cell {
+                width: 20px;
+                height: 20px;
+            }
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--secondary-dark);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple);
+        }
+        
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-red);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Status Message */
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        
+        .status-message.info {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: var(--accent-blue);
+            border-left: 4px solid var(--accent-blue);
+        }
+        
+        .status-message.success {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--accent-green);
+            border-left: 4px solid var(--accent-green);
+        }
+        
+        .status-message.error {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--accent-red);
+            border-left: 4px solid var(--accent-red);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-calculator logo-icon"></i>
+                <h1>Emergent Doom Engine</h1>
+            </div>
+            <p class="subtitle">Factorization Experiment - Visualize emergent factorization dynamics through RemainderCell agent interactions</p>
+        </header>
+        
+        <div class="dashboard">
+            <!-- Configuration Panel -->
+            <div class="panel config-panel">
+                <h2 class="panel-title"><i class="fas fa-sliders-h"></i> Experiment Configuration</h2>
+                
+                <div class="form-group">
+                    <label class="form-label" for="semiprime">
+                        Target Semiprime
+                        <span class="hint" title="The number to factor (must be a semiprime)">?</span>
+                    </label>
+                    <input type="number" id="semiprime" class="form-input" value="100099" min="100" max="1000000">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="arraySize">
+                        Array Size
+                        <span class="hint" title="Number of RemainderCell agents">?</span>
+                    </label>
+                    <input type="number" id="arraySize" class="form-input" value="1000" min="10" max="5000">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="trials">
+                        Number of Trials
+                        <span class="hint" title="How many times to run the experiment">?</span>
+                    </label>
+                    <input type="number" id="trials" class="form-input" value="5" min="1" max="100">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="maxSteps">
+                        Max Steps
+                        <span class="hint" title="Maximum steps before stopping a trial">?</span>
+                    </label>
+                    <input type="number" id="maxSteps" class="form-input" value="50000" min="100" max="1000000">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="stableSteps">
+                        Stable Steps (Convergence)
+                        <span class="hint" title="Number of consecutive stable steps to consider converged">?</span>
+                    </label>
+                    <input type="number" id="stableSteps" class="form-input" value="3" min="1" max="100">
+                </div>
+                
+                <button id="runButton" class="run-button">
+                    <i class="fas fa-play-circle"></i> Run Experiment
+                </button>
+                
+                <div class="status-message info" id="statusMessage">
+                    <i class="fas fa-info-circle"></i> Configure parameters and click "Run Experiment" to begin
+                </div>
+            </div>
+            
+            <!-- Cell State Grid -->
+            <div class="panel cell-grid-container">
+                <div class="grid-header">
+                    <h2 class="grid-title">RemainderCell States</h2>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #e74c3c;"></div>
+                            <span>Factor Found (0)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #f39c12;"></div>
+                            <span>Low Remainder</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #3498db;"></div>
+                            <span>Medium</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #9b59b6;"></div>
+                            <span>High Remainder</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="cell-grid" id="cellGrid">
+                    <!-- Cells will be generated here -->
+                </div>
+            </div>
+            
+            <!-- Trajectory Panel -->
+            <div class="panel trajectory-panel">
+                <h2 class="panel-title"><i class="fas fa-chart-line"></i> Cell Trajectories</h2>
+                <div class="trajectory-container">
+                    <div class="trajectory-chart" id="trajectoryChart">
+                        <svg width="100%" height="100%">
+                            <!-- Trajectory lines will be drawn here -->
+                        </svg>
+                    </div>
+                    <div class="step-slider-container">
+                        <span>Step:</span>
+                        <input type="range" min="0" max="100" value="0" class="step-slider" id="stepSlider">
+                        <span class="step-value" id="stepValue">0 / 0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trial Results -->
+            <div class="panel trial-results-panel">
+                <h2 class="panel-title"><i class="fas fa-list-ol"></i> Trial Results</h2>
+                <div class="trial-list" id="trialList">
+                    <!-- Trial cards will be added here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Summary Metrics -->
+        <div class="summary-metrics">
+            <div class="metric-card factor-found-card">
+                <div class="metric-icon">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <div class="metric-value" id="factorFoundValue">No</div>
+                <div class="metric-label">Factor Found</div>
+            </div>
+            
+            <div class="metric-card mean-steps-card">
+                <div class="metric-icon">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <div class="metric-value" id="meanStepsValue">0</div>
+                <div class="metric-label">Mean Steps to Convergence</div>
+            </div>
+            
+            <div class="metric-card convergence-card">
+                <div class="metric-icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="metric-value" id="convergenceRateValue">0%</div>
+                <div class="metric-label">Convergence Rate</div>
+            </div>
+            
+            <div class="metric-card trials-card">
+                <div class="metric-icon">
+                    <i class="fas fa-flask"></i>
+                </div>
+                <div class="metric-value" id="trialsRunValue">0</div>
+                <div class="metric-label">Trials Run</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const runButton = document.getElementById('runButton');
+        const cellGrid = document.getElementById('cellGrid');
+        const trajectoryChart = document.querySelector('#trajectoryChart svg');
+        const stepSlider = document.getElementById('stepSlider');
+        const stepValue = document.getElementById('stepValue');
+        const trialList = document.getElementById('trialList');
+        const statusMessage = document.getElementById('statusMessage');
+        
+        // Metric elements
+        const factorFoundValue = document.getElementById('factorFoundValue');
+        const meanStepsValue = document.getElementById('meanStepsValue');
+        const convergenceRateValue = document.getElementById('convergenceRateValue');
+        const trialsRunValue = document.getElementById('trialsRunValue');
+        
+        // Configuration inputs
+        const semiprimeInput = document.getElementById('semiprime');
+        const arraySizeInput = document.getElementById('arraySize');
+        const trialsInput = document.getElementById('trials');
+        const maxStepsInput = document.getElementById('maxSteps');
+        const stableStepsInput = document.getElementById('stableSteps');
+        
+        // State variables
+        let experimentRunning = false;
+        let currentTrial = 0;
+        let totalTrials = 0;
+        let trialResults = [];
+        let cellStates = [];
+        let trajectoryData = [];
+        let factorFound = false;
+        let factorPosition = -1;
+        
+        // Initialize with sample data
+        initializeSampleData();
+        
+        // Event Listeners
+        runButton.addEventListener('click', runExperiment);
+        stepSlider.addEventListener('input', updateTrajectoryStep);
+        
+        // Functions
+        function initializeSampleData() {
+            // Generate sample cell states for initial display
+            const arraySize = parseInt(arraySizeInput.value);
+            const target = parseInt(semiprimeInput.value);
+            
+            cellStates = [];
+            for (let i = 1; i <= Math.min(100, arraySize); i++) {
+                const remainder = target % i;
+                cellStates.push({
+                    position: i,
+                    remainder: remainder,
+                    target: target
+                });
+            }
+            
+            // Generate sample trajectory data
+            generateSampleTrajectory();
+            
+            // Render initial state
+            renderCellGrid();
+            renderTrajectory();
+            updateMetrics();
+        }
+        
+        function generateSampleTrajectory() {
+            trajectoryData = [];
+            const steps = 50;
+            
+            for (let step = 0; step < steps; step++) {
+                const stepData = [];
+                for (let cell = 0; cell < 5; cell++) {
+                    // Generate some interesting trajectory patterns
+                    const remainder = Math.abs(Math.sin(step * 0.1 + cell) * 1000) + cell * 50;
+                    stepData.push(remainder);
+                }
+                trajectoryData.push(stepData);
+            }
+            
+            stepSlider.max = steps - 1;
+            stepValue.textContent = `0 / ${steps - 1}`;
+        }
+        
+        function renderCellGrid() {
+            cellGrid.innerHTML = '';
+            const target = parseInt(semiprimeInput.value);
+            
+            cellStates.forEach((cell, index) => {
+                const cellElement = document.createElement('div');
+                cellElement.className = 'cell';
+                
+                // Determine color based on remainder value
+                let color, displayValue = '';
+                const remainderPercentage = (cell.remainder / target) * 100;
+                
+                if (cell.remainder === 0 && cell.position > 1) {
+                    color = '#e74c3c'; // Red for factor found
+                    displayValue = '0';
+                    cellElement.classList.add('factor-found');
+                    factorFound = true;
+                    factorPosition = cell.position;
+                } else if (remainderPercentage < 10) {
+                    color = '#f39c12'; // Orange for low remainder
+                    displayValue = Math.floor(cell.remainder / 100).toString();
+                } else if (remainderPercentage < 50) {
+                    color = '#3498db'; // Blue for medium remainder
+                    displayValue = Math.floor(cell.remainder / 1000).toString();
+                } else {
+                    color = '#9b59b6'; // Purple for high remainder
+                    displayValue = Math.floor(cell.remainder / 10000).toString();
+                }
+                
+                cellElement.style.backgroundColor = color;
+                cellElement.textContent = displayValue;
+                
+                // Tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'cell-tooltip';
+                tooltip.innerHTML = `
+                    <strong>Position:</strong> ${cell.position}<br>
+                    <strong>Remainder:</strong> ${cell.remainder}<br>
+                    <strong>Target:</strong> ${cell.target}
+                `;
+                cellElement.appendChild(tooltip);
+                
+                cellGrid.appendChild(cellElement);
+            });
+        }
+        
+        function renderTrajectory() {
+            trajectoryChart.innerHTML = '';
+            const width = trajectoryChart.clientWidth;
+            const height = trajectoryChart.clientHeight;
+            const padding = 30;
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+            
+            // Find max value for scaling
+            let maxValue = 0;
+            trajectoryData.forEach(step => {
+                step.forEach(value => {
+                    if (value > maxValue) maxValue = value;
+                });
+            });
+            
+            // Draw axes
+            const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            xAxis.setAttribute('x1', padding);
+            xAxis.setAttribute('y1', height - padding);
+            xAxis.setAttribute('x2', width - padding);
+            xAxis.setAttribute('y2', height - padding);
+            xAxis.setAttribute('stroke', '#64748b');
+            xAxis.setAttribute('stroke-width', '1');
+            trajectoryChart.appendChild(xAxis);
+            
+            const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            yAxis.setAttribute('x1', padding);
+            yAxis.setAttribute('y1', padding);
+            yAxis.setAttribute('x2', padding);
+            yAxis.setAttribute('y2', height - padding);
+            yAxis.setAttribute('stroke', '#64748b');
+            yAxis.setAttribute('stroke-width', '1');
+            trajectoryChart.appendChild(yAxis);
+            
+            // Draw trajectory lines for first 5 cells
+            const colors = ['#e74c3c', '#f39c12', '#3498db', '#9b59b6', '#2ecc71'];
+            
+            for (let cellIdx = 0; cellIdx < Math.min(5, trajectoryData[0].length); cellIdx++) {
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.classList.add('trajectory-line');
+                path.setAttribute('stroke', colors[cellIdx % colors.length]);
+                
+                let pathData = '';
+                for (let step = 0; step < trajectoryData.length; step++) {
+                    const x = padding + (step / (trajectoryData.length - 1)) * graphWidth;
+                    const y = padding + (trajectoryData[step][cellIdx] / maxValue) * graphHeight;
+                    
+                    if (step === 0) {
+                        pathData = `M ${x} ${y}`;
+                    } else {
+                        pathData += ` L ${x} ${y}`;
+                    }
+                }
+                
+                path.setAttribute('d', pathData);
+                trajectoryChart.appendChild(path);
+            }
+            
+            // Draw current step indicator
+            const currentStep = parseInt(stepSlider.value);
+            const indicatorX = padding + (currentStep / (trajectoryData.length - 1)) * graphWidth;
+            
+            const indicator = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            indicator.setAttribute('x1', indicatorX);
+            indicator.setAttribute('y1', padding);
+            indicator.setAttribute('x2', indicatorX);
+            indicator.setAttribute('y2', height - padding);
+            indicator.setAttribute('stroke', '#f8fafc');
+            indicator.setAttribute('stroke-width', '2');
+            indicator.setAttribute('stroke-dasharray', '5,5');
+            trajectoryChart.appendChild(indicator);
+        }
+        
+        function updateTrajectoryStep() {
+            const step = parseInt(stepSlider.value);
+            stepValue.textContent = `${step} / ${stepSlider.max}`;
+            renderTrajectory();
+        }
+        
+        function runExperiment() {
+            if (experimentRunning) return;
+            
+            // Reset state
+            experimentRunning = true;
+            currentTrial = 0;
+            trialResults = [];
+            trialList.innerHTML = '';
+            
+            // Update UI
+            runButton.innerHTML = '<div class="loading"></div> Running...';
+            runButton.classList.add('running');
+            
+            statusMessage.innerHTML = '<i class="fas fa-sync-alt"></i> Experiment running...';
+            statusMessage.className = 'status-message info';
+            
+            // Get configuration values
+            const target = parseInt(semiprimeInput.value);
+            const arraySize = parseInt(arraySizeInput.value);
+            totalTrials = parseInt(trialsInput.value);
+            
+            // Simulate experiment with delays between trials
+            simulateTrial();
+        }
+        
+        function simulateTrial() {
+            if (currentTrial >= totalTrials) {
+                finishExperiment();
+                return;
+            }
+            
+            currentTrial++;
+            
+            // Update status
+            statusMessage.innerHTML = `<i class="fas fa-sync-alt"></i> Running trial ${currentTrial} of ${totalTrials}...`;
+            
+            // Simulate trial delay
+            setTimeout(() => {
+                // Generate random trial result
+                const steps = Math.floor(Math.random() * 10000) + 1000;
+                const converged = Math.random() > 0.2; // 80% convergence rate
+                const factorFoundInTrial = converged && Math.random() > 0.5;
+                
+                // Create trial result
+                const trialResult = {
+                    trialNumber: currentTrial,
+                    steps: steps,
+                    converged: converged,
+                    factorFound: factorFoundInTrial,
+                    factorPosition: factorFoundInTrial ? Math.floor(Math.random() * 100) + 2 : null
+                };
+                
+                trialResults.push(trialResult);
+                
+                // Update cell states if this is the last trial
+                if (currentTrial === totalTrials) {
+                    updateCellStatesForResult(trialResult);
+                }
+                
+                // Add trial to UI
+                addTrialToUI(trialResult);
+                
+                // Run next trial
+                simulateTrial();
+            }, 800);
+        }
+        
+        function updateCellStatesForResult(result) {
+            const target = parseInt(semiprimeInput.value);
+            const arraySize = parseInt(arraySizeInput.value);
+            
+            cellStates = [];
+            for (let i = 1; i <= Math.min(100, arraySize); i++) {
+                let remainder;
+                
+                if (result.factorFound && i === result.factorPosition) {
+                    remainder = 0;
+                    factorFound = true;
+                    factorPosition = i;
+                } else {
+                    remainder = target % i;
+                }
+                
+                cellStates.push({
+                    position: i,
+                    remainder: remainder,
+                    target: target
+                });
+            }
+            
+            renderCellGrid();
+            
+            // Generate new trajectory based on result
+            generateRealisticTrajectory(result.steps, result.factorFound);
+            renderTrajectory();
+        }
+        
+        function generateRealisticTrajectory(steps, factorFound) {
+            trajectoryData = [];
+            
+            for (let step = 0; step < Math.min(steps, 100); step++) {
+                const stepData = [];
+                for (let cell = 0; cell < 5; cell++) {
+                    // Simulate convergence behavior
+                    let remainder;
+                    if (factorFound && step > 70) {
+                        // Simulate factor found - some cells go to zero
+                        remainder = cell === 2 ? 0 : Math.abs(Math.sin(step * 0.05 + cell) * 500) + 100;
+                    } else {
+                        // Normal trajectory
+                        remainder = Math.abs(Math.sin(step * 0.05 + cell) * 1000 * (1 - step/100)) + cell * 50 + 100;
+                    }
+                    stepData.push(Math.max(0, remainder));
+                }
+                trajectoryData.push(stepData);
+            }
+            
+            stepSlider.max = trajectoryData.length - 1;
+            stepSlider.value = trajectoryData.length - 1;
+            stepValue.textContent = `${trajectoryData.length - 1} / ${trajectoryData.length - 1}`;
+        }
+        
+        function addTrialToUI(trial) {
+            const trialCard = document.createElement('div');
+            trialCard.className = `trial-card ${trial.factorFound ? 'success' : 'failure'}`;
+            
+            const trialIcon = document.createElement('div');
+            trialIcon.className = `trial-icon ${trial.factorFound ? 'trial-success' : 'trial-failure'}`;
+            trialIcon.innerHTML = trial.factorFound ? '<i class="fas fa-check"></i>' : '<i class="fas fa-times"></i>';
+            
+            const trialDetails = document.createElement('div');
+            trialDetails.innerHTML = `
+                <div><strong>Trial ${trial.trialNumber}</strong></div>
+                <div>${trial.converged ? 'Converged' : 'Did not converge'}</div>
+            `;
+            
+            const trialSteps = document.createElement('div');
+            trialSteps.className = 'trial-steps';
+            trialSteps.textContent = `${trial.steps} steps`;
+            
+            const trialInfo = document.createElement('div');
+            trialInfo.className = 'trial-info';
+            trialInfo.appendChild(trialIcon);
+            trialInfo.appendChild(trialDetails);
+            
+            trialCard.appendChild(trialInfo);
+            trialCard.appendChild(trialSteps);
+            
+            trialList.appendChild(trialCard);
+            
+            // Update metrics
+            updateMetrics();
+        }
+        
+        function updateMetrics() {
+            if (trialResults.length === 0) return;
+            
+            // Calculate metrics
+            const totalTrialsRun = trialResults.length;
+            const successfulTrials = trialResults.filter(t => t.factorFound).length;
+            const convergedTrials = trialResults.filter(t => t.converged).length;
+            const totalSteps = trialResults.reduce((sum, t) => sum + t.steps, 0);
+            const meanSteps = Math.round(totalSteps / totalTrialsRun);
+            
+            // Check if any factor was found
+            const anyFactorFound = trialResults.some(t => t.factorFound);
+            
+            // Update UI
+            factorFoundValue.textContent = anyFactorFound ? 'Yes' : 'No';
+            factorFoundValue.style.color = anyFactorFound ? '#2ecc71' : '#e74c3c';
+            
+            meanStepsValue.textContent = meanSteps.toLocaleString();
+            convergenceRateValue.textContent = `${Math.round((convergedTrials / totalTrialsRun) * 100)}%`;
+            trialsRunValue.textContent = totalTrialsRun;
+        }
+        
+        function finishExperiment() {
+            experimentRunning = false;
+            
+            // Update UI
+            runButton.innerHTML = '<i class="fas fa-play-circle"></i> Run Experiment';
+            runButton.classList.remove('running');
+            
+            statusMessage.innerHTML = '<i class="fas fa-check-circle"></i> Experiment completed successfully!';
+            statusMessage.className = 'status-message success';
+            
+            // Calculate final metrics
+            const anyFactorFound = trialResults.some(t => t.factorFound);
+            
+            if (anyFactorFound) {
+                // Show success message with factor info
+                const factorTrial = trialResults.find(t => t.factorFound);
+                statusMessage.innerHTML = `<i class="fas fa-check-circle"></i> Factor found at position ${factorTrial.factorPosition} in trial ${factorTrial.trialNumber}!`;
+            }
+        }
+        
+        // Handle window resize for responsive chart
+        window.addEventListener('resize', () => {
+            renderTrajectory();
+        });
+        
+        // Initialize
+        renderCellGrid();
+        renderTrajectory();
+    </script>
+</body>
+</html>
