@@ -65,11 +65,13 @@ public class FactorizationExperiment {
      *   java FactorizationExperiment                    # Default: test ~1e5 semiprime
      *   java FactorizationExperiment <target>           # Test specific target number
      *   java FactorizationExperiment <target> <trials>  # Custom target with trial count
+     *   java FactorizationExperiment <target> <trials> <arraySize>  # Custom target, trials, and array size
      *
      * Examples:
      *   java FactorizationExperiment                                # FACT-EXP-001 (default)
      *   java FactorizationExperiment 1000000000000000000            # FACT-EXP-002 (1e18)
      *   java FactorizationExperiment 1000000000000000091 100        # FACT-EXP-003 (100 trials)
+     *   java FactorizationExperiment 1000000000000000091 100 2000    # FACT-EXP-004 (custom array size)
      */
     public static void main(String[] args) {
         System.out.println("Emergent Doom Engine - Factorization Experiment");
@@ -77,13 +79,14 @@ public class FactorizationExperiment {
 
         // Parse command-line arguments
         List<BigInteger> targets;
-        int arraySize = DEFAULT_ARRAY_SIZE;
         long seed = DEFAULT_SEED;
         int numTrials = 30; // Default increased from 5 to 30
+        final int arraySize;
 
         if (args.length == 0) {
             // Default mode: generate semiprime in 1e5 range (FACT-EXP-001 behavior)
             System.out.println("Mode: DEFAULT (generating semiprime near 1e5)");
+            arraySize = DEFAULT_ARRAY_SIZE;
             targets = generateSemiPrimes(DEFAULT_SEMIPRIME_COUNT, DEFAULT_MIN, DEFAULT_MAX, seed, arraySize);
             System.out.printf("Generated %d targets in [%d, %d] with seed=%d%n",
                 targets.size(), DEFAULT_MIN, DEFAULT_MAX, seed);
@@ -91,6 +94,7 @@ public class FactorizationExperiment {
             // Single target number provided (for EXP-002 and beyond)
             try {
                 BigInteger target = new BigInteger(args[0]);
+                arraySize = DEFAULT_ARRAY_SIZE;
                 targets = Collections.singletonList(target);
                 System.out.println("Mode: CUSTOM TARGET");
                 System.out.printf("Target: %s%n", target);
@@ -105,11 +109,29 @@ public class FactorizationExperiment {
             try {
                 BigInteger target = new BigInteger(args[0]);
                 numTrials = Integer.parseInt(args[1]);
+                arraySize = DEFAULT_ARRAY_SIZE;
                 targets = Collections.singletonList(target);
                 System.out.println("Mode: CUSTOM TARGET WITH TRIALS");
                 System.out.printf("Target: %s%n", target);
                 System.out.printf("Target magnitude: ~1e%.0f%n", Math.log10(target.doubleValue()));
                 System.out.printf("Trials: %d%n", numTrials);
+            } catch (NumberFormatException e) {
+                System.err.println("Error: Invalid number format in arguments");
+                printUsage();
+                return;
+            }
+        } else if (args.length == 3) {
+            // Target, trial count, and array size provided
+            try {
+                BigInteger target = new BigInteger(args[0]);
+                numTrials = Integer.parseInt(args[1]);
+                arraySize = Integer.parseInt(args[2]);
+                targets = Collections.singletonList(target);
+                System.out.println("Mode: CUSTOM TARGET WITH TRIALS AND ARRAY SIZE");
+                System.out.printf("Target: %s%n", target);
+                System.out.printf("Target magnitude: ~1e%.0f%n", Math.log10(target.doubleValue()));
+                System.out.printf("Trials: %d%n", numTrials);
+                System.out.printf("Array size: %d%n", arraySize);
             } catch (NumberFormatException e) {
                 System.err.println("Error: Invalid number format in arguments");
                 printUsage();
@@ -413,11 +435,13 @@ public class FactorizationExperiment {
         System.err.println("  java FactorizationExperiment              # Default: test ~1e5 semiprime");
         System.err.println("  java FactorizationExperiment <target>     # Test specific target number");
         System.err.println("  java FactorizationExperiment <target> <trials>  # Custom target with trial count");
+        System.err.println("  java FactorizationExperiment <target> <trials> <arraySize>  # Custom target, trials, and array size");
         System.err.println();
         System.err.println("Examples:");
         System.err.println("  java FactorizationExperiment                        # FACT-EXP-001 (default)");
         System.err.println("  java FactorizationExperiment 1000000000000000000    # FACT-EXP-002 (1e18)");
         System.err.println("  java FactorizationExperiment 100039                 # Test specific number");
         System.err.println("  java FactorizationExperiment 1000000000000000091 100  # Custom target and trials");
+        System.err.println("  java FactorizationExperiment 1000000000000000091 100 2000  # Custom target, trials, and array size");
     }
 }
