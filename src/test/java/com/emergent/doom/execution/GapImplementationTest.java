@@ -106,7 +106,7 @@ class GapImplementationTest {
 
             FrozenCellStatus frozenStatus = new FrozenCellStatus();
             SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
-            Probe<GenericCell> probe = new Probe<>();
+            Probe<GenericCell> probe = new BasicProbe<>();
             ConvergenceDetector<GenericCell> detector = new NoSwapConvergence<>(3);
 
             ExecutionEngine<GenericCell> engine = new ExecutionEngine<>(
@@ -131,7 +131,7 @@ class GapImplementationTest {
 
             FrozenCellStatus frozenStatus = new FrozenCellStatus();
             SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
-            Probe<GenericCell> probe = new Probe<>();
+            Probe<GenericCell> probe = new BasicProbe<>();
             ConvergenceDetector<GenericCell> detector = new NoSwapConvergence<>(3);
 
             ExecutionEngine<GenericCell> engine = new ExecutionEngine<>(
