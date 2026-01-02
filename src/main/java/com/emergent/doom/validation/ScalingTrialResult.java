@@ -33,8 +33,15 @@ public class ScalingTrialResult {
     /**
      * Create a trial result record.
      * 
-     * <p><strong>Not yet implemented.</strong> Will construct an immutable result object
-     * capturing all trial outcomes.</p>
+     * <p><strong>Implementation:</strong> Constructs an immutable result object
+     * capturing all trial outcomes for later analysis.</p>
+     * 
+     * <p><strong>Reasoning:</strong> Immutability prevents accidental modification
+     * of experimental data. All fields are captured at construction time to ensure
+     * consistency.</p>
+     * 
+     * <p><strong>Integration:</strong> Created by executeSingleTrial(), aggregated
+     * by generateReport() for statistical analysis.</p>
      * 
      * @param config The configuration used for this trial
      * @param stepsToConvergence Number of steps until convergence (or maxSteps if non-convergent)
@@ -48,109 +55,140 @@ public class ScalingTrialResult {
                               boolean converged, boolean foundFactor,
                               BigInteger discoveredFactor, long executionTimeMs,
                               RemainderStatistics remainderStats) {
-        // TODO: Phase 3 - implement constructor
-        throw new UnsupportedOperationException("Not yet implemented");
+        if (config == null) throw new IllegalArgumentException("config cannot be null");
+        if (stepsToConvergence < 0) throw new IllegalArgumentException("stepsToConvergence cannot be negative");
+        if (executionTimeMs < 0) throw new IllegalArgumentException("executionTimeMs cannot be negative");
+        
+        this.config = config;
+        this.stepsToConvergence = stepsToConvergence;
+        this.converged = converged;
+        this.foundFactor = foundFactor;
+        this.discoveredFactor = discoveredFactor;
+        this.executionTimeMs = executionTimeMs;
+        this.remainderStats = remainderStats;
     }
     
     /**
      * Get the trial configuration.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return the config used.</p>
+     * <p><strong>Implementation:</strong> Returns the config used.</p>
      * 
      * @return The trial configuration
      */
     public ScalingTrialConfig getConfig() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return config;
     }
     
     /**
      * Get the number of steps to convergence.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return step count. If non-convergent,
+     * <p><strong>Implementation:</strong> Returns step count. If non-convergent,
      * returns maxSteps from config.</p>
      * 
      * @return Steps to convergence
      */
     public int getStepsToConvergence() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return stepsToConvergence;
     }
     
     /**
      * Check if trial converged.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return convergence status.</p>
+     * <p><strong>Implementation:</strong> Returns convergence status.</p>
      * 
      * @return true if converged, false otherwise
      */
     public boolean isConverged() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return converged;
     }
     
     /**
      * Check if a non-trivial factor was found.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return factor discovery status.</p>
+     * <p><strong>Implementation:</strong> Returns factor discovery status.</p>
      * 
      * @return true if factor found, false otherwise
      */
     public boolean isFoundFactor() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return foundFactor;
     }
     
     /**
      * Get the discovered factor.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return the factor if found, null otherwise.</p>
+     * <p><strong>Implementation:</strong> Returns the factor if found, null otherwise.</p>
      * 
      * @return The discovered factor or null
      */
     public BigInteger getDiscoveredFactor() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return discoveredFactor;
     }
     
     /**
      * Get execution time in milliseconds.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return wall-clock time.</p>
+     * <p><strong>Implementation:</strong> Returns wall-clock time.</p>
      * 
      * @return Execution time in ms
      */
     public long getExecutionTimeMs() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return executionTimeMs;
     }
     
     /**
      * Get remainder landscape statistics.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return remainder stats object.</p>
+     * <p><strong>Implementation:</strong> Returns remainder stats object.</p>
      * 
      * @return Remainder statistics
      */
     public RemainderStatistics getRemainderStats() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return remainderStats;
     }
     
     /**
      * Convert to CSV row format.
      * 
-     * <p><strong>Not yet implemented.</strong> Will generate a CSV-formatted string
-     * with all trial metrics for export.</p>
+     * <p><strong>Implementation:</strong> Generates a CSV-formatted string
+     * with all trial metrics for export. Compatible with analyze_scaling.py schema.</p>
      * 
      * <p><strong>Expected format:</strong>
      * stage,target,arraySize,trial,steps,converged,foundFactor,factor,timeMs,
      * remainderMean,remainderVariance,remainderAutocorr</p>
      * 
+     * <p><strong>Reasoning:</strong> CSV format enables analysis in Python/R and
+     * allows long-term archival of experimental data.</p>
+     * 
      * @return CSV row string
      */
     public String toCsvRow() {
-        // TODO: Phase 3 - implement CSV serialization
-        throw new UnsupportedOperationException("Not yet implemented");
+        StringBuilder sb = new StringBuilder();
+        
+        // Stage, target, arraySize
+        sb.append(config.getStage()).append(",");
+        sb.append(config.getTarget()).append(",");
+        sb.append(config.getArraySize()).append(",");
+        
+        // Steps, converged, foundFactor
+        sb.append(stepsToConvergence).append(",");
+        sb.append(converged ? "true" : "false").append(",");
+        sb.append(foundFactor ? "true" : "false").append(",");
+        
+        // Discovered factor (or empty)
+        sb.append(discoveredFactor != null ? discoveredFactor : "").append(",");
+        
+        // Execution time
+        sb.append(executionTimeMs).append(",");
+        
+        // Remainder statistics (or empty if not available)
+        if (remainderStats != null) {
+            sb.append(remainderStats.getMean()).append(",");
+            sb.append(remainderStats.getVariance()).append(",");
+            sb.append(remainderStats.getAutocorrelation());
+        } else {
+            sb.append(",,");  // Empty fields for missing stats
+        }
+        
+        return sb.toString();
     }
 }

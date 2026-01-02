@@ -31,7 +31,15 @@ public class ScalingTrialConfig {
     /**
      * Create a new trial configuration.
      * 
-     * <p><strong>Not yet implemented.</strong> Will construct an immutable configuration object.</p>
+     * <p><strong>Implementation:</strong> Constructs an immutable configuration object
+     * with validation of critical parameters.</p>
+     * 
+     * <p><strong>Reasoning:</strong> Immutability ensures trial configurations cannot
+     * be accidentally modified during execution, preventing hard-to-debug issues.
+     * Validation catches configuration errors early.</p>
+     * 
+     * <p><strong>Integration:</strong> Created in runTrialBatch(), passed to
+     * executeSingleTrial() for each trial execution.</p>
      * 
      * @param target The semiprime to factor
      * @param arraySize The number of candidate positions (cells) in the array
@@ -43,79 +51,84 @@ public class ScalingTrialConfig {
     public ScalingTrialConfig(BigInteger target, int arraySize, int maxSteps,
                               int requiredStableSteps, boolean recordTrajectory,
                               ScalingStage stage) {
-        // TODO: Phase 3 - implement constructor with validation
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Validate parameters
+        if (target == null) throw new IllegalArgumentException("target cannot be null");
+        if (arraySize <= 0) throw new IllegalArgumentException("arraySize must be positive");
+        if (maxSteps <= 0) throw new IllegalArgumentException("maxSteps must be positive");
+        if (requiredStableSteps < 0) throw new IllegalArgumentException("requiredStableSteps cannot be negative");
+        if (stage == null) throw new IllegalArgumentException("stage cannot be null");
+        
+        this.target = target;
+        this.arraySize = arraySize;
+        this.maxSteps = maxSteps;
+        this.requiredStableSteps = requiredStableSteps;
+        this.recordTrajectory = recordTrajectory;
+        this.stage = stage;
     }
     
     /**
      * Get the target semiprime to factor.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return the configured target value.</p>
+     * <p><strong>Implementation:</strong> Returns the configured target value.</p>
      * 
      * @return The target semiprime
      */
     public BigInteger getTarget() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return target;
     }
     
     /**
      * Get the array size for this trial.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return the number of cells/positions.</p>
+     * <p><strong>Implementation:</strong> Returns the number of cells/positions.</p>
      * 
      * @return The array size
      */
     public int getArraySize() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return arraySize;
     }
     
     /**
      * Get the maximum steps allowed.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return the step limit.</p>
+     * <p><strong>Implementation:</strong> Returns the step limit.</p>
      * 
      * @return Maximum steps
      */
     public int getMaxSteps() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return maxSteps;
     }
     
     /**
      * Get the required stable steps for convergence.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return the convergence threshold.</p>
+     * <p><strong>Implementation:</strong> Returns the convergence threshold.</p>
      * 
      * @return Required stable steps
      */
     public int getRequiredStableSteps() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return requiredStableSteps;
     }
     
     /**
      * Check if trajectory recording is enabled.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return trajectory flag.</p>
+     * <p><strong>Implementation:</strong> Returns trajectory flag.</p>
      * 
      * @return true if recording trajectory, false otherwise
      */
     public boolean isRecordTrajectory() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return recordTrajectory;
     }
     
     /**
      * Get the experimental stage.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return the stage enum.</p>
+     * <p><strong>Implementation:</strong> Returns the stage enum.</p>
      * 
      * @return The experimental stage
      */
     public ScalingStage getStage() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return stage;
     }
 }
