@@ -7,7 +7,6 @@ import com.emergent.doom.experiment.ExperimentRunner;
 import com.emergent.doom.experiment.TrialResult;
 import com.emergent.doom.metrics.MonotonicityError;
 import com.emergent.doom.metrics.SortednessValue;
-import com.emergent.doom.probe.StepSnapshot;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -15,7 +14,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
