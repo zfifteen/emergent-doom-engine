@@ -6,6 +6,7 @@ import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.execution.ExecutionEngine;
 import com.emergent.doom.execution.NoSwapConvergence;
 import com.emergent.doom.probe.Probe;
+import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.swap.SwapEngine;
 import org.junit.jupiter.api.Test;

@@ -7,6 +7,7 @@ import com.emergent.doom.experiment.SortDirection;
 import com.emergent.doom.export.TrajectoryDataExporter;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.probe.BasicProbe;
+import com.emergent.doom.probe.BasicProbe;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

@@ -5,6 +5,7 @@ import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.GenericCell;
 import com.emergent.doom.cell.HasIdealPosition;
 import com.emergent.doom.probe.Probe;
+import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.swap.FrozenCellStatus.FrozenType;
 import com.emergent.doom.swap.SwapEngine;
