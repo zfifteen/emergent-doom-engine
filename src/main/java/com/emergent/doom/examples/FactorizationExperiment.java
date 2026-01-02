@@ -66,12 +66,14 @@ public class FactorizationExperiment {
      *   java FactorizationExperiment <target>           # Test specific target number
      *   java FactorizationExperiment <target> <trials>  # Custom target with trial count
      *   java FactorizationExperiment <target> <trials> <arraySize>  # Custom target, trials, and array size
+     *   java FactorizationExperiment <target> <trials> <arraySize> <threads> # Custom target, trials, array size, and threads
      *
      * Examples:
      *   java FactorizationExperiment                                # FACT-EXP-001 (default)
      *   java FactorizationExperiment 1000000000000000000            # FACT-EXP-002 (1e18)
      *   java FactorizationExperiment 1000000000000000091 100        # FACT-EXP-003 (100 trials)
      *   java FactorizationExperiment 1000000000000000091 100 2000    # FACT-EXP-004 (custom array size)
+     *   java FactorizationExperiment 1000000000000000091 100 2000 16 # FACT-EXP-005 (custom threads)
      */
     public static void main(String[] args) {
         System.out.println("Emergent Doom Engine - Factorization Experiment");
@@ -81,12 +83,12 @@ public class FactorizationExperiment {
         List<BigInteger> targets;
         long seed = DEFAULT_SEED;
         int numTrials = 30; // Default increased from 5 to 30
-        final int arraySize;
+        int arraySize = DEFAULT_ARRAY_SIZE;
+        int numThreads = Math.max(1, Runtime.getRuntime().availableProcessors());
 
         if (args.length == 0) {
             // Default mode: generate semiprime in 1e5 range (FACT-EXP-001 behavior)
             System.out.println("Mode: DEFAULT (generating semiprime near 1e5)");
-            arraySize = DEFAULT_ARRAY_SIZE;
             targets = generateSemiPrimes(DEFAULT_SEMIPRIME_COUNT, DEFAULT_MIN, DEFAULT_MAX, seed, arraySize);
             System.out.printf("Generated %d targets in [%d, %d] with seed=%d%n",
                 targets.size(), DEFAULT_MIN, DEFAULT_MAX, seed);
@@ -94,7 +96,6 @@ public class FactorizationExperiment {
             // Single target number provided (for EXP-002 and beyond)
             try {
                 BigInteger target = new BigInteger(args[0]);
-                arraySize = DEFAULT_ARRAY_SIZE;
                 targets = Collections.singletonList(target);
                 System.out.println("Mode: CUSTOM TARGET");
                 System.out.printf("Target: %s%n", target);
@@ -109,7 +110,6 @@ public class FactorizationExperiment {
             try {
                 BigInteger target = new BigInteger(args[0]);
                 numTrials = Integer.parseInt(args[1]);
-                arraySize = DEFAULT_ARRAY_SIZE;
                 targets = Collections.singletonList(target);
                 System.out.println("Mode: CUSTOM TARGET WITH TRIALS");
                 System.out.printf("Target: %s%n", target);
@@ -137,6 +137,25 @@ public class FactorizationExperiment {
                 printUsage();
                 return;
             }
+        } else if (args.length == 4) {
+            // Target, trial count, array size, and thread count provided
+            try {
+                BigInteger target = new BigInteger(args[0]);
+                numTrials = Integer.parseInt(args[1]);
+                arraySize = Integer.parseInt(args[2]);
+                numThreads = Integer.parseInt(args[3]);
+                targets = Collections.singletonList(target);
+                System.out.println("Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS");
+                System.out.printf("Target: %s%n", target);
+                System.out.printf("Target magnitude: ~1e%.0f%n", Math.log10(target.doubleValue()));
+                System.out.printf("Trials: %d%n", numTrials);
+                System.out.printf("Array size: %d%n", arraySize);
+                System.out.printf("Threads: %d%n", numThreads);
+            } catch (NumberFormatException e) {
+                System.err.println("Error: Invalid number format in arguments");
+                printUsage();
+                return;
+            }
         } else {
             System.err.println("Error: Invalid number of arguments");
             printUsage();
@@ -144,22 +163,23 @@ public class FactorizationExperiment {
         }
 
         if (targets.isEmpty()) {
-            System.err.println("Error: No targets generated");
+            System.err.println("Error: No targets generated or parsed");
             return;
         }
 
         final int trialsToRun = numTrials; // Make effectively final for lambda
+        final int finalArraySize = arraySize; // Make effectively final for lambda
 
         // Shared experiment configuration (sequential execution to avoid nested threading)
         ExperimentConfig config = new ExperimentConfig(
-                arraySize,      // arraySize
+                finalArraySize,      // arraySize
                 10_000,         // maxSteps (increased per request)
                 3,              // requiredStableSteps for convergence
                 true            // recordTrajectory
         , ExecutionMode.SEQUENTIAL);  // Use SEQUENTIAL temporarily for verification
 
         // Option B: run tasks in a thread pool sized to available processors
-        final int threads = Math.max(1, Runtime.getRuntime().availableProcessors());
+        final int threads = numThreads; 
         System.out.printf("Running %d trials per target using %d threads...%n", trialsToRun, threads);
         ExecutorService pool = Executors.newFixedThreadPool(threads);
 
@@ -167,7 +187,7 @@ public class FactorizationExperiment {
         for (BigInteger target : targets) {
             tasks.add(() -> {
                 ExperimentRunner<RemainderCell> runner = new ExperimentRunner<>(
-                        () -> createCellArray(target, arraySize),
+                        () -> createCellArray(target, finalArraySize),
                         () -> new LinearNeighborhood<>(1)
                 );
                 runner.addMetric("Monotonicity", new MonotonicityError<>());
@@ -203,7 +223,7 @@ public class FactorizationExperiment {
                 // Print discovered non-trivial factor positions for this target
                 displayFactors(outcome.results);
                 // Verify by brute force what the actual factors are
-                verifyFactorsByBruteForce(outcome.target, arraySize);
+                verifyFactorsByBruteForce(outcome.target, finalArraySize);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.err.println("Interrupted while waiting for task result.");
@@ -436,6 +456,7 @@ public class FactorizationExperiment {
         System.err.println("  java FactorizationExperiment <target>     # Test specific target number");
         System.err.println("  java FactorizationExperiment <target> <trials>  # Custom target with trial count");
         System.err.println("  java FactorizationExperiment <target> <trials> <arraySize>  # Custom target, trials, and array size");
+        System.err.println("  java FactorizationExperiment <target> <trials> <arraySize> <threads> # Custom target, trials, array size, and threads");
         System.err.println();
         System.err.println("Examples:");
         System.err.println("  java FactorizationExperiment                        # FACT-EXP-001 (default)");
@@ -443,5 +464,6 @@ public class FactorizationExperiment {
         System.err.println("  java FactorizationExperiment 100039                 # Test specific number");
         System.err.println("  java FactorizationExperiment 1000000000000000091 100  # Custom target and trials");
         System.err.println("  java FactorizationExperiment 1000000000000000091 100 2000  # Custom target, trials, and array size");
+        System.err.println("  java FactorizationExperiment 1000000000000000091 100 2000 16 # Custom target, trials, array size, and threads");
     }
 }
