@@ -1,25 +1,16 @@
 package com.emergent.doom.probe;
 
-import com.emergent.doom.group.CellStatus;
-import com.emergent.doom.cell.HasValue;
+import com.emergent.doom.cell.Algotype;
+import com.emergent.doom.cell.HasAlgotype;
 import com.emergent.doom.cell.HasGroup;
 import com.emergent.doom.cell.HasStatus;
-import com.emergent.doom.cell.HasAlgotype;
-
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import com.emergent.doom.cell.Algotype;
-import com.emergent.doom.cell.Cell;
+import com.emergent.doom.cell.HasValue;
 import com.emergent.doom.group.CellStatus;
-import com.emergent.doom.group.CellGroup;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -40,6 +31,9 @@ public class ThreadSafeProbe<T extends HasValue & HasGroup & HasStatus & HasAlgo
 
     @Override
     public void recordSnapshot(int stepNumber, T[] cells, int localSwapCount) {
+        // Update convergence metrics in parent (atomic)
+        updateCounters(stepNumber, localSwapCount);
+
         if (super.isRecordingEnabled()) {
             List<Integer> values = new ArrayList<>();
             List<Object[]> types = new ArrayList<>();
@@ -51,7 +45,6 @@ public class ThreadSafeProbe<T extends HasValue & HasGroup & HasStatus & HasAlgo
                 int isFrozen = (cell.getStatus() == CellStatus.FREEZE) ? 1 : 0;
                 types.add(new Object[]{groupId, algotypeLabel, value, isFrozen});
             }
-            swapCount.addAndGet(localSwapCount); // Direct access now protected
             concurrentSnapshots.add(new StepSnapshot<>(stepNumber, values, types, localSwapCount));
         }
     }

@@ -474,11 +474,11 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             return ((com.emergent.doom.cell.InsertionCell<?>) cell).getValue();
         } else if (cell instanceof com.emergent.doom.cell.BubbleCell) {
             return ((com.emergent.doom.cell.BubbleCell<?>) cell).getValue();
+        } else {
+            // Fallback for test cells or other implementations
+            // This assumes the cell implements HasValue, which is part of the Cell interface
+            return cell.getValue();
         }
-        throw new UnsupportedOperationException(
-            "Cell type " + cell.getClass().getName() + " does not support getValue(). " +
-            "All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell."
-        );
     }
 
     /**
