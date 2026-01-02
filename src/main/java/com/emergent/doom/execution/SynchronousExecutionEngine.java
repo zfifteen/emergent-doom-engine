@@ -15,9 +15,12 @@ import com.emergent.doom.topology.SelectionTopology;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Synchronous execution engine implementing single-threaded trial execution.
@@ -527,10 +530,10 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      */
     private List<SwapProposal> resolveConflicts(List<SwapProposal> proposals) {
         // Sort by priority (initiator index - leftmost first)
-        java.util.Collections.sort(proposals);
+        Collections.sort(proposals);
         
         List<SwapProposal> resolved = new ArrayList<>();
-        java.util.Set<Integer> involvedCells = new java.util.HashSet<>();
+        Set<Integer> involvedCells = new HashSet<>();
         
         for (SwapProposal proposal : proposals) {
             int initiator = proposal.getInitiatorIndex();
