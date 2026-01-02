@@ -126,8 +126,8 @@ public enum ScalingStage {
     public int getPrimeMagnitude() {
         // For semiprime N = p × q ≈ 10^m, use p, q ≈ 10^(m/2)
         switch (this) {
-            case STAGE_1_E6:  return 3;   // 10^3 × 10^3 ≈ 10^6
-            case STAGE_2_E9:  return 4;   // ~10^4.5 × 10^4.5 ≈ 10^9 (we'll use 10^4 for simplicity)
+            case STAGE_1_E6:  return 3;   // 10^3 × 10^3 = 10^6
+            case STAGE_2_E9:  return 5;   // 10^5 × 10^5 = 10^10 (close to 10^9, avoiding fractional exponents)
             case STAGE_3_E12: return 6;   // 10^6 × 10^6 = 10^12
             case STAGE_4_E18: return 9;   // 10^9 × 10^9 = 10^18
             default: throw new IllegalStateException("Unknown stage: " + this);
