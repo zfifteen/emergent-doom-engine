@@ -233,22 +233,44 @@ public class ExperimentRunner<T extends Cell<T>> {
      * @return aggregated results from all trials
      */
     public ExperimentResults<T> runBatchExperiments(ExperimentConfig config) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Get numRepetitions from config
-        // TODO: Calculate numWorkers = min(numRepetitions, Runtime.getRuntime().availableProcessors())
-        // TODO: Create ExecutorService with Executors.newFixedThreadPool(numWorkers)
-        // TODO: Create List<Future<TrialResult<T>>>
-        // TODO: For i = 0 to numRepetitions:
-        //       - Submit lambda: () -> runTrial(config, i)
-        //       - Add Future to list
-        // TODO: Create ExperimentResults
-        // TODO: For each Future in list:
-        //       - Call future.get() (blocking)
-        //       - Add TrialResult to ExperimentResults
-        //       - Log progress every 10 trials
-        // TODO: In finally block: executor.shutdown()
-        // TODO: Return ExperimentResults
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        int numRepetitions = config.getNumRepetitions();
+        
+        // Determine worker count: min(trials, CPU cores)
+        int numWorkers = Math.min(numRepetitions, Runtime.getRuntime().availableProcessors());
+        
+        // Create thread pool
+        ExecutorService executor = Executors.newFixedThreadPool(numWorkers);
+        List<Future<TrialResult<T>>> futures = new ArrayList<>();
+        
+        try {
+            // Submit all trials as tasks
+            for (int i = 0; i < numRepetitions; i++) {
+                final int trialNum = i;
+                futures.add(executor.submit(() -> runTrial(config, trialNum)));
+            }
+            
+            // Collect results as they complete
+            List<TrialResult<T>> results = new ArrayList<>();
+            for (int i = 0; i < futures.size(); i++) {
+                try {
+                    TrialResult<T> result = futures.get(i).get();
+                    results.add(result);
+                    
+                    // Progress logging every 10 trials
+                    if ((i + 1) % 10 == 0) {
+                        System.out.printf("Completed %d/%d trials%n", i + 1, numRepetitions);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException("Trial " + i + " failed", e);
+                }
+            }
+            
+            // Aggregate and return results
+            return aggregateStatistics(config, results);
+            
+        } finally {
+            executor.shutdown();
+        }
     }
 
     /**
@@ -257,7 +279,12 @@ public class ExperimentRunner<T extends Cell<T>> {
      * <p>PURPOSE: Combine results from multiple trials into summary statistics
      * (mean, std dev, min, max for each metric).</p>
      *
-     * <p>INPUTS: results - list of TrialResult objects</p>
+     * <p>INPUTS: 
+     * <ul>
+     *   <li>config - experiment configuration</li>
+     *   <li>results - list of TrialResult objects</li>
+     * </ul>
+     * </p>
      *
      * <p>PROCESS:
      * <ol>
@@ -276,14 +303,17 @@ public class ExperimentRunner<T extends Cell<T>> {
      *
      * <p>DEPENDENCIES: ExperimentResults for aggregation logic</p>
      *
+     * @param config experiment configuration
      * @param results list of trial results
      * @return aggregated experiment results
      */
-    private ExperimentResults<T> aggregateStatistics(List<TrialResult<T>> results) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Create ExperimentResults
-        // TODO: For each result: add to ExperimentResults
-        // TODO: Return ExperimentResults
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+    private ExperimentResults<T> aggregateStatistics(ExperimentConfig config, List<TrialResult<T>> results) {
+        ExperimentResults<T> experimentResults = new ExperimentResults<>(config);
+        
+        for (TrialResult<T> result : results) {
+            experimentResults.addTrialResult(result);
+        }
+        
+        return experimentResults;
     }
 }
