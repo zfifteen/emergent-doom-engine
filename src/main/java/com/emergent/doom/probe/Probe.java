@@ -8,8 +8,9 @@ import com.emergent.doom.cell.HasGroup;
 import com.emergent.doom.cell.HasStatus;
 import com.emergent.doom.cell.HasAlgotype;
 import com.emergent.doom.group.CellGroup;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Records execution trajectory by capturing snapshots at each step.
@@ -23,10 +24,10 @@ public class Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
     protected final AtomicInteger swapCount;
     private final AtomicInteger compareAndSwapCount;
     private final AtomicInteger frozenSwapAttempts;
-    
+
     // Convergence tracking (independent of recordingEnabled)
-    private final AtomicInteger stepsSinceLastSwap;
-    private final AtomicInteger totalSteps;
+    protected final AtomicInteger stepsSinceLastSwap;
+    protected final AtomicInteger totalSteps;
 
     public Probe() {
         this.snapshots = new ArrayList<>();
@@ -39,18 +40,11 @@ public class Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
     }
 
     /**
-     * Record a snapshot. 
+     * Record a snapshot.
      * CRITICAL: Now tracks convergence metrics even if recordingEnabled is false.
      */
     public void recordSnapshot(int stepNumber, T[] cells, int localSwapCount) {
-        totalSteps.set(stepNumber);
-        
-        if (localSwapCount > 0) {
-            stepsSinceLastSwap.set(0);
-            swapCount.addAndGet(localSwapCount);
-        } else {
-            stepsSinceLastSwap.incrementAndGet();
-        }
+        updateCounters(stepNumber, localSwapCount);
 
         if (recordingEnabled) {
             List<Integer> values = new ArrayList<>();
@@ -67,6 +61,32 @@ public class Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
         }
     }
 
+    /**
+     * Updates internal counters for convergence tracking.
+     * Protected so subclasses (ThreadSafeProbe) can reuse this logic.
+     */
+    protected void updateCounters(int stepNumber, int localSwapCount) {
+        totalSteps.set(stepNumber);
+
+        if (localSwapCount > 0) {
+            stepsSinceLastSwap.set(0);
+            swapCount.addAndGet(localSwapCount);
+        } else {
+            stepsSinceLastSwap.incrementAndGet();
+        }
+    }
+
+    /**
+     * Records a snapshot with additional type information.
+     *
+     * @param stepNumber the step number of the snapshot
+     * @param cells      the array of cells to record
+     * @param localSwapCount the number of swaps in this step
+     */
+    public void recordSnapshotWithTypes(int stepNumber, T[] cells, int localSwapCount) {
+        recordSnapshot(stepNumber, cells, localSwapCount);
+    }
+
     public int getStepsSinceLastSwap() {
         return stepsSinceLastSwap.get();
     }
@@ -77,6 +97,62 @@ public class Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
 
     public List<StepSnapshot<T>> getSnapshots() {
         return Collections.unmodifiableList(snapshots);
+    }
+
+    /**
+     * Returns the number of snapshots recorded.
+     *
+     * <p>This satisfies the requirement for tracking the size of the recorded trajectory
+     * and is used by analysis tools to validate data availability.</p>
+     */
+    public int getSnapshotCount() {
+        return snapshots.size();
+    }
+
+    /**
+     * Retrieves a specific snapshot by its step number.
+     *
+     * <p>This is the primary lookup mechanism for historical state. It performs
+     * a linear search through the recorded snapshots.</p>
+     *
+     * @param stepNumber the step number to find
+     * @return the matching snapshot, or null if not found
+     */
+    public StepSnapshot<T> getSnapshot(int stepNumber) {
+        for (StepSnapshot<T> snapshot : snapshots) {
+            if (snapshot.getStepNumber() == stepNumber) {
+                return snapshot;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves the type metadata for a specific step.
+     *
+     * <p>Delegates to getSnapshot() to find the relevant step and then
+     * extracts the type information captured in that snapshot.</p>
+     *
+     * @param stepNumber the step number to find
+     * @return list of type metadata arrays, or null if step not found
+     */
+    public List<Object[]> getTypesSnapshot(int stepNumber) {
+        StepSnapshot<T> snapshot = getSnapshot(stepNumber);
+        return (snapshot != null) ? snapshot.getTypes() : null;
+    }
+
+    /**
+     * Retrieves the cell type distribution for a specific step.
+     *
+     * <p>Delegates to getSnapshot() to find the relevant step and then
+     * uses the snapshot's built-in distribution calculation.</p>
+     *
+     * @param stepNumber the step number to find
+     * @return map of algotypes to their counts, or null if step not found
+     */
+    public Map<Algotype, Integer> getCellTypeDistribution(int stepNumber) {
+        StepSnapshot<T> snapshot = getSnapshot(stepNumber);
+        return (snapshot != null) ? snapshot.getCellTypeDistribution() : null;
     }
 
     public StepSnapshot<T> getLastSnapshot() {
@@ -109,28 +185,17 @@ public class Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
         frozenSwapAttempts.incrementAndGet();
     }
 
-    /**
-     * Get the total number of snapshots recorded.
-     *
-     * @return number of snapshots
-     */
-    int getSnapshotCount();
+    public int getSwapCount() {
+        return swapCount.get();
+    }
 
-    /**
-     * Get the types snapshot at a specific step.
-     *
-     * @param step the step index
-     * @return list of type arrays at that step
-     */
-    List<Object[]> getTypesSnapshot(int step);
+    public int getCompareAndSwapCount() {
+        return compareAndSwapCount.get();
+    }
 
-    /**
-     * Get the cell type distribution at a specific step.
-     *
-     * @param step the step index
-     * @return map of algotype to count
-     */
-    Map<Algotype, Integer> getCellTypeDistribution(int step);
+    public int getFrozenSwapAttempts() {
+        return frozenSwapAttempts.get();
+    }
 
     public void resetCounters() {
         swapCount.set(0);
