@@ -32,6 +32,14 @@ public interface Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> 
     void recordSnapshot(int stepNumber, T[] cells, int swapCount);
 
     /**
+     * Record a snapshot with types (deprecated, use recordSnapshot).
+     */
+    @Deprecated
+    default void recordSnapshotWithTypes(int stepNumber, T[] cells, int swapCount) {
+        recordSnapshot(stepNumber, cells, swapCount);
+    }
+
+    /**
      * Get all snapshots.
      *
      * @return list of snapshots
