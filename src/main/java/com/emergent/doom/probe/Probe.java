@@ -64,9 +64,9 @@ public interface Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> 
      * Get the types snapshot at a specific step.
      *
      * @param step the step index
-     * @return array of algotypes at that step
+     * @return list of type arrays at that step
      */
-    Algotype[] getTypesSnapshot(int step);
+    List<Object[]> getTypesSnapshot(int step);
 
     /**
      * Get the cell type distribution at a specific step.

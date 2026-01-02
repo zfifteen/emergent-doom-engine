@@ -5,6 +5,7 @@ import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.HasIdealPosition;
 import com.emergent.doom.cell.SelectionCell;
 import com.emergent.doom.probe.Probe;
+import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.topology.BubbleTopology;
 import com.emergent.doom.topology.InsertionTopology;

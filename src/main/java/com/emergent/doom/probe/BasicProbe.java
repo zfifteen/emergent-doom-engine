@@ -91,15 +91,9 @@ public class BasicProbe<T extends HasValue & HasGroup & HasStatus & HasAlgotype>
     }
 
     @Override
-    public Algotype[] getTypesSnapshot(int step) {
-        if (step < 0 || step >= snapshots.size()) {
-            throw new IndexOutOfBoundsException("Step index out of bounds: " + step);
-        }
-        StepSnapshot<T> snapshot = snapshots.get(step);
-        List<Object[]> types = snapshot.getTypes();
-        return types.stream()
-                .map(type -> Algotype.values()[(Integer) type[1]])
-                .toArray(Algotype[]::new);
+    public List<Object[]> getTypesSnapshot(int step) {
+        StepSnapshot<T> snapshot = getSnapshot(step);
+        return (snapshot != null) ? snapshot.getTypes() : null;
     }
 
     @Override

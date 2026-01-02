@@ -7,6 +7,7 @@ import com.emergent.doom.cell.HasSortDirection;
 import com.emergent.doom.cell.SelectionCell;
 import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.probe.Probe;
+import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.swap.ConcurrentSwapCollector;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.swap.SwapProposal;
