@@ -132,6 +132,8 @@ Decision: proceed or terminate?
 ### Custom Target
 Test a specific semiprime (bypasses stage defaults):
 ```bash
+# Note: Command-line arguments are not yet implemented (planned for Phase 3)
+# This example shows the intended future usage
 java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
   com.emergent.doom.validation.LinearScalingValidator \
   --target 1000000007 --trials 30
@@ -140,6 +142,8 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 ### Specific Stage
 Run only Stage 2:
 ```bash
+# Note: Command-line arguments are not yet implemented (planned for Phase 3)
+# This example shows the intended future usage
 java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
   com.emergent.doom.validation.LinearScalingValidator \
   --stage STAGE_2_E9
@@ -147,6 +151,8 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 
 ### Custom Output Path
 ```bash
+# Note: Command-line arguments are not yet implemented (planned for Phase 3)
+# This example shows the intended future usage
 java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
   com.emergent.doom.validation.LinearScalingValidator \
   --output results/stage2_custom.csv
