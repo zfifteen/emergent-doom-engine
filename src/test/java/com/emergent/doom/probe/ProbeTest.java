@@ -20,7 +20,7 @@ class ProbeTest {
 
     @BeforeEach
     void setUp() {
-        probe = new BasicProbe<>();
+        probe = new Probe<>();
     }
 
     @Nested

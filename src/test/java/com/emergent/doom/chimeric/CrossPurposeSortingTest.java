@@ -6,7 +6,6 @@ import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.execution.ExecutionEngine;
 import com.emergent.doom.execution.NoSwapConvergence;
 import com.emergent.doom.probe.Probe;
-import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.swap.SwapEngine;
 import org.junit.jupiter.api.Test;
@@ -119,7 +118,7 @@ public class CrossPurposeSortingTest {
         // Execute sorting
         FrozenCellStatus frozenStatus = new FrozenCellStatus();
         SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
-        Probe<GenericCell> probe = new BasicProbe<>();
+        Probe<GenericCell> probe = new Probe<>();
         NoSwapConvergence<GenericCell> convergence = new NoSwapConvergence<>(3);
         
         ExecutionEngine<GenericCell> engine = new ExecutionEngine<>(

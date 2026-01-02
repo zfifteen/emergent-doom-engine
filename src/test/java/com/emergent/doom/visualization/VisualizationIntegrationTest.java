@@ -6,8 +6,6 @@ import com.emergent.doom.analysis.TrajectoryAnalyzer;
 import com.emergent.doom.experiment.SortDirection;
 import com.emergent.doom.export.TrajectoryDataExporter;
 import com.emergent.doom.probe.Probe;
-import com.emergent.doom.probe.BasicProbe;
-import com.emergent.doom.probe.BasicProbe;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -34,7 +32,7 @@ class VisualizationIntegrationTest {
     @Test
     void testCompleteVisualizationWorkflow(@TempDir Path tempDir) throws IOException {
         // Step 1: Create a probe with some test data
-        Probe<GenericCell> probe = new BasicProbe<>();
+        Probe<GenericCell> probe = new Probe<>();
         
         // Simulate a sorting process with improving sortedness
         GenericCell[] cells1 = {
@@ -148,7 +146,7 @@ class VisualizationIntegrationTest {
     @Test
     void testSnapshotExport(@TempDir Path tempDir) throws IOException {
         // Create a probe with snapshots
-        Probe<GenericCell> probe = new BasicProbe<>();
+        Probe<GenericCell> probe = new Probe<>();
         GenericCell[] cells = {
             new GenericCell(3, Algotype.BUBBLE), 
             new GenericCell(1, Algotype.BUBBLE), 

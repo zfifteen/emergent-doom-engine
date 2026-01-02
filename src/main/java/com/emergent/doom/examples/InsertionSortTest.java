@@ -11,7 +11,6 @@ import com.emergent.doom.group.CellStatus;
 import com.emergent.doom.cell.InsertionCell;
 import com.emergent.doom.execution.ExecutionEngine;
 import com.emergent.doom.probe.Probe;
-import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.execution.ConvergenceDetector;
@@ -62,7 +61,7 @@ public class InsertionSortTest {
 
         FrozenCellStatus frozen = new FrozenCellStatus();
         SwapEngine<TestCell> swapEngine = new SwapEngine<>(frozen);
-        Probe<TestCell> probe = new BasicProbe<>();
+        Probe<TestCell> probe = new Probe<>();
         probe.setRecordingEnabled(true);
         ConvergenceDetector<TestCell> detector = new NoSwapConvergence<>(10);
 

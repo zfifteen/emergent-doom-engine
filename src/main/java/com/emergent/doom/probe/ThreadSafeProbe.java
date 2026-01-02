@@ -20,7 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * <p>Overrides extraction in recordSnapshot for consistency.</p>
  */
-public class ThreadSafeProbe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> extends BasicProbe<T> implements Probe<T> {
+public class ThreadSafeProbe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> extends Probe<T> {
 
     private final CopyOnWriteArrayList<StepSnapshot<T>> concurrentSnapshots;
 
@@ -73,6 +73,7 @@ public class ThreadSafeProbe<T extends HasValue & HasGroup & HasStatus & HasAlgo
         return concurrentSnapshots.get(size - 1);
     }
 
+    @Override
     public int getSnapshotCount() {
         return concurrentSnapshots.size();
     }

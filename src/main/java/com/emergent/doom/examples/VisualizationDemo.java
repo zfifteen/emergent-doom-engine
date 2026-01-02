@@ -15,7 +15,6 @@ import com.emergent.doom.execution.NoSwapConvergence;
 import com.emergent.doom.experiment.SortDirection;
 import com.emergent.doom.export.TrajectoryDataExporter;
 import com.emergent.doom.probe.Probe;
-import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.visualization.PlotData;
@@ -101,7 +100,7 @@ public class VisualizationDemo {
         
         FrozenCellStatus frozen = new FrozenCellStatus();
         SwapEngine<TestCell> swapEngine = new SwapEngine<>(frozen);
-        Probe<TestCell> probe = new BasicProbe<>();
+        Probe<TestCell> probe = new Probe<>();
         probe.setRecordingEnabled(true);
         ConvergenceDetector<TestCell> detector = new NoSwapConvergence<>(10);
         

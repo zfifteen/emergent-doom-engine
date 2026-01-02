@@ -9,7 +9,6 @@ import com.emergent.doom.execution.NoSwapConvergence;
 import com.emergent.doom.execution.ParallelExecutionEngine;
 import com.emergent.doom.metrics.Metric;
 import com.emergent.doom.probe.Probe;
-import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.probe.StepSnapshot;
 import com.emergent.doom.probe.ThreadSafeProbe;
 import com.emergent.doom.swap.FrozenCellStatus;
@@ -73,7 +72,7 @@ public class ExperimentRunner<T extends Cell<T>> {
                 ? new ThreadSafeFrozenCellStatus()
                 : new FrozenCellStatus();
         SwapEngine<T> swapEngine = new SwapEngine<>(frozenStatus);
-        Probe<T> probe = needsThreadSafe ? new ThreadSafeProbe<>() : new BasicProbe<>();
+        Probe<T> probe = needsThreadSafe ? new ThreadSafeProbe<>() : new Probe<>();
         probe.setRecordingEnabled(config.isRecordTrajectory());
         ConvergenceDetector<T> convergenceDetector =
                 new NoSwapConvergence<>(config.getRequiredStableSteps());

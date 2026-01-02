@@ -7,7 +7,6 @@ import com.emergent.doom.cell.HasSortDirection;
 import com.emergent.doom.cell.SelectionCell;
 import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.probe.Probe;
-import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.swap.ConcurrentSwapCollector;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.swap.SwapProposal;
@@ -60,7 +59,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     private final CyclicBarrier barrier;
     private final ConcurrentSwapCollector swapCollector;
     private final SwapEngine<T> swapEngine;
-    private final BasicProbe<T> probe;
+    private final Probe<T> probe;
     private final ConvergenceDetector<T> convergenceDetector;
 
     // Topology helpers for evaluation
@@ -92,7 +91,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
 
         this.cells = cells;
         this.swapEngine = swapEngine;
-        this.probe = (BasicProbe<T>) probe;
+        this.probe = probe;
         this.convergenceDetector = convergenceDetector;
 
         // Initialize topology helpers

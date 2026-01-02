@@ -5,7 +5,6 @@ import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.HasIdealPosition;
 import com.emergent.doom.cell.SelectionCell;
 import com.emergent.doom.probe.Probe;
-import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.topology.BubbleTopology;
 import com.emergent.doom.topology.InsertionTopology;
@@ -49,7 +48,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
     private final LockBasedCellWorker<T>[] cellWorkers;
     private final ReentrantLock globalLock;
     private final SwapEngine<T> swapEngine;
-    private final BasicProbe<T> probe;
+    private final Probe<T> probe;
     private final ConvergenceDetector<T> convergenceDetector;
 
     // Topology helpers for evaluation
@@ -112,7 +111,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
         this.cells = cells;
         this.swapEngine = swapEngine;
-        this.probe = (BasicProbe<T>) probe;
+        this.probe = probe;
         this.convergenceDetector = convergenceDetector;
         this.convergencePollIntervalMs = pollIntervalMs;
         this.requiredStablePolls = requiredStablePolls;
