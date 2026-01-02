@@ -209,14 +209,7 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
             SwapEngine<T> swapEngine,
             Probe<T> probe,
             ConvergenceDetector<T> convergenceDetector) {
-        // SCAFFOLD: Constructor body not yet implemented
-        // TODO: Store all parameters as fields
-        // TODO: Initialize topology helpers (bubble, insertion, selection)
-        // TODO: Create Random instance
-        // TODO: Initialize state (currentStep=0, converged=false, running=false)
-        // TODO: Wire probe to swapEngine
-        // TODO: Record initial snapshot
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        this(cells, swapEngine, probe, convergenceDetector, new Random());
     }
 
     /**
@@ -242,9 +235,28 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
             Probe<T> probe,
             ConvergenceDetector<T> convergenceDetector,
             Random random) {
-        // SCAFFOLD: Constructor body not yet implemented
-        // TODO: Same as primary constructor but use provided Random instance
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        this.cells = cells;
+        this.swapEngine = swapEngine;
+        this.probe = probe;
+        this.convergenceDetector = convergenceDetector;
+        this.random = random;
+        
+        // Initialize topology helpers
+        this.bubbleTopology = new BubbleTopology<>();
+        this.insertionTopology = new InsertionTopology<>();
+        this.selectionTopology = new SelectionTopology<>();
+        
+        // Initialize state
+        this.currentStep = 0;
+        this.converged = false;
+        this.running = false;
+        this.reverseDirection = false;  // Default to ascending sort
+        
+        // Wire up probe to swap engine for frozen swap attempt tracking
+        swapEngine.setProbe(probe);
+        
+        // Record initial state
+        probe.recordSnapshot(0, cells, 0);
     }
 
     /**
@@ -295,9 +307,71 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @return number of swaps performed in this step
      */
     public int step() {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement synchronous step logic as described above
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        // PHASE TWO: Implement synchronous step logic
+        // Get iteration order (use bubble topology as default, all are sequential)
+        List<Integer> iterationOrder = bubbleTopology.getIterationOrder(cells.length);
+
+        // Reset swap counter for this step
+        swapEngine.resetSwapCount();
+
+        // Collect all swap proposals from cell evaluations
+        List<SwapProposal> proposedSwaps = new ArrayList<>();
+        
+        // For each cell in iteration order, try swapping with neighbors based on algotype
+        for (int i : iterationOrder) {
+            Algotype algotype = cells[i].getAlgotype();
+            SortDirection direction = getCellDirection(cells[i]);
+
+            if (algotype == Algotype.BUBBLE) {
+                // Random 50/50 direction choice - matches cell_research Python behavior
+                // Each iteration, cell randomly picks ONE direction (left or right), not both
+                List<Integer> allNeighbors = getNeighborsForAlgotype(i, algotype);
+                if (!allNeighbors.isEmpty()) {
+                    // Pick ONE random neighbor (50% left, 50% right if both exist)
+                    int randomIndex = random.nextInt(allNeighbors.size());
+                    int j = allNeighbors.get(randomIndex);
+                    // Record comparison before checking shouldSwap
+                    probe.recordCompareAndSwap();
+                    boolean shouldSwap = shouldSwapWithDirection(i, j, algotype, direction);
+                    if (shouldSwap) {
+                        proposedSwaps.add(new SwapProposal(i, j));
+                    }
+                }
+            } else {
+                // Other algotypes: iterate all neighbors
+                List<Integer> neighbors = getNeighborsForAlgotype(i, algotype);
+                for (int j : neighbors) {
+                    // Record comparison before checking shouldSwap
+                    probe.recordCompareAndSwap();
+                    boolean shouldSwap = shouldSwapWithDirection(i, j, algotype, direction);
+                    if (shouldSwap) {
+                        proposedSwaps.add(new SwapProposal(i, j));
+                    }
+                }
+            }
+        }
+
+        // Resolve conflicts (leftmost priority)
+        List<SwapProposal> resolvedSwaps = resolveConflicts(proposedSwaps);
+
+        // Execute approved swaps
+        for (SwapProposal proposal : resolvedSwaps) {
+            swapEngine.attemptSwap(cells, proposal.getInitiatorIndex(), proposal.getTargetIndex());
+        }
+
+        // Get swap count for this step
+        int swaps = swapEngine.getSwapCount();
+
+        // Increment step counter
+        currentStep++;
+
+        // Record snapshot
+        probe.recordSnapshot(currentStep, cells, swaps);
+
+        // Check convergence
+        converged = convergenceDetector.hasConverged(probe, currentStep);
+
+        return swaps;
     }
 
     /**
@@ -333,9 +407,15 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @return total number of steps executed
      */
     public int runUntilConvergence(int maxSteps) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement run loop as described above
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        // PHASE TWO: Implement main entry point logic
+        running = true;
+        
+        while (!converged && currentStep < maxSteps && running) {
+            step();
+        }
+        
+        running = false;
+        return currentStep;
     }
 
     /**
@@ -383,9 +463,32 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @return swap proposal if beneficial, empty otherwise
      */
     private Optional<SwapProposal> evaluateCell(int cellIndex) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement cell evaluation logic as described above
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        // NOTE: This method is not currently used by step() but kept for potential future use
+        T cell = cells[cellIndex];
+        Algotype algotype = cell.getAlgotype();
+        SortDirection direction = getCellDirection(cell);
+
+        List<Integer> neighbors = getNeighborsForAlgotype(cellIndex, algotype);
+        
+        if (algotype == Algotype.BUBBLE && !neighbors.isEmpty()) {
+            // Random neighbor selection for BUBBLE
+            int randomIndex = random.nextInt(neighbors.size());
+            int j = neighbors.get(randomIndex);
+            probe.recordCompareAndSwap();
+            if (shouldSwapWithDirection(cellIndex, j, algotype, direction)) {
+                return Optional.of(new SwapProposal(cellIndex, j));
+            }
+        } else {
+            // All neighbors for other algotypes
+            for (int j : neighbors) {
+                probe.recordCompareAndSwap();
+                if (shouldSwapWithDirection(cellIndex, j, algotype, direction)) {
+                    return Optional.of(new SwapProposal(cellIndex, j));
+                }
+            }
+        }
+        
+        return Optional.empty();
     }
 
     /**
@@ -423,9 +526,28 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @return list of non-conflicting proposals to execute
      */
     private List<SwapProposal> resolveConflicts(List<SwapProposal> proposals) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement conflict resolution as described above
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        // Sort by priority (initiator index - leftmost first)
+        java.util.Collections.sort(proposals);
+        
+        List<SwapProposal> resolved = new ArrayList<>();
+        java.util.Set<Integer> involvedCells = new java.util.HashSet<>();
+        
+        for (SwapProposal proposal : proposals) {
+            int initiator = proposal.getInitiatorIndex();
+            int target = proposal.getTargetIndex();
+            
+            // Skip if either cell is already involved in a swap this step
+            if (involvedCells.contains(initiator) || involvedCells.contains(target)) {
+                continue;
+            }
+            
+            // Accept this proposal
+            involvedCells.add(initiator);
+            involvedCells.add(target);
+            resolved.add(proposal);
+        }
+        
+        return resolved;
     }
 
     /**
@@ -454,9 +576,19 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @return list of neighbor indices
      */
     private List<Integer> getNeighborsForAlgotype(int i, Algotype algotype) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement neighbor determination as described above
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        switch (algotype) {
+            case BUBBLE:
+                return bubbleTopology.getNeighbors(i, cells.length, algotype);
+            case INSERTION:
+                return insertionTopology.getNeighbors(i, cells.length, algotype);
+            case SELECTION:
+                // Get dynamic ideal target from cell state
+                int idealPos = getIdealPosition(cells[i]);
+                int target = Math.min(idealPos, cells.length - 1);
+                return Arrays.asList(target);
+            default:
+                throw new IllegalStateException("Unknown algotype: " + algotype);
+        }
     }
 
     /**
@@ -480,9 +612,13 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @return sort direction preference
      */
     private SortDirection getCellDirection(T cell) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement direction check as described above
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        // Check if cell implements HasSortDirection interface
+        if (cell instanceof HasSortDirection) {
+            // Cell supports direction - return its preference
+            return ((HasSortDirection) cell).getSortDirection();
+        }
+        // Cell doesn't support direction - default to ascending
+        return SortDirection.ASCENDING;
     }
 
     /**
@@ -525,9 +661,57 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @return true if swap should occur
      */
     private boolean shouldSwapWithDirection(int i, int j, Algotype algotype, SortDirection direction) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement swap decision logic for all algotypes with direction support
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        // Get comparison result: negative if cells[i] < cells[j], positive if cells[i] > cells[j]
+        int cmp = cells[i].compareTo(cells[j]);
+        boolean isAscending = direction.isAscending();
+        
+        switch (algotype) {
+            case BUBBLE:
+                // BUBBLE: Move based on value comparison and direction
+                // For ascending: move left if smaller, right if larger
+                // For descending: move left if larger, right if smaller
+                
+                if (j == i - 1) { // Left neighbor
+                    // Ascending: swap if i < j (cmp < 0), Descending: swap if i > j (cmp > 0)
+                    return isAscending ? (cmp < 0) : (cmp > 0);
+                } else if (j == i + 1) { // Right neighbor
+                    // Ascending: swap if i > j (cmp > 0), Descending: swap if i < j (cmp < 0)
+                    return isAscending ? (cmp > 0) : (cmp < 0);
+                }
+                return false;
+                
+            case INSERTION:
+                // INSERTION: Only move left, and only if left side is sorted
+                if (j == i - 1 && isLeftSorted(i, !isAscending)) {
+                    // Ascending: swap if i < j (cmp < 0), Descending: swap if i > j (cmp > 0)
+                    return isAscending ? (cmp < 0) : (cmp > 0);
+                }
+                return false;
+                
+            case SELECTION:
+                // Guard: Skip if targeting self
+                if (i == j) {
+                    return false;
+                }
+                
+                // SELECTION: Swap with ideal target if in correct order
+                // Ascending: swap if i < j (cmp < 0), Descending: swap if i > j (cmp > 0)
+                boolean shouldSwap = isAscending ? (cmp < 0) : (cmp > 0);
+                
+                if (shouldSwap) {
+                    return true;
+                } else {
+                    // Swap denied: increment ideal position if not at end
+                    int currentIdealPos = getIdealPosition(cells[i]);
+                    if (currentIdealPos < cells.length - 1) {
+                        incrementIdealPosition(cells[i]);
+                    }
+                    return false;
+                }
+                
+            default:
+                return false;
+        }
     }
 
     /**
@@ -567,9 +751,31 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @return true if sorted in specified direction
      */
     private boolean isLeftSorted(int i, boolean reverseDirection) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement sorted check with frozen cell handling
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        // Start with sentinel: MIN for ascending (any value >= MIN), MAX for descending (any value <= MAX)
+        int prevValue = reverseDirection ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+        
+        for (int k = 0; k < i; k++) {
+            // Skip frozen cells - reset comparison chain (matches Python)
+            if (swapEngine.isFrozen(k)) {
+                // Reset sentinel after frozen cell
+                prevValue = reverseDirection ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+                continue;
+            }
+
+            // Get cell value for comparison
+            int currentValue = getCellValue(cells[k]);
+            
+            // Check if out of order based on direction
+            boolean outOfOrder = reverseDirection 
+                ? (currentValue > prevValue)  // Descending: next should be <= prev
+                : (currentValue < prevValue); // Ascending: next should be >= prev
+            
+            if (outOfOrder) {
+                return false; // Out of order
+            }
+            prevValue = currentValue;
+        }
+        return true;
     }
 
     /**
@@ -593,9 +799,21 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @return comparable value
      */
     private int getCellValue(T cell) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement type-safe value extraction
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        if (cell instanceof com.emergent.doom.cell.SelectionCell) {
+            return ((com.emergent.doom.cell.SelectionCell<?>) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            return ((com.emergent.doom.cell.GenericCell) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.InsertionCell) {
+            return ((com.emergent.doom.cell.InsertionCell<?>) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.BubbleCell) {
+            return ((com.emergent.doom.cell.BubbleCell<?>) cell).getValue();
+        }
+        // Fail-fast: throw exception for unsupported cell types
+        // (hashCode is unreliable for sorting - doesn't maintain ordering relationships)
+        throw new UnsupportedOperationException(
+            "Cell type " + cell.getClass().getName() + " does not support getValue(). " +
+            "All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell."
+        );
     }
 
     /**
@@ -619,9 +837,12 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @return ideal position
      */
     private int getIdealPosition(T cell) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement ideal position access
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        if (cell instanceof SelectionCell) {
+            return ((SelectionCell<?>) cell).getIdealPos();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            return ((com.emergent.doom.cell.GenericCell) cell).getIdealPos();
+        }
+        return 0;  // Default for other cell types
     }
 
     /**
@@ -644,9 +865,11 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @param cell the cell
      */
     private void incrementIdealPosition(T cell) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement ideal position increment
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        if (cell instanceof SelectionCell) {
+            ((SelectionCell<?>) cell).incrementIdealPos();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            ((com.emergent.doom.cell.GenericCell) cell).incrementIdealPos();
+        }
     }
 
     /**
@@ -675,18 +898,28 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @param reverseDirection true for descending sort, false for ascending
      */
     public void reset(boolean reverseDirection) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement reset logic as described above
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        currentStep = 0;
+        converged = false;
+        running = false;
+        this.reverseDirection = reverseDirection;  // Store for isLeftSorted
+        probe.clear();
+        swapEngine.resetSwapCount();
+        bubbleTopology.reset();
+        insertionTopology.reset();
+        selectionTopology.reset();
+        convergenceDetector.reset();
+
+        // Reset SELECTION cell ideal positions to boundary (matches Python cell_research)
+        resetSelectionCellIdealPositions(reverseDirection);
+
+        probe.recordSnapshot(0, cells, 0);
     }
 
     /**
      * Reset with default ascending sort direction.
      */
     public void reset() {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Call reset(false)
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        reset(false);
     }
 
     /**
@@ -716,9 +949,16 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @param reverseDirection true for descending sort
      */
     private void resetSelectionCellIdealPositions(boolean reverseDirection) {
-        // SCAFFOLD: Method body not yet implemented
-        // TODO: Implement SELECTION cell boundary reset
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        int leftBoundary = 0;
+        int rightBoundary = cells.length - 1;
+
+        for (T cell : cells) {
+            if (cell.getAlgotype() == Algotype.SELECTION) {
+                if (cell instanceof HasIdealPosition) {
+                    ((HasIdealPosition) cell).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
+                }
+            }
+        }
     }
 
     // ========== Accessors ==========
@@ -727,40 +967,35 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * Get the cell array (returns reference, not copy, for performance).
      */
     public T[] getCells() {
-        // SCAFFOLD: Method body not yet implemented
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        return cells;
     }
 
     /**
      * Get the current step number.
      */
     public int getCurrentStep() {
-        // SCAFFOLD: Method body not yet implemented
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        return currentStep;
     }
 
     /**
      * Check if execution has converged.
      */
     public boolean hasConverged() {
-        // SCAFFOLD: Method body not yet implemented
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        return converged;
     }
 
     /**
      * Check if execution is currently running.
      */
     public boolean isRunning() {
-        // SCAFFOLD: Method body not yet implemented
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        return running;
     }
 
     /**
      * Get the probe for trajectory analysis.
      */
     public Probe<T> getProbe() {
-        // SCAFFOLD: Method body not yet implemented
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        return probe;
     }
 
     /**
@@ -772,7 +1007,6 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * to exit at the end of the current step.</p>
      */
     public void stop() {
-        // SCAFFOLD: Method body not yet implemented
-        throw new UnsupportedOperationException("Phase One: Scaffold only - not yet implemented");
+        running = false;
     }
 }

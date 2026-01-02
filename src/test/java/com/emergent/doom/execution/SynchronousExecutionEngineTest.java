@@ -60,12 +60,18 @@ class SynchronousExecutionEngineTest {
      * so that I can focus on testing specific scenarios.</p>
      */
     private void initializeEngine(int... values) {
-        // SCAFFOLD: Test helper not yet implemented
-        // TODO: Create test cells from values
-        // TODO: Create swap engine with FrozenCellStatus
-        // TODO: Create probe
-        // TODO: Create convergence detector (NoSwapConvergence with 3 stable steps)
-        // TODO: Create SynchronousExecutionEngine
+        cells = new TestBubbleCell[values.length];
+        for (int i = 0; i < values.length; i++) {
+            cells[i] = new TestBubbleCell(values[i]);
+        }
+
+        FrozenCellStatus frozenStatus = new FrozenCellStatus();
+        swapEngine = new SwapEngine<>(frozenStatus);
+        probe = new Probe<>();
+        probe.setRecordingEnabled(true);
+        ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(3);
+
+        engine = new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector);
     }
 
     // ========================================================================
@@ -83,11 +89,14 @@ class SynchronousExecutionEngineTest {
         @Test
         @DisplayName("Sorts a small array correctly")
         void sortsSmallArray() {
-            // SCAFFOLD: Test not yet implemented
-            // TODO: Initialize engine with [5, 3, 1, 4, 2]
-            // TODO: Run until convergence
-            // TODO: Assert array is sorted to [1, 2, 3, 4, 5]
-            // TODO: Assert engine reports convergence
+            initializeEngine(5, 3, 1, 4, 2);
+            
+            int finalStep = engine.runUntilConvergence(1000);
+            
+            int[] result = Arrays.stream(cells).mapToInt(TestBubbleCell::getValue).toArray();
+            assertArrayEquals(new int[]{1, 2, 3, 4, 5}, result, "Array should be sorted");
+            assertTrue(engine.hasConverged(), "Engine should report convergence");
+            assertTrue(finalStep > 0, "Should have executed at least one step");
         }
 
         /**
