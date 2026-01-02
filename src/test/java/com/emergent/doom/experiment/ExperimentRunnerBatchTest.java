@@ -107,16 +107,15 @@ class ExperimentRunnerBatchTest {
         @Test
         @DisplayName("Throws exception for zero repetitions")
         void throwsForZeroRepetitions() {
-            ExperimentConfig config = new ExperimentConfig(
-                    20, 2000, 3, false, ExecutionMode.SEQUENTIAL, 0);
-            
+            // ExperimentConfig constructor validates numRepetitions
             IllegalArgumentException exception = assertThrows(
                     IllegalArgumentException.class,
-                    () -> runner.runBatchExperiments(config),
+                    () -> new ExperimentConfig(20, 2000, 3, false, ExecutionMode.SEQUENTIAL, 0),
                     "Should throw for zero repetitions");
             
-            assertTrue(exception.getMessage().contains("numRepetitions"),
-                    "Exception message should mention numRepetitions");
+            // ExperimentConfig message is "Number of repetitions must be positive"
+            assertTrue(exception.getMessage().toLowerCase().contains("repetitions"),
+                    "Exception message should mention repetitions");
         }
 
         /**
@@ -126,16 +125,15 @@ class ExperimentRunnerBatchTest {
         @Test
         @DisplayName("Throws exception for negative repetitions")
         void throwsForNegativeRepetitions() {
-            ExperimentConfig config = new ExperimentConfig(
-                    20, 2000, 3, false, ExecutionMode.SEQUENTIAL, -5);
-            
+            // ExperimentConfig constructor validates numRepetitions
             IllegalArgumentException exception = assertThrows(
                     IllegalArgumentException.class,
-                    () -> runner.runBatchExperiments(config),
+                    () -> new ExperimentConfig(20, 2000, 3, false, ExecutionMode.SEQUENTIAL, -5),
                     "Should throw for negative repetitions");
             
-            assertTrue(exception.getMessage().contains("numRepetitions"),
-                    "Exception message should mention numRepetitions");
+            // ExperimentConfig message is "Number of repetitions must be positive"
+            assertTrue(exception.getMessage().toLowerCase().contains("repetitions"),
+                    "Exception message should mention repetitions");
         }
     }
 
