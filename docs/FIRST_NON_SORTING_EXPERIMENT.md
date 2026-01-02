@@ -59,9 +59,10 @@ public double factorFitness(int candidate, int N) {
     int remainder = N % candidate;
     if (remainder == 0) return 1.0;  // Perfect factor
     
-    // Score based on how small the remainder is relative to candidate
-    // Smaller remainder = closer to being a factor
-    return 1.0 - ((double) remainder / candidate);
+    // Score based on how close N is to the nearest multiple of candidate
+    // Smaller modular distance = closer to being a factor
+    int distanceToMultiple = Math.min(remainder, candidate - remainder);
+    return 1.0 - ((double) distanceToMultiple / candidate);
 }
 ```
 
@@ -80,7 +81,14 @@ public double factorFitness(int candidate, int N) {
 ### 3.5 Candidate Generation
 
 ```java
-public List<Integer> generateCandidates(int N, FactorStrategy strategy, int count) {
+/**
+ * Generate factor candidates using specified strategy.
+ * @param N The semiprime to factor
+ * @param strategy The factor-finding strategy to use
+ * @param count Number of candidates to generate
+ * @param rand Random instance for reproducibility (use fixed seed for experiments)
+ */
+public List<Integer> generateCandidates(int N, FactorStrategy strategy, int count, Random rand) {
     int sqrtN = (int) Math.sqrt(N);
     List<Integer> candidates = new ArrayList<>();
     
@@ -91,15 +99,20 @@ public List<Integer> generateCandidates(int N, FactorStrategy strategy, int coun
             break;
             
         case FERMAT_NEAR_SQRT:
-            // Candidates clustered around sqrt(N)
+            // Candidates clustered around sqrt(N), clamped to [2, sqrtN]
             for (int i = 0; i < count; i++) {
-                candidates.add(sqrtN - count/2 + i);
+                int candidate = sqrtN - count / 2 + i;
+                if (candidate < 2) {
+                    candidate = 2;
+                } else if (candidate > sqrtN) {
+                    candidate = sqrtN;
+                }
+                candidates.add(candidate);
             }
             break;
             
         case RANDOM_SAMPLE:
             // Random integers in [2, sqrtN]
-            Random rand = new Random();
             for (int i = 0; i < count; i++) {
                 candidates.add(2 + rand.nextInt(sqrtN - 1));
             }
