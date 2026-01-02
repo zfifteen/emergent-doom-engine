@@ -24,7 +24,7 @@
 
 ### 2. AGGREGATION PEAKS - Emergent Clustering in Chimeric Arrays
 
-| Algorithm Mix | Peak Agg. Value | Unique Values? | Peak Occurs At | Std Dev | Notes |
+| Algorithm Mix | Peak Agg. Value | Unique Values | Peak Occurs At | Std Dev | Notes |
 |--------------|-----------------|----------------|----------------|---------|-------|
 | **Bubble-Selection** | 0.72 | Yes (unique) | 42% into process | ±0.05 | Highest peak (unique case) |
 | **Bubble-Insertion** | 0.65 | Yes (unique) | 21% into process | ±0.04 | Mid-range clustering |
@@ -79,7 +79,7 @@
 | **Bubble-Selection** | 1740.9 | ≈1772 | 1741 | ✓ Yes |
 | **Selection-Insertion** | 1534.77 | ≈1289 | 1535 | ✓ Yes |
 
-**Key Finding**: Mixed-algotype efficiency = **linear average** of components (no synergy loss, no gain).
+**Key Finding**: Mixed algorithm-type efficiency = **linear average** of components (no synergy loss, no gain).
 
 ---
 
