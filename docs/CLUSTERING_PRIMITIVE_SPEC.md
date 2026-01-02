@@ -106,12 +106,14 @@ public record IntRange(int start, int end) {
 ### 4.2 Core Interface
 
 ```java
+// Types Strategy and IntRange are defined in Section 4.1 above
+
 public interface ClusteringPrimitive<T> {
     
     /**
      * Run clustering process and return partition.
      * @param items Elements to partition
-     * @param strategies Strategy assignments for each element
+     * @param strategies Strategy assignments for each element (Strategy: see 4.1)
      * @param goalFunction What "sorted" means in this domain
      * @return ClusteringResult with partition and trajectory
      */
@@ -128,6 +130,7 @@ public interface ClusteringPrimitive<T> {
     
     /**
      * Get strategy dominance by region.
+     * @return Map from index range (IntRange: see 4.1) to dominant Strategy
      */
     Map<IntRange, Strategy> getRegionalDominance(ClusteringResult<T> result);
 }
@@ -136,12 +139,14 @@ public interface ClusteringPrimitive<T> {
 ### 4.3 ClusteringResult Structure
 
 ```java
+// Types Strategy and IntRange are defined in Section 4.1 above
+
 public class ClusteringResult<T> {
     private final List<T> finalArrangement;
     private final List<Double> aggregationTrajectory;
     private final double peakAggregation;
     private final double peakTimingPercent;
-    private final Map<Strategy, List<IntRange>> clusterRanges;
+    private final Map<Strategy, List<IntRange>> clusterRanges;  // Strategy, IntRange: see 4.1
     private final double finalAggregation;
     
     // Derived metrics
