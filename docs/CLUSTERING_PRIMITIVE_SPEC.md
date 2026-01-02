@@ -74,7 +74,36 @@ The clustering trajectory contains information about:
 
 ## 4. Clustering as Primitive: API Sketch
 
-### 4.1 Core Interface
+### 4.1 Type Definitions
+
+```java
+/**
+ * Strategy represents a problem-solving approach or algorithm variant.
+ * In sorting, this maps to algotypes (Bubble, Selection, Insertion).
+ * In other domains, this could be any categorical classification of agents.
+ * 
+ * Implementations could be:
+ * - An enum (e.g., FactorStrategy, SortingAlgotype)
+ * - An interface for custom strategy implementations
+ * - A string identifier for dynamic strategy assignment
+ */
+public interface Strategy {
+    String getName();
+}
+
+/**
+ * IntRange represents a contiguous range of indices [start, end).
+ * Used to define cluster boundaries and regional dominance.
+ * 
+ * Example: IntRange(5, 12) represents indices 5, 6, 7, 8, 9, 10, 11.
+ */
+public record IntRange(int start, int end) {
+    public int length() { return end - start; }
+    public boolean contains(int index) { return index >= start && index < end; }
+}
+```
+
+### 4.2 Core Interface
 
 ```java
 public interface ClusteringPrimitive<T> {
@@ -104,7 +133,7 @@ public interface ClusteringPrimitive<T> {
 }
 ```
 
-### 4.2 ClusteringResult Structure
+### 4.3 ClusteringResult Structure
 
 ```java
 public class ClusteringResult<T> {
