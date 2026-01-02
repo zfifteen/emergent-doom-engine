@@ -72,7 +72,7 @@ public class ExperimentRunner<T extends Cell<T>> {
                 ? new ThreadSafeFrozenCellStatus()
                 : new FrozenCellStatus();
         SwapEngine<T> swapEngine = new SwapEngine<>(frozenStatus);
-        Probe<T> probe = needsThreadSafe ? new ThreadSafeProbe<>() : new Probe<>();
+        Probe<T> probe = needsThreadSafe ? new ThreadSafeProbe<>() : new BasicProbe<>();
         probe.setRecordingEnabled(config.isRecordTrajectory());
         ConvergenceDetector<T> convergenceDetector =
                 new NoSwapConvergence<>(config.getRequiredStableSteps());

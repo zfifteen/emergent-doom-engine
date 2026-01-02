@@ -61,7 +61,7 @@ public class BubbleSortTest {
 
         FrozenCellStatus frozen = new FrozenCellStatus();
         SwapEngine<TestCell> swapEngine = new SwapEngine<>(frozen);
-        Probe<TestCell> probe = new Probe<>();
+        Probe<TestCell> probe = new BasicProbe<>();
         probe.setRecordingEnabled(true);
         ConvergenceDetector<TestCell> detector = new NoSwapConvergence<>(10);
 
