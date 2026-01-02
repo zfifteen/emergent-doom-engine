@@ -49,8 +49,30 @@ import java.util.concurrent.TimeoutException;
  *   <li><strong>Phase 4 (Main Thread):</strong> Update metrics and check convergence</li>
  * </ol>
  *
+ * <p><strong>DEPRECATED:</strong> This class implements per-cell threading which creates
+ * one thread per cell (e.g., 100,000 threads for 100 trials × 1000 cells). This approach
+ * has massive overhead:
+ * <ul>
+ *   <li>Thread creation/destruction costs</li>
+ *   <li>Barrier synchronization every step</li>
+ *   <li>Lock contention on swap collector</li>
+ *   <li>Context switching overhead</li>
+ * </ul>
+ * </p>
+ *
+ * <p><strong>RECOMMENDED ALTERNATIVE:</strong> Use {@link SynchronousExecutionEngine}
+ * with per-trial parallelism via
+ * {@link com.emergent.doom.experiment.ExperimentRunner#runBatchExperiments(com.emergent.doom.experiment.ExperimentConfig)}.
+ * This creates only one thread per trial (e.g., 100 threads for 100 trials), eliminating
+ * synchronization overhead while maximizing throughput via embarrassingly parallel trial
+ * execution.</p>
+ *
+ * <p>This class is retained for comparison and compatibility with legacy code.</p>
+ *
  * @param <T> the type of cell
+ * @deprecated Use SynchronousExecutionEngine with per-trial parallelism instead
  */
+@Deprecated
 public class ParallelExecutionEngine<T extends Cell<T>> {
 
     private final T[] cells;

@@ -24,8 +24,16 @@ import java.util.concurrent.CyclicBarrier;
  *   <li>Repeat until running=false</li>
  * </ol>
  *
+ * <p><strong>DEPRECATED:</strong> This class is part of the per-cell threading model
+ * which creates one thread per cell in the array. This approach is wasteful for batch
+ * trial execution. Use {@link SynchronousExecutionEngine} with per-trial parallelism
+ * via {@link com.emergent.doom.experiment.ExperimentRunner#runBatchExperiments(com.emergent.doom.experiment.ExperimentConfig)}
+ * instead. This class is retained for comparison and compatibility.</p>
+ *
  * @param <T> the type of cell
+ * @deprecated Use SynchronousExecutionEngine with per-trial parallelism instead
  */
+@Deprecated
 public class CellThread<T extends Cell<T>> implements Runnable {
 
     private final int cellIndex;
