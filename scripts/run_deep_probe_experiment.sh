@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=SC2164
+set -euo pipefail
 
 # Deep Probe Experiment for Emergent Factorization Algorithm
 # This script performs systematic parameter sweeps and harder test cases
@@ -12,11 +12,16 @@
 # 4. Tests true semi-primes where both factors are large primes
 # 5. Generates structured CSV output for statistical analysis
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}").." && pwd)"
+# Always resolve to repo root regardless of where the script is invoked
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="${SCRIPT_DIR%/scripts}"
+
+# Define paths relative to PROJECT_ROOT
 JAR_PATH="$PROJECT_ROOT/target/emergent-doom-engine-0.1.0-alpha.jar"
 LOG_FILE="$PROJECT_ROOT/scripts/run_deep_probe_experiment.log"
 CSV_FILE="$PROJECT_ROOT/scripts/deep_probe_results.csv"
 
+# Change to project root
 cd "$PROJECT_ROOT"
 
 # Ensure output directories exist
@@ -44,11 +49,11 @@ run_probe() {
     echo "$output" >> "$LOG_FILE"
     echo "------------------------------------------------------------" >> "$LOG_FILE"
     
-    # Extract metrics using grep and awk
-    local meanSteps=$(echo "$output" | grep -oP 'Mean Steps: \K[0-9.]+' | head -1)
-    local sortedness=$(echo "$output" | grep -oP 'Sortedness.*?mean=\K[0-9.]+' | head -1)
-    local monotonicity=$(echo "$output" | grep -oP 'Monotonicity.*?mean=\K[0-9.]+' | head -1)
-    local convergence=$(echo "$output" | grep -oP 'Convergence Rate: \K[0-9.]+' | head -1)
+    # Extract metrics using grep and sed (portable across macOS and Linux)
+    local meanSteps=$(echo "$output" | grep -E 'Mean Steps:' | sed -E 's/.*Mean Steps:[[:space:]]*([0-9.]+).*/\1/' | head -1)
+    local sortedness=$(echo "$output" | grep -E 'Sortedness.*mean=' | sed -E 's/.*mean=([0-9.]+).*/\1/' | head -1)
+    local monotonicity=$(echo "$output" | grep -E 'Monotonicity.*mean=' | sed -E 's/.*mean=([0-9.]+).*/\1/' | head -1)
+    local convergence=$(echo "$output" | grep -E 'Convergence Rate:' | sed -E 's/.*Convergence Rate:[[:space:]]*([0-9.]+).*/\1/' | head -1)
     
     # Append to CSV
     echo "$target,$trials,$arraySize,$threads,$meanSteps,$sortedness,$monotonicity,$convergence" >> "$CSV_FILE"
@@ -108,38 +113,37 @@ echo ""
 run_probe 1022117 20 1000 4
 run_probe 1022117 20 2000 4
 
-# 1009 × 10007 = 10097063
-run_probe 10097063 20 1000 4
-run_probe 10097063 20 2000 4
+# Product of two primes, one mid-sized and one large: 1009 × 9973 = 10061557
+run_probe 10061557 20 1000 4
 
-# 10007 × 10009 = 100160063
-run_probe 100160063 20 1000 4
-run_probe 100160063 20 5000 4
+# Product of small and large: 2 × 500000003 = 1000000006
+run_probe 1000000006 20 1000 4
 
-# 10007 × 100003 = 1000100021
-run_probe 1000100021 20 1000 4
-run_probe 1000100021 20 5000 4
+# Highly composite (not semi-prime!): 2^3 × 3^2 × 5 × 7 = 2520
+run_probe 2520 20 1000 4
 
 #############################################################################
-# EXPERIMENT 4: True Large Semi-Primes
-# Goal: Probe absolute limits - both factors are large primes
+# EXPERIMENT 4: Large True Semi-Primes
+# Goal: Characterize performance on targets that are definitely semi-prime
 #############################################################################
 
 echo ""
 echo "=== EXPERIMENT 4: Large Semi-Primes ==="
 echo ""
 
-# 9973 × 10007 = 99800011 (both factors >1000)
-run_probe 99800011 20 2000 4
-run_probe 99800011 20 5000 4
+# Products of two distinct large primes
+# 991 × 997 = 988027
+for arraySize in 500 1000 2000 5000; do
+    run_probe 988027 10 $arraySize 4
+done
 
-# 99991 × 100003 = 9999600073 (both factors >>1000)
-run_probe 9999600073 20 2000 4
-run_probe 9999600073 20 10000 4
+# 9973 × 10007 = 99800011
+run_probe 99800011 20 1000 4
+run_probe 99800011 20 2000 4
 
 #############################################################################
 # EXPERIMENT 5: Thread Count Sweep
-# Goal: Assess parallelism benefit vs overhead
+# Goal: Measure parallel scaling efficiency
 #############################################################################
 
 echo ""
@@ -167,7 +171,7 @@ run_probe 994009 20 2000 4
 # Product of small and large: 2 × 500000003 = 1000000006
 run_probe 1000000006 20 1000 4
 
-# Highly composite (not semi-prime): 2^3 × 3^2 × 5 × 7 = 2520
+# Highly composite (not semi-prime!): 2^3 × 3^2 × 5 × 7 = 2520
 run_probe 2520 20 1000 4
 
 echo ""
