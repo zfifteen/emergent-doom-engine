@@ -83,8 +83,8 @@ Results are exported to CSV files compatible with `scripts/analyze_scaling.py`:
 
 ```csv
 stage,target,arraySize,steps,converged,foundFactor,factor,timeMs,remainderMean,remainderVariance,remainderAutocorr
-STAGE_1_E6,1006009,10000,135,true,true,1003,,45.2,892.4,0.87
-STAGE_1_E6,1006009,10000,138,true,true,1003,,44.8,901.2,0.86
+STAGE_1_E6,1006009,10000,135,true,true,1003,12.3,45.2,892.4,0.87
+STAGE_1_E6,1006009,10000,138,true,true,1003,11.8,44.8,901.2,0.86
 ...
 ```
 

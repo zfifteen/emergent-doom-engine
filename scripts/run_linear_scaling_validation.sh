@@ -49,6 +49,7 @@ echo "  3. Compute B coefficient (∂steps/∂array_size)"
 echo "  4. Export results to CSV"
 echo "  5. Terminate early if B > 0.5 (failure boundary detected)"
 echo ""
+echo -e "${YELLOW}NOTE: Command-line arguments not yet supported. Using default configuration.${NC}"
 echo "========================================================================"
 echo ""
 

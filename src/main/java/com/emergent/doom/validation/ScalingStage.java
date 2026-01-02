@@ -27,8 +27,8 @@ public enum ScalingStage {
     STAGE_1_E6,
     
     /**
-     * Stage 2: N = 10^9 magnitude semiprimes.
-     * Target: nextprime(10^4.5) × nextprime(10^4.5 + small_gap)
+     * Stage 2: N = 10^10 magnitude semiprimes.
+     * Target: nextprime(10^5) × nextprime(10^5 + small_gap)
      * Array sizes: [10^4, 10^5, 10^6]
      * Max steps: 10,000
      */

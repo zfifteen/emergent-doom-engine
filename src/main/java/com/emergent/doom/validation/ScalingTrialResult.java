@@ -153,7 +153,7 @@ public class ScalingTrialResult {
      * with all trial metrics for export. Compatible with analyze_scaling.py schema.</p>
      * 
      * <p><strong>Expected format:</strong>
-     * stage,target,arraySize,trial,steps,converged,foundFactor,factor,timeMs,
+     * stage,target,arraySize,steps,converged,foundFactor,factor,timeMs,
      * remainderMean,remainderVariance,remainderAutocorr</p>
      * 
      * <p><strong>Reasoning:</strong> CSV format enables analysis in Python/R and

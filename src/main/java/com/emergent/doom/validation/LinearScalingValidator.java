@@ -108,19 +108,7 @@ public class LinearScalingValidator {
         System.out.println();
         
         // Step 1: Parse command-line arguments (delegates to Phase 3 method)
-        ExperimentOptions options;
-        try {
-            options = parseArguments(args);
-        } catch (UnsupportedOperationException e) {
-            // parseArguments not yet implemented - use defaults for Phase 2
-            System.out.println("INFO: Using default configuration (parseArguments not yet implemented)");
-            options = new ExperimentOptions();
-            options.stage = ScalingStage.STAGE_1_E6;
-            options.numTrials = DEFAULT_TRIALS_PER_CONFIG;
-            options.outputPath = "scaling_validation_results.csv";
-            options.runAllStages = false;
-            options.customTarget = null;
-        }
+        ExperimentOptions options = parseArguments(args);
         
         System.out.printf("Configuration:%n");
         System.out.printf("  Stage: %s%n", options.stage);
@@ -550,29 +538,78 @@ public class LinearScalingValidator {
     /**
      * Parse command-line arguments.
      * 
-     * <p><strong>Not yet implemented.</strong> Will parse args to extract
-     * stage selection, custom targets, output paths, and options.</p>
+     * <p><strong>Current behavior (transitional):</strong> Command-line arguments
+     * are currently <em>not</em> interpreted. This method returns a default
+     * {@link ExperimentOptions} instance and, if any arguments are provided,
+     * emits a warning to {@code System.err} to make it clear that options are
+     * being ignored.</p>
+     * 
+     * <p><strong>Planned behavior (Phase 3):</strong> Parse {@code args} to extract
+     * stage selection, custom targets, output paths, and other options.</p>
      * 
      * @param args Command-line arguments
-     * @return Parsed configuration object
+     * @return Parsed configuration object (currently using default settings)
      */
     private static ExperimentOptions parseArguments(String[] args) {
-        // TODO: Phase 3 - implement argument parsing
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Transitional implementation: warn and fall back to defaults.
+        if (args != null && args.length > 0) {
+            System.err.println(
+                "WARNING: Command-line arguments are not yet supported; " +
+                "all options will be ignored and default configuration will be used."
+            );
+        }
+
+        // Use a default options instance so main() can proceed deterministically.
+        return new ExperimentOptions();
     }
     
     /**
      * Helper class for parsed command-line options.
      * 
-     * <p><strong>Not yet implemented.</strong> Will encapsulate parsed arguments.</p>
+     * <p>This class encapsulates the configuration derived from command-line
+     * arguments. In the current transitional implementation, it primarily
+     * exposes default values so that {@link #main(String[])} can operate
+     * deterministically even though argument parsing is not yet implemented.</p>
      */
     private static class ExperimentOptions {
+        /**
+         * Selected scaling stage for the experiment.
+         */
         ScalingStage stage;
+
+        /**
+         * Optional custom semiprime target. {@code null} indicates that the
+         * target should be generated based on the selected {@link ScalingStage}.
+         */
         BigInteger customTarget;
+
+        /**
+         * Optional output path for CSV export.
+         */
         String outputPath;
+
+        /**
+         * Number of trials to run per configuration.
+         */
         int numTrials;
+
+        /**
+         * Whether to run all stages sequentially until a failure boundary is
+         * detected.
+         */
         boolean runAllStages;
-        
-        // TODO: Phase 3 - implement options class
+
+        /**
+         * Create an {@code ExperimentOptions} instance populated with default
+         * values consistent with the constants defined in
+         * {@link LinearScalingValidator}.
+         */
+        ExperimentOptions() {
+            this.stage = ScalingStage.STAGE_1_E6;
+            this.customTarget = null;
+            this.outputPath = "scaling_validation_results.csv";
+            this.numTrials = DEFAULT_TRIALS_PER_CONFIG;
+            this.runAllStages = false;
+        }
     }
 }

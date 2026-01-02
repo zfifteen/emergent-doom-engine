@@ -290,8 +290,8 @@ public class LinearScalingValidatorTest {
             // ScalingTrialResult result = createMockTrialResult();
             // String csv = result.toCsvRow();
             // String[] columns = csv.split(",");
-            // assertEquals(12, columns.length, 
-            //     "CSV row should have 12 columns matching schema");
+            // assertEquals(11, columns.length, 
+            //     "CSV row should have 11 columns matching schema");
         }
         
         @Test
