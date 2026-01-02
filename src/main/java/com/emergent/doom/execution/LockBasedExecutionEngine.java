@@ -48,7 +48,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
     private final LockBasedCellWorker<T>[] cellWorkers;
     private final ReentrantLock globalLock;
     private final SwapEngine<T> swapEngine;
-    private final Probe<T> probe;
+    private final BasicProbe<T> probe;
     private final ConvergenceDetector<T> convergenceDetector;
 
     // Topology helpers for evaluation
@@ -111,7 +111,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
         this.cells = cells;
         this.swapEngine = swapEngine;
-        this.probe = probe;
+        this.probe = (BasicProbe<T>) probe;
         this.convergenceDetector = convergenceDetector;
         this.convergencePollIntervalMs = pollIntervalMs;
         this.requiredStablePolls = requiredStablePolls;
