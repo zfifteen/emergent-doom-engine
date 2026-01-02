@@ -174,9 +174,21 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
     private boolean reverseDirection;
 
     /**
-     * Initialize the synchronous execution engine.
+     * Initialize the synchronous execution engine with default random seed.
      *
-     * <p>PURPOSE: Set up all required components for single-threaded trial execution.</p>
+     * <p>PURPOSE: Set up all required components for single-threaded trial execution
+     * using an unseeded Random instance (non-deterministic behavior).</p>
+     *
+     * <p><strong>DETERMINISM NOTE:</strong> This constructor uses {@code new Random()}
+     * which is NOT seeded, resulting in non-deterministic execution. For reproducible
+     * experiments and testing, use the constructor that accepts a {@link Random} parameter:
+     * {@link #SynchronousExecutionEngine(Cell[], SwapEngine, Probe, ConvergenceDetector, Random)}
+     * with a pre-seeded Random instance, e.g.:</p>
+     * <pre>
+     * // For deterministic, reproducible execution:
+     * Random seededRandom = new Random(12345L);
+     * new SynchronousExecutionEngine<>(cells, swapEngine, probe, detector, seededRandom);
+     * </pre>
      *
      * <p>INPUTS:
      * <ul>
@@ -206,6 +218,7 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @param swapEngine the swap engine
      * @param probe the probe for recording
      * @param convergenceDetector the convergence detector
+     * @see #SynchronousExecutionEngine(Cell[], SwapEngine, Probe, ConvergenceDetector, Random)
      */
     public SynchronousExecutionEngine(
             T[] cells,
@@ -216,13 +229,23 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
     }
 
     /**
-     * Initialize with explicit random seed for reproducibility.
+     * Initialize with explicit Random instance for deterministic execution.
      *
-     * <p>PURPOSE: Allow deterministic execution for testing and validation.</p>
+     * <p>PURPOSE: Allow deterministic execution for testing, validation, and
+     * reproducible experiments by accepting a pre-seeded Random instance.</p>
      *
-     * <p>INPUTS: Same as primary constructor, plus random seed</p>
+     * <p><strong>USAGE FOR DETERMINISM:</strong> Pass a seeded Random instance
+     * to ensure reproducible execution across runs:</p>
+     * <pre>
+     * // Deterministic execution with seed 42
+     * Random seededRandom = new Random(42L);
+     * SynchronousExecutionEngine<MyCell> engine = new SynchronousExecutionEngine<>(
+     *     cells, swapEngine, probe, detector, seededRandom);
+     * </pre>
      *
-     * <p>PROCESS: Same as primary constructor, but uses seeded Random instance</p>
+     * <p>INPUTS: Same as primary constructor, plus Random instance</p>
+     *
+     * <p>PROCESS: Same as primary constructor, but uses provided Random instance</p>
      *
      * <p>OUTPUTS: Fully initialized engine with deterministic random behavior</p>
      *
@@ -230,7 +253,7 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @param swapEngine the swap engine
      * @param probe the probe for recording
      * @param convergenceDetector the convergence detector
-     * @param random the random instance for direction selection
+     * @param random the Random instance for direction selection (use seeded instance for determinism)
      */
     public SynchronousExecutionEngine(
             T[] cells,

@@ -27,6 +27,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Orchestrates experiment execution across multiple trials.
@@ -49,6 +51,8 @@ import java.util.function.Supplier;
  * @param <T> the type of cell
  */
 public class ExperimentRunner<T extends Cell<T>> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ExperimentRunner.class);
     
     private final Supplier<T[]> cellArrayFactory;
     private final Supplier<Topology<T>> topologyFactory;
@@ -169,7 +173,7 @@ public class ExperimentRunner<T extends Cell<T>> {
         ExperimentResults<T> results = new ExperimentResults<>(config);
         
         for (int i = 0; i < numTrials; i++) {
-            System.out.printf("Running trial %d/%d...%n", i + 1, numTrials);
+            logger.info("Running trial {}/{}", i + 1, numTrials);
             TrialResult<T> trialResult = runTrial(config, i);
             results.addTrialResult(trialResult);
         }
@@ -241,9 +245,15 @@ public class ExperimentRunner<T extends Cell<T>> {
      *
      * @param config experiment configuration with numRepetitions set
      * @return aggregated results from all trials
+     * @throws IllegalArgumentException if numRepetitions is less than 1
      */
     public ExperimentResults<T> runBatchExperiments(ExperimentConfig config) {
         int numRepetitions = config.getNumRepetitions();
+        
+        // Validate input
+        if (numRepetitions < 1) {
+            throw new IllegalArgumentException("numRepetitions must be at least 1, got: " + numRepetitions);
+        }
         
         // Determine worker count: min(trials, CPU cores)
         int numWorkers = Math.min(numRepetitions, Runtime.getRuntime().availableProcessors());
@@ -271,9 +281,9 @@ public class ExperimentRunner<T extends Cell<T>> {
                     TrialResult<T> result = futures.get(i).get();
                     results.add(result);
                     
-                    // Progress logging every 10 trials
+                    // Progress logging every 10 trials using SLF4J
                     if ((i + 1) % 10 == 0) {
-                        System.out.printf("Completed %d/%d trials%n", i + 1, numRepetitions);
+                        logger.info("Completed {}/{} trials", i + 1, numRepetitions);
                     }
                 } catch (InterruptedException e) {
                     failureOccurred = true;
@@ -309,7 +319,7 @@ public class ExperimentRunner<T extends Cell<T>> {
                 if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
                     executor.shutdownNow();
                     if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                        System.err.println("Executor did not terminate");
+                        logger.error("Executor did not terminate");
                     }
                 }
             } catch (InterruptedException e) {
