@@ -175,39 +175,14 @@ public class LinearScalingValidatorTest {
             // As a researcher, I want accurate remainder statistics
             // so that I can correlate landscape properties with convergence
             
-            // Test parameters to reproduce:
-            // - Input: Mock RemainderCell array with known remainder values
-            // - Expected mean: computed from test data
-            
-            // Manual construction of RemainderStatistics for testing
-            // Since RemainderCell might be hard to mock with private fields/methods
-            // we test the calculation logic if possible, or test the container object
-            
-            // Given the implementation of RemainderStatistics.fromCells() uses real cells
-            // and RemainderCell constructor takes BigInteger target and int position
-            // we can create real cells for testing
-            
+            // Construct a small array of real RemainderCell instances to feed into RemainderStatistics
             BigInteger target = BigInteger.valueOf(100); // Simple target
             com.emergent.doom.cell.RemainderCell[] cells = new com.emergent.doom.cell.RemainderCell[3];
-            cells[0] = new com.emergent.doom.cell.RemainderCell(target, 10); // remainder 0
-            cells[1] = new com.emergent.doom.cell.RemainderCell(target, 15); // remainder 10
-            cells[2] = new com.emergent.doom.cell.RemainderCell(target, 20); // remainder 0
-            
-            // Note: RemainderCell calculation depends on its implementation.
-            // If it's target % position:
-            // 100 % 10 = 0
-            // 100 % 15 = 10
-            // 100 % 20 = 0
-            // Mean = (0 + 10 + 0) / 3 = 3.33
-            
-            // Wait, RemainderCell logic might be different. 
-            // Let's rely on the fact that we can construct RemainderStatistics directly or via fromCells.
-            // If fromCells is the only way, we need to know what RemainderCell does.
-            // Assuming standard modular arithmetic for now based on name.
+            cells[0] = new com.emergent.doom.cell.RemainderCell(target, 10);
+            cells[1] = new com.emergent.doom.cell.RemainderCell(target, 15);
+            cells[2] = new com.emergent.doom.cell.RemainderCell(target, 20);
             
             RemainderStatistics stats = RemainderStatistics.fromCells(cells);
-            // We can't easily assert exact value without knowing RemainderCell implementation detail
-            // but we can assert properties
             assertTrue(stats.getMean() >= 0, "Mean should be non-negative");
         }
     }
@@ -240,21 +215,6 @@ public class LinearScalingValidatorTest {
         void scalingReportDetectsGrowingSteps() {
             // As a researcher, I want B > 0.5 to signal failure boundary
             // so that I know when to stop testing harder stages
-            
-            // Test parameters to reproduce:
-            // - Mock trial results: array sizes [1000, 2000, 4000]
-            // - Steps: [100, 250, 550] (clearly growing)
-            // - Expected B: > 0.5 (positive slope)
-            
-            // 1000 -> 100
-            // 2000 -> 250
-            // 4000 -> 550
-            // Rise = 450, Run = 3000, Slope = 0.15 (Wait, simple regression across these points)
-            // Let's pick points that definitely give > 0.5 slope
-            // 1000 -> 1000
-            // 2000 -> 2000
-            // 3000 -> 3000
-            // Slope should be 1.0
             
             List<ScalingTrialResult> mockResults = createMockResults(
                 new int[]{1000, 2000, 3000},
@@ -339,7 +299,7 @@ public class LinearScalingValidatorTest {
     
     private ScalingTrialResult createMockTrialResult(int arraySize, int steps) {
         ScalingTrialConfig config = new ScalingTrialConfig(
-            BigInteger.valueOf(100043),
+            BigInteger.valueOf(100013),
             arraySize,
             10000,
             3,

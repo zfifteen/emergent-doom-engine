@@ -7,7 +7,7 @@ This report documents the verification of the Linear Scaling Validation framewor
 1.  **Code Review**: Analyzed the merged code, including `LinearScalingValidator`, `ScalingStage`, `ScalingReport`, and `ScalingTrialResult`.
 2.  **Test Suite Activation**: Uncommented and implemented the `LinearScalingValidatorTest` suite which was previously scaffolded.
 3.  **Bug Fixes**:
-    *   Corrected a test case that incorrectly identified `100043` as a semiprime (it is prime). Updated to `100013` (103 × 971).
+    *   Corrected the primary test case that incorrectly identified `100043` as a semiprime (it is prime), updating it to `100013` (103 × 971). This fix was applied consistently throughout all test methods and the `createMockTrialResult` helper.
     *   Verified CSV export format against the expected schema.
 4.  **Execution**: Ran the full test suite using Maven.
 5.  **Bulk Validation**: Ran the framework against a dataset of 75 targets (magnitudes 10^4 to 10^18) provided in `scripts/semi_primes.txt`.
