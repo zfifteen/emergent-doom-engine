@@ -494,8 +494,14 @@ public class LinearScalingValidator {
     /**
      * Generate scaling analysis report from trial results.
      * 
-     * <p><strong>Not yet implemented.</strong> Will aggregate trial results
-     * and compute B metric via linear regression.</p>
+     * <p><strong>Implementation:</strong> Aggregates trial results
+     * and computes B metric via linear regression. Wraps in ScalingReport.</p>
+     * 
+     * <p><strong>Reasoning:</strong> Delegates to ScalingReport constructor
+     * which handles all statistical analysis. Keeps this method simple.</p>
+     * 
+     * <p><strong>Integration:</strong> Called by main() after runTrialBatch()
+     * completes. Report used for console output and decision making.</p>
      * 
      * @param stage The experimental stage
      * @param results Trial results to analyze
@@ -503,27 +509,42 @@ public class LinearScalingValidator {
      */
     public static ScalingReport generateReport(ScalingStage stage, 
                                                 List<ScalingTrialResult> results) {
-        // TODO: Phase 3 - implement report generation
-        throw new UnsupportedOperationException("Not yet implemented");
+        return new ScalingReport(stage, results);
     }
     
     /**
      * Export results to CSV file.
      * 
-     * <p><strong>Not yet implemented.</strong> Will write trial results to
-     * CSV following the schema from analyze_scaling.py.</p>
+     * <p><strong>Implementation:</strong> Writes trial results to
+     * CSV following the schema from analyze_scaling.py. Uses ScalingReport.toCsv()
+     * for formatting.</p>
      * 
-     * <p><strong>CSV columns:</strong>
-     * magnitude, target, smallestFactor, arraySize, trial, steps, converged,
-     * foundFactor, timeMs, remainderMean, remainderVar, remainderAutocorr
-     * </p>
+     * <p><strong>Reasoning:</strong> CSV export enables offline analysis,
+     * archival, and compatibility with existing Python analysis tools.</p>
+     * 
+     * <p><strong>Integration:</strong> Called by main() after report generation
+     * to persist experimental data.</p>
      * 
      * @param results Trial results to export
      * @param outputPath Path to CSV file
      */
     public static void exportToCsv(List<ScalingTrialResult> results, String outputPath) {
-        // TODO: Phase 3 - implement CSV export
-        throw new UnsupportedOperationException("Not yet implemented");
+        try {
+            // Create report for CSV generation
+            ScalingReport report = new ScalingReport(
+                results.get(0).getConfig().getStage(), results);
+            
+            // Write to file
+            java.nio.file.Files.writeString(
+                java.nio.file.Paths.get(outputPath),
+                report.toCsv()
+            );
+            
+            System.out.printf("Successfully exported %d results to %s%n", 
+                results.size(), outputPath);
+        } catch (java.io.IOException e) {
+            System.err.printf("ERROR: Failed to export CSV: %s%n", e.getMessage());
+        }
     }
     
     /**

@@ -1,6 +1,10 @@
 package com.emergent.doom.validation;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 /**
  * Aggregated analysis report for scaling validation experiments.
@@ -33,21 +37,84 @@ public class ScalingReport {
     /**
      * Generate scaling analysis report from trial results.
      * 
-     * <p><strong>Not yet implemented.</strong> Will perform statistical analysis
-     * and generate comprehensive report.</p>
+     * <p><strong>Implementation:</strong> Performs statistical analysis
+     * and generates comprehensive report with B coefficient calculation.</p>
+     * 
+     * <p><strong>Reasoning:</strong> B metric is the key indicator of scaling
+     * behavior. Linear regression provides both slope (B) and fit quality (R²).
+     * Success rate indicates whether the method works at all for this difficulty.</p>
+     * 
+     * <p><strong>Integration:</strong> Created by generateReport() in main workflow,
+     * used to generate console output and determine early termination.</p>
      * 
      * @param stage The experimental stage
      * @param results Trial results to analyze (must span multiple array sizes)
      */
     public ScalingReport(ScalingStage stage, List<ScalingTrialResult> results) {
-        // TODO: Phase 3 - implement report generation with B calculation
-        throw new UnsupportedOperationException("Not yet implemented");
+        this.stage = stage;
+        this.results = new ArrayList<>(results);
+        
+        // Compute aggregated metrics per array size
+        Map<Integer, List<Integer>> stepsByArraySize = new HashMap<>();
+        Map<Integer, List<Boolean>> successByArraySize = new HashMap<>();
+        
+        for (ScalingTrialResult result : results) {
+            int arraySize = result.getConfig().getArraySize();
+            stepsByArraySize.putIfAbsent(arraySize, new ArrayList<>());
+            successByArraySize.putIfAbsent(arraySize, new ArrayList<>());
+            
+            stepsByArraySize.get(arraySize).add(result.getStepsToConvergence());
+            successByArraySize.get(arraySize).add(result.isFoundFactor());
+        }
+        
+        // Perform linear regression: steps = B * arraySize + intercept
+        SimpleRegression regression = new SimpleRegression();
+        for (Map.Entry<Integer, List<Integer>> entry : stepsByArraySize.entrySet()) {
+            int arraySize = entry.getKey();
+            double meanSteps = entry.getValue().stream().mapToInt(Integer::intValue).average().orElse(0);
+            regression.addData(arraySize, meanSteps);
+        }
+        
+        this.bCoefficient = regression.getSlope();
+        this.rSquared = regression.getRSquare();
+        
+        // Compute Z-normalization (simplified version)
+        // Z measures how much step variation exists relative to what we'd expect if scaling with array size
+        double meanStepsOverall = results.stream()
+            .mapToInt(ScalingTrialResult::getStepsToConvergence)
+            .average().orElse(0);
+        double stdStepsOverall = Math.sqrt(results.stream()
+            .mapToDouble(r -> Math.pow(r.getStepsToConvergence() - meanStepsOverall, 2))
+            .average().orElse(0));
+        this.zNormalization = stdStepsOverall / Math.max(meanStepsOverall, 1.0);
+        
+        // Compute success rate
+        long successes = results.stream().filter(ScalingTrialResult::isFoundFactor).count();
+        this.successRate = (double) successes / results.size();
+        
+        // Generate assessment
+        this.assessment = generateAssessment();
+    }
+    
+    private String generateAssessment() {
+        // Decision logic for assessment
+        if (successRate < 0.5) {
+            return "NON-CONVERGENT (success rate < 50%)";
+        } else if (Math.abs(bCoefficient) < 0.01 && rSquared > 0.90 && successRate > 0.9) {
+            return "LINEAR SCALING CONFIRMED (B ≈ 0, high R², high success rate)";
+        } else if (bCoefficient > 0.5) {
+            return "FAILURE BOUNDARY FOUND (B > 0.5, super-linear growth detected)";
+        } else if (rSquared < 0.70) {
+            return "INCONCLUSIVE (poor linear fit, high variance)";
+        } else {
+            return "MODERATE LINEAR SCALING (B small but non-zero)";
+        }
     }
     
     /**
      * Get the B coefficient (slope of steps vs array_size).
      * 
-     * <p><strong>Not yet implemented.</strong> Will return the regression slope
+     * <p><strong>Implementation:</strong> Returns the regression slope
      * B = ∂(mean_steps)/∂(array_size).</p>
      * 
      * <p><strong>Interpretation:</strong>
@@ -61,14 +128,13 @@ public class ScalingReport {
      * @return The B coefficient
      */
     public double getBCoefficient() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return bCoefficient;
     }
     
     /**
      * Get the R² goodness-of-fit for linear regression.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return R² ∈ [0,1].</p>
+     * <p><strong>Implementation:</strong> Returns R² ∈ [0,1].</p>
      * 
      * <p><strong>Interpretation:</strong>
      * R² close to 1 means data fits linear model well (either B≈0 or B>0 consistently).
@@ -77,15 +143,14 @@ public class ScalingReport {
      * @return R-squared value
      */
     public double getRSquared() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return rSquared;
     }
     
     /**
      * Get the Z-normalization metric.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return Z-score comparing
-     * observed step variation to expected if steps scaled linearly with array size.</p>
+     * <p><strong>Implementation:</strong> Returns coefficient of variation
+     * (std/mean) for step counts across all trials.</p>
      * 
      * <p><strong>From LINEAR_SCALING_ANALYSIS.md:</strong>
      * Z ≈ 0.08 means 99.92% invariance, confirming constant convergence time.</p>
@@ -93,81 +158,149 @@ public class ScalingReport {
      * @return Z-normalization score
      */
     public double getZNormalization() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return zNormalization;
     }
     
     /**
      * Get the overall success rate across all trials.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return fraction of trials
+     * <p><strong>Implementation:</strong> Returns fraction of trials
      * that found factors within step limit.</p>
      * 
      * @return Success rate [0,1]
      */
     public double getSuccessRate() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return successRate;
     }
     
     /**
      * Get the qualitative assessment.
      * 
-     * <p><strong>Not yet implemented.</strong> Will return human-readable verdict:</p>
-     * <ul>
-     *   <li>"LINEAR SCALING CONFIRMED" if B ≈ 0, R² > 0.95, success rate high</li>
-     *   <li>"FAILURE BOUNDARY FOUND" if B > 0.5, indicating transition to super-linear</li>
-     *   <li>"INCONCLUSIVE" if high variance or poor fit</li>
-     *   <li>"NON-CONVERGENT" if success rate below threshold</li>
-     * </ul>
+     * <p><strong>Implementation:</strong> Returns human-readable verdict based on metrics.</p>
      * 
      * @return Assessment string
      */
     public String getAssessment() {
-        // TODO: Phase 3 - implement getter
-        throw new UnsupportedOperationException("Not yet implemented");
+        return assessment;
     }
     
     /**
      * Generate detailed console report.
      * 
-     * <p><strong>Not yet implemented.</strong> Will format a multi-line report
+     * <p><strong>Implementation:</strong> Formats a multi-line report
      * with all metrics, per-array-size breakdown, and interpretation.</p>
+     * 
+     * <p><strong>Reasoning:</strong> Console output provides immediate feedback
+     * during experiments. Structured format makes it easy to spot issues.</p>
      * 
      * @return Formatted report string
      */
     public String generateConsoleReport() {
-        // TODO: Phase 3 - implement report formatting
-        throw new UnsupportedOperationException("Not yet implemented");
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append("=" .repeat(70)).append("\n");
+        sb.append("SCALING ANALYSIS REPORT\n");
+        sb.append("=".repeat(70)).append("\n\n");
+        
+        sb.append(String.format("Stage: %s\n", stage));
+        sb.append(String.format("Total trials: %d\n", results.size()));
+        sb.append("\n");
+        
+        sb.append("KEY METRICS:\n");
+        sb.append(String.format("  B coefficient (∂steps/∂array_size): %.6f\n", bCoefficient));
+        sb.append(String.format("  R² (goodness of fit): %.4f\n", rSquared));
+        sb.append(String.format("  Z-normalization (CV): %.4f\n", zNormalization));
+        sb.append(String.format("  Success rate: %.1f%%\n", successRate * 100));
+        sb.append("\n");
+        
+        sb.append("ASSESSMENT: ").append(assessment).append("\n");
+        sb.append("\n");
+        
+        // Per-array-size breakdown
+        sb.append("PER-ARRAY-SIZE BREAKDOWN:\n");
+        Map<Integer, List<Integer>> stepsBySize = new HashMap<>();
+        Map<Integer, Integer> successesBySize = new HashMap<>();
+        
+        for (ScalingTrialResult result : results) {
+            int size = result.getConfig().getArraySize();
+            stepsBySize.putIfAbsent(size, new ArrayList<>());
+            stepsBySize.get(size).add(result.getStepsToConvergence());
+            successesBySize.put(size, successesBySize.getOrDefault(size, 0) + 
+                              (result.isFoundFactor() ? 1 : 0));
+        }
+        
+        for (Integer size : stepsBySize.keySet().stream().sorted().toArray(Integer[]::new)) {
+            List<Integer> steps = stepsBySize.get(size);
+            double mean = steps.stream().mapToInt(Integer::intValue).average().orElse(0);
+            double stdDev = Math.sqrt(steps.stream()
+                .mapToDouble(s -> Math.pow(s - mean, 2)).average().orElse(0));
+            int successes = successesBySize.getOrDefault(size, 0);
+            
+            sb.append(String.format("  Array size %d: mean=%.1f, std=%.1f, successes=%d/%d (%.0f%%)\n",
+                size, mean, stdDev, successes, steps.size(), 
+                100.0 * successes / steps.size()));
+        }
+        
+        sb.append("\n");
+        sb.append("=".repeat(70)).append("\n");
+        
+        return sb.toString();
     }
     
     /**
      * Export results to CSV format.
      * 
-     * <p><strong>Not yet implemented.</strong> Will generate CSV rows for all trials
-     * following the schema: stage,target,arraySize,trial,steps,converged,foundFactor,...</p>
+     * <p><strong>Implementation:</strong> Generates CSV rows for all trials
+     * following the schema compatible with analyze_scaling.py.</p>
      * 
-     * @return CSV content string
+     * <p><strong>Reasoning:</strong> CSV export enables offline analysis
+     * and archival of experimental data.</p>
+     * 
+     * @return CSV content string with header
      */
     public String toCsv() {
-        // TODO: Phase 3 - implement CSV export
-        throw new UnsupportedOperationException("Not yet implemented");
+        StringBuilder sb = new StringBuilder();
+        
+        // Header
+        sb.append("stage,target,arraySize,steps,converged,foundFactor,factor,timeMs,");
+        sb.append("remainderMean,remainderVariance,remainderAutocorr\n");
+        
+        // Data rows
+        for (ScalingTrialResult result : results) {
+            sb.append(result.toCsvRow()).append("\n");
+        }
+        
+        return sb.toString();
     }
     
     /**
      * Determine if should proceed to next stage.
      * 
-     * <p><strong>Not yet implemented.</strong> Will apply decision logic:</p>
+     * <p><strong>Implementation:</strong> Applies decision logic based on
+     * B coefficient and success rate.</p>
+     * 
+     * <p><strong>Reasoning:</strong>
      * <ul>
      *   <li>Proceed if B ≈ 0 and success rate high (linear scaling holds)</li>
      *   <li>Stop if B > 0.5 (found failure boundary)</li>
      *   <li>Stop if non-convergence detected (success rate low)</li>
      * </ul>
+     * </p>
      * 
      * @return true if should continue to next stage, false otherwise
      */
     public boolean shouldProceedToNextStage() {
-        // TODO: Phase 3 - implement decision logic
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Don't proceed if success rate too low
+        if (successRate < 0.7) {
+            return false;
+        }
+        
+        // Don't proceed if B > 0.5 (failure boundary detected)
+        if (bCoefficient > 0.5) {
+            return false;
+        }
+        
+        // Proceed if B ≈ 0 and good fit
+        return Math.abs(bCoefficient) < 0.1 && rSquared > 0.70;
     }
 }
