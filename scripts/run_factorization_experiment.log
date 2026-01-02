@@ -1,0 +1,5300 @@
+Batch Factorization Experiment Started: Thu Jan  1 21:43:04 EST 2026
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------< com.emergent.doom:emergent-doom-engine >---------------
+[INFO] Building Emergent Doom Engine 0.1.0-alpha
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ emergent-doom-engine ---
+[INFO] Deleting /Users/velocityworks/IdeaProjects/emergent-doom-engine/target
+[INFO] 
+[INFO] --- build-helper:3.3.0:add-source (add-source) @ emergent-doom-engine ---
+[INFO] Source directory: /Users/velocityworks/IdeaProjects/emergent-doom-engine/lab/experiment-095 added.
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ emergent-doom-engine ---
+[INFO] skip non existing resourceDirectory /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ emergent-doom-engine ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 104 source files with javac [debug release 11] to target/classes
+[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/java/com/emergent/doom/metrics/Metric.java: /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/java/com/emergent/doom/metrics/Metric.java uses or overrides a deprecated API.
+[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/java/com/emergent/doom/metrics/Metric.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ emergent-doom-engine ---
+[INFO] skip non existing resourceDirectory /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ emergent-doom-engine ---
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 16 source files with javac [debug release 11] to target/test-classes
+[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/test/java/com/emergent/doom/probe/ProbeTest.java: Some input files use or override a deprecated API.
+[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/test/java/com/emergent/doom/probe/ProbeTest.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- surefire:3.0.0-M9:test (default-test) @ emergent-doom-engine ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.3.0:jar (default-jar) @ emergent-doom-engine ---
+[INFO] Building jar: /Users/velocityworks/IdeaProjects/emergent-doom-engine/target/emergent-doom-engine-0.1.0-alpha.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.238 s
+[INFO] Finished at: 2026-01-01T21:43:07-05:00
+[INFO] ------------------------------------------------------------------------
+Testing target: 10967 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10967
+Target magnitude: ~1e4
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [11, 997]
+
+  Factor details:
+  Position 11 (array index 1): 11 × 997 = 10967
+  Position 997 (array index 10): 997 × 11 = 10967
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=11, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=2
+    Index 4: position=5, remainder=2
+    Index 5: position=15, remainder=2
+    Index 6: position=17, remainder=2
+    Index 7: position=43, remainder=2
+    Index 8: position=51, remainder=2
+    Index 9: position=85, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10967
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10967 = 10967
+  Position 11: 11 × 997 = 10967
+  Position 997: 997 × 11 = 10967
+
+Non-trivial factors: [11, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10967, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1307.50
+
+Metrics:
+  Sortedness: 99.05 ± 1.76
+  Monotonicity: 0.40 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 12961 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 12961
+Target magnitude: ~1e4
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [13, 997]
+
+  Factor details:
+  Position 13 (array index 1): 13 × 997 = 12961
+  Position 997 (array index 21): 997 × 13 = 12961
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=13, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=1
+    Index 4: position=4, remainder=1
+    Index 5: position=5, remainder=1
+    Index 6: position=6, remainder=1
+    Index 7: position=8, remainder=1
+    Index 8: position=9, remainder=1
+    Index 9: position=10, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=12961
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 12961 = 12961
+  Position 13: 13 × 997 = 12961
+  Position 997: 997 × 13 = 12961
+
+Non-trivial factors: [13, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=12961, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1282.40
+
+Metrics:
+  Sortedness: 96.64 ± 2.67
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10901 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10901
+Target magnitude: ~1e4
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [11, 991]
+
+  Factor details:
+  Position 11 (array index 1): 11 × 991 = 10901
+  Position 991 (array index 71): 991 × 11 = 10901
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=11, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=4, remainder=1
+    Index 4: position=5, remainder=1
+    Index 5: position=10, remainder=1
+    Index 6: position=20, remainder=1
+    Index 7: position=25, remainder=1
+    Index 8: position=50, remainder=1
+    Index 9: position=100, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10901
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10901 = 10901
+  Position 11: 11 × 991 = 10901
+  Position 991: 991 × 11 = 10901
+
+Non-trivial factors: [11, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10901, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1295.70
+
+Metrics:
+  Sortedness: 97.90 ± 2.51
+  Monotonicity: 0.50 ± 0.53
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 12883 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 12883
+Target magnitude: ~1e4
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [13, 991]
+
+  Factor details:
+  Position 13 (array index 1): 13 × 991 = 12883
+  Position 991 (array index 45): 991 × 13 = 12883
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=13, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=1
+    Index 4: position=6, remainder=1
+    Index 5: position=19, remainder=1
+    Index 6: position=38, remainder=1
+    Index 7: position=57, remainder=1
+    Index 8: position=113, remainder=1
+    Index 9: position=114, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=12883
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 12883 = 12883
+  Position 13: 13 × 991 = 12883
+  Position 991: 991 × 13 = 12883
+
+Non-trivial factors: [13, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=12883, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1247.20
+
+Metrics:
+  Sortedness: 94.66 ± 3.10
+  Monotonicity: 0.90 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10747 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10747
+Target magnitude: ~1e4
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [11, 977]
+
+  Factor details:
+  Position 11 (array index 1): 11 × 977 = 10747
+  Position 977 (array index 2): 977 × 11 = 10747
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=11, remainder=0
+    Index 2: position=977, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=3, remainder=1
+    Index 5: position=6, remainder=1
+    Index 6: position=9, remainder=1
+    Index 7: position=18, remainder=1
+    Index 8: position=27, remainder=1
+    Index 9: position=54, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10747
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10747 = 10747
+  Position 11: 11 × 977 = 10747
+  Position 977: 977 × 11 = 10747
+
+Non-trivial factors: [11, 977]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10747, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1271.60
+
+Metrics:
+  Sortedness: 98.83 ± 2.04
+  Monotonicity: 0.40 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100697 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100697
+Target magnitude: ~1e5
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [101, 997]
+
+  Factor details:
+  Position 101 (array index 1): 101 × 997 = 100697
+  Position 997 (array index 62): 997 × 101 = 100697
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=101, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=4, remainder=1
+    Index 4: position=8, remainder=1
+    Index 5: position=41, remainder=1
+    Index 6: position=82, remainder=1
+    Index 7: position=164, remainder=1
+    Index 8: position=307, remainder=1
+    Index 9: position=328, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100697
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100697 = 100697
+  Position 101: 101 × 997 = 100697
+  Position 997: 997 × 101 = 100697
+
+Non-trivial factors: [101, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100697, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1295.00
+
+Metrics:
+  Sortedness: 97.32 ± 2.83
+  Monotonicity: 0.60 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 102691 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 102691
+Target magnitude: ~1e5
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [103, 997]
+
+  Factor details:
+  Position 103 (array index 1): 103 × 997 = 102691
+  Position 997 (array index 2): 997 × 103 = 102691
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=103, remainder=0
+    Index 2: position=997, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=3, remainder=1
+    Index 5: position=5, remainder=1
+    Index 6: position=6, remainder=1
+    Index 7: position=7, remainder=1
+    Index 8: position=9, remainder=1
+    Index 9: position=10, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=102691
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 102691 = 102691
+  Position 103: 103 × 997 = 102691
+  Position 997: 997 × 103 = 102691
+
+Non-trivial factors: [103, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=102691, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1307.50
+
+Metrics:
+  Sortedness: 98.40 ± 2.49
+  Monotonicity: 0.50 ± 0.53
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100091 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100091
+Target magnitude: ~1e5
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [101, 991]
+
+  Factor details:
+  Position 101 (array index 1): 101 × 991 = 100091
+  Position 991 (array index 118): 991 × 101 = 100091
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=101, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=5, remainder=1
+    Index 4: position=10, remainder=1
+    Index 5: position=3, remainder=2
+    Index 6: position=9, remainder=2
+    Index 7: position=11, remainder=2
+    Index 8: position=27, remainder=2
+    Index 9: position=33, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100091
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100091 = 100091
+  Position 101: 101 × 991 = 100091
+  Position 991: 991 × 101 = 100091
+
+Non-trivial factors: [101, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100091, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1210.00
+
+Metrics:
+  Sortedness: 91.24 ± 2.35
+  Monotonicity: 1.00 ± 0.00
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 102073 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 102073
+Target magnitude: ~1e5
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [103, 991]
+
+  Factor details:
+  Position 103 (array index 1): 103 × 991 = 102073
+  Position 991 (array index 120): 991 × 103 = 102073
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=103, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=1
+    Index 4: position=4, remainder=1
+    Index 5: position=6, remainder=1
+    Index 6: position=8, remainder=1
+    Index 7: position=12, remainder=1
+    Index 8: position=24, remainder=1
+    Index 9: position=5, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=102073
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 102073 = 102073
+  Position 103: 103 × 991 = 102073
+  Position 991: 991 × 103 = 102073
+
+Non-trivial factors: [103, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=102073, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1257.40
+
+Metrics:
+  Sortedness: 95.82 ± 3.85
+  Monotonicity: 0.70 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100631 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100631
+Target magnitude: ~1e5
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [103, 977]
+
+  Factor details:
+  Position 103 (array index 1): 103 × 977 = 100631
+  Position 977 (array index 2): 977 × 103 = 100631
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=103, remainder=0
+    Index 2: position=977, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=5, remainder=1
+    Index 5: position=10, remainder=1
+    Index 6: position=29, remainder=1
+    Index 7: position=58, remainder=1
+    Index 8: position=145, remainder=1
+    Index 9: position=290, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100631
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100631 = 100631
+  Position 103: 103 × 977 = 100631
+  Position 977: 977 × 103 = 100631
+
+Non-trivial factors: [103, 977]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100631, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1195.40
+
+Metrics:
+  Sortedness: 93.35 ± 4.60
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1005973 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1005973
+Target magnitude: ~1e6
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [997]
+
+  Factor details:
+  Position 997 (array index 1): 997 × 1009 = 1005973
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=997, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=1
+    Index 4: position=4, remainder=1
+    Index 5: position=6, remainder=1
+    Index 6: position=11, remainder=1
+    Index 7: position=12, remainder=1
+    Index 8: position=22, remainder=1
+    Index 9: position=33, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1005973
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1005973 = 1005973
+  Position 997: 997 × 1009 = 1005973
+
+Non-trivial factors: [997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1005973, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1314.50
+
+Metrics:
+  Sortedness: 98.19 ± 2.73
+  Monotonicity: 0.60 ± 0.70
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1009961 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1009961
+Target magnitude: ~1e6
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [997]
+
+  Factor details:
+  Position 997 (array index 34): 997 × 1013 = 1009961
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=2, remainder=1
+    Index 2: position=4, remainder=1
+    Index 3: position=5, remainder=1
+    Index 4: position=7, remainder=1
+    Index 5: position=8, remainder=1
+    Index 6: position=10, remainder=1
+    Index 7: position=14, remainder=1
+    Index 8: position=20, remainder=1
+    Index 9: position=28, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1009961
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1009961 = 1009961
+  Position 997: 997 × 1013 = 1009961
+
+Non-trivial factors: [997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1009961, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1267.40
+
+Metrics:
+  Sortedness: 95.38 ± 3.97
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 999919 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 999919
+Target magnitude: ~1e6
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [991]
+
+  Factor details:
+  Position 991 (array index 1): 991 × 1009 = 999919
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=991, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=1
+    Index 4: position=6, remainder=1
+    Index 5: position=9, remainder=1
+    Index 6: position=18, remainder=1
+    Index 7: position=27, remainder=1
+    Index 8: position=54, remainder=1
+    Index 9: position=4, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=999919
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 999919 = 999919
+  Position 991: 991 × 1009 = 999919
+
+Non-trivial factors: [991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=999919, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1270.20
+
+Metrics:
+  Sortedness: 96.20 ± 2.64
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1003883 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1003883
+Target magnitude: ~1e6
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [991]
+
+  Factor details:
+  Position 991 (array index 1): 991 × 1013 = 1003883
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=991, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=11, remainder=1
+    Index 4: position=22, remainder=1
+    Index 5: position=3, remainder=2
+    Index 6: position=23, remainder=2
+    Index 7: position=69, remainder=2
+    Index 8: position=4, remainder=3
+    Index 9: position=5, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1003883
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1003883 = 1003883
+  Position 991: 991 × 1013 = 1003883
+
+Non-trivial factors: [991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1003883, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1256.10
+
+Metrics:
+  Sortedness: 94.58 ± 4.63
+  Monotonicity: 0.80 ± 0.63
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1001677 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1001677
+Target magnitude: ~1e6
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [983]
+
+  Factor details:
+  Position 983 (array index 1): 983 × 1019 = 1001677
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=983, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=1
+    Index 4: position=4, remainder=1
+    Index 5: position=6, remainder=1
+    Index 6: position=12, remainder=1
+    Index 7: position=13, remainder=1
+    Index 8: position=26, remainder=1
+    Index 9: position=39, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1001677
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1001677 = 1001677
+  Position 983: 983 × 1019 = 1001677
+
+Non-trivial factors: [983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1001677, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1282.20
+
+Metrics:
+  Sortedness: 97.35 ± 3.31
+  Monotonicity: 0.60 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10006889 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10006889
+Target magnitude: ~1e7
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [997]
+
+  Factor details:
+  Position 997 (array index 59): 997 × 10037 = 10006889
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=2, remainder=1
+    Index 2: position=4, remainder=1
+    Index 3: position=8, remainder=1
+    Index 4: position=139, remainder=1
+    Index 5: position=278, remainder=1
+    Index 6: position=556, remainder=1
+    Index 7: position=3, remainder=2
+    Index 8: position=11, remainder=2
+    Index 9: position=33, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10006889
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10006889 = 10006889
+  Position 997: 997 × 10037 = 10006889
+
+Non-trivial factors: [997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10006889, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1257.60
+
+Metrics:
+  Sortedness: 95.31 ± 3.50
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10008883 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10008883
+Target magnitude: ~1e7
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [997]
+
+  Factor details:
+  Position 997 (array index 1): 997 × 10039 = 10008883
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=997, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=1
+    Index 4: position=6, remainder=1
+    Index 5: position=9, remainder=1
+    Index 6: position=13, remainder=1
+    Index 7: position=18, remainder=1
+    Index 8: position=26, remainder=1
+    Index 9: position=39, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10008883
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10008883 = 10008883
+  Position 997: 997 × 10039 = 10008883
+
+Non-trivial factors: [997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10008883, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1309.30
+
+Metrics:
+  Sortedness: 98.25 ± 2.00
+  Monotonicity: 0.60 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000181 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000181
+Target magnitude: ~1e7
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [991]
+
+  Factor details:
+  Position 991 (array index 73): 991 × 10091 = 10000181
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=2, remainder=1
+    Index 2: position=4, remainder=1
+    Index 3: position=5, remainder=1
+    Index 4: position=10, remainder=1
+    Index 5: position=20, remainder=1
+    Index 6: position=3, remainder=2
+    Index 7: position=7, remainder=2
+    Index 8: position=9, remainder=2
+    Index 9: position=21, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000181
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000181 = 10000181
+  Position 991: 991 × 10091 = 10000181
+
+Non-trivial factors: [991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000181, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1225.40
+
+Metrics:
+  Sortedness: 92.32 ± 3.43
+  Monotonicity: 0.90 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10002163 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10002163
+Target magnitude: ~1e7
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [991]
+
+  Factor details:
+  Position 991 (array index 1): 991 × 10093 = 10002163
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=991, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=1
+    Index 4: position=6, remainder=1
+    Index 5: position=67, remainder=1
+    Index 6: position=134, remainder=1
+    Index 7: position=139, remainder=1
+    Index 8: position=179, remainder=1
+    Index 9: position=201, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10002163
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10002163 = 10002163
+  Position 991: 991 × 10093 = 10002163
+
+Non-trivial factors: [991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10002163, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1252.30
+
+Metrics:
+  Sortedness: 95.26 ± 4.96
+  Monotonicity: 0.60 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 9996127 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 9996127
+Target magnitude: ~1e7
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [983]
+
+  Factor details:
+  Position 983 (array index 93): 983 × 10169 = 9996127
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=2, remainder=1
+    Index 2: position=3, remainder=1
+    Index 3: position=6, remainder=1
+    Index 4: position=7, remainder=1
+    Index 5: position=14, remainder=1
+    Index 6: position=21, remainder=1
+    Index 7: position=29, remainder=1
+    Index 8: position=42, remainder=1
+    Index 9: position=58, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=9996127
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 9996127 = 9996127
+  Position 983: 983 × 10169 = 9996127
+
+Non-trivial factors: [983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=9996127, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1199.90
+
+Metrics:
+  Sortedness: 91.38 ± 5.89
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100000097 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100000097
+Target magnitude: ~1e8
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [19, 997]
+
+  Factor details:
+  Position 19 (array index 1): 19 × 5263163 = 100000097
+  Position 997 (array index 2): 997 × 100301 = 100000097
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=19, remainder=0
+    Index 2: position=997, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=4, remainder=1
+    Index 5: position=7, remainder=1
+    Index 6: position=8, remainder=1
+    Index 7: position=14, remainder=1
+    Index 8: position=16, remainder=1
+    Index 9: position=28, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100000097
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100000097 = 100000097
+  Position 19: 19 × 5263163 = 100000097
+  Position 997: 997 × 100301 = 100000097
+
+Non-trivial factors: [19, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100000097, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1240.90
+
+Metrics:
+  Sortedness: 93.84 ± 3.83
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100012061 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100012061
+Target magnitude: ~1e8
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [997]
+
+  Factor details:
+  Position 997 (array index 18): 997 × 100313 = 100012061
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=2, remainder=1
+    Index 2: position=4, remainder=1
+    Index 3: position=5, remainder=1
+    Index 4: position=10, remainder=1
+    Index 5: position=20, remainder=1
+    Index 6: position=53, remainder=1
+    Index 7: position=106, remainder=1
+    Index 8: position=212, remainder=1
+    Index 9: position=265, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100012061
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100012061 = 100012061
+  Position 997: 997 × 100313 = 100012061
+
+Non-trivial factors: [997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100012061, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1229.50
+
+Metrics:
+  Sortedness: 93.17 ± 4.51
+  Monotonicity: 1.00 ± 0.47
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 99992891 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 99992891
+Target magnitude: ~1e8
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 5 non-trivial factor(s): [23, 41, 107, 943, 991]
+
+  Factor details:
+  Position 23 (array index 1): 23 × 4347517 = 99992891
+  Position 41 (array index 2): 41 × 2438851 = 99992891
+  Position 107 (array index 3): 107 × 934513 = 99992891
+  Position 943 (array index 4): 943 × 106037 = 99992891
+  Position 991 (array index 52): 991 × 100901 = 99992891
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=23, remainder=0
+    Index 2: position=41, remainder=0
+    Index 3: position=107, remainder=0
+    Index 4: position=943, remainder=0
+    Index 5: position=2, remainder=1
+    Index 6: position=5, remainder=1
+    Index 7: position=10, remainder=1
+    Index 8: position=3, remainder=2
+    Index 9: position=9, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=99992891
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 99992891 = 99992891
+  Position 23: 23 × 4347517 = 99992891
+  Position 41: 41 × 2438851 = 99992891
+  Position 107: 107 × 934513 = 99992891
+  Position 943: 943 × 106037 = 99992891
+  Position 991: 991 × 100901 = 99992891
+
+Non-trivial factors: [23, 41, 107, 943, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=99992891, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1295.00
+
+Metrics:
+  Sortedness: 98.14 ± 1.95
+  Monotonicity: 0.70 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100004783 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100004783
+Target magnitude: ~1e8
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [991]
+
+  Factor details:
+  Position 991 (array index 1): 991 × 100913 = 100004783
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=991, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=23, remainder=1
+    Index 4: position=46, remainder=1
+    Index 5: position=3, remainder=2
+    Index 6: position=41, remainder=2
+    Index 7: position=123, remainder=2
+    Index 8: position=467, remainder=2
+    Index 9: position=4, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100004783
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100004783 = 100004783
+  Position 991: 991 × 100913 = 100004783
+
+Non-trivial factors: [991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100004783, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1315.40
+
+Metrics:
+  Sortedness: 99.39 ± 1.04
+  Monotonicity: 0.30 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100007471 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100007471
+Target magnitude: ~1e8
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [983]
+
+  Factor details:
+  Position 983 (array index 1): 983 × 101737 = 100007471
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=983, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=5, remainder=1
+    Index 4: position=10, remainder=1
+    Index 5: position=3, remainder=2
+    Index 6: position=9, remainder=2
+    Index 7: position=19, remainder=2
+    Index 8: position=57, remainder=2
+    Index 9: position=171, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100007471
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100007471 = 100007471
+  Position 983: 983 × 101737 = 100007471
+
+Non-trivial factors: [983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100007471, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1259.10
+
+Metrics:
+  Sortedness: 96.64 ± 3.68
+  Monotonicity: 0.70 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 999997979 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 999997979
+Target magnitude: ~1e9
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [23, 997]
+
+  Factor details:
+  Position 23 (array index 1): 23 × 43478173 = 999997979
+  Position 997 (array index 104): 997 × 1003007 = 999997979
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=23, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=7, remainder=1
+    Index 4: position=14, remainder=1
+    Index 5: position=49, remainder=1
+    Index 6: position=98, remainder=1
+    Index 7: position=343, remainder=1
+    Index 8: position=686, remainder=1
+    Index 9: position=859, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=999997979
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 999997979 = 999997979
+  Position 23: 23 × 43478173 = 999997979
+  Position 997: 997 × 1003007 = 999997979
+
+Non-trivial factors: [23, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=999997979, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1205.80
+
+Metrics:
+  Sortedness: 89.53 ± 2.57
+  Monotonicity: 1.00 ± 0.00
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000009943 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000009943
+Target magnitude: ~1e9
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [997]
+
+  Factor details:
+  Position 997 (array index 1): 997 × 1003019 = 1000009943
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=997, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=349, remainder=1
+    Index 4: position=698, remainder=1
+    Index 5: position=3, remainder=2
+    Index 6: position=7, remainder=2
+    Index 7: position=21, remainder=2
+    Index 8: position=4, remainder=3
+    Index 9: position=5, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000009943
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000009943 = 1000009943
+  Position 997: 997 × 1003019 = 1000009943
+
+Non-trivial factors: [997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000009943, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1294.00
+
+Metrics:
+  Sortedness: 97.30 ± 2.09
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 999999271 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 999999271
+Target magnitude: ~1e9
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 4 non-trivial factor(s): [31, 43, 757, 991]
+
+  Factor details:
+  Position 31 (array index 1): 31 × 32258041 = 999999271
+  Position 43 (array index 2): 43 × 23255797 = 999999271
+  Position 757 (array index 3): 757 × 1321003 = 999999271
+  Position 991 (array index 127): 991 × 1009081 = 999999271
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=31, remainder=0
+    Index 2: position=43, remainder=0
+    Index 3: position=757, remainder=0
+    Index 4: position=2, remainder=1
+    Index 5: position=3, remainder=1
+    Index 6: position=5, remainder=1
+    Index 7: position=6, remainder=1
+    Index 8: position=9, remainder=1
+    Index 9: position=10, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=999999271
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 999999271 = 999999271
+  Position 31: 31 × 32258041 = 999999271
+  Position 43: 43 × 23255797 = 999999271
+  Position 757: 757 × 1321003 = 999999271
+  Position 991: 991 × 1009081 = 999999271
+
+Non-trivial factors: [31, 43, 757, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=999999271, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1248.70
+
+Metrics:
+  Sortedness: 93.88 ± 5.40
+  Monotonicity: 1.10 ± 0.88
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000009181 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000009181
+Target magnitude: ~1e9
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 4 non-trivial factor(s): [97, 101, 103, 991]
+
+  Factor details:
+  Position 97 (array index 1): 97 × 10309373 = 1000009181
+  Position 101 (array index 2): 101 × 9901081 = 1000009181
+  Position 103 (array index 3): 103 × 9708827 = 1000009181
+  Position 991 (array index 4): 991 × 1009091 = 1000009181
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=97, remainder=0
+    Index 2: position=101, remainder=0
+    Index 3: position=103, remainder=0
+    Index 4: position=991, remainder=0
+    Index 5: position=2, remainder=1
+    Index 6: position=4, remainder=1
+    Index 7: position=5, remainder=1
+    Index 8: position=10, remainder=1
+    Index 9: position=20, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000009181
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000009181 = 1000009181
+  Position 97: 97 × 10309373 = 1000009181
+  Position 101: 101 × 9901081 = 1000009181
+  Position 103: 103 × 9708827 = 1000009181
+  Position 991: 991 × 1009091 = 1000009181
+
+Non-trivial factors: [97, 101, 103, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000009181, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1267.10
+
+Metrics:
+  Sortedness: 95.95 ± 4.15
+  Monotonicity: 0.70 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 999999019 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 999999019
+Target magnitude: ~1e9
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [983]
+
+  Factor details:
+  Position 983 (array index 1): 983 × 1017293 = 999999019
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=983, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=1
+    Index 4: position=6, remainder=1
+    Index 5: position=9, remainder=1
+    Index 6: position=18, remainder=1
+    Index 7: position=53, remainder=1
+    Index 8: position=106, remainder=1
+    Index 9: position=159, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=999999019
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 999999019 = 999999019
+  Position 983: 983 × 1017293 = 999999019
+
+Non-trivial factors: [983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=999999019, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1283.30
+
+Metrics:
+  Sortedness: 98.12 ± 3.55
+  Monotonicity: 0.70 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000000727 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000000727
+Target magnitude: ~1e10
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 3 non-trivial factor(s): [53, 97, 997]
+
+  Factor details:
+  Position 53 (array index 1): 53 × 188679259 = 10000000727
+  Position 97 (array index 2): 97 × 103092791 = 10000000727
+  Position 997 (array index 3): 997 × 10030091 = 10000000727
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=53, remainder=0
+    Index 2: position=97, remainder=0
+    Index 3: position=997, remainder=0
+    Index 4: position=2, remainder=1
+    Index 5: position=3, remainder=2
+    Index 6: position=5, remainder=2
+    Index 7: position=11, remainder=2
+    Index 8: position=13, remainder=2
+    Index 9: position=15, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000000727
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000000727 = 10000000727
+  Position 53: 53 × 188679259 = 10000000727
+  Position 97: 97 × 103092791 = 10000000727
+  Position 997: 997 × 10030091 = 10000000727
+
+Non-trivial factors: [53, 97, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000000727, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1326.80
+
+Metrics:
+  Sortedness: 98.56 ± 1.91
+  Monotonicity: 0.60 ± 0.70
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000012691 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000012691
+Target magnitude: ~1e10
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [997]
+
+  Factor details:
+  Position 997 (array index 102): 997 × 10030103 = 10000012691
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=2, remainder=1
+    Index 2: position=5, remainder=1
+    Index 3: position=10, remainder=1
+    Index 4: position=3, remainder=2
+    Index 5: position=9, remainder=2
+    Index 6: position=4, remainder=3
+    Index 7: position=8, remainder=3
+    Index 8: position=16, remainder=3
+    Index 9: position=251, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000012691
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000012691 = 10000012691
+  Position 997: 997 × 10030103 = 10000012691
+
+Non-trivial factors: [997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000012691, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1256.30
+
+Metrics:
+  Sortedness: 94.41 ± 4.43
+  Monotonicity: 0.70 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 9999999647 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 9999999647
+Target magnitude: ~1e10
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 3 non-trivial factor(s): [11, 797, 991]
+
+  Factor details:
+  Position 11 (array index 1): 11 × 909090877 = 9999999647
+  Position 797 (array index 2): 797 × 12547051 = 9999999647
+  Position 991 (array index 184): 991 × 10090817 = 9999999647
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=11, remainder=0
+    Index 2: position=797, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=7, remainder=1
+    Index 5: position=13, remainder=1
+    Index 6: position=14, remainder=1
+    Index 7: position=26, remainder=1
+    Index 8: position=29, remainder=1
+    Index 9: position=58, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=9999999647
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 9999999647 = 9999999647
+  Position 11: 11 × 909090877 = 9999999647
+  Position 797: 797 × 12547051 = 9999999647
+  Position 991: 991 × 10090817 = 9999999647
+
+Non-trivial factors: [11, 797, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=9999999647, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1213.80
+
+Metrics:
+  Sortedness: 92.06 ± 7.16
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000005593 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000005593
+Target magnitude: ~1e10
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [991]
+
+  Factor details:
+  Position 991 (array index 102): 991 × 10090823 = 10000005593
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=2, remainder=1
+    Index 2: position=4, remainder=1
+    Index 3: position=8, remainder=1
+    Index 4: position=3, remainder=2
+    Index 5: position=17, remainder=2
+    Index 6: position=29, remainder=2
+    Index 7: position=51, remainder=2
+    Index 8: position=87, remainder=2
+    Index 9: position=167, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000005593
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000005593 = 10000005593
+  Position 991: 991 × 10090823 = 10000005593
+
+Non-trivial factors: [991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000005593, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1186.70
+
+Metrics:
+  Sortedness: 89.48 ± 2.00
+  Monotonicity: 1.00 ± 0.00
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000001003 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000001003
+Target magnitude: ~1e10
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [983]
+
+  Factor details:
+  Position 983 (array index 1): 983 × 10172941 = 10000001003
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=983, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=173, remainder=1
+    Index 4: position=346, remainder=1
+    Index 5: position=349, remainder=1
+    Index 6: position=698, remainder=1
+    Index 7: position=3, remainder=2
+    Index 8: position=17, remainder=2
+    Index 9: position=51, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000001003
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000001003 = 10000001003
+  Position 983: 983 × 10172941 = 10000001003
+
+Non-trivial factors: [983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000001003, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1325.40
+
+Metrics:
+  Sortedness: 99.90 ± 0.32
+  Monotonicity: 0.10 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 99999998297 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 99999998297
+Target magnitude: ~1e11
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [17, 997]
+
+  Factor details:
+  Position 17 (array index 1): 17 × 5882352841 = 99999998297
+  Position 997 (array index 40): 997 × 100300901 = 99999998297
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=17, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=4, remainder=1
+    Index 4: position=8, remainder=1
+    Index 5: position=11, remainder=1
+    Index 6: position=22, remainder=1
+    Index 7: position=44, remainder=1
+    Index 8: position=67, remainder=1
+    Index 9: position=88, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=99999998297
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 99999998297 = 99999998297
+  Position 17: 17 × 5882352841 = 99999998297
+  Position 997: 997 × 100300901 = 99999998297
+
+Non-trivial factors: [17, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=99999998297, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1284.00
+
+Metrics:
+  Sortedness: 96.43 ± 3.58
+  Monotonicity: 0.70 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100000010261 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100000010261
+Target magnitude: ~1e11
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [997]
+
+  Factor details:
+  Position 997 (array index 122): 997 × 100300913 = 100000010261
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=2, remainder=1
+    Index 2: position=4, remainder=1
+    Index 3: position=5, remainder=1
+    Index 4: position=10, remainder=1
+    Index 5: position=20, remainder=1
+    Index 6: position=37, remainder=1
+    Index 7: position=74, remainder=1
+    Index 8: position=148, remainder=1
+    Index 9: position=185, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100000010261
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100000010261 = 100000010261
+  Position 997: 997 × 100300913 = 100000010261
+
+Non-trivial factors: [997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100000010261, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1183.30
+
+Metrics:
+  Sortedness: 88.61 ± 6.39
+  Monotonicity: 1.00 ± 0.00
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 99999999443 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 99999999443
+Target magnitude: ~1e11
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [103, 991]
+
+  Factor details:
+  Position 103 (array index 1): 103 × 970873781 = 99999999443
+  Position 991 (array index 2): 991 × 100908173 = 99999999443
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=103, remainder=0
+    Index 2: position=991, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=7, remainder=1
+    Index 5: position=14, remainder=1
+    Index 6: position=3, remainder=2
+    Index 7: position=9, remainder=2
+    Index 8: position=27, remainder=2
+    Index 9: position=4, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=99999999443
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 99999999443 = 99999999443
+  Position 103: 103 × 970873781 = 99999999443
+  Position 991: 991 × 100908173 = 99999999443
+
+Non-trivial factors: [103, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=99999999443, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1319.00
+
+Metrics:
+  Sortedness: 99.93 ± 0.22
+  Monotonicity: 0.10 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100000005389 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100000005389
+Target magnitude: ~1e11
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [563, 991]
+
+  Factor details:
+  Position 563 (array index 1): 563 × 177619903 = 100000005389
+  Position 991 (array index 101): 991 × 100908179 = 100000005389
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=563, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=4, remainder=1
+    Index 4: position=3, remainder=2
+    Index 5: position=79, remainder=2
+    Index 6: position=237, remainder=2
+    Index 7: position=17, remainder=3
+    Index 8: position=34, remainder=3
+    Index 9: position=83, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100000005389
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100000005389 = 100000005389
+  Position 563: 563 × 177619903 = 100000005389
+  Position 991: 991 × 100908179 = 100000005389
+
+Non-trivial factors: [563, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100000005389, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1192.90
+
+Metrics:
+  Sortedness: 89.90 ± 5.51
+  Monotonicity: 0.90 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100000001183 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100000001183
+Target magnitude: ~1e11
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [19, 983]
+
+  Factor details:
+  Position 19 (array index 1): 19 × 5263157957 = 100000001183
+  Position 983 (array index 2): 983 × 101729401 = 100000001183
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=19, remainder=0
+    Index 2: position=983, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=691, remainder=1
+    Index 5: position=3, remainder=2
+    Index 6: position=4, remainder=3
+    Index 7: position=5, remainder=3
+    Index 8: position=10, remainder=3
+    Index 9: position=20, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100000001183
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100000001183 = 100000001183
+  Position 19: 19 × 5263157957 = 100000001183
+  Position 983: 983 × 101729401 = 100000001183
+
+Non-trivial factors: [19, 983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100000001183, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1191.80
+
+Metrics:
+  Sortedness: 90.61 ± 6.70
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 999999999919 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 999999999919
+Target magnitude: ~1e12
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 4 non-trivial factor(s): [17, 59, 293, 997]
+
+  Factor details:
+  Position 17 (array index 1): 17 × 58823529407 = 999999999919
+  Position 59 (array index 2): 59 × 16949152541 = 999999999919
+  Position 293 (array index 3): 293 × 3412969283 = 999999999919
+  Position 997 (array index 136): 997 × 1003009027 = 999999999919
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=17, remainder=0
+    Index 2: position=59, remainder=0
+    Index 3: position=293, remainder=0
+    Index 4: position=2, remainder=1
+    Index 5: position=3, remainder=1
+    Index 6: position=6, remainder=1
+    Index 7: position=9, remainder=1
+    Index 8: position=18, remainder=1
+    Index 9: position=23, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=999999999919
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 999999999919 = 999999999919
+  Position 17: 17 × 58823529407 = 999999999919
+  Position 59: 59 × 16949152541 = 999999999919
+  Position 293: 293 × 3412969283 = 999999999919
+  Position 997: 997 × 1003009027 = 999999999919
+
+Non-trivial factors: [17, 59, 293, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=999999999919, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1263.90
+
+Metrics:
+  Sortedness: 94.87 ± 5.69
+  Monotonicity: 0.50 ± 0.53
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000000003907 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000000003907
+Target magnitude: ~1e12
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 3 non-trivial factor(s): [19, 61, 997]
+
+  Factor details:
+  Position 19 (array index 1): 19 × 52631579153 = 1000000003907
+  Position 61 (array index 2): 61 × 16393442687 = 1000000003907
+  Position 997 (array index 84): 997 × 1003009031 = 1000000003907
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=19, remainder=0
+    Index 2: position=61, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=53, remainder=1
+    Index 5: position=103, remainder=1
+    Index 6: position=106, remainder=1
+    Index 7: position=206, remainder=1
+    Index 8: position=3, remainder=2
+    Index 9: position=5, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000000003907
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000000003907 = 1000000003907
+  Position 19: 19 × 52631579153 = 1000000003907
+  Position 61: 61 × 16393442687 = 1000000003907
+  Position 997: 997 × 1003009031 = 1000000003907
+
+Non-trivial factors: [19, 61, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000000003907, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1235.00
+
+Metrics:
+  Sortedness: 93.63 ± 3.13
+  Monotonicity: 1.00 ± 0.00
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000000003349 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000000003349
+Target magnitude: ~1e12
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [991]
+
+  Factor details:
+  Position 991 (array index 1): 991 × 1009081739 = 1000000003349
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=991, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=4, remainder=1
+    Index 4: position=3, remainder=2
+    Index 5: position=9, remainder=2
+    Index 6: position=27, remainder=2
+    Index 7: position=5, remainder=4
+    Index 8: position=7, remainder=4
+    Index 9: position=23, remainder=4
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000000003349
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000000003349 = 1000000003349
+  Position 991: 991 × 1009081739 = 1000000003349
+
+Non-trivial factors: [991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000000003349, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1309.20
+
+Metrics:
+  Sortedness: 98.89 ± 1.53
+  Monotonicity: 0.50 ± 0.53
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000000005331 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000000005331
+Target magnitude: ~1e12
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [991]
+
+  Factor details:
+  Position 991 (array index 111): 991 × 1009081741 = 1000000005331
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=2, remainder=1
+    Index 2: position=3, remainder=1
+    Index 3: position=5, remainder=1
+    Index 4: position=6, remainder=1
+    Index 5: position=10, remainder=1
+    Index 6: position=15, remainder=1
+    Index 7: position=30, remainder=1
+    Index 8: position=73, remainder=1
+    Index 9: position=127, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000000005331
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000000005331 = 1000000005331
+  Position 991: 991 × 1009081741 = 1000000005331
+
+Non-trivial factors: [991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000000005331, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1230.90
+
+Metrics:
+  Sortedness: 93.35 ± 4.00
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000000002983 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000000002983
+Target magnitude: ~1e12
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [347, 983]
+
+  Factor details:
+  Position 347 (array index 1): 347 × 2881844389 = 1000000002983
+  Position 983 (array index 2): 983 × 1017294001 = 1000000002983
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=347, remainder=0
+    Index 2: position=983, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=3, remainder=2
+    Index 5: position=7, remainder=2
+    Index 6: position=21, remainder=2
+    Index 7: position=83, remainder=2
+    Index 8: position=249, remainder=2
+    Index 9: position=541, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000000002983
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000000002983 = 1000000002983
+  Position 347: 347 × 2881844389 = 1000000002983
+  Position 983: 983 × 1017294001 = 1000000002983
+
+Non-trivial factors: [347, 983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000000002983, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1316.40
+
+Metrics:
+  Sortedness: 99.94 ± 0.19
+  Monotonicity: 0.10 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000000000187 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000000000187
+Target magnitude: ~1e13
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [997]
+
+  Factor details:
+  Position 997 (array index 20): 997 × 10030090271 = 10000000000187
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=2, remainder=1
+    Index 2: position=7, remainder=1
+    Index 3: position=14, remainder=1
+    Index 4: position=3, remainder=2
+    Index 5: position=5, remainder=2
+    Index 6: position=13, remainder=2
+    Index 7: position=15, remainder=2
+    Index 8: position=39, remainder=2
+    Index 9: position=65, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000000000187
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000000000187 = 10000000000187
+  Position 997: 997 × 10030090271 = 10000000000187
+
+Non-trivial factors: [997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000000000187, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1252.30
+
+Metrics:
+  Sortedness: 93.55 ± 5.21
+  Monotonicity: 0.90 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000000006169 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000000006169
+Target magnitude: ~1e13
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [37, 997]
+
+  Factor details:
+  Position 37 (array index 1): 37 × 270270270437 = 10000000006169
+  Position 997 (array index 144): 997 × 10030090277 = 10000000006169
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=37, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=4, remainder=1
+    Index 4: position=8, remainder=1
+    Index 5: position=773, remainder=1
+    Index 6: position=3, remainder=2
+    Index 7: position=47, remainder=3
+    Index 8: position=94, remainder=3
+    Index 9: position=5, remainder=4
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000000006169
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000000006169 = 10000000006169
+  Position 37: 37 × 270270270437 = 10000000006169
+  Position 997: 997 × 10030090277 = 10000000006169
+
+Non-trivial factors: [37, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000000006169, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1181.30
+
+Metrics:
+  Sortedness: 88.71 ± 3.41
+  Monotonicity: 1.00 ± 0.00
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000000000787 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000000000787
+Target magnitude: ~1e13
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [233, 991]
+
+  Factor details:
+  Position 233 (array index 1): 233 × 42918454939 = 10000000000787
+  Position 991 (array index 95): 991 × 10090817357 = 10000000000787
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=233, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=29, remainder=1
+    Index 4: position=58, remainder=1
+    Index 5: position=3, remainder=2
+    Index 6: position=5, remainder=2
+    Index 7: position=15, remainder=2
+    Index 8: position=19, remainder=2
+    Index 9: position=57, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000000000787
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000000000787 = 10000000000787
+  Position 233: 233 × 42918454939 = 10000000000787
+  Position 991: 991 × 10090817357 = 10000000000787
+
+Non-trivial factors: [233, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000000000787, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1214.70
+
+Metrics:
+  Sortedness: 92.00 ± 5.17
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000000006733 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000000006733
+Target magnitude: ~1e13
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [11, 991]
+
+  Factor details:
+  Position 11 (array index 1): 11 × 909090909703 = 10000000006733
+  Position 991 (array index 2): 991 × 10090817363 = 10000000006733
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=11, remainder=0
+    Index 2: position=991, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=4, remainder=1
+    Index 5: position=19, remainder=1
+    Index 6: position=38, remainder=1
+    Index 7: position=76, remainder=1
+    Index 8: position=3, remainder=2
+    Index 9: position=7, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000000006733
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000000006733 = 10000000006733
+  Position 11: 11 × 909090909703 = 10000000006733
+  Position 991: 991 × 10090817363 = 10000000006733
+
+Non-trivial factors: [11, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000000006733, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1271.90
+
+Metrics:
+  Sortedness: 97.00 ± 3.01
+  Monotonicity: 0.60 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000000020983 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000000020983
+Target magnitude: ~1e13
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [7, 983]
+
+  Factor details:
+  Position 7 (array index 1): 7 × 1428571431569 = 10000000020983
+  Position 983 (array index 2): 983 × 10172940001 = 10000000020983
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=7, remainder=0
+    Index 2: position=983, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=19, remainder=1
+    Index 5: position=38, remainder=1
+    Index 6: position=3, remainder=2
+    Index 7: position=4, remainder=3
+    Index 8: position=5, remainder=3
+    Index 9: position=10, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000000020983
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000000020983 = 10000000020983
+  Position 7: 7 × 1428571431569 = 10000000020983
+  Position 983: 983 × 10172940001 = 10000000020983
+
+Non-trivial factors: [7, 983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000000020983, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1275.40
+
+Metrics:
+  Sortedness: 97.85 ± 4.95
+  Monotonicity: 0.40 ± 0.70
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100000000000873 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100000000000873
+Target magnitude: ~1e14
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [7, 997]
+
+  Factor details:
+  Position 7 (array index 1): 7 × 14285714285839 = 100000000000873
+  Position 997 (array index 54): 997 × 100300902709 = 100000000000873
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=7, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=1
+    Index 4: position=4, remainder=1
+    Index 5: position=6, remainder=1
+    Index 6: position=8, remainder=1
+    Index 7: position=9, remainder=1
+    Index 8: position=12, remainder=1
+    Index 9: position=18, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100000000000873
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100000000000873 = 100000000000873
+  Position 7: 7 × 14285714285839 = 100000000000873
+  Position 997: 997 × 100300902709 = 100000000000873
+
+Non-trivial factors: [7, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100000000000873, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1250.70
+
+Metrics:
+  Sortedness: 94.15 ± 3.28
+  Monotonicity: 0.90 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100000000004861 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100000000004861
+Target magnitude: ~1e14
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 4 non-trivial factor(s): [11, 83, 913, 997]
+
+  Factor details:
+  Position 11 (array index 1): 11 × 9090909091351 = 100000000004861
+  Position 83 (array index 2): 83 × 1204819277167 = 100000000004861
+  Position 913 (array index 3): 913 × 109529025197 = 100000000004861
+  Position 997 (array index 4): 997 × 100300902713 = 100000000004861
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=11, remainder=0
+    Index 2: position=83, remainder=0
+    Index 3: position=913, remainder=0
+    Index 4: position=997, remainder=0
+    Index 5: position=2, remainder=1
+    Index 6: position=4, remainder=1
+    Index 7: position=5, remainder=1
+    Index 8: position=10, remainder=1
+    Index 9: position=20, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100000000004861
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100000000004861 = 100000000004861
+  Position 11: 11 × 9090909091351 = 100000000004861
+  Position 83: 83 × 1204819277167 = 100000000004861
+  Position 913: 913 × 109529025197 = 100000000004861
+  Position 997: 997 × 100300902713 = 100000000004861
+
+Non-trivial factors: [11, 83, 913, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100000000004861, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1292.90
+
+Metrics:
+  Sortedness: 97.00 ± 5.05
+  Monotonicity: 0.70 ± 0.67
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100000000000933 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100000000000933
+Target magnitude: ~1e14
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [31, 991]
+
+  Factor details:
+  Position 31 (array index 1): 31 × 3225806451643 = 100000000000933
+  Position 991 (array index 9): 991 × 100908173563 = 100000000000933
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=31, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=1
+    Index 4: position=4, remainder=1
+    Index 5: position=6, remainder=1
+    Index 6: position=12, remainder=1
+    Index 7: position=23, remainder=2
+    Index 8: position=5, remainder=3
+    Index 9: position=991, remainder=0
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100000000000933
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100000000000933 = 100000000000933
+  Position 31: 31 × 3225806451643 = 100000000000933
+  Position 991: 991 × 100908173563 = 100000000000933
+
+Non-trivial factors: [31, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100000000000933, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1268.10
+
+Metrics:
+  Sortedness: 95.46 ± 2.52
+  Monotonicity: 0.90 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100000000004897 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100000000004897
+Target magnitude: ~1e14
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [89, 991]
+
+  Factor details:
+  Position 89 (array index 1): 89 × 1123595505673 = 100000000004897
+  Position 991 (array index 6): 991 × 100908173567 = 100000000004897
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=89, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=4, remainder=1
+    Index 4: position=8, remainder=1
+    Index 5: position=16, remainder=1
+    Index 6: position=991, remainder=0
+    Index 7: position=32, remainder=1
+    Index 8: position=3, remainder=2
+    Index 9: position=5, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100000000004897
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100000000004897 = 100000000004897
+  Position 89: 89 × 1123595505673 = 100000000004897
+  Position 991: 991 × 100908173567 = 100000000004897
+
+Non-trivial factors: [89, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100000000004897, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1312.30
+
+Metrics:
+  Sortedness: 99.24 ± 2.23
+  Monotonicity: 0.30 ± 0.67
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100000000200983 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100000000200983
+Target magnitude: ~1e14
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 3 non-trivial factor(s): [17, 113, 983]
+
+  Factor details:
+  Position 17 (array index 1): 17 × 5882352952999 = 100000000200983
+  Position 113 (array index 2): 113 × 884955753991 = 100000000200983
+  Position 983 (array index 56): 983 × 101729400001 = 100000000200983
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=17, remainder=0
+    Index 2: position=113, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=7, remainder=1
+    Index 5: position=14, remainder=1
+    Index 6: position=3, remainder=2
+    Index 7: position=467, remainder=2
+    Index 8: position=4, remainder=3
+    Index 9: position=5, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100000000200983
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100000000200983 = 100000000200983
+  Position 17: 17 × 5882352952999 = 100000000200983
+  Position 113: 113 × 884955753991 = 100000000200983
+  Position 983: 983 × 101729400001 = 100000000200983
+
+Non-trivial factors: [17, 113, 983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100000000200983, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1253.20
+
+Metrics:
+  Sortedness: 95.06 ± 4.88
+  Monotonicity: 0.90 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 999999999999757 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 999999999999757
+Target magnitude: ~1e15
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [997]
+
+  Factor details:
+  Position 997 (array index 57): 997 × 1003009027081 = 999999999999757
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=2, remainder=1
+    Index 2: position=3, remainder=1
+    Index 3: position=4, remainder=1
+    Index 4: position=6, remainder=1
+    Index 5: position=7, remainder=1
+    Index 6: position=9, remainder=1
+    Index 7: position=12, remainder=1
+    Index 8: position=14, remainder=1
+    Index 9: position=18, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=999999999999757
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 999999999999757 = 999999999999757
+  Position 997: 997 × 1003009027081 = 999999999999757
+
+Non-trivial factors: [997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=999999999999757, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1263.50
+
+Metrics:
+  Sortedness: 95.31 ± 3.85
+  Monotonicity: 0.70 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000000000001751 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000000000001751
+Target magnitude: ~1e15
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 6 non-trivial factor(s): [3, 7, 21, 349, 607, 997]
+
+  Factor details:
+  Position 3 (array index 1): 3 × 333333333333917 = 1000000000001751
+  Position 7 (array index 2): 7 × 142857142857393 = 1000000000001751
+  Position 21 (array index 3): 21 × 47619047619131 = 1000000000001751
+  Position 349 (array index 4): 349 × 2865329512899 = 1000000000001751
+  Position 607 (array index 5): 607 × 1647446457993 = 1000000000001751
+  Position 997 (array index 6): 997 × 1003009027083 = 1000000000001751
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=3, remainder=0
+    Index 2: position=7, remainder=0
+    Index 3: position=21, remainder=0
+    Index 4: position=349, remainder=0
+    Index 5: position=607, remainder=0
+    Index 6: position=997, remainder=0
+    Index 7: position=2, remainder=1
+    Index 8: position=5, remainder=1
+    Index 9: position=10, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000000000001751
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000000000001751 = 1000000000001751
+  Position 3: 3 × 333333333333917 = 1000000000001751
+  Position 7: 7 × 142857142857393 = 1000000000001751
+  Position 21: 21 × 47619047619131 = 1000000000001751
+  Position 349: 349 × 2865329512899 = 1000000000001751
+  Position 607: 607 × 1647446457993 = 1000000000001751
+  Position 997: 997 × 1003009027083 = 1000000000001751
+
+Non-trivial factors: [3, 7, 21, 349, 607, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000000000001751, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1297.20
+
+Metrics:
+  Sortedness: 98.23 ± 2.75
+  Monotonicity: 0.60 ± 0.70
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000000000000411 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000000000000411
+Target magnitude: ~1e15
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [991]
+
+  Factor details:
+  Position 991 (array index 1): 991 × 1009081735621 = 1000000000000411
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=991, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=1
+    Index 4: position=5, remainder=1
+    Index 5: position=6, remainder=1
+    Index 6: position=10, remainder=1
+    Index 7: position=15, remainder=1
+    Index 8: position=19, remainder=1
+    Index 9: position=30, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000000000000411
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000000000000411 = 1000000000000411
+  Position 991: 991 × 1009081735621 = 1000000000000411
+
+Non-trivial factors: [991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000000000000411, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1271.50
+
+Metrics:
+  Sortedness: 96.70 ± 3.83
+  Monotonicity: 0.60 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000000000006357 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000000000006357
+Target magnitude: ~1e15
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 6 non-trivial factor(s): [7, 19, 97, 133, 679, 991]
+
+  Factor details:
+  Position 7 (array index 1): 7 × 142857142858051 = 1000000000006357
+  Position 19 (array index 2): 19 × 52631578947703 = 1000000000006357
+  Position 97 (array index 3): 97 × 10309278350581 = 1000000000006357
+  Position 133 (array index 4): 133 × 7518796992529 = 1000000000006357
+  Position 679 (array index 5): 679 × 1472754050083 = 1000000000006357
+  Position 991 (array index 81): 991 × 1009081735627 = 1000000000006357
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=7, remainder=0
+    Index 2: position=19, remainder=0
+    Index 3: position=97, remainder=0
+    Index 4: position=133, remainder=0
+    Index 5: position=679, remainder=0
+    Index 6: position=2, remainder=1
+    Index 7: position=3, remainder=1
+    Index 8: position=4, remainder=1
+    Index 9: position=6, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000000000006357
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000000000006357 = 1000000000006357
+  Position 7: 7 × 142857142858051 = 1000000000006357
+  Position 19: 19 × 52631578947703 = 1000000000006357
+  Position 97: 97 × 10309278350581 = 1000000000006357
+  Position 133: 133 × 7518796992529 = 1000000000006357
+  Position 679: 679 × 1472754050083 = 1000000000006357
+  Position 991: 991 × 1009081735627 = 1000000000006357
+
+Non-trivial factors: [7, 19, 97, 133, 679, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000000000006357, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1262.70
+
+Metrics:
+  Sortedness: 95.91 ± 3.81
+  Monotonicity: 0.60 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000000002000983 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000000002000983
+Target magnitude: ~1e15
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [983]
+
+  Factor details:
+  Position 983 (array index 1): 983 × 1017294000001 = 1000000002000983
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=983, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=2
+    Index 4: position=29, remainder=2
+    Index 5: position=73, remainder=2
+    Index 6: position=87, remainder=2
+    Index 7: position=219, remainder=2
+    Index 8: position=4, remainder=3
+    Index 9: position=5, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000000002000983
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000000002000983 = 1000000002000983
+  Position 983: 983 × 1017294000001 = 1000000002000983
+
+Non-trivial factors: [983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000000002000983, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1316.40
+
+Metrics:
+  Sortedness: 99.55 ± 0.80
+  Monotonicity: 0.30 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000000000000561 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000000000000561
+Target magnitude: ~1e16
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [277, 997]
+
+  Factor details:
+  Position 277 (array index 1): 277 × 36101083032493 = 10000000000000561
+  Position 997 (array index 2): 997 × 10030090270813 = 10000000000000561
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=277, remainder=0
+    Index 2: position=997, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=3, remainder=1
+    Index 5: position=4, remainder=1
+    Index 6: position=5, remainder=1
+    Index 7: position=6, remainder=1
+    Index 8: position=8, remainder=1
+    Index 9: position=10, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000000000000561
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000000000000561 = 10000000000000561
+  Position 277: 277 × 36101083032493 = 10000000000000561
+  Position 997: 997 × 10030090270813 = 10000000000000561
+
+Non-trivial factors: [277, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000000000000561, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1224.50
+
+Metrics:
+  Sortedness: 92.11 ± 3.97
+  Monotonicity: 0.90 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000000000008537 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000000000008537
+Target magnitude: ~1e16
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 6 non-trivial factor(s): [3, 37, 67, 111, 201, 997]
+
+  Factor details:
+  Position 3 (array index 1): 3 × 3333333333336179 = 10000000000008537
+  Position 37 (array index 2): 37 × 270270270270501 = 10000000000008537
+  Position 67 (array index 3): 67 × 149253731343411 = 10000000000008537
+  Position 111 (array index 4): 111 × 90090090090167 = 10000000000008537
+  Position 201 (array index 5): 201 × 49751243781137 = 10000000000008537
+  Position 997 (array index 24): 997 × 10030090270821 = 10000000000008537
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=3, remainder=0
+    Index 2: position=37, remainder=0
+    Index 3: position=67, remainder=0
+    Index 4: position=111, remainder=0
+    Index 5: position=201, remainder=0
+    Index 6: position=2, remainder=1
+    Index 7: position=4, remainder=1
+    Index 8: position=7, remainder=1
+    Index 9: position=8, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000000000008537
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000000000008537 = 10000000000008537
+  Position 3: 3 × 3333333333336179 = 10000000000008537
+  Position 37: 37 × 270270270270501 = 10000000000008537
+  Position 67: 67 × 149253731343411 = 10000000000008537
+  Position 111: 111 × 90090090090167 = 10000000000008537
+  Position 201: 201 × 49751243781137 = 10000000000008537
+  Position 997: 997 × 10030090270821 = 10000000000008537
+
+Non-trivial factors: [3, 37, 67, 111, 201, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000000000008537, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1314.20
+
+Metrics:
+  Sortedness: 98.94 ± 1.80
+  Monotonicity: 0.40 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000000000001137 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000000000001137
+Target magnitude: ~1e16
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 8 non-trivial factor(s): [7, 31, 37, 113, 217, 259, 791, 991]
+
+  Factor details:
+  Position 7 (array index 1): 7 × 1428571428571591 = 10000000000001137
+  Position 31 (array index 2): 31 × 322580645161327 = 10000000000001137
+  Position 37 (array index 3): 37 × 270270270270301 = 10000000000001137
+  Position 113 (array index 4): 113 × 88495575221249 = 10000000000001137
+  Position 217 (array index 5): 217 × 46082949308761 = 10000000000001137
+  Position 259 (array index 6): 259 × 38610038610043 = 10000000000001137
+  Position 791 (array index 7): 791 × 12642225031607 = 10000000000001137
+  Position 991 (array index 54): 991 × 10090817356207 = 10000000000001137
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=7, remainder=0
+    Index 2: position=31, remainder=0
+    Index 3: position=37, remainder=0
+    Index 4: position=113, remainder=0
+    Index 5: position=217, remainder=0
+    Index 6: position=259, remainder=0
+    Index 7: position=791, remainder=0
+    Index 8: position=2, remainder=1
+    Index 9: position=3, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000000000001137
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000000000001137 = 10000000000001137
+  Position 7: 7 × 1428571428571591 = 10000000000001137
+  Position 31: 31 × 322580645161327 = 10000000000001137
+  Position 37: 37 × 270270270270301 = 10000000000001137
+  Position 113: 113 × 88495575221249 = 10000000000001137
+  Position 217: 217 × 46082949308761 = 10000000000001137
+  Position 259: 259 × 38610038610043 = 10000000000001137
+  Position 791: 791 × 12642225031607 = 10000000000001137
+  Position 991: 991 × 10090817356207 = 10000000000001137
+
+Non-trivial factors: [7, 31, 37, 113, 217, 259, 791, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000000000001137, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1271.10
+
+Metrics:
+  Sortedness: 97.37 ± 2.82
+  Monotonicity: 0.60 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000000000007083 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000000000007083
+Target magnitude: ~1e16
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 7 non-trivial factor(s): [11, 19, 41, 209, 451, 779, 991]
+
+  Factor details:
+  Position 11 (array index 1): 11 × 909090909091553 = 10000000000007083
+  Position 19 (array index 2): 19 × 526315789474057 = 10000000000007083
+  Position 41 (array index 3): 41 × 243902439024563 = 10000000000007083
+  Position 209 (array index 4): 209 × 47846889952187 = 10000000000007083
+  Position 451 (array index 5): 451 × 22172949002233 = 10000000000007083
+  Position 779 (array index 6): 779 × 12836970474977 = 10000000000007083
+  Position 991 (array index 61): 991 × 10090817356213 = 10000000000007083
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=11, remainder=0
+    Index 2: position=19, remainder=0
+    Index 3: position=41, remainder=0
+    Index 4: position=209, remainder=0
+    Index 5: position=451, remainder=0
+    Index 6: position=779, remainder=0
+    Index 7: position=2, remainder=1
+    Index 8: position=3, remainder=1
+    Index 9: position=6, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000000000007083
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000000000007083 = 10000000000007083
+  Position 11: 11 × 909090909091553 = 10000000000007083
+  Position 19: 19 × 526315789474057 = 10000000000007083
+  Position 41: 41 × 243902439024563 = 10000000000007083
+  Position 209: 209 × 47846889952187 = 10000000000007083
+  Position 451: 451 × 22172949002233 = 10000000000007083
+  Position 779: 779 × 12836970474977 = 10000000000007083
+  Position 991: 991 × 10090817356213 = 10000000000007083
+
+Non-trivial factors: [11, 19, 41, 209, 451, 779, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000000000007083, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1291.80
+
+Metrics:
+  Sortedness: 97.85 ± 3.00
+  Monotonicity: 0.50 ± 0.53
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000000020000983 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000000020000983
+Target magnitude: ~1e16
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [103, 983]
+
+  Factor details:
+  Position 103 (array index 1): 103 × 97087378834961 = 10000000020000983
+  Position 983 (array index 20): 983 × 10172940000001 = 10000000020000983
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=103, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=3, remainder=2
+    Index 4: position=127, remainder=2
+    Index 5: position=353, remainder=2
+    Index 6: position=381, remainder=2
+    Index 7: position=4, remainder=3
+    Index 8: position=5, remainder=3
+    Index 9: position=10, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000000020000983
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000000020000983 = 10000000020000983
+  Position 103: 103 × 97087378834961 = 10000000020000983
+  Position 983: 983 × 10172940000001 = 10000000020000983
+
+Non-trivial factors: [103, 983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000000020000983, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1298.20
+
+Metrics:
+  Sortedness: 98.70 ± 1.84
+  Monotonicity: 0.60 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 999999999999999271 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 999999999999999271
+Target magnitude: ~1e18
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 12 non-trivial factor(s): [7, 13, 17, 59, 91, 119, 221, 271, 283, 413, 767, 997]
+
+  Factor details:
+  Position 7 (array index 1): 7 × 142857142857142753 = 999999999999999271
+  Position 13 (array index 2): 13 × 76923076923076867 = 999999999999999271
+  Position 17 (array index 3): 17 × 58823529411764663 = 999999999999999271
+  Position 59 (array index 4): 59 × 16949152542372869 = 999999999999999271
+  Position 91 (array index 5): 91 × 10989010989010981 = 999999999999999271
+  Position 119 (array index 6): 119 × 8403361344537809 = 999999999999999271
+  Position 221 (array index 7): 221 × 4524886877828051 = 999999999999999271
+  Position 271 (array index 8): 271 × 3690036900369001 = 999999999999999271
+  Position 283 (array index 9): 283 × 3533568904593637 = 999999999999999271
+  Position 413 (array index 10): 413 × 2421307506053267 = 999999999999999271
+  Position 767 (array index 11): 767 × 1303780964797913 = 999999999999999271
+  Position 997 (array index 71): 997 × 1003009027081243 = 999999999999999271
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=7, remainder=0
+    Index 2: position=13, remainder=0
+    Index 3: position=17, remainder=0
+    Index 4: position=59, remainder=0
+    Index 5: position=91, remainder=0
+    Index 6: position=119, remainder=0
+    Index 7: position=221, remainder=0
+    Index 8: position=271, remainder=0
+    Index 9: position=283, remainder=0
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=999999999999999271
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 999999999999999271 = 999999999999999271
+  Position 7: 7 × 142857142857142753 = 999999999999999271
+  Position 13: 13 × 76923076923076867 = 999999999999999271
+  Position 17: 17 × 58823529411764663 = 999999999999999271
+  Position 59: 59 × 16949152542372869 = 999999999999999271
+  Position 91: 91 × 10989010989010981 = 999999999999999271
+  Position 119: 119 × 8403361344537809 = 999999999999999271
+  Position 221: 221 × 4524886877828051 = 999999999999999271
+  Position 271: 271 × 3690036900369001 = 999999999999999271
+  Position 283: 283 × 3533568904593637 = 999999999999999271
+  Position 413: 413 × 2421307506053267 = 999999999999999271
+  Position 767: 767 × 1303780964797913 = 999999999999999271
+  Position 997: 997 × 1003009027081243 = 999999999999999271
+
+Non-trivial factors: [7, 13, 17, 59, 91, 119, 221, 271, 283, 413, 767, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=999999999999999271, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1206.30
+
+Metrics:
+  Sortedness: 91.55 ± 4.23
+  Monotonicity: 1.00 ± 0.00
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000000000000009241 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000000000000009241
+Target magnitude: ~1e18
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [43, 997]
+
+  Factor details:
+  Position 43 (array index 1): 43 × 23255813953488587 = 1000000000000009241
+  Position 997 (array index 69): 997 × 1003009027081253 = 1000000000000009241
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=43, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=4, remainder=1
+    Index 4: position=5, remainder=1
+    Index 5: position=8, remainder=1
+    Index 6: position=10, remainder=1
+    Index 7: position=20, remainder=1
+    Index 8: position=40, remainder=1
+    Index 9: position=3, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000000000000009241
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000000000000009241 = 1000000000000009241
+  Position 43: 43 × 23255813953488587 = 1000000000000009241
+  Position 997: 997 × 1003009027081253 = 1000000000000009241
+
+Non-trivial factors: [43, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000000000000009241, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1283.90
+
+Metrics:
+  Sortedness: 96.23 ± 2.94
+  Monotonicity: 0.90 ± 0.57
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100000000000000469 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100000000000000469
+Target magnitude: ~1e17
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [991]
+
+  Factor details:
+  Position 991 (array index 62): 991 × 100908173562059 = 100000000000000469
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=2, remainder=1
+    Index 2: position=4, remainder=1
+    Index 3: position=3, remainder=2
+    Index 4: position=9, remainder=2
+    Index 5: position=27, remainder=2
+    Index 6: position=17, remainder=3
+    Index 7: position=23, remainder=3
+    Index 8: position=34, remainder=3
+    Index 9: position=46, remainder=3
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100000000000000469
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100000000000000469 = 100000000000000469
+  Position 991: 991 × 100908173562059 = 100000000000000469
+
+Non-trivial factors: [991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100000000000000469, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1263.30
+
+Metrics:
+  Sortedness: 94.36 ± 4.41
+  Monotonicity: 0.90 ± 0.57
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100000000000004433 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100000000000004433
+Target magnitude: ~1e17
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 4 non-trivial factor(s): [3, 7, 21, 991]
+
+  Factor details:
+  Position 3 (array index 1): 3 × 33333333333334811 = 100000000000004433
+  Position 7 (array index 2): 7 × 14285714285714919 = 100000000000004433
+  Position 21 (array index 3): 21 × 4761904761904973 = 100000000000004433
+  Position 991 (array index 4): 991 × 100908173562063 = 100000000000004433
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=3, remainder=0
+    Index 2: position=7, remainder=0
+    Index 3: position=21, remainder=0
+    Index 4: position=991, remainder=0
+    Index 5: position=2, remainder=1
+    Index 6: position=4, remainder=1
+    Index 7: position=8, remainder=1
+    Index 8: position=16, remainder=1
+    Index 9: position=257, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100000000000004433
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100000000000004433 = 100000000000004433
+  Position 3: 3 × 33333333333334811 = 100000000000004433
+  Position 7: 7 × 14285714285714919 = 100000000000004433
+  Position 21: 21 × 4761904761904973 = 100000000000004433
+  Position 991: 991 × 100908173562063 = 100000000000004433
+
+Non-trivial factors: [3, 7, 21, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100000000000004433, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1285.60
+
+Metrics:
+  Sortedness: 97.67 ± 4.19
+  Monotonicity: 0.50 ± 0.53
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100000000200000983 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100000000200000983
+Target magnitude: ~1e17
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [349, 983]
+
+  Factor details:
+  Position 349 (array index 1): 349 × 286532951862467 = 100000000200000983
+  Position 983 (array index 2): 983 × 101729400000001 = 100000000200000983
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=349, remainder=0
+    Index 2: position=983, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=3, remainder=2
+    Index 5: position=4, remainder=3
+    Index 6: position=5, remainder=3
+    Index 7: position=10, remainder=3
+    Index 8: position=20, remainder=3
+    Index 9: position=13, remainder=4
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100000000200000983
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100000000200000983 = 100000000200000983
+  Position 349: 349 × 286532951862467 = 100000000200000983
+  Position 983: 983 × 101729400000001 = 100000000200000983
+
+Non-trivial factors: [349, 983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100000000200000983, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1266.40
+
+Metrics:
+  Sortedness: 95.86 ± 5.15
+  Monotonicity: 0.60 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 9999999999999999689 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 9999999999999999689
+Target magnitude: ~1e19
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 4 non-trivial factor(s): [7, 29, 203, 997]
+
+  Factor details:
+  Position 7 (array index 1): 7 × 1428571428571428527 = 9999999999999999689
+  Position 29 (array index 2): 29 × 344827586206896541 = 9999999999999999689
+  Position 203 (array index 3): 203 × 49261083743842363 = 9999999999999999689
+  Position 997 (array index 4): 997 × 10030090270812437 = 9999999999999999689
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=7, remainder=0
+    Index 2: position=29, remainder=0
+    Index 3: position=203, remainder=0
+    Index 4: position=997, remainder=0
+    Index 5: position=2, remainder=1
+    Index 6: position=4, remainder=1
+    Index 7: position=8, remainder=1
+    Index 8: position=47, remainder=1
+    Index 9: position=94, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=9999999999999999689
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 9999999999999999689 = 9999999999999999689
+  Position 7: 7 × 1428571428571428527 = 9999999999999999689
+  Position 29: 29 × 344827586206896541 = 9999999999999999689
+  Position 203: 203 × 49261083743842363 = 9999999999999999689
+  Position 997: 997 × 10030090270812437 = 9999999999999999689
+
+Non-trivial factors: [7, 29, 203, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=9999999999999999689, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1246.70
+
+Metrics:
+  Sortedness: 94.88 ± 4.04
+  Monotonicity: 0.70 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 10000000000000005671 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 10000000000000005671
+Target magnitude: ~1e19
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 6 non-trivial factor(s): [13, 19, 157, 227, 247, 997]
+
+  Factor details:
+  Position 13 (array index 1): 13 × 769230769230769667 = 10000000000000005671
+  Position 19 (array index 2): 19 × 526315789473684509 = 10000000000000005671
+  Position 157 (array index 3): 157 × 63694267515923603 = 10000000000000005671
+  Position 227 (array index 4): 227 × 44052863436123373 = 10000000000000005671
+  Position 247 (array index 5): 247 × 40485829959514193 = 10000000000000005671
+  Position 997 (array index 49): 997 × 10030090270812443 = 10000000000000005671
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=13, remainder=0
+    Index 2: position=19, remainder=0
+    Index 3: position=157, remainder=0
+    Index 4: position=227, remainder=0
+    Index 5: position=247, remainder=0
+    Index 6: position=2, remainder=1
+    Index 7: position=5, remainder=1
+    Index 8: position=10, remainder=1
+    Index 9: position=79, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=10000000000000005671
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 10000000000000005671 = 10000000000000005671
+  Position 13: 13 × 769230769230769667 = 10000000000000005671
+  Position 19: 19 × 526315789473684509 = 10000000000000005671
+  Position 157: 157 × 63694267515923603 = 10000000000000005671
+  Position 227: 227 × 44052863436123373 = 10000000000000005671
+  Position 247: 247 × 40485829959514193 = 10000000000000005671
+  Position 997: 997 × 10030090270812443 = 10000000000000005671
+
+Non-trivial factors: [13, 19, 157, 227, 247, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=10000000000000005671, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1261.30
+
+Metrics:
+  Sortedness: 96.08 ± 2.65
+  Monotonicity: 0.80 ± 0.42
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 999999999999999735 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 999999999999999735
+Target magnitude: ~1e18
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 11 non-trivial factor(s): [3, 5, 11, 15, 33, 55, 157, 165, 471, 785, 991]
+
+  Factor details:
+  Position 3 (array index 1): 3 × 333333333333333245 = 999999999999999735
+  Position 5 (array index 2): 5 × 199999999999999947 = 999999999999999735
+  Position 11 (array index 3): 11 × 90909090909090885 = 999999999999999735
+  Position 15 (array index 4): 15 × 66666666666666649 = 999999999999999735
+  Position 33 (array index 5): 33 × 30303030303030295 = 999999999999999735
+  Position 55 (array index 6): 55 × 18181818181818177 = 999999999999999735
+  Position 157 (array index 7): 157 × 6369426751592355 = 999999999999999735
+  Position 165 (array index 8): 165 × 6060606060606059 = 999999999999999735
+  Position 471 (array index 9): 471 × 2123142250530785 = 999999999999999735
+  Position 785 (array index 10): 785 × 1273885350318471 = 999999999999999735
+  Position 991 (array index 17): 991 × 1009081735620585 = 999999999999999735
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=3, remainder=0
+    Index 2: position=5, remainder=0
+    Index 3: position=11, remainder=0
+    Index 4: position=15, remainder=0
+    Index 5: position=33, remainder=0
+    Index 6: position=55, remainder=0
+    Index 7: position=157, remainder=0
+    Index 8: position=165, remainder=0
+    Index 9: position=471, remainder=0
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=999999999999999735
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 999999999999999735 = 999999999999999735
+  Position 3: 3 × 333333333333333245 = 999999999999999735
+  Position 5: 5 × 199999999999999947 = 999999999999999735
+  Position 11: 11 × 90909090909090885 = 999999999999999735
+  Position 15: 15 × 66666666666666649 = 999999999999999735
+  Position 33: 33 × 30303030303030295 = 999999999999999735
+  Position 55: 55 × 18181818181818177 = 999999999999999735
+  Position 157: 157 × 6369426751592355 = 999999999999999735
+  Position 165: 165 × 6060606060606059 = 999999999999999735
+  Position 471: 471 × 2123142250530785 = 999999999999999735
+  Position 785: 785 × 1273885350318471 = 999999999999999735
+  Position 991: 991 × 1009081735620585 = 999999999999999735
+
+Non-trivial factors: [3, 5, 11, 15, 33, 55, 157, 165, 471, 785, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=999999999999999735, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1269.60
+
+Metrics:
+  Sortedness: 97.24 ± 3.95
+  Monotonicity: 0.50 ± 0.53
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000000000000005681 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000000000000005681
+Target magnitude: ~1e18
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 4 non-trivial factor(s): [3, 67, 201, 991]
+
+  Factor details:
+  Position 3 (array index 1): 3 × 333333333333335227 = 1000000000000005681
+  Position 67 (array index 2): 67 × 14925373134328443 = 1000000000000005681
+  Position 201 (array index 3): 201 × 4975124378109481 = 1000000000000005681
+  Position 991 (array index 4): 991 × 1009081735620591 = 1000000000000005681
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=3, remainder=0
+    Index 2: position=67, remainder=0
+    Index 3: position=201, remainder=0
+    Index 4: position=991, remainder=0
+    Index 5: position=2, remainder=1
+    Index 6: position=4, remainder=1
+    Index 7: position=5, remainder=1
+    Index 8: position=8, remainder=1
+    Index 9: position=10, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000000000000005681
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000000000000005681 = 1000000000000005681
+  Position 3: 3 × 333333333333335227 = 1000000000000005681
+  Position 67: 67 × 14925373134328443 = 1000000000000005681
+  Position 201: 201 × 4975124378109481 = 1000000000000005681
+  Position 991: 991 × 1009081735620591 = 1000000000000005681
+
+Non-trivial factors: [3, 67, 201, 991]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000000000000005681, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1307.50
+
+Metrics:
+  Sortedness: 98.92 ± 1.69
+  Monotonicity: 0.40 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 1000000002000000983 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 1000000002000000983
+Target magnitude: ~1e18
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [31, 983]
+
+  Factor details:
+  Position 31 (array index 1): 31 × 32258064580645193 = 1000000002000000983
+  Position 983 (array index 2): 983 × 1017294000000001 = 1000000002000000983
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=31, remainder=0
+    Index 2: position=983, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=3, remainder=2
+    Index 5: position=7, remainder=2
+    Index 6: position=21, remainder=2
+    Index 7: position=49, remainder=2
+    Index 8: position=61, remainder=2
+    Index 9: position=147, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=1000000002000000983
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 1000000002000000983 = 1000000002000000983
+  Position 31: 31 × 32258064580645193 = 1000000002000000983
+  Position 983: 983 × 1017294000000001 = 1000000002000000983
+
+Non-trivial factors: [31, 983]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=1000000002000000983, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1305.50
+
+Metrics:
+  Sortedness: 99.32 ± 1.26
+  Monotonicity: 0.30 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
