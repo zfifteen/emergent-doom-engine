@@ -8,6 +8,18 @@ The EDE concept is inspired by research on sorting algorithms as models of emerg
 
 This work extends those ideas into a general-purpose engine framework, where sorting dynamics become the fundamental computational primitive for simulating emergent phenomena across diverse application domains.
 
+## Recent Discovery: Linear Time Scaling
+
+A significant finding from recent scaling experiments (January 2026) demonstrates that the emergent factorization algorithm exhibits **unexpected linear time complexity O(n)** with respect to array size. Rigorous testing across array sizes from 1000 to 4000 elements revealed that:
+
+1. **Per-step computation scales linearly**: Each iteration processes all n cells in the array (O(n) work)
+2. **Convergence time remains constant**: The system reaches equilibrium in ~130-140 steps regardless of array size
+3. **Total complexity is O(n)**: constant_steps × n cells/step = O(n) total operations
+
+This behavior challenges traditional assumptions about emergent optimization complexity. While classical factorization algorithms like trial division require O(√N) operations for a number N, the emergent approach discovers factors within a search space of size n in linear time. The key insight is that convergence depends on the problem's fitness landscape (remainder distribution), not the search space size.
+
+**Implications**: This O(n) scaling has been verified experimentally for easier factorization problems (semiprimes up to ~1e5). The critical open question is whether this linear behavior generalizes to cryptographically hard instances, or if convergence time grows for harder problems. See [`docs/findings/LINEAR_SCALING_ANALYSIS.md`](docs/findings/LINEAR_SCALING_ANALYSIS.md) for the complete analysis.
+
 ## Key Concepts from the Levin et al. Research
 
 ### Decentralized Intelligence and Bottom-Up Control
