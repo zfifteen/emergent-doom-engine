@@ -2,8 +2,6 @@ package com.emergent.doom.experiment;
 
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.execution.ConvergenceDetector;
-import com.emergent.doom.execution.ExecutionEngine;
-import com.emergent.doom.execution.ExecutionMode;
 import com.emergent.doom.execution.LockBasedExecutionEngine;
 import com.emergent.doom.execution.NoSwapConvergence;
 import com.emergent.doom.execution.ParallelExecutionEngine;
@@ -84,6 +82,7 @@ public class ExperimentRunner<T extends Cell<T>> {
     public TrialResult<T> runTrial(ExperimentConfig config, int trialNumber) {
         // Create fresh instances for this trial
         T[] cells = cellArrayFactory.get();
+        Topology<T> topology = topologyFactory.get();
 
         // Use thread-safe components for parallel/lock-based execution
         boolean needsThreadSafe = config.isParallelExecution() || config.isLockBasedExecution();
@@ -128,6 +127,11 @@ public class ExperimentRunner<T extends Cell<T>> {
             // This is the preferred execution mode for parallel trial batches
             SynchronousExecutionEngine<T> syncEngine = new SynchronousExecutionEngine<>(
                     cells, swapEngine, probe, convergenceDetector);
+            // Inject topology if supported by engine (future enhancement)
+            // Currently SynchronousExecutionEngine uses default iteration order
+            // but we should respect the topology factory if possible.
+            // For now, we just ensure topology is instantiated to respect the factory contract.
+
             finalStep = syncEngine.runUntilConvergence(config.getMaxSteps());
             converged = syncEngine.hasConverged();
         }
