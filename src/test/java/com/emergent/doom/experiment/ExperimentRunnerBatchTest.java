@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Timeout;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -173,6 +174,79 @@ class ExperimentRunnerBatchTest {
             // With parallelization, 8 trials should complete much faster than
             // 8x single trial time. This is a loose sanity check.
             assertTrue(elapsed < 30000, "Parallel execution should complete within 30 seconds");
+        }
+    }
+
+    // ========================================================================
+    // Trial Failure Tests
+    // ========================================================================
+
+    @Nested
+    @DisplayName("Trial failure handling")
+    class TrialFailureTests {
+
+        /**
+         * As a user, I want the system to fail fast when a trial fails
+         * so that I can identify and fix issues quickly without waiting for all trials.
+         */
+        @Test
+        @DisplayName("Fails fast when trial throws exception")
+        void failsFastOnTrialException() {
+            AtomicInteger trialsStarted = new AtomicInteger(0);
+            
+            // Create runner that throws on 3rd trial
+            ExperimentRunner<GenericCell> failingRunner = new ExperimentRunner<>(
+                    () -> {
+                        int trialNum = trialsStarted.incrementAndGet();
+                        if (trialNum == 3) {
+                            throw new RuntimeException("Simulated trial failure");
+                        }
+                        return createRandomArray(10);
+                    },
+                    () -> null
+            );
+            
+            ExperimentConfig config = new ExperimentConfig(
+                    10, 500, 3, false, ExecutionMode.SEQUENTIAL, 10);
+            
+            RuntimeException exception = assertThrows(
+                    RuntimeException.class,
+                    () -> failingRunner.runBatchExperiments(config),
+                    "Should throw when trial fails");
+            
+            assertTrue(exception.getMessage().contains("failed") || 
+                       exception.getCause() != null,
+                    "Exception should indicate trial failure");
+        }
+
+        /**
+         * As a user, I want exception details preserved when trials fail
+         * so that I can debug the root cause.
+         */
+        @Test
+        @DisplayName("Preserves exception details on failure")
+        void preservesExceptionDetails() {
+            String specificMessage = "Specific failure reason XYZ";
+            
+            ExperimentRunner<GenericCell> failingRunner = new ExperimentRunner<>(
+                    () -> {
+                        throw new IllegalStateException(specificMessage);
+                    },
+                    () -> null
+            );
+            
+            ExperimentConfig config = new ExperimentConfig(
+                    10, 500, 3, false, ExecutionMode.SEQUENTIAL, 1);
+            
+            RuntimeException exception = assertThrows(
+                    RuntimeException.class,
+                    () -> failingRunner.runBatchExperiments(config));
+            
+            // Check that original exception info is preserved
+            boolean hasDetails = exception.getMessage().contains(specificMessage) ||
+                    (exception.getCause() != null && 
+                     exception.getCause().getMessage().contains(specificMessage));
+            assertTrue(hasDetails, "Should preserve original exception details");
         }
     }
 
