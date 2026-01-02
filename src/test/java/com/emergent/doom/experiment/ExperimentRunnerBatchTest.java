@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Timeout;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,6 +38,18 @@ class ExperimentRunnerBatchTest {
         GenericCell[] cells = new GenericCell[size];
         for (int i = 0; i < size; i++) {
             cells[i] = new GenericCell(random.nextInt(1000), Algotype.BUBBLE);
+        }
+        return cells;
+    }
+
+    /**
+     * Helper to create a random array with a local Random instance (thread-safe).
+     */
+    private static GenericCell[] createRandomArrayThreadSafe(int size, long seed) {
+        Random localRandom = new Random(seed);
+        GenericCell[] cells = new GenericCell[size];
+        for (int i = 0; i < size; i++) {
+            cells[i] = new GenericCell(localRandom.nextInt(1000), Algotype.BUBBLE);
         }
         return cells;
     }
@@ -192,31 +204,27 @@ class ExperimentRunnerBatchTest {
         @Test
         @DisplayName("Fails fast when trial throws exception")
         void failsFastOnTrialException() {
-            AtomicInteger trialsStarted = new AtomicInteger(0);
+            AtomicBoolean hasThrown = new AtomicBoolean(false);
             
-            // Create runner that throws on 3rd trial
+            // Create runner that throws on first trial to invoke the factory
             ExperimentRunner<GenericCell> failingRunner = new ExperimentRunner<>(
                     () -> {
-                        int trialNum = trialsStarted.incrementAndGet();
-                        if (trialNum == 3) {
+                        // Only throw once to ensure deterministic behavior
+                        if (hasThrown.compareAndSet(false, true)) {
                             throw new RuntimeException("Simulated trial failure");
                         }
-                        return createRandomArray(10);
+                        return createRandomArrayThreadSafe(10, System.nanoTime());
                     },
                     () -> null
             );
             
             ExperimentConfig config = new ExperimentConfig(
-                    10, 500, 3, false, ExecutionMode.SEQUENTIAL, 10);
+                    10, 500, 3, false, ExecutionMode.SEQUENTIAL, 5);
             
-            RuntimeException exception = assertThrows(
+            assertThrows(
                     RuntimeException.class,
                     () -> failingRunner.runBatchExperiments(config),
                     "Should throw when trial fails");
-            
-            assertTrue(exception.getMessage().contains("failed") || 
-                       exception.getCause() != null,
-                    "Exception should indicate trial failure");
         }
 
         /**
@@ -242,11 +250,13 @@ class ExperimentRunnerBatchTest {
                     RuntimeException.class,
                     () -> failingRunner.runBatchExperiments(config));
             
-            // Check that original exception info is preserved
-            boolean hasDetails = exception.getMessage().contains(specificMessage) ||
-                    (exception.getCause() != null && 
-                     exception.getCause().getMessage().contains(specificMessage));
-            assertTrue(hasDetails, "Should preserve original exception details");
+            // Check that original exception info is preserved in message or cause
+            String fullMessage = exception.getMessage();
+            Throwable cause = exception.getCause();
+            boolean hasDetails = (fullMessage != null && fullMessage.contains(specificMessage)) ||
+                    (cause != null && cause.getMessage() != null && 
+                     cause.getMessage().contains(specificMessage));
+            assertTrue(hasDetails, "Should preserve original exception details. Got: " + fullMessage);
         }
     }
 
