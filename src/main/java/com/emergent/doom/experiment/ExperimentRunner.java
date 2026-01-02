@@ -21,9 +21,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -153,7 +155,15 @@ public class ExperimentRunner<T extends Cell<T>> {
     }
     
     /**
-     * IMPLEMENTED: Execute multiple trials with the same configuration (sequential execution)
+     * Execute multiple trials with the same configuration (SEQUENTIAL execution).
+     * Trials are executed one after another in a single thread.
+     * 
+     * <p>For parallel trial execution, use {@link #runBatchExperiments(ExperimentConfig)} instead,
+     * which runs trials concurrently across CPU cores.</p>
+     * 
+     * @param config experiment configuration
+     * @param numTrials number of trials to execute
+     * @return aggregated results from all trials
      */
     public ExperimentResults<T> runExperiment(ExperimentConfig config, int numTrials) {
         ExperimentResults<T> results = new ExperimentResults<>(config);
@@ -251,7 +261,12 @@ public class ExperimentRunner<T extends Cell<T>> {
             
             // Collect results as they complete
             List<TrialResult<T>> results = new ArrayList<>();
+            boolean failureOccurred = false;
             for (int i = 0; i < futures.size(); i++) {
+                if (failureOccurred) {
+                    futures.get(i).cancel(true);
+                    continue;
+                }
                 try {
                     TrialResult<T> result = futures.get(i).get();
                     results.add(result);
@@ -260,8 +275,28 @@ public class ExperimentRunner<T extends Cell<T>> {
                     if ((i + 1) % 10 == 0) {
                         System.out.printf("Completed %d/%d trials%n", i + 1, numRepetitions);
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException("Trial " + i + " failed", e);
+                } catch (InterruptedException e) {
+                    failureOccurred = true;
+                    // Cancel remaining futures
+                    for (int j = i + 1; j < futures.size(); j++) {
+                        futures.get(j).cancel(true);
+                    }
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Trial " + i + " was interrupted", e);
+                } catch (ExecutionException e) {
+                    failureOccurred = true;
+                    // Cancel remaining futures
+                    for (int j = i + 1; j < futures.size(); j++) {
+                        futures.get(j).cancel(true);
+                    }
+                    Throwable cause = e.getCause();
+                    String errorMessage = String.format(
+                        "Trial %d failed due to %s: %s",
+                        i,
+                        cause != null ? cause.getClass().getSimpleName() : "unknown error",
+                        cause != null ? cause.getMessage() : "no details"
+                    );
+                    throw new RuntimeException(errorMessage, cause != null ? cause : e);
                 }
             }
             
@@ -270,6 +305,17 @@ public class ExperimentRunner<T extends Cell<T>> {
             
         } finally {
             executor.shutdown();
+            try {
+                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                    if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                        System.err.println("Executor did not terminate");
+                    }
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         }
     }
 

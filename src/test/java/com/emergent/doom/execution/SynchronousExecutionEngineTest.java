@@ -380,6 +380,7 @@ class SynchronousExecutionEngineTest {
             this.value = value;
         }
 
+        @Override
         public int getValue() {
             return value;
         }
