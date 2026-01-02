@@ -12,54 +12,102 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Interface for recording execution trajectory by capturing snapshots at each step.
- *
- * <p>The probe maintains a complete history of cell states throughout
- * execution, enabling post-hoc analysis, visualization, and metric
- * computation.</p>
- *
- * @param <T> the type of cell
+ * Records execution trajectory by capturing snapshots at each step.
  */
-public interface Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
+public class Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
 
-    /**
-     * Record a snapshot at the given step.
-     *
-     * @param stepNumber current global step
-     * @param cells current cell array
-     * @param swapCount swaps in this step
-     */
-    void recordSnapshot(int stepNumber, T[] cells, int swapCount);
+    private final List<StepSnapshot<T>> snapshots;
+    private boolean recordingEnabled;
 
-    /**
-     * Record a snapshot with types (deprecated, use recordSnapshot).
-     */
-    @Deprecated
-    default void recordSnapshotWithTypes(int stepNumber, T[] cells, int swapCount) {
-        recordSnapshot(stepNumber, cells, swapCount);
+    // StatusProbe fields matching cell_research Python implementation
+    protected final AtomicInteger swapCount;
+    private final AtomicInteger compareAndSwapCount;
+    private final AtomicInteger frozenSwapAttempts;
+    
+    // Convergence tracking (independent of recordingEnabled)
+    private final AtomicInteger stepsSinceLastSwap;
+    private final AtomicInteger totalSteps;
+
+    public Probe() {
+        this.snapshots = new ArrayList<>();
+        this.recordingEnabled = true;
+        this.swapCount = new AtomicInteger(0);
+        this.compareAndSwapCount = new AtomicInteger(0);
+        this.frozenSwapAttempts = new AtomicInteger(0);
+        this.stepsSinceLastSwap = new AtomicInteger(0);
+        this.totalSteps = new AtomicInteger(0);
     }
 
     /**
-     * Get all snapshots.
-     *
-     * @return list of snapshots
+     * Record a snapshot. 
+     * CRITICAL: Now tracks convergence metrics even if recordingEnabled is false.
      */
-    List<StepSnapshot<T>> getSnapshots();
+    public void recordSnapshot(int stepNumber, T[] cells, int localSwapCount) {
+        totalSteps.set(stepNumber);
+        
+        if (localSwapCount > 0) {
+            stepsSinceLastSwap.set(0);
+            swapCount.addAndGet(localSwapCount);
+        } else {
+            stepsSinceLastSwap.incrementAndGet();
+        }
 
-    /**
-     * Get snapshot at specific step.
-     *
-     * @param stepNumber the step
-     * @return the snapshot or null
-     */
-    StepSnapshot<T> getSnapshot(int stepNumber);
+        if (recordingEnabled) {
+            List<Integer> values = new ArrayList<>();
+            List<Object[]> types = new ArrayList<>();
+            for (T cell : cells) {
+                values.add(cell.getValue());
+                int groupId = (cell.getGroup() != null) ? cell.getGroup().getGroupId() : -1;
+                int algotypeLabel = cell.getAlgotype().ordinal();
+                int value = cell.getValue();
+                int isFrozen = (cell.getStatus() == CellStatus.FREEZE) ? 1 : 0;
+                types.add(new Object[]{groupId, algotypeLabel, value, isFrozen});
+            }
+            snapshots.add(new StepSnapshot<>(stepNumber, values, types, localSwapCount));
+        }
+    }
 
-    /**
-     * Get the last snapshot.
-     *
-     * @return the last snapshot or null
-     */
-    StepSnapshot<T> getLastSnapshot();
+    public int getStepsSinceLastSwap() {
+        return stepsSinceLastSwap.get();
+    }
+
+    public int getTotalSteps() {
+        return totalSteps.get();
+    }
+
+    public List<StepSnapshot<T>> getSnapshots() {
+        return Collections.unmodifiableList(snapshots);
+    }
+
+    public StepSnapshot<T> getLastSnapshot() {
+        if (snapshots.isEmpty()) return null;
+        return snapshots.get(snapshots.size() - 1);
+    }
+
+    public void clear() {
+        snapshots.clear();
+        resetCounters();
+    }
+
+    public void setRecordingEnabled(boolean enabled) {
+        this.recordingEnabled = enabled;
+    }
+
+    public boolean isRecordingEnabled() {
+        return recordingEnabled;
+    }
+
+    public void recordSwap() {
+        swapCount.incrementAndGet();
+    }
+
+    public void recordCompareAndSwap() {
+        compareAndSwapCount.incrementAndGet();
+    }
+
+    public void countFrozenSwapAttempt() {
+        frozenSwapAttempts.incrementAndGet();
+    }
 
     /**
      * Get the total number of snapshots recorded.
@@ -84,31 +132,11 @@ public interface Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> 
      */
     Map<Algotype, Integer> getCellTypeDistribution(int step);
 
-    /**
-     * Clear all snapshots.
-     */
-    void clear();
-
-    /**
-     * Set recording enabled/disabled.
-     *
-     * @param enabled true to enable
-     */
-    void setRecordingEnabled(boolean enabled);
-
-    /**
-     * Check if recording is enabled.
-     *
-     * @return true if enabled
-     */
-    boolean isRecordingEnabled();
-
-    // StatusProbe methods
-    void recordSwap();
-    void recordCompareAndSwap();
-    void countFrozenSwapAttempt();
-    int getSwapCount();
-    int getCompareAndSwapCount();
-    int getFrozenSwapAttempts();
-    void resetCounters();
+    public void resetCounters() {
+        swapCount.set(0);
+        compareAndSwapCount.set(0);
+        frozenSwapAttempts.set(0);
+        stepsSinceLastSwap.set(0);
+        totalSteps.set(0);
+    }
 }

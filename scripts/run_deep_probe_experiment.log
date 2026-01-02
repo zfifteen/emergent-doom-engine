@@ -1,0 +1,499 @@
+Deep Probe Experiment Started: Thu Jan  1 22:26:48 EST 2026
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------< com.emergent.doom:emergent-doom-engine >---------------
+[INFO] Building Emergent Doom Engine 0.1.0-alpha
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ emergent-doom-engine ---
+[INFO] Deleting /Users/velocityworks/IdeaProjects/emergent-doom-engine/target
+[INFO] 
+[INFO] --- build-helper:3.3.0:add-source (add-source) @ emergent-doom-engine ---
+[INFO] Source directory: /Users/velocityworks/IdeaProjects/emergent-doom-engine/lab/experiment-095 added.
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ emergent-doom-engine ---
+[INFO] skip non existing resourceDirectory /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ emergent-doom-engine ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 104 source files with javac [debug release 11] to target/classes
+[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/java/com/emergent/doom/metrics/Metric.java: /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/java/com/emergent/doom/metrics/Metric.java uses or overrides a deprecated API.
+[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/java/com/emergent/doom/metrics/Metric.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ emergent-doom-engine ---
+[INFO] skip non existing resourceDirectory /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ emergent-doom-engine ---
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 16 source files with javac [debug release 11] to target/test-classes
+[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/test/java/com/emergent/doom/probe/ProbeTest.java: Some input files use or override a deprecated API.
+[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/test/java/com/emergent/doom/probe/ProbeTest.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- surefire:3.0.0-M9:test (default-test) @ emergent-doom-engine ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.3.0:jar (default-jar) @ emergent-doom-engine ---
+[INFO] Building jar: /Users/velocityworks/IdeaProjects/emergent-doom-engine/target/emergent-doom-engine-0.1.0-alpha.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.972 s
+[INFO] Finished at: 2026-01-01T22:26:53-05:00
+[INFO] ------------------------------------------------------------------------
+Testing target: 100697 (Trials: 10, ArraySize: 500, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100697
+Target magnitude: ~1e5
+Trials: 10
+Array size: 500
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [101]
+
+  Factor details:
+  Position 101 (array index 1): 101 × 997 = 100697
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=101, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=4, remainder=1
+    Index 4: position=8, remainder=1
+    Index 5: position=41, remainder=1
+    Index 6: position=82, remainder=1
+    Index 7: position=164, remainder=1
+    Index 8: position=307, remainder=1
+    Index 9: position=328, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-500 for target=100697
+============================================================
+Actual factors in range [1, 500]:
+  Position 1: 1 × 100697 = 100697
+  Position 101: 101 × 997 = 100697
+
+Non-trivial factors: [101]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100697, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       582.20
+
+Metrics:
+  Sortedness: 98.76 ± 3.38
+  Monotonicity: 0.30 ± 0.48
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100697 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100697
+Target magnitude: ~1e5
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [101, 997]
+
+  Factor details:
+  Position 101 (array index 1): 101 × 997 = 100697
+  Position 997 (array index 81): 997 × 101 = 100697
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=101, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=4, remainder=1
+    Index 4: position=8, remainder=1
+    Index 5: position=41, remainder=1
+    Index 6: position=82, remainder=1
+    Index 7: position=164, remainder=1
+    Index 8: position=307, remainder=1
+    Index 9: position=328, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=100697
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 100697 = 100697
+  Position 101: 101 × 997 = 100697
+  Position 997: 997 × 101 = 100697
+
+Non-trivial factors: [101, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100697, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1305.00
+
+Metrics:
+  Sortedness: 97.54 ± 3.54
+  Monotonicity: 0.50 ± 0.53
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100697 (Trials: 10, ArraySize: 2000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100697
+Target magnitude: ~1e5
+Trials: 10
+Array size: 2000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [101, 997]
+
+  Factor details:
+  Position 101 (array index 1): 101 × 997 = 100697
+  Position 997 (array index 2): 997 × 101 = 100697
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=101, remainder=0
+    Index 2: position=997, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=4, remainder=1
+    Index 5: position=8, remainder=1
+    Index 6: position=41, remainder=1
+    Index 7: position=82, remainder=1
+    Index 8: position=164, remainder=1
+    Index 9: position=307, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-2000 for target=100697
+============================================================
+Actual factors in range [1, 2000]:
+  Position 1: 1 × 100697 = 100697
+  Position 101: 101 × 997 = 100697
+  Position 997: 997 × 101 = 100697
+
+Non-trivial factors: [101, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=100697, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       2416.60
+
+Metrics:
+  Sortedness: 99.05 ± 1.40
+  Monotonicity: 0.60 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 100697 (Trials: 10, ArraySize: 5000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 100697
+Target magnitude: ~1e5
+Trials: 10
+Array size: 5000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Task execution failed: java.lang.OutOfMemoryError: Java heap space
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 0
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 999997979 (Trials: 10, ArraySize: 500, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 999997979
+Target magnitude: ~1e9
+Trials: 10
+Array size: 500
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 1 non-trivial factor(s): [23]
+
+  Factor details:
+  Position 23 (array index 1): 23 × 43478173 = 999997979
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=23, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=7, remainder=1
+    Index 4: position=14, remainder=1
+    Index 5: position=49, remainder=1
+    Index 6: position=98, remainder=1
+    Index 7: position=343, remainder=1
+    Index 8: position=3, remainder=2
+    Index 9: position=11, remainder=2
+
+============================================================
+VERIFICATION: Checking all positions 1-500 for target=999997979
+============================================================
+Actual factors in range [1, 500]:
+  Position 1: 1 × 999997979 = 999997979
+  Position 23: 23 × 43478173 = 999997979
+
+Non-trivial factors: [23]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=999997979, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       607.20
+
+Metrics:
+  Sortedness: 97.28 ± 2.69
+  Monotonicity: 0.60 ± 0.52
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 999997979 (Trials: 10, ArraySize: 1000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 999997979
+Target magnitude: ~1e9
+Trials: 10
+Array size: 1000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [23, 997]
+
+  Factor details:
+  Position 23 (array index 1): 23 × 43478173 = 999997979
+  Position 997 (array index 116): 997 × 1003007 = 999997979
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=23, remainder=0
+    Index 2: position=2, remainder=1
+    Index 3: position=7, remainder=1
+    Index 4: position=14, remainder=1
+    Index 5: position=49, remainder=1
+    Index 6: position=98, remainder=1
+    Index 7: position=343, remainder=1
+    Index 8: position=686, remainder=1
+    Index 9: position=859, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-1000 for target=999997979
+============================================================
+Actual factors in range [1, 1000]:
+  Position 1: 1 × 999997979 = 999997979
+  Position 23: 23 × 43478173 = 999997979
+  Position 997: 997 × 1003007 = 999997979
+
+Non-trivial factors: [23, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=999997979, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       1220.60
+
+Metrics:
+  Sortedness: 91.98 ± 5.36
+  Monotonicity: 0.90 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 999997979 (Trials: 10, ArraySize: 2000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 999997979
+Target magnitude: ~1e9
+Trials: 10
+Array size: 2000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Running trial 5/10...
+Running trial 6/10...
+Running trial 7/10...
+Running trial 8/10...
+Running trial 9/10...
+Running trial 10/10...
+
+Factors found (remainder = 0), excluding trivial position 1:
+------------------------------------------------------------
+  Found 2 non-trivial factor(s): [23, 997]
+
+  Factor details:
+  Position 23 (array index 1): 23 × 43478173 = 999997979
+  Position 997 (array index 2): 997 × 1003007 = 999997979
+
+  First 10 cells in sorted array:
+    Index 0: position=1, remainder=0
+    Index 1: position=23, remainder=0
+    Index 2: position=997, remainder=0
+    Index 3: position=2, remainder=1
+    Index 4: position=7, remainder=1
+    Index 5: position=14, remainder=1
+    Index 6: position=49, remainder=1
+    Index 7: position=98, remainder=1
+    Index 8: position=343, remainder=1
+    Index 9: position=686, remainder=1
+
+============================================================
+VERIFICATION: Checking all positions 1-2000 for target=999997979
+============================================================
+Actual factors in range [1, 2000]:
+  Position 1: 1 × 999997979 = 999997979
+  Position 23: 23 × 43478173 = 999997979
+  Position 997: 997 × 1003007 = 999997979
+
+Non-trivial factors: [23, 997]
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 1
+
+Target=999997979, factorFound=true
+Experiment Results Summary
+============================================================
+Trials:           10
+Convergence Rate: 100.0%
+Mean Steps:       2410.80
+
+Metrics:
+  Sortedness: 99.98 ± 0.06
+  Monotonicity: 0.10 ± 0.32
+
+
+Experiment complete!
+------------------------------------------------------------
+Testing target: 999997979 (Trials: 10, ArraySize: 5000, Threads: 4)
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Mode: CUSTOM TARGET WITH TRIALS, ARRAY SIZE, AND THREADS
+Target: 999997979
+Target magnitude: ~1e9
+Trials: 10
+Array size: 5000
+Threads: 4
+Running 10 trials per target using 4 threads...
+Running trial 1/10...
+Running trial 2/10...
+Running trial 3/10...
+Running trial 4/10...
+Task execution failed: java.lang.OutOfMemoryError: Java heap space
+
+Batch Factorization Summary
+------------------------------------------------------------
+Total targets: 1, Successes (found factor in any trial): 0
+
+
+Experiment complete!
+------------------------------------------------------------
