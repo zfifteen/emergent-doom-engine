@@ -9,6 +9,7 @@ import com.emergent.doom.execution.NoSwapConvergence;
 import com.emergent.doom.execution.ParallelExecutionEngine;
 import com.emergent.doom.metrics.Metric;
 import com.emergent.doom.probe.Probe;
+import com.emergent.doom.probe.BasicProbe;
 import com.emergent.doom.probe.StepSnapshot;
 import com.emergent.doom.probe.ThreadSafeProbe;
 import com.emergent.doom.swap.FrozenCellStatus;
