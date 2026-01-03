@@ -5,7 +5,7 @@
 # It logs results to docs/findings/batch_factorization_results.log
 
 PROJECT_ROOT="/Users/velocityworks/IdeaProjects/emergent-doom-engine"
-JAR_PATH="$PROJECT_ROOT/target/emergent-doom-engine-0.2.0-alpha.jar"
+JAR_PATH="$PROJECT_ROOT/target/emergent-doom-engine-0.2.1-alpha.jar"
 LOG_FILE="$PROJECT_ROOT/scripts/run_factorization_experiment.log"
 
 cd "$PROJECT_ROOT"

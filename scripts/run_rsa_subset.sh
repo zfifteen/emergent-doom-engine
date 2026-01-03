@@ -5,7 +5,7 @@
 # It is designed to be faster than the full experiment by only testing 3 targets.
 
 PROJECT_ROOT="/Users/velocityworks/IdeaProjects/emergent-doom-engine"
-JAR_PATH="$PROJECT_ROOT/target/emergent-doom-engine-0.2.0-alpha.jar"
+JAR_PATH="$PROJECT_ROOT/target/emergent-doom-engine-0.2.1-alpha.jar"
 LOG_FILE="$PROJECT_ROOT/scripts/run_rsa_subset.log"
 RSA_DATA="$PROJECT_ROOT/data/rsa_numbers.txt"
 
