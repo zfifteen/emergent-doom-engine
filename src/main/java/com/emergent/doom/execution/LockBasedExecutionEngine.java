@@ -3,7 +3,7 @@ package com.emergent.doom.execution;
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.HasIdealPosition;
-import com.emergent.doom.cell.SelectionCell;
+import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.topology.BubbleTopology;
@@ -73,6 +73,8 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
     private final int convergencePollIntervalMs;
     private final int requiredStablePolls;
 
+    private final CellMetadata[] metadata;
+
     /**
      * Create a new lock-based execution engine with default polling configuration.
      *
@@ -88,6 +90,36 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
             ConvergenceDetector<T> convergenceDetector) {
         this(cells, swapEngine, probe, convergenceDetector,
                 DEFAULT_POLL_INTERVAL_MS, DEFAULT_REQUIRED_STABLE_POLLS);
+    }
+
+    private void initializeMetadata(T[] cells) {
+        for (int i = 0; i < cells.length; i++) {
+            Algotype algotype = Algotype.BUBBLE;
+            SortDirection direction = com.emergent.doom.cell.SortDirection.ASCENDING;
+            int idealPos = 0;
+            int left = 0;
+            int right = cells.length - 1;
+
+            T cell = cells[i];
+            if (cell instanceof com.emergent.doom.cell.HasAlgotype) {
+                algotype = ((com.emergent.doom.cell.HasAlgotype) cell).getAlgotype();
+            }
+
+            if (cell instanceof com.emergent.doom.cell.HasSortDirection) {
+                direction = ((com.emergent.doom.cell.HasSortDirection) cell).getSortDirection();
+            }
+
+            if (cell instanceof com.emergent.doom.cell.HasIdealPosition) {
+                idealPos = ((com.emergent.doom.cell.HasIdealPosition) cell).getIdealPos();
+            }
+
+            if (cell instanceof com.emergent.doom.group.GroupAwareCell) {
+                left = ((com.emergent.doom.group.GroupAwareCell<?>) cell).getLeftBoundary();
+                right = ((com.emergent.doom.group.GroupAwareCell<?>) cell).getRightBoundary();
+            }
+
+            this.metadata[i] = new CellMetadata(algotype, direction, new AtomicInteger(idealPos), left, right);
+        }
     }
 
     /**
@@ -115,6 +147,10 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         this.convergenceDetector = convergenceDetector;
         this.convergencePollIntervalMs = pollIntervalMs;
         this.requiredStablePolls = requiredStablePolls;
+
+        // Initialize metadata from cells
+        this.metadata = new CellMetadata[cells.length];
+        initializeMetadata(cells);
 
         // Single global lock (matches Python cell_research)
         this.globalLock = new ReentrantLock();
@@ -256,8 +292,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
         @SuppressWarnings("unchecked")
         private void evaluateAndSwap() {
-            T cell = cells[cellIndex];
-            Algotype algotype = cell.getAlgotype();
+            Algotype algotype = metadata[cellIndex].algotype();
 
             List<Integer> neighbors;
             if (algotype == Algotype.BUBBLE) {
@@ -280,6 +315,11 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
                 if (shouldSwapForAlgotype(cellIndex, neighborIndex, algotype)) {
                     if (swapEngine.attemptSwap(cells, cellIndex, neighborIndex)) {
+                        // Synchronize metadata
+                        CellMetadata temp = metadata[cellIndex];
+                        metadata[cellIndex] = metadata[neighborIndex];
+                        metadata[neighborIndex] = temp;
+
                         int swaps = totalSwaps.incrementAndGet();
 
                         // Record snapshot periodically
@@ -296,21 +336,12 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
     // ========== Helper Methods ==========
 
-    private int getIdealPosition(T cell) {
-        if (cell instanceof SelectionCell) {
-            return ((SelectionCell<?>) cell).getIdealPos();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            return ((com.emergent.doom.cell.GenericCell) cell).getIdealPos();
-        }
-        return 0;
+    private int getIdealPosition(int index) {
+        return metadata[index].idealPos().get();
     }
 
-    private void incrementIdealPosition(T cell) {
-        if (cell instanceof SelectionCell) {
-            ((SelectionCell<?>) cell).incrementIdealPos();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            ((com.emergent.doom.cell.GenericCell) cell).incrementIdealPos();
-        }
+    private void incrementIdealPosition(int index) {
+        metadata[index].idealPos().incrementAndGet();
     }
 
     private List<Integer> getNeighborsForAlgotype(int i, Algotype algotype) {
@@ -320,7 +351,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
             case INSERTION:
                 return insertionTopology.getNeighbors(i, cells.length, algotype);
             case SELECTION:
-                int idealPos = getIdealPosition(cells[i]);
+                int idealPos = getIdealPosition(i);
                 int target = Math.min(idealPos, cells.length - 1);
                 return Arrays.asList(target);
             default:
@@ -351,9 +382,9 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
                 if (cells[i].compareTo(cells[j]) < 0) {
                     return true;
                 } else {
-                    int currentIdealPos = getIdealPosition(cells[i]);
+                    int currentIdealPos = getIdealPosition(i);
                     if (currentIdealPos < cells.length - 1) {
-                        incrementIdealPosition(cells[i]);
+                        incrementIdealPosition(i);
                     }
                     return false;
                 }
@@ -394,7 +425,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
             }
 
             // Get cell value for comparison
-            int currentValue = getCellValue(cells[k]);
+            int currentValue = cells[k].getValue();
             
             // Check if out of order based on direction
             boolean outOfOrder = reverseDirection 
@@ -407,35 +438,6 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
             prevValue = currentValue;
         }
         return true;
-    }
-
-    /**
-     * Helper: Extract comparable value from cell for isLeftSorted comparison.
-     * 
-     * <p>P1 FIX: All cell types now properly handled via getValue().
-     * Previously fell back to hashCode() for InsertionCell/BubbleCell,
-     * which broke insertion-mode runs using those types.</p>
-     * 
-     * <p>COPILOT REVIEW FIX: Throws UnsupportedOperationException instead of
-     * using hashCode() fallback, since hashCode() is unreliable for sorting
-     * comparisons (hash codes don't maintain ordering relationships).</p>
-     */
-    private int getCellValue(T cell) {
-        if (cell instanceof SelectionCell) {
-            return ((SelectionCell<?>) cell).getValue();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            return ((com.emergent.doom.cell.GenericCell) cell).getValue();
-        } else if (cell instanceof com.emergent.doom.cell.InsertionCell) {
-            return ((com.emergent.doom.cell.InsertionCell<?>) cell).getValue();
-        } else if (cell instanceof com.emergent.doom.cell.BubbleCell) {
-            return ((com.emergent.doom.cell.BubbleCell<?>) cell).getValue();
-        }
-        // Fail-fast: throw exception for unsupported cell types
-        // (hashCode is unreliable for sorting - doesn't maintain ordering relationships)
-        throw new UnsupportedOperationException(
-            "Cell type " + cell.getClass().getName() + " does not support getValue(). " +
-            "All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell."
-        );
     }
 
     // ========== Accessors ==========
@@ -517,10 +519,12 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         int leftBoundary = 0;
         int rightBoundary = cells.length - 1;
 
-        for (T cell : cells) {
-            if (cell.getAlgotype() == Algotype.SELECTION) {
-                if (cell instanceof HasIdealPosition) {
-                    ((HasIdealPosition) cell).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
+        for (int i = 0; i < cells.length; i++) {
+            if (metadata[i].algotype() == Algotype.SELECTION) {
+                if (reverseDirection) {
+                    metadata[i].idealPos().set(rightBoundary);
+                } else {
+                    metadata[i].idealPos().set(leftBoundary);
                 }
             }
         }

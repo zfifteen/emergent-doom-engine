@@ -1,9 +1,7 @@
 package com.emergent.doom.probe;
 
 import com.emergent.doom.cell.Algotype;
-import com.emergent.doom.cell.HasAlgotype;
-import com.emergent.doom.cell.HasGroup;
-import com.emergent.doom.cell.HasStatus;
+import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.HasValue;
 import com.emergent.doom.group.CellStatus;
 
@@ -20,7 +18,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * <p>Overrides extraction in recordSnapshot for consistency.</p>
  */
-public class ThreadSafeProbe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> extends Probe<T> {
+public class ThreadSafeProbe<T extends Cell<T>> extends Probe<T> {
 
     private final CopyOnWriteArrayList<StepSnapshot<T>> concurrentSnapshots;
 
@@ -38,11 +36,11 @@ public class ThreadSafeProbe<T extends HasValue & HasGroup & HasStatus & HasAlgo
             List<Comparable<?>> values = new ArrayList<>();
             List<Object[]> types = new ArrayList<>();
             for (T cell : cells) {
-                values.add(cell.getComparableValue());
-                int groupId = (cell.getGroup() != null) ? cell.getGroup().getGroupId() : -1;
-                int algotypeLabel = cell.getAlgotype().ordinal();
-                Comparable<?> value = cell.getComparableValue();
-                int isFrozen = (cell.getStatus() == CellStatus.FREEZE) ? 1 : 0;
+                Comparable<?> value = (cell instanceof HasValue) ? ((HasValue) cell).getComparableValue() : cell.hashCode();
+                values.add(value);
+                int groupId = -1;
+                int algotypeLabel = 0;
+                int isFrozen = 0;
                 types.add(new Object[]{groupId, algotypeLabel, value, isFrozen});
             }
             concurrentSnapshots.add(new StepSnapshot<>(stepNumber, values, types, localSwapCount));

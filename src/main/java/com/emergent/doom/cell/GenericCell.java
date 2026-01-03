@@ -1,13 +1,5 @@
 package com.emergent.doom.cell;
 
-import com.emergent.doom.cell.HasValue;
-import com.emergent.doom.cell.HasGroup;
-import com.emergent.doom.cell.HasStatus;
-import com.emergent.doom.cell.HasAlgotype;
-import com.emergent.doom.group.CellGroup;
-import com.emergent.doom.group.CellStatus;
-import com.emergent.doom.group.GroupAwareCell;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -52,89 +44,32 @@ import java.util.concurrent.atomic.AtomicInteger;
  * }
  * }</pre></p>
  */
-public class GenericCell implements Cell<GenericCell>, GroupAwareCell<GenericCell>, HasIdealPosition, HasSortDirection, HasValue, HasGroup, HasStatus, HasAlgotype {
-
+public class GenericCell implements Cell<GenericCell>, HasAlgotype, HasSortDirection, HasIdealPosition {
     private final int value;
-    private CellGroup<GenericCell> group = null;
-    private CellStatus status = CellStatus.ACTIVE;
-    private CellStatus previousStatus = CellStatus.ACTIVE;
-    private int leftBoundary;
-    private int rightBoundary;
     private final Algotype algotype;
-    private final SortDirection sortDirection;  // Direction preference (ascending or descending)
-    private final AtomicInteger idealPos;  // Thread-safe: used only for SELECTION algotype
+    private final SortDirection sortDirection;
 
     /**
-     * Create a GenericCell with the specified value and algotype (default ascending direction).
-     *
-     * <p>PURPOSE: Backward-compatible constructor for existing code that doesn't use
-     * cross-purpose sorting. Defaults to ASCENDING direction.</p>
-     *
-     * @param value the sort key value (typically 1 to N)
-     * @param algotype the behavioral algotype (BUBBLE, INSERTION, or SELECTION)
-     * @throws IllegalArgumentException if algotype is null
+     * Only used for SELECTION cells. Kept thread-safe for parallel execution.
      */
+    private final AtomicInteger idealPos;
+
+    public GenericCell(int value) {
+        this(value, Algotype.BUBBLE, SortDirection.ASCENDING);
+    }
+
     public GenericCell(int value, Algotype algotype) {
         this(value, algotype, SortDirection.ASCENDING);
     }
 
-    /**
-     * Create a GenericCell with the specified value, algotype, and sort direction.
-     *
-     * <p>PURPOSE: Primary constructor for cross-purpose sorting experiments where cells
-     * can have different sort directions (ascending vs descending).</p>
-     *
-     * <p>INPUTS:
-     * <ul>
-     *   <li>value - Sort key value for comparison (immutable)</li>
-     *   <li>algotype - Behavioral policy (BUBBLE, INSERTION, or SELECTION)</li>
-     *   <li>sortDirection - Direction preference (ASCENDING or DESCENDING)</li>
-     * </ul>
-     * </p>
-     *
-     * <p>PROCESS:
-     * <ol>
-     *   <li>Validate algotype is not null (throw IllegalArgumentException if null)</li>
-     *   <li>Validate sortDirection is not null (throw IllegalArgumentException if null)</li>
-     *   <li>Store value as immutable field</li>
-     *   <li>Store algotype as immutable field</li>
-     *   <li>Store sortDirection as immutable field</li>
-     *   <li>Initialize idealPos to 0 for SELECTION algotype compatibility</li>
-     * </ol>
-     * </p>
-     *
-     * <p>OUTPUTS: Fully initialized GenericCell instance</p>
-     *
-     * <p>GROUND TRUTH REFERENCE: cell_research/MultiThreadCell.py:
-     * <pre>
-     * def __init__(self, ..., reverse_direction=False):
-     *     self.reverse_direction = reverse_direction
-     * </pre>
-     * </p>
-     *
-     * @param value the sort key value (typically 1 to N)
-     * @param algotype the behavioral algotype (BUBBLE, INSERTION, or SELECTION)
-     * @param sortDirection the sort direction (ASCENDING or DESCENDING)
-     * @throws IllegalArgumentException if algotype or sortDirection is null
-     */
     public GenericCell(int value, Algotype algotype, SortDirection sortDirection) {
-        if (algotype == null) {
-            throw new IllegalArgumentException("Algotype cannot be null");
-        }
-        if (sortDirection == null) {
-            throw new IllegalArgumentException("SortDirection cannot be null");
-        }
         this.value = value;
-        this.algotype = algotype;
-        this.sortDirection = sortDirection;
-        this.idealPos = new AtomicInteger(0);  // Levin: initial ideal position is leftmost (0)
+        this.algotype = (algotype == null) ? Algotype.BUBBLE : algotype;
+        this.sortDirection = (sortDirection == null) ? SortDirection.ASCENDING : sortDirection;
+        this.idealPos = new AtomicInteger(0);
     }
 
-    /**
-     * Get the sort key value of this cell.
-     *
-     * @return the cell's value
-     */
+    @Override
     public int getValue() {
         return value;
     }
@@ -144,57 +79,34 @@ public class GenericCell implements Cell<GenericCell>, GroupAwareCell<GenericCel
         return algotype;
     }
 
-    /**
-     * Get the ideal position for SELECTION algotype cells.
-     * Thread-safe for parallel execution.
-     *
-     * @return the current ideal position (0-based index)
-     */
+    @Override
+    public SortDirection getSortDirection() {
+        return sortDirection;
+    }
+
+    @Override
     public int getIdealPos() {
         return idealPos.get();
     }
 
-    /**
-     * Atomically increment the ideal position and return the new value.
-     * Used by SELECTION algotype when swap is denied.
-     * Thread-safe for parallel execution.
-     *
-     * @return the new ideal position after increment
-     */
+    @Override
+    public void setIdealPos(int newIdealPos) {
+        idealPos.set(newIdealPos);
+    }
+
+    @Override
     public int incrementIdealPos() {
         return idealPos.incrementAndGet();
     }
 
-    /**
-     * Set the ideal position to a specific value.
-     * Used for SELECTION algotype state management.
-     *
-     * @param newIdealPos the new ideal position (0-based index)
-     */
-    public void setIdealPos(int newIdealPos) {
-        this.idealPos.set(newIdealPos);
-    }
-
-    /**
-     * Atomically compare-and-set the ideal position.
-     * Useful for concurrent updates when exact coordination is needed.
-     *
-     * @param expected the expected current value
-     * @param newValue the new value to set
-     * @return true if successful (current value matched expected)
-     */
+    @Override
     public boolean compareAndSetIdealPos(int expected, int newValue) {
         return idealPos.compareAndSet(expected, newValue);
     }
 
-    /**
-     * Compare this cell to another based on their values.
-     *
-     * @param other the cell to compare against
-     * @return negative if this < other, zero if equal, positive if this > other
-     */
     @Override
     public int compareTo(GenericCell other) {
+        // Comparison is value-based; direction is handled in engine swap logic.
         return Integer.compare(this.value, other.value);
     }
 
@@ -203,99 +115,22 @@ public class GenericCell implements Cell<GenericCell>, GroupAwareCell<GenericCel
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         GenericCell that = (GenericCell) obj;
-        return value == that.value
-            && algotype == that.algotype
-            && sortDirection == that.sortDirection;
+        return value == that.value;
     }
 
     @Override
     public int hashCode() {
-        int result = 31 * value + algotype.hashCode();
-        result = 31 * result + sortDirection.hashCode();
-        return result;
+        return Integer.hashCode(value);
     }
 
     @Override
     public String toString() {
-        return String.format("GenericCell{value=%d, algotype=%s, direction=%s}",
-                value, algotype.name(), sortDirection.name());
-    }
-
-    /**
-     * Get the sort direction preference of this cell.
-     *
-     * <p>PURPOSE: Implements HasSortDirection interface to support cross-purpose sorting
-     * where cells in the same array can sort in opposite directions.</p>
-     *
-     * <p>INPUTS: None (getter method)</p>
-     *
-     * <p>PROCESS:
-     * <ol>
-     *   <li>Retrieve immutable sortDirection field</li>
-     *   <li>Return SortDirection enum value</li>
-     *   <li>Thread-safe (field is final and enum is immutable)</li>
-     * </ol>
-     * </p>
-     *
-     * <p>OUTPUTS: SortDirection - ASCENDING or DESCENDING</p>
-     *
-     * <p>DEPENDENCIES: sortDirection field must be set during construction</p>
-     *
-     * <p>ARCHITECTURE NOTE: This method is called frequently by execution engines
-     * during swap evaluation, so it simply returns a stored field with no computation.</p>
-     *
-     * <p>GROUND TRUTH REFERENCE: cell_research/MultiThreadCell.py:
-     * <pre>
-     * # Accessing reverse_direction field
-     * if self.reverse_direction:
-     *     # Descending sort logic
-     * else:
-     *     # Ascending sort logic
-     * </pre>
-     * </p>
-     *
-     * @return the sort direction of this cell (ASCENDING or DESCENDING)
-     */
-    @Override
-    public SortDirection getSortDirection() {
-        return this.sortDirection;
-    }
-
-    // Implementation of HasGroup, HasStatus
-    public CellGroup<GenericCell> getGroup() { return group; }
-
-    public CellStatus getStatus() { return status; }
-
-    public CellStatus getPreviousStatus() { return previousStatus; }
-
-    public void setStatus(CellStatus status) { previousStatus = this.status; this.status = status; }
-
-    public void setPreviousStatus(CellStatus previousStatus) { this.previousStatus = previousStatus; }
-
-    public void setGroup(CellGroup<GenericCell> group) { this.group = group; }
-
-    // Implementation of GroupAwareCell
-    @Override
-    public int getLeftBoundary() { return leftBoundary; }
-
-    @Override
-    public void setLeftBoundary(int leftBoundary) { this.leftBoundary = leftBoundary; }
-
-    @Override
-    public int getRightBoundary() { return rightBoundary; }
-
-    @Override
-    public void setRightBoundary(int rightBoundary) { this.rightBoundary = rightBoundary; }
-
-    @Override
-    public void updateForGroupMerge() {
-        // GenericCell: Reset idealPos if Selection type
-        if (algotype == Algotype.SELECTION) {
-            if (sortDirection == SortDirection.DESCENDING) {
-                setIdealPos(rightBoundary);
-            } else {
-                setIdealPos(leftBoundary);
-            }
-        }
+        return String.format(
+                "GenericCell{value=%d, algotype=%s, direction=%s, idealPos=%d}",
+                value,
+                algotype,
+                sortDirection,
+                idealPos.get()
+        );
     }
 }

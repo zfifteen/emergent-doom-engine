@@ -89,9 +89,15 @@ public class ChimericPopulation<T extends Cell<T>> {
 
         int count = 0;
         for (T cell : cells) {
-            if (cell != null && cell.getAlgotype() != null
-                    && cell.getAlgotype().name().equalsIgnoreCase(algotype)) {
-                count++;
+            if (cell != null) {
+                Algotype cellAlgotype = null;
+                if (cell instanceof com.emergent.doom.cell.HasAlgotype) {
+                    cellAlgotype = ((com.emergent.doom.cell.HasAlgotype) cell).getAlgotype();
+                }
+
+                if (cellAlgotype != null && cellAlgotype.name().equalsIgnoreCase(algotype)) {
+                    count++;
+                }
             }
         }
         return count;
@@ -114,8 +120,15 @@ public class ChimericPopulation<T extends Cell<T>> {
 
         int count = 0;
         for (T cell : cells) {
-            if (cell != null && cell.getAlgotype() == algotype) {
-                count++;
+            if (cell != null) {
+                Algotype cellAlgotype = null;
+                if (cell instanceof com.emergent.doom.cell.HasAlgotype) {
+                    cellAlgotype = ((com.emergent.doom.cell.HasAlgotype) cell).getAlgotype();
+                }
+
+                if (cellAlgotype == algotype) {
+                    count++;
+                }
             }
         }
         return count;

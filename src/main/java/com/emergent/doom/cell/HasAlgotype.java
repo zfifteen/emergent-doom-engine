@@ -1,7 +1,6 @@
 package com.emergent.doom.cell;
 
-import com.emergent.doom.cell.Algotype;
-
+@Deprecated
 public interface HasAlgotype {
     Algotype getAlgotype();
 }

@@ -1,5 +1,6 @@
 package com.emergent.doom.cell;
 
+@Deprecated
 public interface HasValue {
     int getValue();
 

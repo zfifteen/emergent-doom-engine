@@ -142,7 +142,14 @@ public class GenericCellFactory implements CellFactory<GenericCell> {
         if (algotypeStr == null) {
             throw new IllegalArgumentException("Algotype string cannot be null");
         }
-        Algotype algotype = Algotype.valueOf(algotypeStr.toUpperCase());
+
+        Algotype algotype;
+        try {
+            algotype = Algotype.valueOf(algotypeStr.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown algotype: " + algotypeStr, e);
+        }
+
         int value = getValue(position);
         SortDirection direction = getDirection(position);
         return new GenericCell(value, algotype, direction);

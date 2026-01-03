@@ -45,6 +45,13 @@ import java.util.List;
  */
 public class AlgotypeAggregationIndex<T extends Cell<T>> implements Metric<T> {
 
+    private Algotype getAlgotype(T cell) {
+        if (cell instanceof com.emergent.doom.cell.HasAlgotype) {
+            return ((com.emergent.doom.cell.HasAlgotype) cell).getAlgotype();
+        }
+        return null;
+    }
+
     /**
      * Compute the aggregation index for the given cell array.
      *
@@ -76,13 +83,13 @@ public class AlgotypeAggregationIndex<T extends Cell<T>> implements Metric<T> {
         int sameTypeNeighborCount = 0;
 
         for (int i = 0; i < cells.length; i++) {
-            Algotype current = cells[i].getAlgotype();
+            Algotype current = getAlgotype(cells[i]);
 
             // Check left neighbor
-            boolean hasLeftSame = (i > 0) && (cells[i - 1].getAlgotype() == current);
+            boolean hasLeftSame = (i > 0) && (getAlgotype(cells[i - 1]) == current);
 
             // Check right neighbor
-            boolean hasRightSame = (i < cells.length - 1) && (cells[i + 1].getAlgotype() == current);
+            boolean hasRightSame = (i < cells.length - 1) && (getAlgotype(cells[i + 1]) == current);
 
             // Cell is "aggregated" if it has at least one same-type neighbor
             if (hasLeftSame || hasRightSame) {

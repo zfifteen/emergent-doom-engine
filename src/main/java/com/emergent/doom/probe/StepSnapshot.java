@@ -1,16 +1,9 @@
 package com.emergent.doom.probe;
 
-import com.emergent.doom.group.CellStatus;
-import com.emergent.doom.cell.HasValue;
-import com.emergent.doom.cell.HasGroup;
-import com.emergent.doom.cell.HasStatus;
-import com.emergent.doom.cell.HasAlgotype;
-import com.emergent.doom.group.CellGroup;
-
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.cell.HasAlgotype;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +19,7 @@ import java.util.Map;
  *
  * @param <T> the type of cell (for compatibility)
  */
-public class StepSnapshot<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
+public class StepSnapshot<T extends Cell<T>> {
 
     private final int stepNumber;
     private final List<Comparable<?>> values;
@@ -49,17 +42,24 @@ public class StepSnapshot<T extends HasValue & HasGroup & HasStatus & HasAlgotyp
      * Deprecated compatibility constructor with full cells (shallow copy).
      */
     @Deprecated
-    public StepSnapshot(int stepNumber, T[] cellStates, int swapCount, Map<Algotype, Integer> cellTypeDistribution) {
+    public StepSnapshot(int stepNumber, T[] cellStates, int swapCount) {
         this.stepNumber = stepNumber;
         // Extract for fidelity
         List<Comparable<?>> vals = new ArrayList<>();
         List<Object[]> tys = new ArrayList<>();
         for (T cell : cellStates) {
-            vals.add(cell.getComparableValue());
-            int groupId = (cell.getGroup() != null) ? cell.getGroup().getGroupId() : -1;
-            int label = cell.getAlgotype().ordinal();
-            int frozen = cell.getStatus() == com.emergent.doom.group.CellStatus.FREEZE ? 1 : 0;
-            tys.add(new Object[]{groupId, label, cell.getComparableValue(), frozen});
+            Comparable<?> value = cell.getValue();
+            vals.add(value);
+            int groupId = -1;
+            int label = 0;
+            if (cell instanceof HasAlgotype) {
+                Algotype a = ((HasAlgotype) cell).getAlgotype();
+                if (a != null) {
+                    label = a.ordinal();
+                }
+            }
+            int frozen = 0;
+            tys.add(new Object[]{groupId, label, value, frozen});
         }
         this.values = Collections.unmodifiableList(vals);
         this.types = Collections.unmodifiableList(tys);

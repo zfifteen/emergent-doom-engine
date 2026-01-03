@@ -4,7 +4,6 @@ import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.HasIdealPosition;
 import com.emergent.doom.cell.HasSortDirection;
-import com.emergent.doom.cell.SelectionCell;
 import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.SwapEngine;
@@ -18,9 +17,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Synchronous execution engine implementing single-threaded trial execution.
@@ -133,6 +132,7 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * (NoSwapConvergence). Signals when execution can terminate early.</p>
      */
     private final ConvergenceDetector<T> convergenceDetector;
+    private final CellMetadata[] metadata;
 
     /**
      * PURPOSE: Random number generator for BUBBLE algotype direction choice.
@@ -228,6 +228,36 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         this(cells, swapEngine, probe, convergenceDetector, new Random());
     }
 
+    private void initializeMetadata(T[] cells) {
+        for (int i = 0; i < cells.length; i++) {
+            Algotype algotype = Algotype.BUBBLE;
+            SortDirection direction = SortDirection.ASCENDING;
+            int idealPos = 0;
+            int left = 0;
+            int right = cells.length - 1;
+
+            T cell = cells[i];
+            if (cell instanceof com.emergent.doom.cell.HasAlgotype) {
+                algotype = ((com.emergent.doom.cell.HasAlgotype) cell).getAlgotype();
+            }
+
+            if (cell instanceof com.emergent.doom.cell.HasSortDirection) {
+                direction = ((com.emergent.doom.cell.HasSortDirection) cell).getSortDirection();
+            }
+
+            if (cell instanceof com.emergent.doom.cell.HasIdealPosition) {
+                idealPos = ((com.emergent.doom.cell.HasIdealPosition) cell).getIdealPos();
+            }
+
+            if (cell instanceof com.emergent.doom.group.GroupAwareCell) {
+                left = ((com.emergent.doom.group.GroupAwareCell<?>) cell).getLeftBoundary();
+                right = ((com.emergent.doom.group.GroupAwareCell<?>) cell).getRightBoundary();
+            }
+
+            this.metadata[i] = new CellMetadata(algotype, direction, new AtomicInteger(idealPos), left, right);
+        }
+    }
+
     /**
      * Initialize with explicit Random instance for deterministic execution.
      *
@@ -266,6 +296,10 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         this.probe = probe;
         this.convergenceDetector = convergenceDetector;
         this.random = random;
+
+        // Initialize metadata from cells
+        this.metadata = new CellMetadata[cells.length];
+        initializeMetadata(cells);
         
         // Initialize topology helpers
         this.bubbleTopology = new BubbleTopology<>();
@@ -345,8 +379,8 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         
         // For each cell in iteration order, try swapping with neighbors based on algotype
         for (int i : iterationOrder) {
-            Algotype algotype = cells[i].getAlgotype();
-            SortDirection direction = getCellDirection(cells[i]);
+            Algotype algotype = metadata[i].algotype();
+            SortDirection direction = getCellDirection(i);
 
             if (algotype == Algotype.BUBBLE) {
                 // Random 50/50 direction choice - matches cell_research Python behavior
@@ -382,7 +416,14 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
 
         // Execute approved swaps
         for (SwapProposal proposal : resolvedSwaps) {
-            swapEngine.attemptSwap(cells, proposal.getInitiatorIndex(), proposal.getTargetIndex());
+            int i = proposal.getInitiatorIndex();
+            int j = proposal.getTargetIndex();
+            if (swapEngine.attemptSwap(cells, i, j)) {
+                // Synchronize metadata
+                CellMetadata temp = metadata[i];
+                metadata[i] = metadata[j];
+                metadata[j] = temp;
+            }
         }
 
         // Get swap count for this step
@@ -536,8 +577,8 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
             case INSERTION:
                 return insertionTopology.getNeighbors(i, cells.length, algotype);
             case SELECTION:
-                // Get dynamic ideal target from cell state
-                int idealPos = getIdealPosition(cells[i]);
+                // Get dynamic ideal target from metadata
+                int idealPos = getIdealPosition(i);
                 int target = Math.min(idealPos, cells.length - 1);
                 return Arrays.asList(target);
             default:
@@ -562,17 +603,11 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      *
      * <p>OUTPUTS: SortDirection (ASCENDING or DESCENDING)</p>
      *
-     * @param cell the cell to query
+     * @param index the index of the cell to query
      * @return sort direction preference
      */
-    private SortDirection getCellDirection(T cell) {
-        // Check if cell implements HasSortDirection interface
-        if (cell instanceof HasSortDirection) {
-            // Cell supports direction - return its preference
-            return ((HasSortDirection) cell).getSortDirection();
-        }
-        // Cell doesn't support direction - default to ascending
-        return SortDirection.ASCENDING;
+    private SortDirection getCellDirection(int index) {
+        return metadata[index].direction();
     }
 
     /**
@@ -656,9 +691,9 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
                     return true;
                 } else {
                     // Swap denied: increment ideal position if not at end
-                    int currentIdealPos = getIdealPosition(cells[i]);
+                    int currentIdealPos = getIdealPosition(i);
                     if (currentIdealPos < cells.length - 1) {
-                        incrementIdealPosition(cells[i]);
+                        incrementIdealPosition(i);
                     }
                     return false;
                 }
@@ -717,47 +752,6 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
     }
 
     /**
-     * Extract comparable value from a cell.
-     *
-     * <p>PURPOSE: Provide uniform value access across different cell types.</p>
-     *
-     * <p>INPUTS: cell - the cell to extract value from</p>
-     *
-     * <p>PROCESS:
-     * <ol>
-     *   <li>Check cell type via instanceof</li>
-     *   <li>Cast and call appropriate getValue() method</li>
-     *   <li>If unsupported type: throw UnsupportedOperationException</li>
-     * </ol>
-     * </p>
-     *
-     * <p>OUTPUTS: int value for comparison</p>
-     *
-     * @param cell the cell
-     * @return comparable value
-     */
-    private int getCellValue(T cell) {
-        if (cell instanceof com.emergent.doom.cell.HasValue) {
-            return ((com.emergent.doom.cell.HasValue) cell).getValue();
-        }
-        if (cell instanceof com.emergent.doom.cell.SelectionCell) {
-            return ((com.emergent.doom.cell.SelectionCell<?>) cell).getValue();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            return ((com.emergent.doom.cell.GenericCell) cell).getValue();
-        } else if (cell instanceof com.emergent.doom.cell.InsertionCell) {
-            return ((com.emergent.doom.cell.InsertionCell<?>) cell).getValue();
-        } else if (cell instanceof com.emergent.doom.cell.BubbleCell) {
-            return ((com.emergent.doom.cell.BubbleCell<?>) cell).getValue();
-        }
-        // Fail-fast: throw exception for unsupported cell types
-        // (hashCode is unreliable for sorting - doesn't maintain ordering relationships)
-        throw new UnsupportedOperationException(
-            "Cell type " + cell.getClass().getName() + " does not support getValue(). " +
-            "All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell, or implement HasValue."
-        );
-    }
-
-    /**
      * Get ideal position from a SELECTION algotype cell.
      *
      * <p>PURPOSE: Access ideal position field for SELECTION cells.</p>
@@ -774,50 +768,25 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      *
      * <p>OUTPUTS: ideal position index</p>
      *
-     * @param cell the cell
+     * @param index the index of the cell
      * @return ideal position
      */
-    private int getIdealPosition(T cell) {
-        if (cell instanceof com.emergent.doom.cell.HasIdealPosition) {
-            return ((com.emergent.doom.cell.HasIdealPosition) cell).getIdealPos();
-        }
-        if (cell instanceof SelectionCell) {
-            return ((SelectionCell<?>) cell).getIdealPos();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            return ((com.emergent.doom.cell.GenericCell) cell).getIdealPos();
-        }
-        return 0;  // Default for other cell types
+    private int getIdealPosition(int index) {
+        return metadata[index].idealPos().get();
     }
 
     /**
-     * Increment ideal position for a SELECTION algotype cell.
-     *
-     * <p>PURPOSE: Update target position when swap is denied.</p>
-     *
-     * <p>INPUTS: cell - the cell (must be SELECTION algotype)</p>
-     *
-     * <p>PROCESS:
-     * <ol>
-     *   <li>Check if cell is SelectionCell or GenericCell</li>
-     *   <li>Cast and call incrementIdealPos()</li>
-     *   <li>If not SELECTION type: no-op</li>
-     * </ol>
-     * </p>
-     *
-     * <p>OUTPUTS: None (modifies cell state)</p>
-     *
-     * @param cell the cell
+     * Helper: Increment ideal position for a SELECTION cell.
      */
-    private void incrementIdealPosition(T cell) {
-        if (cell instanceof com.emergent.doom.cell.HasIdealPosition) {
-            ((com.emergent.doom.cell.HasIdealPosition) cell).incrementIdealPos();
-            return;
-        }
-        if (cell instanceof SelectionCell) {
-            ((SelectionCell<?>) cell).incrementIdealPos();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            ((com.emergent.doom.cell.GenericCell) cell).incrementIdealPos();
-        }
+    private void incrementIdealPosition(int index) {
+        metadata[index].idealPos().incrementAndGet();
+    }
+
+    /**
+     * Helper: Set ideal position for a SELECTION cell.
+     */
+    private void setIdealPosition(int index, int newIdealPos) {
+        metadata[index].idealPos().set(newIdealPos);
     }
 
     /**
@@ -900,10 +869,12 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         int leftBoundary = 0;
         int rightBoundary = cells.length - 1;
 
-        for (T cell : cells) {
-            if (cell.getAlgotype() == Algotype.SELECTION) {
-                if (cell instanceof HasIdealPosition) {
-                    ((HasIdealPosition) cell).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
+        for (int i = 0; i < cells.length; i++) {
+            if (metadata[i].algotype() == Algotype.SELECTION) {
+                if (reverseDirection) {
+                    metadata[i].idealPos().set(rightBoundary);
+                } else {
+                    metadata[i].idealPos().set(leftBoundary);
                 }
             }
         }

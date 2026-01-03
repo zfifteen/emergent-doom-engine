@@ -1,7 +1,5 @@
 package com.emergent.doom.metrics;
 
-import com.emergent.doom.cell.HasValue;
-
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.probe.StepSnapshot;
 
