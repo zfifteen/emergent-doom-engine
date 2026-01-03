@@ -2,8 +2,10 @@ package com.emergent.doom.cell;
 
 import com.emergent.doom.group.CellGroup;
 import com.emergent.doom.group.CellStatus;
+import com.emergent.doom.group.GroupAwareCell;
 import java.math.BigInteger;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Example implementation of Cell for integer factorization domain.
@@ -17,41 +19,40 @@ import java.util.Objects;
  * this cell stores N mod p. The sorting behavior naturally drives
  * better factors to the front when cells are swapped by the engine.</p>
  */
-public class RemainderCell extends BubbleCell<RemainderCell> implements HasGroup, HasStatus, HasAlgotype {
+public class RemainderCell implements Cell<RemainderCell>, GroupAwareCell<RemainderCell>, HasValue, HasGroup, HasStatus, HasAlgotype, HasIdealPosition {
     
     private final BigInteger remainder;
     private final int position;
     private final BigInteger target;
+    private final Algotype algotype;
+    private CellGroup<RemainderCell> group = null;
+    private CellStatus status = CellStatus.ACTIVE;
+    private CellStatus previousStatus = CellStatus.ACTIVE;
+    private int leftBoundary;
+    private int rightBoundary;
+    private final AtomicInteger idealPos = new AtomicInteger(0);
     
     /**
-     * IMPLEMENTED: Construct a RemainderCell with target number and position
-     *
-     * <p>Note: The value passed to BubbleCell is derived from the remainder for
-     * compatibility with getValue() calls in execution engines (e.g., isLeftSorted).</p>
+     * Construct a RemainderCell with target number and position, defaulting to BUBBLE algotype.
      */
     public RemainderCell(BigInteger target, int position) {
-        // Pass remainder as value for getValue() compatibility with execution engines
-        // Validation and calculation done in static helper to ensure super() is called first
-        super(computeRemainderValue(target, position));
-
-        this.target = target;
-        this.position = position;
-        this.remainder = target.mod(BigInteger.valueOf(position));
+        this(target, position, Algotype.BUBBLE);
     }
 
     /**
-     * Helper method to compute remainder value with validation.
-     * Called before super() to ensure proper initialization order.
+     * Construct a RemainderCell with target number, position, and specified algotype.
      */
-    private static int computeRemainderValue(BigInteger target, int position) {
+    public RemainderCell(BigInteger target, int position, Algotype algotype) {
         if (target == null || target.compareTo(BigInteger.ZERO) <= 0) {
             throw new IllegalArgumentException("Target must be positive");
         }
         if (position < 1) {
             throw new IllegalArgumentException("Position must be >= 1");
         }
-        // Using intValue() is safe since remainders are bounded by position (< Integer.MAX_VALUE for typical use)
-        return target.mod(BigInteger.valueOf(position)).intValue();
+        this.target = target;
+        this.position = position;
+        this.remainder = target.mod(BigInteger.valueOf(position));
+        this.algotype = algotype != null ? algotype : Algotype.BUBBLE;
     }
     
     /**
@@ -70,21 +71,80 @@ public class RemainderCell extends BubbleCell<RemainderCell> implements HasGroup
 
          return remainderComparison;
     }
+
+    @Override
+    public Comparable<?> getComparableValue() {
+        return remainder; // Returns the full BigInteger
+    }
+
+    @Deprecated
+    @Override
+    public int getValue() {
+        return remainder.intValue();
+    }
+
+    @Override
+    public Algotype getAlgotype() {
+        return algotype;
+    }
     
-    /**
-     * IMPLEMENTED: Get the remainder value for metrics/analysis
-     */
-    public CellGroup<RemainderCell> getGroup() { return null; } // RemainderCell not group-aware
+    @Override
+    public CellGroup<RemainderCell> getGroup() { return group; }
 
-    public CellStatus getStatus() { return CellStatus.ACTIVE; }
+    @Override
+    public void setGroup(CellGroup<RemainderCell> group) { this.group = group; }
 
-    public CellStatus getPreviousStatus() { return CellStatus.ACTIVE; }
+    @Override
+    public int getLeftBoundary() { return leftBoundary; }
 
-    public void setStatus(CellStatus status) { /* no-op */ }
+    @Override
+    public void setLeftBoundary(int leftBoundary) { this.leftBoundary = leftBoundary; }
 
-    public void setPreviousStatus(CellStatus previousStatus) { /* no-op */ }
+    @Override
+    public int getRightBoundary() { return rightBoundary; }
 
-    public void setGroup(CellGroup<RemainderCell> group) { /* no-op */ }
+    @Override
+    public void setRightBoundary(int rightBoundary) { this.rightBoundary = rightBoundary; }
+
+    @Override
+    public CellStatus getStatus() { return status; }
+
+    @Override
+    public void setStatus(CellStatus status) { 
+        this.previousStatus = this.status;
+        this.status = status; 
+    }
+
+    @Override
+    public CellStatus getPreviousStatus() { return previousStatus; }
+
+    @Override
+    public void setPreviousStatus(CellStatus previousStatus) { this.previousStatus = previousStatus; }
+
+    @Override
+    public int getIdealPos() {
+        return idealPos.get();
+    }
+
+    @Override
+    public int incrementIdealPos() {
+        return idealPos.incrementAndGet();
+    }
+
+    @Override
+    public void setIdealPos(int newIdealPos) {
+        this.idealPos.set(newIdealPos);
+    }
+
+    @Override
+    public boolean compareAndSetIdealPos(int expected, int newValue) {
+        return idealPos.compareAndSet(expected, newValue);
+    }
+
+    @Override
+    public void updateForGroupMerge() {
+        setIdealPos(leftBoundary);
+    }
 
     public BigInteger getRemainder() {
         return remainder;
@@ -138,6 +198,6 @@ public class RemainderCell extends BubbleCell<RemainderCell> implements HasGroup
      */
     @Override
     public String toString() {
-        return String.format("Cell[pos=%d, rem=%s]", position, remainder);
+        return String.format("Cell[pos=%d, rem=%s, type=%s]", position, remainder, algotype);
     }
 }

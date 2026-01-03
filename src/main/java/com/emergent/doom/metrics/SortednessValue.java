@@ -108,7 +108,7 @@ public class SortednessValue<T extends Cell<T>> implements Metric<T> {
 
     @Override
     public double compute(StepSnapshot<T> snapshot) {
-        List<Integer> values = snapshot.getValues();
+        List<Comparable<?>> values = snapshot.getComparableValues();
         if (values == null || values.isEmpty()) {
             return 100.0;
         }
@@ -116,16 +116,17 @@ public class SortednessValue<T extends Cell<T>> implements Metric<T> {
             return 100.0;
         }
 
-        List<Integer> sorted = new ArrayList<>(values);
+        List<Comparable<?>> sorted = new ArrayList<>(values);
         if (direction == SortDirection.DECREASING) {
             sorted.sort(Collections.reverseOrder());
         } else {
-            Collections.sort(sorted);
+            // Raw comparison because we know they are Comparables of the same type
+            Collections.sort((List) sorted);
         }
 
         int correctCount = 0;
         for (int i = 0; i < values.size(); i++) {
-            if (values.get(i).equals(sorted.get(i))) {
+            if (((Comparable)values.get(i)).compareTo(sorted.get(i)) == 0) {
                 correctCount++;
             }
         }

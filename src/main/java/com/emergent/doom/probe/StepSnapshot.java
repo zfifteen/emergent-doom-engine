@@ -29,7 +29,7 @@ import java.util.Map;
 public class StepSnapshot<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
 
     private final int stepNumber;
-    private final List<Integer> values;
+    private final List<Comparable<?>> values;
     private final List<Object[]> types;
     private final int swapCount;
     private final long timestamp;
@@ -37,7 +37,7 @@ public class StepSnapshot<T extends HasValue & HasGroup & HasStatus & HasAlgotyp
     /**
      * Create snapshot with extracted values and types (primary constructor).
      */
-    public StepSnapshot(int stepNumber, List<Integer> values, List<Object[]> types, int swapCount) {
+    public StepSnapshot(int stepNumber, List<Comparable<?>> values, List<Object[]> types, int swapCount) {
         this.stepNumber = stepNumber;
         this.values = Collections.unmodifiableList(new ArrayList<>(values));
         this.types = Collections.unmodifiableList(new ArrayList<>(types));
@@ -52,14 +52,14 @@ public class StepSnapshot<T extends HasValue & HasGroup & HasStatus & HasAlgotyp
     public StepSnapshot(int stepNumber, T[] cellStates, int swapCount, Map<Algotype, Integer> cellTypeDistribution) {
         this.stepNumber = stepNumber;
         // Extract for fidelity
-        List<Integer> vals = new ArrayList<>();
+        List<Comparable<?>> vals = new ArrayList<>();
         List<Object[]> tys = new ArrayList<>();
         for (T cell : cellStates) {
-            vals.add(cell.getValue());
+            vals.add(cell.getComparableValue());
             int groupId = (cell.getGroup() != null) ? cell.getGroup().getGroupId() : -1;
             int label = cell.getAlgotype().ordinal();
             int frozen = cell.getStatus() == com.emergent.doom.group.CellStatus.FREEZE ? 1 : 0;
-            tys.add(new Object[]{groupId, label, cell.getValue(), frozen});
+            tys.add(new Object[]{groupId, label, cell.getComparableValue(), frozen});
         }
         this.values = Collections.unmodifiableList(vals);
         this.types = Collections.unmodifiableList(tys);
@@ -71,8 +71,30 @@ public class StepSnapshot<T extends HasValue & HasGroup & HasStatus & HasAlgotyp
         return stepNumber;
     }
 
+    /**
+     * Returns the sortable values of the cells as Comparables.
+     * Replaces getIntegerValues() to prevent truncation.
+     */
+    public List<Comparable<?>> getComparableValues() {
+        return values;
+    }
+
+    /**
+     * Returns the cell values as integers (deprecated, may truncate).
+     */
+    @Deprecated
     public List<Integer> getValues() {
-        return Collections.unmodifiableList(values);
+        List<Integer> intValues = new ArrayList<>(values.size());
+        for (Comparable<?> val : values) {
+            if (val instanceof Integer) {
+                intValues.add((Integer) val);
+            } else if (val instanceof Number) {
+                intValues.add(((Number) val).intValue());
+            } else {
+                intValues.add(val.hashCode());
+            }
+        }
+        return Collections.unmodifiableList(intValues);
     }
 
     public List<Object[]> getTypes() {
