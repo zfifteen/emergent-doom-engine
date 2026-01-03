@@ -291,15 +291,43 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
             Probe<T> probe,
             ConvergenceDetector<T> convergenceDetector,
             Random random) {
+        this(cells, swapEngine, probe, convergenceDetector, null, random);
+    }
+
+    /**
+     * Initialize with metadata provider and Random instance.
+     *
+     * <p>This is the master constructor that all other constructors delegate to.</p>
+     *
+     * @param cells the cell array to sort
+     * @param swapEngine the swap engine
+     * @param probe the probe for recording
+     * @param convergenceDetector the convergence detector
+     * @param metadataProvider optional function to initialize metadata (index -> CellMetadata)
+     * @param random the Random instance for direction selection
+     */
+    public SynchronousExecutionEngine(
+            T[] cells,
+            SwapEngine<T> swapEngine,
+            Probe<T> probe,
+            ConvergenceDetector<T> convergenceDetector,
+            java.util.function.IntFunction<CellMetadata> metadataProvider,
+            Random random) {
         this.cells = cells;
         this.swapEngine = swapEngine;
         this.probe = probe;
         this.convergenceDetector = convergenceDetector;
         this.random = random;
 
-        // Initialize metadata from cells
+        // Initialize metadata from provider or cells
         this.metadata = new CellMetadata[cells.length];
-        initializeMetadata(cells);
+        if (metadataProvider != null) {
+            for (int i = 0; i < cells.length; i++) {
+                this.metadata[i] = metadataProvider.apply(i);
+            }
+        } else {
+            initializeMetadata(cells);
+        }
         
         // Initialize topology helpers
         this.bubbleTopology = new BubbleTopology<>();
