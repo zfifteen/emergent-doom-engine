@@ -43,7 +43,7 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 
 ### Run Progressive Ladder (All Stages)
 ```bash
-./scripts/run_linear_scaling_validation.sh
+./scripts/analysis/run_linear_scaling_validation.sh
 ```
 
 This script:
@@ -79,7 +79,7 @@ PER-ARRAY-SIZE BREAKDOWN:
 ```
 
 ### CSV Export
-Results are exported to CSV files compatible with `scripts/analyze_scaling.py`:
+Results are exported to CSV files compatible with `scripts/analysis/analyze_scaling.py`:
 
 ```csv
 stage,target,arraySize,steps,converged,foundFactor,factor,timeMs,remainderMean,remainderVariance,remainderAutocorr
@@ -178,9 +178,9 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 ## Analysis Tools
 
 ### Python Analysis
-Use existing `scripts/analyze_scaling.py` for detailed statistical analysis:
+Use existing `scripts/analysis/analyze_scaling.py` for detailed statistical analysis:
 ```bash
-python3 scripts/analyze_scaling.py validation_results/scaling_validation_results_STAGE_1_E6.csv
+python3 scripts/analysis/analyze_scaling.py validation_results/scaling_validation_results_STAGE_1_E6.csv
 ```
 
 This produces:

@@ -288,8 +288,8 @@ Further experimentation on progressively harder semiprimes is needed to answer t
 
 ### Experimental Data
 - Full results: `docs/findings/factorization-exp-004/`
-- Raw CSV: `scripts/scaling_results.csv`
-- Analysis script: `scripts/analyze_scaling.py`
+- Raw CSV: `scripts/data/scaling_results.csv`
+- Analysis script: `scripts/analysis/analyze_scaling.py`
 
 ### Source Code
 - Execution engine: `src/main/java/com/emergent/doom/execution/ExecutionEngine.java`
