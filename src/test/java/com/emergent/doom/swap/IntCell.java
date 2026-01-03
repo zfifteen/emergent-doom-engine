@@ -2,12 +2,13 @@ package com.emergent.doom.swap;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.cell.HasValue;
 import com.emergent.doom.group.GroupAwareCell;
 
 /**
  * Simple integer-based cell for testing purposes.
  */
-public class IntCell implements Cell<IntCell>, GroupAwareCell<IntCell> {
+public class IntCell implements Cell<IntCell>, GroupAwareCell<IntCell>, HasValue {
 
     private final int value;
 
@@ -15,11 +16,12 @@ public class IntCell implements Cell<IntCell>, GroupAwareCell<IntCell> {
         this.value = value;
     }
 
+    @Override
     public int getValue() {
         return value;
     }
 
-    @Override
+    // Not part of Cell/GroupAwareCell; provided as a convenience for tests.
     public Algotype getAlgotype() {
         return Algotype.BUBBLE;
     }

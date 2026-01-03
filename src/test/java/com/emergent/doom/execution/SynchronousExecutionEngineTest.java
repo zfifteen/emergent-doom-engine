@@ -479,7 +479,6 @@ class SynchronousExecutionEngineTest {
             return value;
         }
 
-        @Override
         public Algotype getAlgotype() {
             return Algotype.BUBBLE;
         }

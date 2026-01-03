@@ -2,7 +2,6 @@ package com.emergent.doom.execution;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
-import com.emergent.doom.cell.GenericCell;
 import com.emergent.doom.group.GroupAwareCell;
 import com.emergent.doom.probe.ThreadSafeProbe;
 import com.emergent.doom.swap.FrozenCellStatus;
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.Timeout;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -339,22 +339,17 @@ class LockBasedExecutionEngineTest {
      */
     static class TrackingConvergenceDetector<T extends Cell<T>> implements ConvergenceDetector<T> {
         private volatile boolean checked = false;
-        private volatile int checkCount = 0;
+        private final AtomicInteger checkCount = new AtomicInteger(0);
 
         @Override
         public boolean hasConverged(com.emergent.doom.probe.Probe<T> probe, int currentStep) {
             checked = true;
-            checkCount++;
             // Let stable polling handle convergence
-            return checkCount > 10; // Eventually converge after enough checks
+            return checkCount.incrementAndGet() > 10; // Eventually converge after enough checks
         }
 
         public boolean wasChecked() {
             return checked;
-        }
-
-        public int getCheckCount() {
-            return checkCount;
         }
     }
 
@@ -392,7 +387,6 @@ class LockBasedExecutionEngineTest {
             return value;
         }
 
-        @Override
         public Algotype getAlgotype() {
             return Algotype.BUBBLE;
         }
