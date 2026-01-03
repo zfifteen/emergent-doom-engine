@@ -113,6 +113,9 @@ public class FactorizationExperiment {
         int arraySize = config.getArraySize();
         java.util.function.IntFunction<RemainderCell[]> factory = trialIndex -> 
             createCellArray(target, arraySize, trialIndex * arraySize);
+
+        // Pre-run setup information
+        printSetupInfo(target, config, factory);
         
         ExperimentRunner<RemainderCell> runner = new ExperimentRunner<>(
                 factory,
@@ -123,6 +126,39 @@ public class FactorizationExperiment {
 
         ExperimentResults<RemainderCell> results = runner.runBatchExperiments(config);
         reportResults(target, results);
+    }
+
+    private static void printSetupInfo(BigInteger target, ExperimentConfig config, java.util.function.IntFunction<RemainderCell[]> factory) {
+        System.out.println("\nTrial Setup:");
+        System.out.printf("Target: %s%n", target);
+        System.out.printf("Trials: %d, Array Size: %d%n", config.getNumRepetitions(), config.getArraySize());
+        
+        // Use factory to get a sample and print algo distribution
+        RemainderCell[] sample = factory.apply(0);
+        printAlgoDistribution(sample);
+        System.out.println("------------------------------------------------------------");
+    }
+
+    private static void printAlgoDistribution(RemainderCell[] sample) {
+        if (sample == null) return;
+        
+        long bubbleCount = 0;
+        long insertionCount = 0;
+        long selectionCount = 0;
+
+        for (RemainderCell cell : sample) {
+            switch (cell.getAlgotype()) {
+                case BUBBLE: bubbleCount++; break;
+                case INSERTION: insertionCount++; break;
+                case SELECTION: selectionCount++; break;
+            }
+        }
+
+        System.out.println("Algorithm Type Distribution (Sample Trial):");
+        System.out.printf("  BUBBLE:    %d%n", bubbleCount);
+        System.out.printf("  INSERTION: %d%n", insertionCount);
+        System.out.printf("  SELECTION: %d%n", selectionCount);
+        System.out.printf("  Total:     %d%n", sample.length);
     }
 
     private static void reportResults(BigInteger target, ExperimentResults<RemainderCell> results) {
@@ -140,7 +176,54 @@ public class FactorizationExperiment {
                 .ifPresent(cell -> System.out.printf("Factor discovered at position: %d%n", cell.getPosition()));
         }
 
+        printAlgoTypeSummary(results);
         System.out.println(results.getSummaryReport());
+    }
+
+    private static void printAlgoTypeSummary(ExperimentResults<RemainderCell> results) {
+        if (results.getTrials().isEmpty()) return;
+
+        long bubbleCount = 0;
+        long insertionCount = 0;
+        long selectionCount = 0;
+        int totalCells = results.getConfig().getArraySize();
+
+        // Sample first trial for distribution (assuming it's representative since it's random per cell)
+        RemainderCell[] sample = results.getTrials().get(0).getFinalCells();
+        if (sample != null) {
+            for (RemainderCell cell : sample) {
+                switch (cell.getAlgotype()) {
+                    case BUBBLE:
+                        bubbleCount++;
+                        break;
+                    case INSERTION:
+                        insertionCount++;
+                        break;
+                    case SELECTION:
+                        selectionCount++;
+                        break;
+                }
+            }
+        }
+
+        System.out.println("\nRuntime Behavior Summary (by Algo Type):");
+        System.out.println("| Metric         | BUBBLE      | INSERTION   | SELECTION   | Total/Mean  |");
+        System.out.println("|----------------|-------------|-------------|-------------|-------------|");
+        System.out.printf("| Cell Count     | %-11d | %-11d | %-11d | %-11d |%n", 
+            bubbleCount, insertionCount, selectionCount, totalCells);
+        System.out.printf("| Mean Steps     | %-11s | %-11s | %-11s | %-11.2f |%n", 
+            "--", "--", "--", results.getMeanSteps());
+        System.out.printf("| Conv. Rate     | %-11s | %-11s | %-11s | %-11.1f%% |%n", 
+            "--", "--", "--", results.getConvergenceRate() * 100);
+        
+        Double mono = results.getMeanMetric("Monotonicity");
+        Double sorted = results.getMeanMetric("Sortedness");
+        
+        System.out.printf("| Monotonicity   | %-11s | %-11s | %-11s | %-11s |%n", 
+            "--", "--", "--", mono != null ? String.format("%.4f", mono) : "N/A");
+        System.out.printf("| Sortedness     | %-11s | %-11s | %-11s | %-11s |%n", 
+            "--", "--", "--", sorted != null ? String.format("%.4f", sorted) : "N/A");
+        System.out.println();
     }
 
     private static class ExperimentParameters {

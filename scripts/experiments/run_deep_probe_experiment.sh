@@ -17,7 +17,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${SCRIPT_DIR%/scripts/experiments}"
 
 # Define paths relative to PROJECT_ROOT
-JAR_PATH="$PROJECT_ROOT/target/emergent-doom-engine-0.1.0-alpha.jar"
+JAR_PATH="$PROJECT_ROOT/target/emergent-doom-engine-0.2.1-alpha.jar"
 LOG_FILE="$PROJECT_ROOT/scripts/logs/run_deep_probe_experiment.log"
 CSV_FILE="$PROJECT_ROOT/scripts/data/deep_probe_results.csv"
 

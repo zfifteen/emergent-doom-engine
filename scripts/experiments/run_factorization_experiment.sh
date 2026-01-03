@@ -24,9 +24,9 @@ run_exp() {
     echo "Testing target: $target (Auto-scaling trials...)" | tee -a "$LOG_FILE"
     
     # Run with just the target to trigger auto-scaling and range partitioning
-    java -cp "$JAR_PATH" com.emergent.doom.examples.FactorizationExperiment "$target" >> "$LOG_FILE" 2>&1
+    java -cp "$JAR_PATH" com.emergent.doom.examples.FactorizationExperiment "$target" 2>&1 | tee -a "$LOG_FILE"
     
-    echo "------------------------------------------------------------" >> "$LOG_FILE"
+    echo "------------------------------------------------------------" | tee -a "$LOG_FILE"
 }
 
 # New Loop: Process rsa_targets.txt automatically
