@@ -82,7 +82,7 @@ Each experiment gets its own subfolder containing all related documentation and 
   - New Feature: Command-line argument support added
   - Trials: 30 (increased from 5 for better statistics)
 
-- **[Raw Output](./factorization-exp-002/EXPERIMENT_COMPLETE.md)** - Experiment results and analysis
+- **[Experiment Report](./factorization-exp-002/EXPERIMENT_COMPLETE.md)** - Experiment results and analysis
   - Shows all 28 factors discovered
   - Demonstrates 100% convergence across 30 trials
 
