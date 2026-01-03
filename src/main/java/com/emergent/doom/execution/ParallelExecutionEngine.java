@@ -141,15 +141,47 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             SwapEngine<T> swapEngine,
             Probe<T> probe,
             ConvergenceDetector<T> convergenceDetector) {
+        
+        this(cells, swapEngine, probe, convergenceDetector, null);
+    }
+
+    /**
+     * Create a new parallel execution engine with custom metadata initialization.
+     *
+     * <p>This constructor supports the lightweight cell refactoring by allowing
+     * the engine to manage cell metadata independently from cell objects. If a
+     * metadataProvider is supplied, it will be used to initialize metadata;
+     * otherwise, metadata is extracted from cells (if they implement Has* interfaces)
+     * or defaults are used.</p>
+     *
+     * @param cells the cell array to sort
+     * @param swapEngine the swap engine for executing swaps
+     * @param probe the probe for recording snapshots
+     * @param convergenceDetector the convergence detector
+     * @param metadataProvider optional function to initialize metadata (index -> CellMetadata)
+     */
+    @SuppressWarnings("unchecked")
+    public ParallelExecutionEngine(
+            T[] cells,
+            SwapEngine<T> swapEngine,
+            Probe<T> probe,
+            ConvergenceDetector<T> convergenceDetector,
+            java.util.function.IntFunction<CellMetadata> metadataProvider) {
 
         this.cells = cells;
         this.swapEngine = swapEngine;
         this.probe = probe;
         this.convergenceDetector = convergenceDetector;
 
-        // Initialize metadata from cells
+        // Initialize metadata from provider or cells
         this.metadata = new CellMetadata[cells.length];
-        initializeMetadata(cells);
+        if (metadataProvider != null) {
+            for (int i = 0; i < cells.length; i++) {
+                this.metadata[i] = metadataProvider.apply(i);
+            }
+        } else {
+            initializeMetadata(cells);
+        }
 
         // Initialize topology helpers
         this.bubbleTopology = new BubbleTopology<>();
