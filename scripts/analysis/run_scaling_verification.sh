@@ -6,8 +6,8 @@ set -euo pipefail
 
 PROJECT_ROOT="/Users/velocityworks/IdeaProjects/emergent-doom-engine"
 JAR_PATH="$PROJECT_ROOT/target/emergent-doom-engine-0.1.0-alpha.jar"
-CSV_FILE="$PROJECT_ROOT/scripts/scaling_results.csv"
-ANALYSIS_FILE="$PROJECT_ROOT/scripts/scaling_analysis.txt"
+CSV_FILE="$PROJECT_ROOT/scripts/data/scaling_results.csv"
+ANALYSIS_FILE="$PROJECT_ROOT/scripts/logs/scaling_analysis.txt"
 
 # Experimental parameters
 FIXED_THREADS=4
@@ -82,7 +82,7 @@ done
 
 echo "Generating analysis report..."
 if [ -s "$CSV_FILE" ]; then
-    python3 "$PROJECT_ROOT/scripts/analyze_scaling.py" "$CSV_FILE" > "$ANALYSIS_FILE" || echo "Analysis script failed."
+    python3 "$PROJECT_ROOT/scripts/analysis/analyze_scaling.py" "$CSV_FILE" > "$ANALYSIS_FILE" || echo "Analysis script failed."
 else
     echo "CSV file is empty. Skipping analysis."
 fi

@@ -6,7 +6,7 @@
 
 PROJECT_ROOT="/Users/velocityworks/IdeaProjects/emergent-doom-engine"
 JAR_PATH="$PROJECT_ROOT/target/emergent-doom-engine-0.2.1-alpha.jar"
-LOG_FILE="$PROJECT_ROOT/scripts/run_rsa_subset.log"
+LOG_FILE="$PROJECT_ROOT/scripts/logs/run_rsa_subset.log"
 RSA_DATA="$PROJECT_ROOT/data/rsa_numbers.txt"
 
 cd "$PROJECT_ROOT"

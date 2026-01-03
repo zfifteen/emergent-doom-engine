@@ -69,7 +69,7 @@ if [ $? -eq 0 ]; then
     echo "To analyze results:"
     echo "  - Review console output: ${OUTPUT_DIR}/experiment_log.txt"
     echo "  - Examine CSV data: ${OUTPUT_DIR}/*.csv"
-    echo "  - Run Python analysis: python3 scripts/analyze_scaling.py <csv_file>"
+    echo "  - Run Python analysis: python3 scripts/analysis/analyze_scaling.py <csv_file>"
     echo ""
 else
     echo ""

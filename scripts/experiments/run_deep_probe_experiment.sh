@@ -14,12 +14,12 @@ set -euo pipefail
 
 # Always resolve to repo root regardless of where the script is invoked
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="${SCRIPT_DIR%/scripts}"
+PROJECT_ROOT="${SCRIPT_DIR%/scripts/experiments}"
 
 # Define paths relative to PROJECT_ROOT
 JAR_PATH="$PROJECT_ROOT/target/emergent-doom-engine-0.1.0-alpha.jar"
-LOG_FILE="$PROJECT_ROOT/scripts/run_deep_probe_experiment.log"
-CSV_FILE="$PROJECT_ROOT/scripts/deep_probe_results.csv"
+LOG_FILE="$PROJECT_ROOT/scripts/logs/run_deep_probe_experiment.log"
+CSV_FILE="$PROJECT_ROOT/scripts/data/deep_probe_results.csv"
 
 # Change to project root
 cd "$PROJECT_ROOT"
