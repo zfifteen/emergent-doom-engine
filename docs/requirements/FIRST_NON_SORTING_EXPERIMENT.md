@@ -33,7 +33,7 @@
 ### 3.1 Problem Encoding
 
 | EDE Concept | Factorization Mapping |
-|-------------|----------------------|
+| :--- | :--- |
 | Cell | Factor candidate |
 | Cell.value | Candidate integer |
 | Cell.algotype | Factor-finding strategy class |
@@ -71,7 +71,7 @@ public double factorFitness(int candidate, int N) {
 ### 3.4 Experiment Parameters
 
 | Parameter | Value | Rationale |
-|-----------|-------|----------|
+| :--- | :--- | :--- |
 | N (semiprime) | 143 (11 × 13) | Small enough to verify, large enough to be non-trivial |
 | Array size | 50 candidates | Manageable size, enough for clustering signal |
 | Candidates | Mix from each strategy | ~17 per strategy |
@@ -205,7 +205,7 @@ public List<Integer> generateCandidates(int N, FactorStrategy strategy, int coun
 ### 6.4 Phase 4: Documentation (Est. 1 day)
 
 1. Record results in `docs/findings/`
-2. Update CLUSTERING_PRIMITIVE_SPEC.md with findings
+2. Update `docs/requirements/CLUSTERING_PRIMITIVE_SPEC.md` with findings
 3. Identify next experiment based on results
 
 ---
@@ -257,7 +257,7 @@ src/test/java/com/emergent/doom/factorization/
 - [ ] 100 runs completed for each control
 - [ ] Statistical analysis complete with p-values
 - [ ] Results documented in `docs/findings/factorization_experiment_001.md`
-- [ ] CLUSTERING_PRIMITIVE_SPEC.md updated with findings
+- [ ] `docs/requirements/CLUSTERING_PRIMITIVE_SPEC.md` updated with findings
 - [ ] Next steps identified based on results
 
 ---

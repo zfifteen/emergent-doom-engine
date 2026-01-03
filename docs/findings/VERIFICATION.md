@@ -15,12 +15,11 @@
 - [x] ORGANIZATION_COMPLETE.md (organization doc)
 - [x] STRUCTURE.md (structure summary)
 
-**Experiment Folder (`docs/findings/factorization-exp-001/`):**
-- [x] README.md (experiment overview)
-- [x] factorization_experiment_2026-01-01.md (main report - 21KB)
-- [x] factor_reporting_fix_2026-01-01.md (fix details - 7KB)
-- [x] OPTION_A_COMPLETE.md (implementation summary - 5KB)
-- [x] final_run_output.txt (raw output - 1.7KB)
+**Experiment Folders:**
+- [x] factorization-exp-001/ (FACT-EXP-001)
+- [x] factorization-exp-002/ (FACT-EXP-002)
+- [x] factorization-exp-003/ (FACT-EXP-003)
+- [x] factorization-exp-004/ (FACT-EXP-004)
 
 ### Documentation Updated ✅
 
@@ -47,12 +46,10 @@ docs/findings/
 ├── ORGANIZATION_COMPLETE.md           # Organization documentation  
 ├── STRUCTURE.md                       # Structure summary
 │
-└── factorization-exp-001/            # FACT-EXP-001 artifacts
-    ├── README.md                      # Quick reference
-    ├── factorization_experiment_2026-01-01.md
-    ├── factor_reporting_fix_2026-01-01.md
-    ├── OPTION_A_COMPLETE.md
-    └── final_run_output.txt
+├── factorization-exp-001/            # FACT-EXP-001 artifacts
+├── factorization-exp-002/            # FACT-EXP-002 artifacts
+├── factorization-exp-003/            # FACT-EXP-003 artifacts
+└── factorization-exp-004/            # FACT-EXP-004 artifacts
 ```
 
 ---
@@ -65,9 +62,9 @@ docs/findings/
 - Created naming convention
 
 ### Phase 2: Organization ✅
-- Created `factorization-exp-001/` subfolder
-- Moved 4 experiment files to subfolder
-- Created subfolder README
+- Created `factorization-exp-001/` through `factorization-exp-004/` subfolders
+- Moved all experiment files to their respective subfolders
+- Created subfolder READMEs
 
 ### Phase 3: Documentation ✅
 - Updated main README with new structure
@@ -156,8 +153,7 @@ All files organized and ready to commit:
 git add docs/findings/
 git commit -m "Organize findings documentation into experiment subfolders
 
-- Created factorization-exp-001/ subfolder for FACT-EXP-001
-- Moved all experiment artifacts to subfolder
+- Moved all experiment artifacts to subfolders
 - Updated main README with new structure
 - Added documentation for organization
 - Established pattern for future experiments"

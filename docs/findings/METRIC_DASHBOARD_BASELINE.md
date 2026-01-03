@@ -8,7 +8,7 @@
 ### 1. DELAYED GRATIFICATION (DG) - Context-Sensitive Problem-Solving
 
 | Algorithm | Cell-View vs Traditional | DG Difference | Z-value | P-value | Notes |
-|-----------|------------------------|---------------|---------|---------|-------|
+| :--- | :--- | :--- | :--- | :--- | :--- |
 | **Bubble Sort** | Cell-View > Traditional | +0.16 | 34.04 | p<<0.01 | **More DG in distributed version** |
 | **Insertion Sort** | Cell-View ≈ Traditional | +0.03 | 0.60 | p=0.55 | Nearly equivalent DG performance |
 | **Selection Sort** | Cell-View < Traditional | -2.77 | -17.21 | p<<0.01 | Traditional version better at DG |
@@ -25,7 +25,7 @@
 ### 2. AGGREGATION PEAKS - Emergent Clustering in Chimeric Arrays
 
 | Algorithm Mix | Peak Agg. Value | Unique Values | Peak Occurs At | Std Dev | Notes |
-|--------------|-----------------|----------------|----------------|---------|-------|
+| :--- | :--- | :--- | :--- | :--- | :--- |
 | **Bubble-Selection** | 0.72 | Yes (unique) | 42% into process | ±0.05 | Highest peak (unique case) |
 | **Bubble-Insertion** | 0.65 | Yes (unique) | 21% into process | ±0.04 | Mid-range clustering |
 | **Selection-Insertion** | 0.69 | Yes (unique) | 19% into process | ±0.04 | Early peaking |
@@ -44,14 +44,14 @@
 
 #### Movable Frozen Cells (can be pushed by others):
 | Algorithm | 1 FC | 2 FC | 3 FC | Rank |
-|-----------|------|------|------|------|
+| :--- | :--- | :--- | :--- | :--- |
 | **Cell-View Bubble** | 0 | 0.8 | 2.64 | **Best** (lowest monotonicity error) |
 | **Cell-View Insertion** | 0.5 | 1.2 | 2.5 | Mid |
 | **Cell-View Selection** | 2.24 | 4.36 | 13.24 | **Worst** (highest error) |
 
 #### Immovable Frozen Cells (cannot be moved):
 | Algorithm | 1 FC | 2 FC | 3 FC | Rank |
-|-----------|------|------|------|------|
+| :--- | :--- | :--- | :--- | :--- |
 | **Cell-View Selection** | 1.0 | 1.96 | 2.91 | **Best** (most robust) |
 | **Cell-View Insertion** | 1.5 | 3.0 | 4.2 | Mid |
 | **Cell-View Bubble** | 1.91 | 3.72 | 5.37 | **Worst** (high error accumulation) |
@@ -67,14 +67,14 @@
 
 #### Pure Homogenous Sorts:
 | Algorithm | Steps (Bubble) | Steps (Insertion) | Steps (Selection) |
-|-----------|----------------|------------------|------------------|
+| :--- | :--- | :--- | :--- |
 | **Cell-View** | 2448.8 | 2482.8 | 1095.5 |
 | **Traditional** | ~2450 | ~2500 | ~900 |
 | **Ratio (CV/Trad)** | 1.0× | 1.0× | 1.22× |
 
 #### Chimeric (Mixed) Sorts:
 | Mix | Avg Steps | Expected (Linear Avg) | Actual | Match |
-|-----|-----------|----------------------|--------|-------|
+| :--- | :--- | :--- | :--- | :--- |
 | **Bubble-Insertion** | 2476.02 | ≈2465 | 2476 | ✓ Yes |
 | **Bubble-Selection** | 1740.9 | ≈1772 | 1741 | ✓ Yes |
 | **Selection-Insertion** | 1534.77 | ≈1289 | 1535 | ✓ Yes |

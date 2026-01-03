@@ -17,8 +17,7 @@ docs/findings/
 │
 ├── factorization-exp-002/              (1e18 composite, 28 factors)
 │   ├── README.md
-│   ├── EXPERIMENT_COMPLETE.md
-│   └── exp002_run_output.txt
+│   └── EXPERIMENT_COMPLETE.md
 │
 ├── factorization-exp-003/              (1e18 semiprimes, factors: 47 & 41)
 │   ├── README.md
@@ -83,7 +82,7 @@ Each experiment gets its own subfolder containing all related documentation and 
   - New Feature: Command-line argument support added
   - Trials: 30 (increased from 5 for better statistics)
 
-- **[Raw Output](./factorization-exp-002/exp002_run_output.txt)** - Console output from run
+- **[Raw Output](./factorization-exp-002/EXPERIMENT_COMPLETE.md)** - Experiment results and analysis
   - Shows all 28 factors discovered
   - Demonstrates 100% convergence across 30 trials
 
@@ -132,7 +131,7 @@ Each experiment gets its own subfolder containing all related documentation and 
 ## Experiment Summary Table
 
 | Exp ID | Target Magnitude | Factors Found | Trials | Convergence | Mean Steps | Sortedness | Monotonicity |
-|--------|-----------------|---------------|--------|-------------|------------|------------|--------------|
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **EXP-001** | 1e5 | **71** | 30 | 100% | 1,156 | 99.70% | 0.20 |
 | **EXP-002** | 1e18 | **2, 4, 5, 8, 10, 16...** (28 total) | 30 | 100% | 1,279 | 98.45% | 0.57 |
 | **EXP-003a** | 1e18 | **47** | 100 | 100% | 1,195 | 99.74% | 0.21 |
@@ -170,9 +169,10 @@ Each experiment should have its own subfolder named with a descriptive identifie
 
 ## Related Documentation
 
-- **Theory:** `docs/theory/distributed_euclidean_remaindercell.md`
+- **Theory:** `docs/theory/2401.05375v1.md`
+- **Distributed Algorithm:** `docs/lab/distributed_euclidean_remaindercell.md`
 - **Requirements:** `docs/requirements/REQUIREMENTS.md`
-- **Implementation History:** `docs/history/`
+- **Implementation History:** `docs/archive/`
 - **Gap Analysis:** `docs/implementation/GAPS-CLAUDE.md`
 
 ---

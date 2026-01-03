@@ -13,12 +13,10 @@ docs/findings/
 ├── README.md                          # Main index (updated with new paths)
 ├── ORGANIZATION_COMPLETE.md           # This summary
 │
-└── factorization-exp-001/            # Experiment FACT-EXP-001 folder
-    ├── README.md                      # Experiment quick reference
-    ├── factorization_experiment_2026-01-01.md    # Main report (21 KB)
-    ├── factor_reporting_fix_2026-01-01.md        # Fix documentation (7 KB)
-    ├── OPTION_A_COMPLETE.md                      # Implementation summary (5 KB)
-    └── final_run_output.txt                      # Raw output (1.7 KB)
+├── factorization-exp-001/            # FACT-EXP-001 artifacts
+├── factorization-exp-002/            # FACT-EXP-002 artifacts
+├── factorization-exp-003/            # FACT-EXP-003 artifacts
+└── factorization-exp-004/            # FACT-EXP-004 artifacts
 ```
 
 ---
@@ -29,13 +27,11 @@ docs/findings/
 - **README.md** - Index of all experiments with links
 - **ORGANIZATION_COMPLETE.md** - This file (organization documentation)
 
-### Experiment Subfolder (`factorization-exp-001/`)
-All artifacts for FACT-EXP-001:
+### Experiment Subfolders (`factorization-exp-00x/`)
+All artifacts for FACT-EXP-001 through FACT-EXP-004:
 1. **README.md** - Quick overview, how to reproduce, key results
-2. **factorization_experiment_2026-01-01.md** - Complete experimental report
-3. **factor_reporting_fix_2026-01-01.md** - Detailed fix documentation
-4. **OPTION_A_COMPLETE.md** - Implementation checklist
-5. **final_run_output.txt** - Console output from verification run
+2. **Main Report** - Complete experimental report (e.g., `EXPERIMENT_COMPLETE.md`)
+3. **Raw Output** - Console output from verification run
 
 ---
 

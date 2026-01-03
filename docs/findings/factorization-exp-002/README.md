@@ -37,7 +37,7 @@ Mixed: 10, 20, 40, 50, 80, 100, 160, 200, 250, 320, 400, 500, 640, 800, 1000
 ### Compared to FACT-EXP-001
 
 | Metric | FACT-EXP-001 (1e5) | FACT-EXP-002 (1e18) | Change |
-|--------|-------------------|-------------------|--------|
+| :--- | :--- | :--- | :--- |
 | Target magnitude | ~1e5 | 1e18 | **10^13× larger** |
 | Trials | 5 → 30 | 30 | **6× more trials** |
 | Convergence Rate | 100.0% | 100.0% | ✅ Same |
@@ -171,7 +171,7 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 
 ## Citations
 
-- **Theory:** `docs/theory/distributed_euclidean_remaindercell.md`
+- **Theory:** `docs/lab/distributed_euclidean_remaindercell.md`
 - **FACT-EXP-001:** `docs/findings/factorization-exp-001/`
 - **Levin Paper:** `docs/theory/2401.05375v1.pdf`
 

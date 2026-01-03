@@ -66,7 +66,7 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 
 **Performance:**
 | Metric | FACT-EXP-001 | FACT-EXP-002 | Scaling |
-|--------|--------------|--------------|---------|
+| :--- | :--- | :--- | :--- |
 | Target | 1e5 | 1e18 | 10^13× |
 | Steps | 1,157 | 1,279 | +10.6% |
 | Sortedness | 99.70% | 98.45% | -1.25% |
