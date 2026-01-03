@@ -13,10 +13,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import com.emergent.doom.execution.ExecutionMode;
 
@@ -31,23 +27,13 @@ public class FactorizationExperiment {
     private static final long DEFAULT_SEED = 12345L;
     private static final int DEFAULT_ARRAY_SIZE = 1000;
 
-    private static class TargetOutcome {
-        final BigInteger target;
-        final ExperimentResults<RemainderCell> results;
-
-        TargetOutcome(BigInteger target, ExperimentResults<RemainderCell> results) {
-            this.target = target;
-            this.results = results;
-        }
-    }
-
     public static void main(String[] args) {
         System.out.println("Emergent Doom Engine - Factorization Experiment");
         System.out.println("=".repeat(60));
 
         List<BigInteger> targets;
         long seed = DEFAULT_SEED;
-        int numTrials = 30;
+        int numTrials = 100;
         int arraySize = DEFAULT_ARRAY_SIZE;
         int numThreads = Math.max(1, Runtime.getRuntime().availableProcessors());
         
@@ -68,6 +54,11 @@ public class FactorizationExperiment {
                 return;
             }
         }
+        
+        // Ensure default is 100 if not specified via args
+        if (args.length < 2) {
+            numTrials = 100;
+        }
 
         final int trialsToRun = numTrials;
         final int finalArraySize = arraySize;
@@ -80,54 +71,31 @@ public class FactorizationExperiment {
                 maxSteps,
                 stableSteps,
                 false, // recordTrajectory = false for memory
-                ExecutionMode.SEQUENTIAL);
+                ExecutionMode.SEQUENTIAL,
+                trialsToRun);
 
-        final int threads = numThreads; 
-        System.out.printf("Running %d trials per target using %d threads (maxSteps=%d, stableSteps=%d)...%n", 
-            trialsToRun, threads, maxSteps, stableSteps);
-        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        System.out.printf("Running %d trials per target using the new batch parallelism model (maxSteps=%d, stableSteps=%d)...%n", 
+            trialsToRun, maxSteps, stableSteps);
 
-        List<Callable<TargetOutcome>> tasks = new ArrayList<>();
         for (BigInteger target : targets) {
-            tasks.add(() -> {
-                ExperimentRunner<RemainderCell> runner = new ExperimentRunner<>(
-                        () -> createCellArray(target, finalArraySize),
-                        () -> new LinearNeighborhood<>(1)
-                );
-                runner.addMetric("Monotonicity", new MonotonicityError<>());
-                runner.addMetric("Sortedness", new SortednessValue<>());
+            ExperimentRunner<RemainderCell> runner = new ExperimentRunner<>(
+                    () -> createCellArray(target, finalArraySize),
+                    () -> new LinearNeighborhood<>(1)
+            );
+            runner.addMetric("Monotonicity", new MonotonicityError<>());
+            runner.addMetric("Sortedness", new SortednessValue<>());
 
-                ExperimentResults<RemainderCell> results = runner.runExperiment(config, trialsToRun);
-                return new TargetOutcome(target, results);
-            });
+            ExperimentResults<RemainderCell> results = runner.runBatchExperiments(config);
+            
+            boolean found = resultsContainFactor(results);
+            
+            // LOGGING: Print raw mean steps even if convergence is low
+            System.out.printf("Target=%s, factorFound=%s, MeanSteps=%.2f, ConvRate=%.1f%%%n", 
+                target, found, results.getMeanSteps(), results.getConvergenceRate() * 100);
+
+            System.out.println(results.getSummaryReport());
         }
 
-        List<Future<TargetOutcome>> futures;
-        try {
-            futures = pool.invokeAll(tasks);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return;
-        }
-
-        int successCount = 0;
-        for (Future<TargetOutcome> f : futures) {
-            try {
-                TargetOutcome outcome = f.get();
-                boolean found = resultsContainFactor(outcome.results);
-                if (found) successCount++;
-                
-                // LOGGING: Print raw mean steps even if convergence is low
-                System.out.printf("Target=%s, factorFound=%s, MeanSteps=%.2f, ConvRate=%.1f%%%n", 
-                    outcome.target, found, outcome.results.getMeanSteps(), outcome.results.getConvergenceRate() * 100);
-
-                System.out.println(outcome.results.getSummaryReport());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        pool.shutdown();
         System.out.println("\nExperiment complete!");
     }
     

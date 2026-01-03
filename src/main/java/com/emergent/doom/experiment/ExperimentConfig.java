@@ -32,7 +32,7 @@ public class ExperimentConfig {
      * Create an experiment configuration with default sequential execution.
      */
     public ExperimentConfig(int arraySize, int maxSteps, int requiredStableSteps, boolean recordTrajectory) {
-        this(arraySize, maxSteps, requiredStableSteps, recordTrajectory, ExecutionMode.SEQUENTIAL, 1);
+        this(arraySize, maxSteps, requiredStableSteps, recordTrajectory, ExecutionMode.SEQUENTIAL, 100);
     }
 
     /**
@@ -46,7 +46,7 @@ public class ExperimentConfig {
      */
     public ExperimentConfig(int arraySize, int maxSteps, int requiredStableSteps,
                            boolean recordTrajectory, ExecutionMode executionMode) {
-        this(arraySize, maxSteps, requiredStableSteps, recordTrajectory, executionMode, 1);
+        this(arraySize, maxSteps, requiredStableSteps, recordTrajectory, executionMode, 100);
     }
 
     /**
