@@ -27,7 +27,7 @@ Aggregation = (Cells with at least one same-algotype neighbor) / (Total cells) Ã
 ### 2.2 Computational Interpretation
 
 | Metric | What It Represents Computationally | Analogy |
-|--------|-----------------------------------|--------|
+| :--- | :--- | :--- |
 | **Aggregation Value** | Degree of local consensus among agents with similar strategies | Clustering coefficient in social networks |
 | **Peak Aggregation** | Maximum emergent grouping during problem-solving | Phase transition / crystallization point |
 | **Peak Timing (% progress)** | When strategy-grouping is most pronounced relative to goal progress | Critical point in annealing |
@@ -37,7 +37,7 @@ Aggregation = (Cells with at least one same-algotype neighbor) / (Total cells) Ã
 ### 2.3 Key Observations from Levin Paper
 
 | Chimeric Pair | Peak Aggregation | Peak Timing | Interpretation |
-|--------------|------------------|-------------|----------------|
+| :--- | :--- | :--- | :--- |
 | Bubble-Selection | 72% | 42% progress | Strong mid-process grouping, dissolves as sorting completes |
 | Bubble-Insertion | 65% | 21% progress | Early grouping, weaker signal |
 | Selection-Insertion | 69% | 19% progress | Very early grouping |
@@ -221,7 +221,7 @@ Before using clustering as a primitive, validate that:
 ## 7. Implementation Status in EDE
 
 | Component | Status | Location |
-|-----------|--------|----------|
+| :--- | :--- | :--- |
 | AggregationValue metric | âœ… Implemented | `metrics/AggregationValue.java` |
 | AlgotypeAggregationIndex | âœ… Implemented | `metrics/AlgotypeAggregationIndex.java` |
 | Chimeric array support | âœ… Implemented | `chimeric/` package |

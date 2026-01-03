@@ -35,7 +35,7 @@ Tested two semiprimes intended to be "unbalanced" vs "balanced", but **both turn
 ## Results Summary
 
 | Metric | Target A (47 factor) | Target B (41 factor) | Difference |
-|--------|---------------------|---------------------|------------|
+| :--- | :--- | :--- | :--- |
 | **Target** | 1,000,000,000,000,000,091 | 999,999,944,006,315,359 | - |
 | **Factor Found** | 47 | 41 | -6 |
 | **Trials** | 100 | 100 | - |
@@ -89,7 +89,7 @@ This suggests convergence time is independent of:
 ## Comparison with Previous Experiments
 
 | Experiment | Target | Factor | Trials | Conv% | Steps | Sortedness | Monotonicity |
-|-----------|--------|--------|--------|-------|-------|------------|--------------|
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **EXP-001** | ~1e5 | 71 | 5→30 | 100% | 1,157 | 99.70% | 0.20 |
 | **EXP-002** | 1e18 | 2,4,5,8,... | 30 | 100% | 1,279 | 98.45% | 0.57 |
 | **EXP-003a** | **1e18** | **47** | **100** | **100%** | **1,195** | **99.74%** | **0.21** |

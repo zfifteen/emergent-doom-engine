@@ -653,5 +653,5 @@ Confirms:
 **Related documents:**
 - `docs/lab/distributed_euclidean_remaindercell.md` (theory)
 - `docs/requirements/REQUIREMENTS.md` (EDE specification)
-- `docs/history/FIXES_COMPLETE.md` (bug fixes)
+- `docs/archive/FIXES_COMPLETE.md` (bug fixes)
 

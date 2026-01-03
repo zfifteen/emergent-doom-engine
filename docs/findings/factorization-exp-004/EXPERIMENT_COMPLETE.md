@@ -29,7 +29,7 @@ Tested the Emergent Doom Engine on a **38-digit number** (10^20 times larger tha
 ## Results Summary
 
 | Metric | Value | Comparison to EXP-003a |
-|--------|-------|----------------------|
+| :--- | :--- | :--- |
 | **Target Scale** | 10^38 | **10^20× larger!** |
 | **Factors Found** | 0 (none) | -1 (had factor 47) |
 | **Trials** | 100 | Same |
@@ -95,7 +95,7 @@ Tested the Emergent Doom Engine on a **38-digit number** (10^20 times larger tha
 ## Comparison with All Experiments
 
 | Experiment | Target | Factor(s) | Trials | Conv% | Steps | Sortedness | Monotonicity |
-|-----------|--------|-----------|--------|-------|-------|------------|--------------|
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | EXP-001 | 1e5 | 71 | 30 | 100% | 1,157 | 99.70% | 0.20 |
 | EXP-002 | 1e18 | 2,4,5,... (28) | 30 | 100% | 1,279 | 98.45% | 0.57 |
 | EXP-003a | 1e18 | 47 | 100 | 100% | 1,195 | 99.74% | 0.21 |

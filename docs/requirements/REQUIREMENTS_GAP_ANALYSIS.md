@@ -20,7 +20,7 @@ This document audits the current [emergent-doom-engine](https://github.com/zfift
 ### 2.1 Core Data Structures (REQUIREMENTS §2)
 
 | Feature | REQ Section | Implementation Status | Gap Description | Priority |
-|---------|-------------|----------------------|-----------------|----------|
+| :--- | :--- | :--- | :--- | :--- |
 | Cell class with value, position, algotype | §2.1 | ✅ Complete | `cell/` package | - |
 | FrozenState enum | §2.1 | ✅ Complete | Implemented | - |
 | Probe class | §2.2 | ✅ Complete | `probe/` package | - |
@@ -32,7 +32,7 @@ This document audits the current [emergent-doom-engine](https://github.com/zfift
 ### 2.2 Cell-View Sorting Algorithms (REQUIREMENTS §3)
 
 | Feature | REQ Section | Implementation Status | Gap Description | Priority |
-|---------|-------------|----------------------|-----------------|----------|
+| :--- | :--- | :--- | :--- | :--- |
 | Cell-View Bubble Sort | §3.1 | ✅ Complete | Implemented | - |
 | Cell-View Insertion Sort | §3.2 | ✅ Complete | Implemented | - |
 | Cell-View Selection Sort | §3.3 | ✅ Complete | Implemented | - |
@@ -41,7 +41,7 @@ This document audits the current [emergent-doom-engine](https://github.com/zfift
 ### 2.3 Evaluation Metrics (REQUIREMENTS §4)
 
 | Feature | REQ Section | Implementation Status | Gap Description | Priority |
-|---------|-------------|----------------------|-----------------|----------|
+| :--- | :--- | :--- | :--- | :--- |
 | Monotonicity Error | §4.1 | ✅ Complete | `metrics/MonotonicityError.java` | - |
 | Sortedness Value | §4.2 | ✅ Complete | `metrics/SortednessValue.java` | - |
 | Delayed Gratification | §4.3 | ✅ Complete | `metrics/DelayedGratificationCalculator.java` | - |
@@ -52,7 +52,7 @@ This document audits the current [emergent-doom-engine](https://github.com/zfift
 ### 2.4 Frozen Cell Implementation (REQUIREMENTS §5)
 
 | Feature | REQ Section | Implementation Status | Gap Description | Priority |
-|---------|-------------|----------------------|-----------------|----------|
+| :--- | :--- | :--- | :--- | :--- |
 | Frozen cell types | §5.1 | ✅ Complete | MOVABLE_FROZEN, IMMOVABLE_FROZEN | - |
 | Swap logic with frozen | §5.2 | ✅ Complete | Implemented | - |
 | Frozen cell placement | §5.3 | ✅ Complete | Implemented | - |
@@ -60,7 +60,7 @@ This document audits the current [emergent-doom-engine](https://github.com/zfift
 ### 2.5 Chimeric Array Implementation (REQUIREMENTS §6)
 
 | Feature | REQ Section | Implementation Status | Gap Description | Priority |
-|---------|-------------|----------------------|-----------------|----------|
+| :--- | :--- | :--- | :--- | :--- |
 | Mixed algotype arrays | §6.1 | ✅ Complete | `chimeric/` package | - |
 | Conflicting goals | §6.2 | ✅ Complete | Directional conflicts | - |
 | Duplicate values | §6.3 | ✅ Complete | For persistent aggregation | - |
@@ -69,7 +69,7 @@ This document audits the current [emergent-doom-engine](https://github.com/zfift
 ### 2.6 Threading and Synchronization (REQUIREMENTS §7)
 
 | Feature | REQ Section | Implementation Status | Gap Description | Priority |
-|---------|-------------|----------------------|-----------------|----------|
+| :--- | :--- | :--- | :--- | :--- |
 | Parallel cell execution | §7.1 | ✅ Complete | `execution/` package | - |
 | Cell worker function | §7.2 | ✅ Complete | Implemented | - |
 | Swap resolution | §7.3 | ✅ Complete | `swap/` package | - |
@@ -78,7 +78,7 @@ This document audits the current [emergent-doom-engine](https://github.com/zfift
 ### 2.7 Experiment Execution (REQUIREMENTS §8)
 
 | Feature | REQ Section | Implementation Status | Gap Description | Priority |
-|---------|-------------|----------------------|-----------------|----------|
+| :--- | :--- | :--- | :--- | :--- |
 | Single experiment runner | §8.1 | ✅ Complete | Implemented | - |
 | Batch experiments | §8.2 | ✅ Complete | Implemented | - |
 | Statistical analysis | §8.3 | ✅ Complete | `statistics/` package | - |
@@ -86,7 +86,7 @@ This document audits the current [emergent-doom-engine](https://github.com/zfift
 ### 2.8 Data Persistence and Analysis (REQUIREMENTS §9)
 
 | Feature | REQ Section | Implementation Status | Gap Description | Priority |
-|---------|-------------|----------------------|-----------------|----------|
+| :--- | :--- | :--- | :--- | :--- |
 | Probe data format | §9.1 | ✅ Complete | `export/` package | - |
 | Evaluation pipeline | §9.2 | ✅ Complete | `analysis/` package | - |
 | **Clustering-specific analysis** | Not in REQ | ❌ Missing | Need ClusteringAnalyzer class | **MEDIUM** |
@@ -94,7 +94,7 @@ This document audits the current [emergent-doom-engine](https://github.com/zfift
 ### 2.9 Visualization (REQUIREMENTS §10)
 
 | Feature | REQ Section | Implementation Status | Gap Description | Priority |
-|---------|-------------|----------------------|-----------------|----------|
+| :--- | :--- | :--- | :--- | :--- |
 | Sortedness trajectory plots | §10.1 | ✅ Complete | `visualization/` package | - |
 | Aggregation curves | §10.2 | ✅ Complete | Implemented | - |
 | Efficiency comparison | §10.3 | ✅ Complete | Implemented | - |
@@ -222,6 +222,6 @@ Before proceeding to non-sorting experiments, verify:
 ## 7. References
 
 - REQUIREMENTS.md: `docs/requirements/REQUIREMENTS.md`
-- CLUSTERING_PRIMITIVE_SPEC.md: `docs/CLUSTERING_PRIMITIVE_SPEC.md`
-- FIRST_NON_SORTING_EXPERIMENT.md: `docs/FIRST_NON_SORTING_EXPERIMENT.md`
+- CLUSTERING_PRIMITIVE_SPEC.md: `docs/requirements/CLUSTERING_PRIMITIVE_SPEC.md`
+- FIRST_NON_SORTING_EXPERIMENT.md: `docs/requirements/FIRST_NON_SORTING_EXPERIMENT.md`
 - EDE Java source: `src/main/java/com/emergent/doom/`

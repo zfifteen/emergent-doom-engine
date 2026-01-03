@@ -12,28 +12,21 @@
 docs/findings/
 ├── README.md                                      # Main index of all experiments
 │
-└── factorization-exp-001/                         # Experiment FACT-EXP-001
-    ├── README.md                                  # Experiment overview
-    ├── factorization_experiment_2026-01-01.md     # Main experimental report
-    ├── factor_reporting_fix_2026-01-01.md         # Fix documentation
-    ├── OPTION_A_COMPLETE.md                       # Implementation checklist
-    └── final_run_output.txt                       # Raw verification output
+├── factorization-exp-001/                         # FACT-EXP-001 artifacts
+├── factorization-exp-002/                         # FACT-EXP-002 artifacts
+├── factorization-exp-003/                         # FACT-EXP-003 artifacts
+└── factorization-exp-004/                         # FACT-EXP-004 artifacts
 ```
 
 ---
 
 ## What Was Organized
 
-### Files Moved
-All experiment-specific files moved from `docs/findings/` to `docs/findings/factorization-exp-001/`:
-
-1. ✅ `factorization_experiment_2026-01-01.md` → Main report (21 KB)
-2. ✅ `factor_reporting_fix_2026-01-01.md` → Fix details (8 KB)
-3. ✅ `OPTION_A_COMPLETE.md` → Implementation summary (6 KB)
-4. ✅ `final_run_output.txt` → Raw output (1.7 KB)
+### Files Organized
+All experiment-specific files moved to their respective subfolders (`factorization-exp-001/` through `factorization-exp-004/`).
 
 ### Files Created
-1. ✅ `factorization-exp-001/README.md` → Subfolder index and quick reference
+1. ✅ `factorization-exp-00x/README.md` → Subfolder indices and quick references
 
 ### Files Updated
 1. ✅ `docs/findings/README.md` → Updated with new structure and navigation

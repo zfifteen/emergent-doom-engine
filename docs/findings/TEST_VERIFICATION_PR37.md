@@ -16,7 +16,7 @@ This report documents the verification of the Linear Scaling Validation framewor
 
 ### Component Verification
 | Component | Status | Notes |
-|-----------|--------|-------|
+| :--- | :--- | :--- |
 | **ScalingStage** | ✅ Passed | Correctly configures magnitude, array sizes, and step limits for all stages (10^6 to 10^18). |
 | **Target Generation** | ✅ Passed | `nextPrime` and `generateTarget` correctly produce balanced semiprimes in the expected range. |
 | **Trial Execution** | ✅ Passed | `executeSingleTrial` successfully runs the experiment and finds factors for known easy semiprimes. |

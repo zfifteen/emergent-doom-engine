@@ -131,7 +131,7 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 
 ## Citations
 
-- **Theory:** `docs/theory/distributed_euclidean_remaindercell.md`
+- **Theory:** `docs/lab/distributed_euclidean_remaindercell.md`
 - **Levin Paper:** `docs/theory/2401.05375v1.pdf`
 - **Requirements:** `docs/requirements/REQUIREMENTS.md`
 

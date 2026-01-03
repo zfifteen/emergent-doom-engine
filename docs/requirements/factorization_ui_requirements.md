@@ -13,7 +13,7 @@ This document captures requirements for a mock UI for the `FactorizationExperime
 
 ### 1.1 Source Reference
 
-- **Implementation:** [`src/main/java/com/emergent/doom/examples/FactorizationExperiment.java`](../src/main/java/com/emergent/doom/examples/FactorizationExperiment.java)
+- **Implementation:** [`src/main/java/com/emergent/doom/examples/FactorizationExperiment.java`](../../src/main/java/com/emergent/doom/examples/FactorizationExperiment.java)
 - **Core entities:** `RemainderCell`, `ExperimentRunner`, `MonotonicityError`, `SortednessValue`
 
 ---
@@ -27,7 +27,7 @@ This document captures requirements for a mock UI for the `FactorizationExperime
 ### 2.2 Clarifying Questions & Answers
 
 | Question | User Response |
-|----------|---------------|
+| :--- | :--- |
 | **Primary user story:** Real-time trial progress, post-experiment results analysis, or both? | **Both** |
 | **Which metrics/data should be visible?** (Mean steps, convergence rate, cell state, trajectories) | **Cell state is the most important**, followed by trajectories, then mean steps |
 | **UI interaction priorities:** Input targets, adjust config, step-by-step debugging? | **Input target semiprimes with sensible defaults pre-populated**, allowing modification before run |
@@ -43,7 +43,7 @@ This document captures requirements for a mock UI for the `FactorizationExperime
 ### 3.1 Configuration Panel
 
 | ID | Requirement | Priority | Default Value |
-|----|-------------|----------|---------------|
+| :--- | :--- | :--- | :--- |
 | FR-CFG-01 | User can input target semiprime number | **Must** | `100099` |
 | FR-CFG-02 | User can modify array size | **Must** | `1000` |
 | FR-CFG-03 | User can set number of trials | **Must** | `5` |
@@ -55,7 +55,7 @@ This document captures requirements for a mock UI for the `FactorizationExperime
 ### 3.2 Cell State Visualization (Primary)
 
 | ID | Requirement | Priority |
-|----|-------------|----------|
+| :--- | :--- | :--- |
 | FR-VIZ-01 | Display grid of RemainderCell final states | **Must** |
 | FR-VIZ-02 | Color-code cells by remainder value (red = 0/factor found, gradient for others) | **Must** |
 | FR-VIZ-03 | Hover tooltip shows cell position and exact remainder value | **Must** |
@@ -65,7 +65,7 @@ This document captures requirements for a mock UI for the `FactorizationExperime
 ### 3.3 Trial Trajectories
 
 | ID | Requirement | Priority |
-|----|-------------|----------|
+| :--- | :--- | :--- |
 | FR-TRJ-01 | Display trajectory of cell remainder values across steps | **Must** |
 | FR-TRJ-02 | Show per-trial results with step counts | **Must** |
 | FR-TRJ-03 | Visual success indicator per trial (factor found vs not) | **Must** |
@@ -74,7 +74,7 @@ This document captures requirements for a mock UI for the `FactorizationExperime
 ### 3.4 Summary Metrics
 
 | ID | Requirement | Priority |
-|----|-------------|----------|
+| :--- | :--- | :--- |
 | FR-MET-01 | Display factor found (yes/no) | **Must** |
 | FR-MET-02 | Display mean steps to convergence | **Must** |
 | FR-MET-03 | Display convergence rate (%) | **Should** |
@@ -83,7 +83,7 @@ This document captures requirements for a mock UI for the `FactorizationExperime
 ### 3.5 Experiment Control
 
 | ID | Requirement | Priority |
-|----|-------------|----------|
+| :--- | :--- | :--- |
 | FR-CTL-01 | "Run Experiment" button initiates trials with current config | **Must** |
 | FR-CTL-02 | Real-time progress updates during experiment execution | **Should** |
 | FR-CTL-03 | Ability to load/view completed experiment results | **Should** |
@@ -93,7 +93,7 @@ This document captures requirements for a mock UI for the `FactorizationExperime
 ## 4. Non-Functional Requirements
 
 | ID | Requirement | Priority |
-|----|-------------|----------|
+| :--- | :--- | :--- |
 | NFR-01 | Responsive layout (desktop and tablet) | **Should** |
 | NFR-02 | Keyboard accessible (focus rings, proper input semantics) | **Should** |
 | NFR-03 | Use EDE project color palette | **Could** |

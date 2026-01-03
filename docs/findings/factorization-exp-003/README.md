@@ -81,7 +81,7 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 ### Unbalanced Semiprime Predictions
 
 | Metric | Expected Range |
-|--------|---------------|
+| :--- | :--- |
 | Convergence Rate | 95-100% |
 | Mean Steps | 1,150-1,300 |
 | Sortedness | 98-100% |
@@ -91,7 +91,7 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 ### Balanced Semiprime Predictions
 
 | Metric | Expected Range |
-|--------|---------------|
+| :--- | :--- |
 | Convergence Rate | 80-100% |
 | Mean Steps | 1,000-1,500 |
 | Sortedness | 90-98% (lower) |

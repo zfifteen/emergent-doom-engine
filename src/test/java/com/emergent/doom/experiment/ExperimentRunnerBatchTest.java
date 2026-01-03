@@ -63,15 +63,15 @@ class ExperimentRunnerBatchTest {
     class BasicBatchTests {
 
         @Test
-        @DisplayName("Runs small batch of trials successfully")
-        void runsSmallBatch() {
+        @DisplayName("Runs standard batch of 100 trials successfully")
+        void runsStandardBatch() {
             ExperimentConfig config = new ExperimentConfig(
-                    30, 3000, 3, false, ExecutionMode.SEQUENTIAL, 5);
+                    30, 3000, 3, false, ExecutionMode.SEQUENTIAL, 100);
             
             ExperimentResults<GenericCell> results = runner.runBatchExperiments(config);
             
             assertNotNull(results, "Results should not be null");
-            assertEquals(5, results.getTrials().size(), "Should have 5 trials");
+            assertEquals(100, results.getTrials().size(), "Should have 100 trials");
             
             // Verify all trials completed
             for (TrialResult<GenericCell> trial : results.getTrials()) {
@@ -174,15 +174,15 @@ class ExperimentRunnerBatchTest {
             // Run a moderate batch and verify it completes in reasonable time
             // This is a sanity check that parallelization is working
             ExperimentConfig config = new ExperimentConfig(
-                    20, 2000, 3, false, ExecutionMode.SEQUENTIAL, 8);
+                    20, 2000, 3, false, ExecutionMode.SEQUENTIAL, 100);
             
             long start = System.currentTimeMillis();
             ExperimentResults<GenericCell> results = runner.runBatchExperiments(config);
             long elapsed = System.currentTimeMillis() - start;
             
-            assertEquals(8, results.getTrials().size(), "Should complete all trials");
-            // With parallelization, 8 trials should complete much faster than
-            // 8x single trial time. This is a loose sanity check.
+            assertEquals(100, results.getTrials().size(), "Should complete all trials");
+            // With parallelization, 100 trials should complete much faster than
+            // 100x single trial time. This is a loose sanity check.
             assertTrue(elapsed < 30000, "Parallel execution should complete within 30 seconds");
         }
     }
@@ -217,7 +217,7 @@ class ExperimentRunnerBatchTest {
             );
             
             ExperimentConfig config = new ExperimentConfig(
-                    10, 500, 3, false, ExecutionMode.SEQUENTIAL, 5);
+                    10, 500, 3, false, ExecutionMode.SEQUENTIAL, 100);
             
             assertThrows(
                     RuntimeException.class,
@@ -274,7 +274,7 @@ class ExperimentRunnerBatchTest {
         @DisplayName("Each trial has unique trial number")
         void trialsHaveUniqueNumbers() {
             ExperimentConfig config = new ExperimentConfig(
-                    20, 2000, 3, false, ExecutionMode.SEQUENTIAL, 10);
+                    20, 2000, 3, false, ExecutionMode.SEQUENTIAL, 100);
             
             ExperimentResults<GenericCell> results = runner.runBatchExperiments(config);
             
@@ -283,7 +283,7 @@ class ExperimentRunnerBatchTest {
                     .distinct()
                     .count();
             
-            assertEquals(10, uniqueNumbers, "All trial numbers should be unique");
+            assertEquals(100, uniqueNumbers, "All trial numbers should be unique");
         }
 
         /**
@@ -294,7 +294,7 @@ class ExperimentRunnerBatchTest {
         @DisplayName("Each trial records execution time")
         void trialsRecordExecutionTime() {
             ExperimentConfig config = new ExperimentConfig(
-                    20, 2000, 3, false, ExecutionMode.SEQUENTIAL, 5);
+                    20, 2000, 3, false, ExecutionMode.SEQUENTIAL, 100);
             
             ExperimentResults<GenericCell> results = runner.runBatchExperiments(config);
             

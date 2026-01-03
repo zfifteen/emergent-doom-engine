@@ -92,7 +92,7 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 ### Scenario A: Small Factors Exist
 
 | Metric | Expected Range |
-|--------|---------------|
+| :--- | :--- |
 | Convergence Rate | 90-100% |
 | Mean Steps | 1,200-2,000 (may increase) |
 | Sortedness | 95-100% |
@@ -102,7 +102,7 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 ### Scenario B: No Small Factors
 
 | Metric | Expected Range |
-|--------|---------------|
+| :--- | :--- |
 | Convergence Rate | 50-100% |
 | Mean Steps | Highly variable |
 | Sortedness | 70-95% (lower) |
