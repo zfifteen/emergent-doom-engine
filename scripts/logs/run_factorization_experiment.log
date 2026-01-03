@@ -1,41 +1,10 @@
-Batch Factorization Experiment Started: Sat Jan  3 01:26:50 EST 2026
-------------------------------------------------------------
-Testing target: 35794234179725836034822932623714739742276620435052322954609389231215135654475049323468564522300053203094852031 (Auto-scaling trials...)
-Emergent Doom Engine - Factorization Experiment
-============================================================
-Auto-scaling: Target sqrt is 5982828275968301267922095363689441866398525024337397171. Calculated 100 trials to cover search space.
-Running 100 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+Batch Factorization Experiment Started: Sat Jan  3 03:11:11 EST 2026
 [INFO] Scanning for projects...
-Exception in thread "main" java.lang.RuntimeException: Trial 0 failed due to UnsupportedOperationException: Cell type com.emergent.doom.cell.RemainderCell does not support getValue(). All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell.
-	at com.emergent.doom.experiment.ExperimentRunner.runBatchExperiments(ExperimentRunner.java:325)
-	at com.emergent.doom.examples.FactorizationExperiment.runSingleTargetExperiment(FactorizationExperiment.java:124)
-	at com.emergent.doom.examples.FactorizationExperiment.lambda$runExperiments$0(FactorizationExperiment.java:109)
-	at java.base/java.util.Collections$SingletonList.forEach(Collections.java:5187)
-	at com.emergent.doom.examples.FactorizationExperiment.runExperiments(FactorizationExperiment.java:109)
-	at com.emergent.doom.examples.FactorizationExperiment.main(FactorizationExperiment.java:42)
-Caused by: java.lang.UnsupportedOperationException: Cell type com.emergent.doom.cell.RemainderCell does not support getValue(). All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell.
-	at com.emergent.doom.execution.SynchronousExecutionEngine.getCellValue(SynchronousExecutionEngine.java:768)
-	at com.emergent.doom.execution.SynchronousExecutionEngine.isLeftSorted(SynchronousExecutionEngine.java:720)
-	at com.emergent.doom.execution.SynchronousExecutionEngine.shouldSwapWithDirection(SynchronousExecutionEngine.java:639)
-	at com.emergent.doom.execution.SynchronousExecutionEngine.step(SynchronousExecutionEngine.java:372)
-	at com.emergent.doom.execution.SynchronousExecutionEngine.runUntilConvergence(SynchronousExecutionEngine.java:440)
-	at com.emergent.doom.experiment.ExperimentRunner.runTrial(ExperimentRunner.java:148)
-	at com.emergent.doom.experiment.ExperimentRunner.lambda$runBatchExperiments$1(ExperimentRunner.java:285)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
-	at java.base/java.lang.Thread.run(Thread.java:1583)
 [INFO] 
 [INFO] ---------------< com.emergent.doom:emergent-doom-engine >---------------
-[INFO] Building Emergent Doom Engine 0.2.0-alpha
+[INFO] Building Emergent Doom Engine 0.2.1-alpha
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
-------------------------------------------------------------
-Testing target: 22701048129543736333425996094749366889587533646608478003817325237004905401855512069465560342222533512033049134674681 (Auto-scaling trials...)
-Emergent Doom Engine - Factorization Experiment
-============================================================
-Auto-scaling: Target sqrt is 4764561693329590661920868330576565667338725084437001323355. Calculated 923645036 trials to cover search space.
-Running 923645036 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
 [INFO] 
 [INFO] --- clean:3.2.0:clean (default-clean) @ emergent-doom-engine ---
 [INFO] Deleting /Users/velocityworks/IdeaProjects/emergent-doom-engine/target
@@ -49,8 +18,10 @@ Running 923645036 trials per target using the new batch parallelism model (maxSt
 [INFO] --- compiler:3.11.0:compile (default-compile) @ emergent-doom-engine ---
 [INFO] Changes detected - recompiling the module! :source
 [INFO] Compiling 112 source files with javac [debug release 11] to target/classes
-[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/java/com/emergent/doom/metrics/Metric.java: Some input files use or override a deprecated API.
-[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/java/com/emergent/doom/metrics/Metric.java: Recompile with -Xlint:deprecation for details.
+[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/java/com/emergent/doom/metrics/DelayedGratificationIndex.java: Some input files use or override a deprecated API.
+[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/java/com/emergent/doom/metrics/DelayedGratificationIndex.java: Recompile with -Xlint:deprecation for details.
+[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/java/com/emergent/doom/metrics/SortednessValue.java: Some input files use unchecked or unsafe operations.
+[INFO] /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/main/java/com/emergent/doom/metrics/SortednessValue.java: Recompile with -Xlint:unchecked for details.
 [INFO] 
 [INFO] --- resources:3.3.1:testResources (default-testResources) @ emergent-doom-engine ---
 [INFO] skip non existing resourceDirectory /Users/velocityworks/IdeaProjects/emergent-doom-engine/src/test/resources
@@ -65,172 +36,322 @@ Running 923645036 trials per target using the new batch parallelism model (maxSt
 [INFO] Tests are skipped.
 [INFO] 
 [INFO] --- jar:3.3.0:jar (default-jar) @ emergent-doom-engine ---
-[INFO] Building jar: /Users/velocityworks/IdeaProjects/emergent-doom-engine/target/emergent-doom-engine-0.2.0-alpha.jar
+[INFO] Building jar: /Users/velocityworks/IdeaProjects/emergent-doom-engine/target/emergent-doom-engine-0.2.1-alpha.jar
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.603 s
-[INFO] Finished at: 2026-01-03T01:26:54-05:00
+[INFO] Total time:  1.847 s
+[INFO] Finished at: 2026-01-03T03:11:14-05:00
 [INFO] ------------------------------------------------------------------------
 Testing target: 1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139 (Auto-scaling trials...)
 Emergent Doom Engine - Factorization Experiment
 ============================================================
 Auto-scaling: Target sqrt is 39020571855401265512289573339484371018905006900194. Calculated 266318645 trials to cover search space.
 Running 266318645 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139
+Trials: 266318645, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    339
+  INSERTION: 336
+  SELECTION: 325
+  Total:     1000
 ------------------------------------------------------------
-Testing target: 1807082088687404805951656164405905566278102516769401349170127021450056662540244048387341127590812303371781887966563182013214880557 (Auto-scaling trials...)
-Emergent Doom Engine - Factorization Experiment
-============================================================
-Auto-scaling: Target sqrt is 42509788151523465407452697662505294703186899165086434856734890373. Calculated 1179324587 trials to cover search space.
-Running 1179324587 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
 ------------------------------------------------------------
 Testing target: 35794234179725836034822932623714739742276620435052322954609389231215135654475049323468564522300053203094852031 (Auto-scaling trials...)
 Emergent Doom Engine - Factorization Experiment
 ============================================================
 Auto-scaling: Target sqrt is 5982828275968301267922095363689441866398525024337397171. Calculated 100 trials to cover search space.
 Running 100 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
-Exception in thread "main" java.lang.RuntimeException: Trial 0 failed due to UnsupportedOperationException: Cell type com.emergent.doom.cell.RemainderCell does not support getValue(). All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell.
-	at com.emergent.doom.experiment.ExperimentRunner.runBatchExperiments(ExperimentRunner.java:325)
-	at com.emergent.doom.examples.FactorizationExperiment.runSingleTargetExperiment(FactorizationExperiment.java:124)
-	at com.emergent.doom.examples.FactorizationExperiment.lambda$runExperiments$0(FactorizationExperiment.java:109)
-	at java.base/java.util.Collections$SingletonList.forEach(Collections.java:5187)
-	at com.emergent.doom.examples.FactorizationExperiment.runExperiments(FactorizationExperiment.java:109)
-	at com.emergent.doom.examples.FactorizationExperiment.main(FactorizationExperiment.java:42)
-Caused by: java.lang.UnsupportedOperationException: Cell type com.emergent.doom.cell.RemainderCell does not support getValue(). All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell.
-	at com.emergent.doom.execution.SynchronousExecutionEngine.getCellValue(SynchronousExecutionEngine.java:768)
-	at com.emergent.doom.execution.SynchronousExecutionEngine.isLeftSorted(SynchronousExecutionEngine.java:720)
-	at com.emergent.doom.execution.SynchronousExecutionEngine.shouldSwapWithDirection(SynchronousExecutionEngine.java:639)
-	at com.emergent.doom.execution.SynchronousExecutionEngine.step(SynchronousExecutionEngine.java:372)
-	at com.emergent.doom.execution.SynchronousExecutionEngine.runUntilConvergence(SynchronousExecutionEngine.java:440)
-	at com.emergent.doom.experiment.ExperimentRunner.runTrial(ExperimentRunner.java:148)
-	at com.emergent.doom.experiment.ExperimentRunner.lambda$runBatchExperiments$1(ExperimentRunner.java:285)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
-	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Trial Setup:
+Target: 35794234179725836034822932623714739742276620435052322954609389231215135654475049323468564522300053203094852031
+Trials: 100, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    325
+  INSERTION: 356
+  SELECTION: 319
+  Total:     1000
+------------------------------------------------------------
+Target=35794234179725836034822932623714739742276620435052322954609389231215135654475049323468564522300053203094852031, factorFound=false, MeanSteps=1379.66, ConvRate=100.0%
+
+Runtime Behavior Summary (by Algo Type):
+| Metric         | BUBBLE      | INSERTION   | SELECTION   | Total/Mean  |
+|----------------|-------------|-------------|-------------|-------------|
+| Cell Count     | 317         | 328         | 355         | 1000        |
+| Mean Steps     | --          | --          | --          | 1379.66     |
+| Conv. Rate     | --          | --          | --          | 100.0      % |
+| Monotonicity   | --          | --          | --          | 196.9700    |
+| Sortedness     | --          | --          | --          | 0.3200      |
+
+Experiment Results Summary
+============================================================
+Trials:           100
+Convergence Rate: 100.0%
+Mean Steps:       1379.66
+
+Metrics:
+  Sortedness: 0.32 ± 0.25
+  Monotonicity: 196.97 ± 9.84
+
+
+Experiment complete!
 ------------------------------------------------------------
 Testing target: 22701048129543736333425996094749366889587533646608478003817325237004905401855512069465560342222533512033049134674681 (Auto-scaling trials...)
 Emergent Doom Engine - Factorization Experiment
 ============================================================
 Auto-scaling: Target sqrt is 4764561693329590661920868330576565667338725084437001323355. Calculated 923645036 trials to cover search space.
 Running 923645036 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
-Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
-Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
+
+Trial Setup:
+Target: 22701048129543736333425996094749366889587533646608478003817325237004905401855512069465560342222533512033049134674681
+Trials: 923645036, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    328
+  INSERTION: 308
+  SELECTION: 364
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 1807082088687404805951656164405905566278102516769401349170127021450056662540244048387341127590812303371781887966563182013214880557 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 2129851612255251877839365639214652723984139136960336057355447064564243377593728330134127334647340454654823903125213600940518391272031556055106887 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 1039563283456186155659353105759895316450127201151134548243968837487170454316560883137974374201721010574743100112040569990942833536352143571386501 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 1094334512980010833627961715495464911184903201311929901239537400643278838413997208859847883120311440510519909305411059406107462015073748530360298150953128601 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 21527254504818426380574952471345203761613941469070233789818391443029971614768574467334443218514359420347243338573431357441369330862703328554185096123956240829 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 385018301348398830125550264175317063254130397189594574345158582319347494465362242744254502209657545494028419705116310713944699162651931473617404540146071722585315510267 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 1902771770484347463402743519893433394411571963456154479330517546551384039542018731208617421035764135024284168276020571163017337469878860601146500745649805101447096284833 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 1212761234522041126531745203536122663928469363380088604313883232803746366552731454034455063959279829327198896917209612291566605214993436201389234535314093135935403012494911 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 2799783391122132787082946763872260162107044670741555122657843914419732594774800554612503916582485397314238650314698321544173601231128490213943317202896193352853208805511125436353291340027391530182876602667 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 245246644900278211976517663573088018467026787678310244943889504410533014936221741146403662779278833110654055113042734962031749745938180902970433170041023594273124115505302231473153222857458087407153162500973099 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 2260138526203405716494143035510745633517260538965706499743411425121307687836371751164939745241013444733303641212264284698544061132578531718035133372224054452028205423405469440698717912441961520625906325145800040713 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 179694915979410673298702330660362483563514510373037202653245240170361171119710166221011252736418931113977338714013233511465141377773413812519144225056903222130528193302062840147371117579056182267745235543679209129977521 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 1009881397871923546933010611534461123571814132155608645495493440143858232431375740556370402235858906304873141980090010008111336053835041167112396118250106353169014571128551360213573353208550158569042719223350287228269853 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 12462036678171870515000551032324084471173501544573588475326688317668412814283145464697762260399315231405715425417452583262259446362824325345710031562785201925419947416056777614920570591242395118211593576032654949462973345754329793 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
-------------------------------------------------------------
-Testing target: 214032465024074496126442307283933356300861471514475501779775492088141802344714013664334551909580467961099285187247091458768739626192155736304745477052080511905649310668769152728410468403447083003172812792466755399209968218044032703 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 42509788151523465407452697662505294703186899165086434856734890373. Calculated 1179324587 trials to cover search space.
+Running 1179324587 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 1807082088687404805951656164405905566278102516769401349170127021450056662540244048387341127590812303371781887966563182013214880557
+Trials: 1179324587, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    349
+  INSERTION: 302
+  SELECTION: 349
+  Total:     1000
 ------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 2129851612255251877839365639214652723984139136960336057355447064564243377593728330134127334647340454654823903125213600940518391272031556055106887 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 1459401114243528278470280658152202206024200112144945994216887242615171566. Calculated 100 trials to cover search space.
+Running 100 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 2129851612255251877839365639214652723984139136960336057355447064564243377593728330134127334647340454654823903125213600940518391272031556055106887
+Trials: 100, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    324
+  INSERTION: 325
+  SELECTION: 351
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 1039563283456186155659353105759895316450127201151134548243968837487170454316560883137974374201721010574743100112040569990942833536352143571386501 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 1019589762333942893959656712075608694222251611795953207115601816657875708. Calculated 100 trials to cover search space.
+Running 100 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 1039563283456186155659353105759895316450127201151134548243968837487170454316560883137974374201721010574743100112040569990942833536352143571386501
+Trials: 100, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    320
+  INSERTION: 342
+  SELECTION: 338
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 1094334512980010833627961715495464911184903201311929901239537400643278838413997208859847883120311440510519909305411059406107462015073748530360298150953128601 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 1046104446496625323290770625288883664057359339832698867868412216204662809867443. Calculated 100 trials to cover search space.
+Running 100 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 1094334512980010833627961715495464911184903201311929901239537400643278838413997208859847883120311440510519909305411059406107462015073748530360298150953128601
+Trials: 100, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    325
+  INSERTION: 337
+  SELECTION: 338
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 21527254504818426380574952471345203761613941469070233789818391443029971614768574467334443218514359420347243338573431357441369330862703328554185096123956240829 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 4639747245790273259265701729732345445553285564152004724578954756101445689847187. Calculated 1914085880 trials to cover search space.
+Running 1914085880 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 21527254504818426380574952471345203761613941469070233789818391443029971614768574467334443218514359420347243338573431357441369330862703328554185096123956240829
+Trials: 1914085880, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    320
+  INSERTION: 320
+  SELECTION: 360
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 385018301348398830125550264175317063254130397189594574345158582319347494465362242744254502209657545494028419705116310713944699162651931473617404540146071722585315510267 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 620498429771098478100222072638670938437393468567340995303038083394018919153572266479. Calculated 656054699 trials to cover search space.
+Running 656054699 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 385018301348398830125550264175317063254130397189594574345158582319347494465362242744254502209657545494028419705116310713944699162651931473617404540146071722585315510267
+Trials: 656054699, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    340
+  INSERTION: 337
+  SELECTION: 323
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 1902771770484347463402743519893433394411571963456154479330517546551384039542018731208617421035764135024284168276020571163017337469878860601146500745649805101447096284833 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 1379409935618975981936657667207168489653072958941527890709322371836840813000887706496. Calculated 100 trials to cover search space.
+Running 100 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 1902771770484347463402743519893433394411571963456154479330517546551384039542018731208617421035764135024284168276020571163017337469878860601146500745649805101447096284833
+Trials: 100, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    326
+  INSERTION: 343
+  SELECTION: 331
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 1212761234522041126531745203536122663928469363380088604313883232803746366552731454034455063959279829327198896917209612291566605214993436201389234535314093135935403012494911 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 34824721600065105567588241176365810156088702939684998732776131857010386851144670722221. Calculated 1853103619 trials to cover search space.
+Running 1853103619 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 1212761234522041126531745203536122663928469363380088604313883232803746366552731454034455063959279829327198896917209612291566605214993436201389234535314093135935403012494911
+Trials: 1853103619, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    334
+  INSERTION: 340
+  SELECTION: 326
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 2799783391122132787082946763872260162107044670741555122657843914419732594774800554612503916582485397314238650314698321544173601231128490213943317202896193352853208805511125436353291340027391530182876602667 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 1673255327534364310378018461155774618262611424203805249182697229560354157122871190675900699705086257912. Calculated 636752178 trials to cover search space.
+Running 636752178 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 2799783391122132787082946763872260162107044670741555122657843914419732594774800554612503916582485397314238650314698321544173601231128490213943317202896193352853208805511125436353291340027391530182876602667
+Trials: 636752178, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    340
+  INSERTION: 328
+  SELECTION: 332
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 245246644900278211976517663573088018467026787678310244943889504410533014936221741146403662779278833110654055113042734962031749745938180902970433170041023594273124115505302231473153222857458087407153162500973099 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 495223833130311098092422261598862833486956604603789981304521817526694765153376851697074318761575663537206. Calculated 1157711794 trials to cover search space.
+Running 1157711794 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 245246644900278211976517663573088018467026787678310244943889504410533014936221741146403662779278833110654055113042734962031749745938180902970433170041023594273124115505302231473153222857458087407153162500973099
+Trials: 1157711794, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    333
+  INSERTION: 343
+  SELECTION: 324
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 2260138526203405716494143035510745633517260538965706499743411425121307687836371751164939745241013444733303641212264284698544061132578531718035133372224054452028205423405469440698717912441961520625906325145800040713 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 47540914233988030412538394394055539782776733752145358058176969156709751730115778484308527326381134573045222. Calculated 151514614 trials to cover search space.
+Running 151514614 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 2260138526203405716494143035510745633517260538965706499743411425121307687836371751164939745241013444733303641212264284698544061132578531718035133372224054452028205423405469440698717912441961520625906325145800040713
+Trials: 151514614, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    355
+  INSERTION: 331
+  SELECTION: 314
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 179694915979410673298702330660362483563514510373037202653245240170361171119710166221011252736418931113977338714013233511465141377773413812519144225056903222130528193302062840147371117579056182267745235543679209129977521 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 13405033233058792879596096188867661067586338919236584018191244418072695846152703697595139733255532976268355675. Calculated 1993335876 trials to cover search space.
+Running 1993335876 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 179694915979410673298702330660362483563514510373037202653245240170361171119710166221011252736418931113977338714013233511465141377773413812519144225056903222130528193302062840147371117579056182267745235543679209129977521
+Trials: 1993335876, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    330
+  INSERTION: 326
+  SELECTION: 344
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 1009881397871923546933010611534461123571814132155608645495493440143858232431375740556370402235858906304873141980090010008111336053835041167112396118250106353169014571128551360213573353208550158569042719223350287228269853 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 31778631151639045180055279732088124872158781003582166222972459690679159003062383897842912511099576773807722834. Calculated 100 trials to cover search space.
+Running 100 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 1009881397871923546933010611534461123571814132155608645495493440143858232431375740556370402235858906304873141980090010008111336053835041167112396118250106353169014571128551360213573353208550158569042719223350287228269853
+Trials: 100, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    327
+  INSERTION: 346
+  SELECTION: 327
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 12462036678171870515000551032324084471173501544573588475326688317668412814283145464697762260399315231405715425417452583262259446362824325345710031562785201925419947416056777614920570591242395118211593576032654949462973345754329793 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 3530160998902439649890743270659911865630610007318202453179407683338375345389526486665700884833283326097785378325854. Calculated 100 trials to cover search space.
+Running 100 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 12462036678171870515000551032324084471173501544573588475326688317668412814283145464697762260399315231405715425417452583262259446362824325345710031562785201925419947416056777614920570591242395118211593576032654949462973345754329793
+Trials: 100, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    332
+  INSERTION: 327
+  SELECTION: 341
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------
 Testing target: 214032465024074496126442307283933356300861471514475501779775492088141802344714013664334551909580467961099285187247091458768739626192155736304745477052080511905649310668769152728410468403447083003172812792466755399209968218044032703 (Auto-scaling trials...)
-Error: Could not find or load main class com.emergent.doom.examples.FactorizationExperiment
-Caused by: java.lang.ClassNotFoundException: com.emergent.doom.examples.FactorizationExperiment
+Emergent Doom Engine - Factorization Experiment
+============================================================
+Auto-scaling: Target sqrt is 14629848427925509308305895950215523662798914508196358438912567086440008609237528994076033781891014122293540017662317. Calculated 100 trials to cover search space.
+Running 100 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
+
+Trial Setup:
+Target: 214032465024074496126442307283933356300861471514475501779775492088141802344714013664334551909580467961099285187247091458768739626192155736304745477052080511905649310668769152728410468403447083003172812792466755399209968218044032703
+Trials: 100, Array Size: 1000
+Algorithm Type Distribution (Sample Trial):
+  BUBBLE:    352
+  INSERTION: 332
+  SELECTION: 316
+  Total:     1000
+------------------------------------------------------------
 ------------------------------------------------------------

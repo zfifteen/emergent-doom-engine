@@ -1,0 +1,3 @@
+target,trials,arraySize,threads,meanSteps,sortednessMean,monotonicityMean,convergenceRate
+100697,10,500,4,794.90,,,100.0
+100697,10,1000,4,2612.40,,,100.0
