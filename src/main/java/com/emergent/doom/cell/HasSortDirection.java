@@ -54,9 +54,15 @@ package com.emergent.doom.cell;
  * }</pre>
  * </p>
  * 
+ * @deprecated This interface is deprecated as part of the lightweight cell refactoring.
+ * Sort direction is now managed by the execution engine via CellMetadata. New cell
+ * implementations should not implement this interface. This interface is kept for
+ * backward compatibility with existing cell implementations during the transition period.
+ * 
  * @see SortDirection
  * @see GenericCell
  */
+@Deprecated
 public interface HasSortDirection {
     
     /**

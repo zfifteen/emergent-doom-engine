@@ -311,6 +311,96 @@ class ParallelExecutionEngineTest {
     }
 
     // ========================================================================
+    // Lightweight Cell Refactoring Tests
+    // ========================================================================
+
+    /**
+     * Tests demonstrating the lightweight cell refactoring where the engine
+     * manages metadata independently from cell objects.
+     */
+    @Nested
+    @DisplayName("Lightweight cell refactoring")
+    class LightweightCellTests {
+
+        @Test
+        @DisplayName("Engine manages metadata independently via provider function")
+        void engineManagesMetadataIndependently() {
+            // Create minimal cells with only values (no metadata)
+            int[] values = {5, 3, 1, 4, 2};
+            cells = new TestBubbleCell[values.length];
+            for (int i = 0; i < values.length; i++) {
+                cells[i] = new TestBubbleCell(values[i]);
+            }
+
+            // Engine provides metadata via IntFunction
+            java.util.function.IntFunction<CellMetadata> metadataProvider = index -> {
+                // All cells get BUBBLE algotype and ASCENDING direction
+                return new CellMetadata(
+                    Algotype.BUBBLE,
+                    com.emergent.doom.cell.SortDirection.ASCENDING,
+                    new java.util.concurrent.atomic.AtomicInteger(0),
+                    0,
+                    cells.length - 1
+                );
+            };
+
+            FrozenCellStatus frozenStatus = new ThreadSafeFrozenCellStatus();
+            swapEngine = new SwapEngine<>(frozenStatus);
+            probe = new ThreadSafeProbe<>();
+            ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(10);
+
+            // Use new constructor that accepts metadata provider
+            engine = new ParallelExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, metadataProvider);
+
+            engine.start();
+            engine.runUntilConvergence(1000);
+
+            int[] result = Arrays.stream(cells).mapToInt(TestBubbleCell::getValue).toArray();
+            assertArrayEquals(new int[]{1, 2, 3, 4, 5}, result,
+                    "Array should be sorted using engine-managed metadata");
+            assertTrue(engine.hasConverged(), "Engine should report convergence");
+        }
+
+        @Test
+        @DisplayName("Chimeric population with engine-controlled metadata")
+        void chimericPopulationViaMetadata() {
+            // Create minimal cells
+            int[] values = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+            cells = new TestBubbleCell[values.length];
+            for (int i = 0; i < values.length; i++) {
+                cells[i] = new TestBubbleCell(values[i]);
+            }
+
+            // Engine assigns alternating algotypes (50% BUBBLE, 50% INSERTION)
+            java.util.function.IntFunction<CellMetadata> metadataProvider = index -> {
+                Algotype algotype = (index % 2 == 0) ? Algotype.BUBBLE : Algotype.INSERTION;
+                return new CellMetadata(
+                    algotype,
+                    com.emergent.doom.cell.SortDirection.ASCENDING,
+                    new java.util.concurrent.atomic.AtomicInteger(0),
+                    0,
+                    cells.length - 1
+                );
+            };
+
+            FrozenCellStatus frozenStatus = new ThreadSafeFrozenCellStatus();
+            swapEngine = new SwapEngine<>(frozenStatus);
+            probe = new ThreadSafeProbe<>();
+            ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(10);
+
+            engine = new ParallelExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, metadataProvider);
+
+            engine.start();
+            engine.runUntilConvergence(2000);
+
+            int[] result = Arrays.stream(cells).mapToInt(TestBubbleCell::getValue).toArray();
+            assertArrayEquals(new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, result,
+                    "Chimeric population should sort correctly with engine-managed metadata");
+            assertTrue(engine.hasConverged(), "Engine should converge");
+        }
+    }
+
+    // ========================================================================
     // Test Cell Implementation
     // ========================================================================
 

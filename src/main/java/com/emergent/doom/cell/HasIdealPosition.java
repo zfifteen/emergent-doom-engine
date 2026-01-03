@@ -16,9 +16,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Expected outputs: Ideal position values and updates.
  * Data flow: ExecutionEngine queries/updates via these methods during swap decisions.</p>
  *
+ * @deprecated This interface is deprecated as part of the lightweight cell refactoring.
+ * Ideal position tracking is now managed by the execution engine via CellMetadata. New cell
+ * implementations should not implement this interface. This interface is kept for
+ * backward compatibility with existing cell implementations during the transition period.
+ *
  * @see SelectionCell
  * @see GenericCell
  */
+@Deprecated
 public interface HasIdealPosition {
     /**
      * Get the current ideal position.
