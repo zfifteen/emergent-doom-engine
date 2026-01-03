@@ -24,7 +24,7 @@ This report documents the verification of the Linear Scaling Validation framewor
 | **B Coefficient** | ✅ Passed | `ScalingReport` correctly calculates the B metric and identifies linear vs. super-linear scaling. |
 | **CSV Export** | ✅ Passed | Output format matches the `analyze_scaling.py` schema with 11 columns. |
 
-### Bulk Validation Findings (scripts/semi_primes.txt)
+### Bulk Validation Findings (scripts/rsa_targets.txt)
 The framework was run against the provided dataset with customized array sizes (10k, 50k) to avoid timeouts.
 
 *   **Linear Scaling (< 10^11)**: Targets up to magnitude 10^10 consistently showed B ≈ 0 (linear scaling).
@@ -54,7 +54,7 @@ The test framework is robust and correctly verifies the core logic of the valida
 ## Recommendations
 *   **Performance**: The `IntegrationTests` section is currently minimal. For full system validation, running the `scripts/run_linear_scaling_validation.sh` script is recommended to perform a complete end-to-end test of Stage 1.
 *   **Argument Parsing**: As noted in the code review, command-line argument parsing is in a transitional state (using defaults). Future work should complete the CLI argument implementation.
-*   **Data Cleanup**: `scripts/semi_primes.txt` should be cleaned to contain only true semiprimes with factors proportional to $\sqrt{N}$ to avoid trivial solutions.
+*   **Data Cleanup**: `scripts/rsa_targets.txt` should be cleaned to contain only true semiprimes with factors proportional to $\sqrt{N}$ to avoid trivial solutions.
 
 ## Conclusion
 The merged PR code is functional and verified. The `LinearScalingValidatorTest` suite provides good coverage of the logic. The detected "failure boundary" validates that the system can indeed detect when linear scaling breaks down, fulfilling the experimental objective.
