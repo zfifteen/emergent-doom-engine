@@ -1,18 +1,18 @@
-RSA Subset Factorization Experiment Started: Sat Jan  3 01:29:24 EST 2026
+RSA Subset Factorization Experiment Started: Sat Jan  3 01:52:52 EST 2026
 Testing RSA-100: 1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139 (Running 100 trials)
 Emergent Doom Engine - Factorization Experiment
 ============================================================
 Running 100 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
-Target=1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139, factorFound=false, MeanSteps=1317.44, ConvRate=100.0%
+Target=1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139, factorFound=false, MeanSteps=1361.96, ConvRate=100.0%
 Experiment Results Summary
 ============================================================
 Trials:           100
 Convergence Rate: 100.0%
-Mean Steps:       1317.44
+Mean Steps:       1361.96
 
 Metrics:
-  Sortedness: 0.34 ± 0.35
-  Monotonicity: 194.65 ± 11.11
+  Sortedness: 0.35 ± 0.32
+  Monotonicity: 196.43 ± 10.95
 
 
 Experiment complete!
@@ -21,17 +21,17 @@ Testing RSA-150: 103956328345618615565935310575989531645012720115113454824396883
 Emergent Doom Engine - Factorization Experiment
 ============================================================
 Running 100 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
-Target=1039563283456186155659353105759895316450127201151134548243968837487170454316560883137974374201721010574743100112040569990942833536352143571386501, factorFound=true, MeanSteps=1389.87, ConvRate=100.0%
+Target=1039563283456186155659353105759895316450127201151134548243968837487170454316560883137974374201721010574743100112040569990942833536352143571386501, factorFound=true, MeanSteps=1354.45, ConvRate=100.0%
 Factor discovered at position: 3
 Experiment Results Summary
 ============================================================
 Trials:           100
 Convergence Rate: 100.0%
-Mean Steps:       1389.87
+Mean Steps:       1354.45
 
 Metrics:
-  Sortedness: 0.32 ± 0.27
-  Monotonicity: 194.66 ± 10.94
+  Sortedness: 0.33 ± 0.26
+  Monotonicity: 195.75 ± 10.52
 
 
 Experiment complete!
@@ -40,17 +40,17 @@ Testing RSA-200: 279978339112213278708294676387226016210704467074155512265784391
 Emergent Doom Engine - Factorization Experiment
 ============================================================
 Running 100 trials per target using the new batch parallelism model (maxSteps=50000, stableSteps=3)...
-Target=2799783391122132787082946763872260162107044670741555122657843914419732594774800554612503916582485397314238650314698321544173601231128490213943317202896193352853208805511125436353291340027391530182876602667, factorFound=true, MeanSteps=1403.19, ConvRate=100.0%
+Target=2799783391122132787082946763872260162107044670741555122657843914419732594774800554612503916582485397314238650314698321544173601231128490213943317202896193352853208805511125436353291340027391530182876602667, factorFound=true, MeanSteps=1364.55, ConvRate=100.0%
 Factor discovered at position: 11
 Experiment Results Summary
 ============================================================
 Trials:           100
 Convergence Rate: 100.0%
-Mean Steps:       1403.19
+Mean Steps:       1364.55
 
 Metrics:
-  Sortedness: 0.26 ± 0.23
-  Monotonicity: 193.35 ± 10.32
+  Sortedness: 0.30 ± 0.25
+  Monotonicity: 195.19 ± 9.74
 
 
 Experiment complete!
