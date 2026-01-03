@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
@@ -51,15 +52,27 @@ public class ExperimentRunner<T extends Cell<T>> {
     
     private static final Logger logger = Logger.getLogger(ExperimentRunner.class.getName());
     
-    private final Supplier<T[]> cellArrayFactory;
+    private final IntFunction<T[]> cellArrayFactory;
     private final Supplier<Topology<T>> topologyFactory;
     private final Map<String, Metric<T>> metrics;
     
     /**
-     * IMPLEMENTED: Create an experiment runner
+     * IMPLEMENTED: Create an experiment runner with a standard cell factory.
      */
     public ExperimentRunner(
             Supplier<T[]> cellArrayFactory,
+            Supplier<Topology<T>> topologyFactory) {
+        this(index -> cellArrayFactory.get(), topologyFactory);
+    }
+
+    /**
+     * IMPLEMENTED: Create an experiment runner with a trial-indexed cell factory.
+     * 
+     * @param cellArrayFactory function that produces a cell array given a trial index
+     * @param topologyFactory supplier for the neighborhood topology
+     */
+    public ExperimentRunner(
+            IntFunction<T[]> cellArrayFactory,
             Supplier<Topology<T>> topologyFactory) {
         this.cellArrayFactory = cellArrayFactory;
         this.topologyFactory = topologyFactory;
@@ -81,7 +94,7 @@ public class ExperimentRunner<T extends Cell<T>> {
      */
     public TrialResult<T> runTrial(ExperimentConfig config, int trialNumber) {
         // Create fresh instances for this trial
-        T[] cells = cellArrayFactory.get();
+        T[] cells = cellArrayFactory.apply(trialNumber);
         Topology<T> topology = topologyFactory.get();
 
         // Use thread-safe components for parallel/lock-based execution
@@ -176,7 +189,7 @@ public class ExperimentRunner<T extends Cell<T>> {
         ExperimentResults<T> results = new ExperimentResults<>(config);
         
         for (int i = 0; i < numTrials; i++) {
-            logger.info(String.format("Running trial %d/%d", i + 1, numTrials));
+            logger.fine(String.format("Running trial %d/%d", i + 1, numTrials));
             TrialResult<T> trialResult = runTrial(config, i);
             results.addTrialResult(trialResult);
         }
@@ -286,7 +299,7 @@ public class ExperimentRunner<T extends Cell<T>> {
                     
                     // Progress logging every 10 trials
                     if ((i + 1) % 10 == 0) {
-                        logger.info(String.format("Completed %d/%d trials", i + 1, numRepetitions));
+                        logger.log(java.util.logging.Level.FINE, String.format("Completed %d/%d trials", i + 1, numRepetitions));
                     }
                 } catch (InterruptedException e) {
                     failureOccurred = true;
