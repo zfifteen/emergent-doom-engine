@@ -57,7 +57,7 @@ class ParallelExecutionEngineTest {
         FrozenCellStatus frozenStatus = new ThreadSafeFrozenCellStatus();
         swapEngine = new SwapEngine<>(frozenStatus);
         probe = new ThreadSafeProbe<>();
-        ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(3);
+        ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(10);
 
         engine = new ParallelExecutionEngine<>(cells, swapEngine, probe, convergenceDetector);
     }

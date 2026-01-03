@@ -71,7 +71,7 @@ class SynchronousExecutionEngineTest {
         swapEngine = new SwapEngine<>(frozenStatus);
         probe = new Probe<>();
         probe.setRecordingEnabled(true);
-        ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(3);
+        ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(10);
 
         engine = new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector);
     }
@@ -89,7 +89,7 @@ class SynchronousExecutionEngineTest {
         swapEngine = new SwapEngine<>(frozenStatus);
         probe = new Probe<>();
         probe.setRecordingEnabled(true);
-        ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(3);
+        ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(10);
 
         engine = new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, new Random(seed));
     }

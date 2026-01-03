@@ -35,13 +35,13 @@ public class ThreadSafeProbe<T extends HasValue & HasGroup & HasStatus & HasAlgo
         updateCounters(stepNumber, localSwapCount);
 
         if (super.isRecordingEnabled()) {
-            List<Integer> values = new ArrayList<>();
+            List<Comparable<?>> values = new ArrayList<>();
             List<Object[]> types = new ArrayList<>();
             for (T cell : cells) {
-                values.add(cell.getValue());
+                values.add(cell.getComparableValue());
                 int groupId = (cell.getGroup() != null) ? cell.getGroup().getGroupId() : -1;
                 int algotypeLabel = cell.getAlgotype().ordinal();
-                int value = cell.getValue();
+                Comparable<?> value = cell.getComparableValue();
                 int isFrozen = (cell.getStatus() == CellStatus.FREEZE) ? 1 : 0;
                 types.add(new Object[]{groupId, algotypeLabel, value, isFrozen});
             }

@@ -678,13 +678,11 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      *
      * <p>PROCESS:
      * <ol>
-     *   <li>Set sentinel value (MIN for ascending, MAX for descending)</li>
-     *   <li>For k = 0 to i-1:
+     *   <li>For k = 0 to i-2:
      *     <ul>
-     *       <li>If cell k is frozen: reset sentinel (skip frozen cells)</li>
-     *       <li>Otherwise: get value and check order</li>
+     *       <li>If cell k or k+1 is frozen: skip pair (matches Python)</li>
+     *       <li>Compare cells[k] and cells[k+1]</li>
      *       <li>If out of order: return false</li>
-     *       <li>Update sentinel to current value</li>
      *     </ul>
      *   </li>
      *   <li>If all in order: return true</li>
@@ -693,41 +691,27 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      *
      * <p>OUTPUTS: true if sorted, false otherwise</p>
      *
-     * <p>DEPENDENCIES:
-     * <ul>
-     *   <li>swapEngine.isFrozen() for frozen cell check</li>
-     *   <li>getCellValue() for value extraction</li>
-     * </ul>
-     * </p>
-     *
      * @param i position to check (checks 0 to i-1)
      * @param reverseDirection true for descending sort
      * @return true if sorted in specified direction
      */
     private boolean isLeftSorted(int i, boolean reverseDirection) {
-        // Start with sentinel: MIN for ascending (any value >= MIN), MAX for descending (any value <= MAX)
-        int prevValue = reverseDirection ? Integer.MAX_VALUE : Integer.MIN_VALUE;
-        
-        for (int k = 0; k < i; k++) {
+        for (int k = 0; k < i - 1; k++) {
             // Skip frozen cells - reset comparison chain (matches Python)
-            if (swapEngine.isFrozen(k)) {
-                // Reset sentinel after frozen cell
-                prevValue = reverseDirection ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+            if (swapEngine.isFrozen(k) || swapEngine.isFrozen(k + 1)) {
                 continue;
             }
 
-            // Get cell value for comparison
-            int currentValue = getCellValue(cells[k]);
+            int cmp = cells[k].compareTo(cells[k + 1]);
             
             // Check if out of order based on direction
             boolean outOfOrder = reverseDirection 
-                ? (currentValue > prevValue)  // Descending: next should be <= prev
-                : (currentValue < prevValue); // Ascending: next should be >= prev
+                ? (cmp < 0)  // Descending: should be cells[k] >= cells[k+1] (cmp >= 0)
+                : (cmp > 0); // Ascending: should be cells[k] <= cells[k+1] (cmp <= 0)
             
             if (outOfOrder) {
                 return false; // Out of order
             }
-            prevValue = currentValue;
         }
         return true;
     }
@@ -753,6 +737,9 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @return comparable value
      */
     private int getCellValue(T cell) {
+        if (cell instanceof com.emergent.doom.cell.HasValue) {
+            return ((com.emergent.doom.cell.HasValue) cell).getValue();
+        }
         if (cell instanceof com.emergent.doom.cell.SelectionCell) {
             return ((com.emergent.doom.cell.SelectionCell<?>) cell).getValue();
         } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
@@ -766,7 +753,7 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         // (hashCode is unreliable for sorting - doesn't maintain ordering relationships)
         throw new UnsupportedOperationException(
             "Cell type " + cell.getClass().getName() + " does not support getValue(). " +
-            "All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell."
+            "All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell, or implement HasValue."
         );
     }
 
@@ -791,6 +778,9 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @return ideal position
      */
     private int getIdealPosition(T cell) {
+        if (cell instanceof com.emergent.doom.cell.HasIdealPosition) {
+            return ((com.emergent.doom.cell.HasIdealPosition) cell).getIdealPos();
+        }
         if (cell instanceof SelectionCell) {
             return ((SelectionCell<?>) cell).getIdealPos();
         } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
@@ -819,6 +809,10 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * @param cell the cell
      */
     private void incrementIdealPosition(T cell) {
+        if (cell instanceof com.emergent.doom.cell.HasIdealPosition) {
+            ((com.emergent.doom.cell.HasIdealPosition) cell).incrementIdealPos();
+            return;
+        }
         if (cell instanceof SelectionCell) {
             ((SelectionCell<?>) cell).incrementIdealPos();
         } else if (cell instanceof com.emergent.doom.cell.GenericCell) {

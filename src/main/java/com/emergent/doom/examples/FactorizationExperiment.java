@@ -1,16 +1,19 @@
 package com.emergent.doom.examples;
 
+import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.RemainderCell;
 import com.emergent.doom.experiment.ExperimentConfig;
 import com.emergent.doom.experiment.ExperimentResults;
 import com.emergent.doom.experiment.ExperimentRunner;
 import com.emergent.doom.metrics.MonotonicityError;
 import com.emergent.doom.metrics.SortednessValue;
+import com.emergent.doom.topology.ChimericTopology;
 
 import com.emergent.doom.util.SemiPrimeGenerator;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import com.emergent.doom.execution.ExecutionMode;
 
 /**
@@ -79,12 +82,12 @@ public class FactorizationExperiment {
             BigInteger sqrt = target.sqrt();
             long trialsNeeded = sqrt.divide(BigInteger.valueOf(params.arraySize)).longValue() + 1;
             
-            int trialCap = 10_000;
-            numTrials = (int) Math.min(trialCap, trialsNeeded);
+            // Removed the trial cap to ensure full coverage of the search space up to sqrt(N)
+            numTrials = (int) trialsNeeded;
             numTrials = Math.max(numTrials, 100);
             
-            System.out.printf("Auto-scaling: Target sqrt is %s. Calculated %d trials to cover search space (capped at %d).%n", 
-                sqrt, numTrials, trialCap);
+            System.out.printf("Auto-scaling: Target sqrt is %s. Calculated %d trials to cover search space.%n", 
+                sqrt, numTrials);
         }
         return numTrials;
     }
@@ -113,7 +116,7 @@ public class FactorizationExperiment {
         
         ExperimentRunner<RemainderCell> runner = new ExperimentRunner<>(
                 factory,
-                () -> new LinearNeighborhood<>(1)
+                () -> new ChimericTopology<>()
         );
         runner.addMetric("Monotonicity", new MonotonicityError<>());
         runner.addMetric("Sortedness", new SortednessValue<>());
@@ -123,7 +126,7 @@ public class FactorizationExperiment {
     }
 
     private static void reportResults(BigInteger target, ExperimentResults<RemainderCell> results) {
-        boolean found = resultsContainFactor(results);
+        boolean found = resultsContainFactor(results, target);
         
         System.out.printf("Target=%s, factorFound=%s, MeanSteps=%.2f, ConvRate=%.1f%%%n", 
             target, found, results.getMeanSteps(), results.getConvergenceRate() * 100);
@@ -131,7 +134,8 @@ public class FactorizationExperiment {
         if (found) {
             results.getTrials().stream()
                 .flatMap(trial -> java.util.Arrays.stream(trial.getFinalCells()))
-                .filter(cell -> cell.getPosition() > 1 && cell.isFactor())
+                .filter(cell -> cell.getPosition() > 1 && cell.isFactor() && 
+                        target.remainder(BigInteger.valueOf(cell.getPosition())).equals(BigInteger.ZERO))
                 .findFirst()
                 .ifPresent(cell -> System.out.printf("Factor discovered at position: %d%n", cell.getPosition()));
         }
@@ -155,17 +159,23 @@ public class FactorizationExperiment {
 
     private static RemainderCell[] createCellArray(BigInteger target, int size, int startOffset) {
         RemainderCell[] cells = new RemainderCell[size];
+        Algotype[] types = Algotype.values();
+        Random rng = new Random();
+        
         for (int i = 0; i < size; i++) {
             // Position is now relative to the segment offset
             int position = startOffset + i + 1;
-            cells[i] = new RemainderCell(target, position);
+            Algotype randomType = types[rng.nextInt(types.length)];
+            cells[i] = new RemainderCell(target, position, randomType);
         }
         return cells;
     }
 
-    private static boolean resultsContainFactor(ExperimentResults<RemainderCell> results) {
+    private static boolean resultsContainFactor(ExperimentResults<RemainderCell> results, BigInteger target) {
         return results != null && results.getTrials().stream()
                 .flatMap(trial -> java.util.Arrays.stream(trial.getFinalCells()))
-                .anyMatch(cell -> cell.getPosition() > 1 && cell.getRemainder().equals(BigInteger.ZERO));
+                .anyMatch(cell -> cell.getPosition() > 1 && 
+                          cell.getRemainder().equals(BigInteger.ZERO) &&
+                          target.remainder(BigInteger.valueOf(cell.getPosition())).equals(BigInteger.ZERO));
     }
 }

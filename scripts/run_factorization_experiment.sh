@@ -1,11 +1,11 @@
 #!/bin/bash
 # shellcheck disable=SC2164
 
-# This shell script tests 'FactorizationExperiment' with each semi prime contained in 'scripts/semi_primes.txt'
+# This shell script tests 'FactorizationExperiment' with each target contained in 'scripts/rsa_targets.txt'
 # It logs results to docs/findings/batch_factorization_results.log
 
 PROJECT_ROOT="/Users/velocityworks/IdeaProjects/emergent-doom-engine"
-JAR_PATH="$PROJECT_ROOT/target/emergent-doom-engine-0.2.0-alpha.jar"
+JAR_PATH="$PROJECT_ROOT/target/emergent-doom-engine-0.2.1-alpha.jar"
 LOG_FILE="$PROJECT_ROOT/scripts/run_factorization_experiment.log"
 
 cd "$PROJECT_ROOT"
@@ -29,11 +29,11 @@ run_exp() {
     echo "------------------------------------------------------------" >> "$LOG_FILE"
 }
 
-# New Loop: Process semi_primes.txt automatically
+# New Loop: Process rsa_targets.txt automatically
 while read -r line; do
     # Skip comments and empty lines
     [[ "$line" =~ ^#.*$ ]] || [[ -z "$line" ]] && continue
     run_exp "$line"
-done < "scripts/semi_primes.txt"
+done < "scripts/rsa_targets.txt"
 
 echo "Batch experiment complete. Results logged to $LOG_FILE"
