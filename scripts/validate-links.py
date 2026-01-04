@@ -26,7 +26,6 @@ class LinkValidator:
         self.repo_root = repo_root
         self.verbose = verbose
         self.errors: List[str] = []
-        self.warnings: List[str] = []
         
         # Pattern to match markdown links: [text](url)
         self.link_pattern = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
@@ -101,6 +100,20 @@ class LinkValidator:
         source_dir = source_file.parent
         target_path = (source_dir / url).resolve()
         
+        # Security: Ensure resolved path is within repository
+        try:
+            target_path.relative_to(self.repo_root)
+        except ValueError:
+            error_msg = (
+                f"Security: Link points outside repository in {source_file.relative_to(self.repo_root)}:\n"
+                f"  Link text: [{link_text}]\n"
+                f"  Target: {url}\n"
+                f"  Resolved path: {target_path}\n"
+                f"  (Path is outside repository root)"
+            )
+            self.errors.append(error_msg)
+            return False
+        
         # Check if target exists
         if not target_path.exists():
             error_msg = (
@@ -153,13 +166,7 @@ class LinkValidator:
                 print(error)
                 print()
         
-        if self.warnings:
-            print(f"\n⚠️  Found {len(self.warnings)} warning(s):\n")
-            for warning in self.warnings:
-                print(warning)
-                print()
-        
-        if not self.errors and not self.warnings:
+        if not self.errors:
             print("\n✅ All links are valid!")
         
         print("=" * 70)

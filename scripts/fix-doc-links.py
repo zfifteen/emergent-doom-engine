@@ -28,9 +28,12 @@ def fix_readme_links(readme_path: Path) -> int:
     
     # Pattern 1: Fix ../../../../../main/ to ../../../../../../main/ (add one more ../)
     # Note: This fixes the path to go up 7 levels instead of 6
+    # Skip links that are already correct to avoid breaking them
     content_before = content
-    content = content.replace('(../../../../../../src/main/', '(../../../../../../main/')
-    content = content.replace('(../../../../../main/', '(../../../../../../main/')
+    
+    # Only fix if it's the incorrect pattern (6 levels) but NOT if it's already the correct pattern (7 levels)
+    if '(../../../../../main/' in content and '(../../../../../../main/' not in content:
+        content = content.replace('(../../../../../main/', '(../../../../../../main/')
     
     # Pattern 2: Fix root README links (only in the root test README)
     # Fix 8 ../ to 7 ../ for README.md and REQUIREMENTS.md
