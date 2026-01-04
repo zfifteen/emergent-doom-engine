@@ -3,7 +3,6 @@ package com.emergent.doom.cell;
 import com.emergent.doom.cell.HasValue;
 import com.emergent.doom.cell.HasGroup;
 import com.emergent.doom.cell.HasStatus;
-import com.emergent.doom.cell.HasAlgotype;
 import com.emergent.doom.group.CellGroup;
 import com.emergent.doom.group.CellStatus;
 /**
@@ -17,9 +16,14 @@ import com.emergent.doom.group.CellStatus;
  * entities that can only be ordered. This minimal contract enables emergence
  * through simple swap mechanics without any knowledge of the underlying domain.</p>
  * 
+ * <p><strong>REFACTORING NOTE (Issue #TBD):</strong> Cell interface has been stripped
+ * of HasAlgotype dependency. Execution metadata (algotype, sort direction, ideal position)
+ * is now managed by engines via CellMetadata and metadata provider pattern, achieving
+ * true domain-agnostic cells as pure Comparable data carriers.</p>
+ * 
  * @param <T> the type of cell (must be comparable to itself)
  */
-public interface Cell<T extends Cell<T>> extends Comparable<T>, HasValue, HasGroup, HasStatus, HasAlgotype {
+public interface Cell<T extends Cell<T>> extends Comparable<T>, HasValue, HasGroup, HasStatus {
     // PURPOSE: Compare this cell to another cell
     // INPUTS: other (T) - the cell to compare against
     // PROCESS:
@@ -31,13 +35,7 @@ public interface Cell<T extends Cell<T>> extends Comparable<T>, HasValue, HasGro
     //   6. Must be transitive: if a < b and b < c, then a < c
     // OUTPUTS: int - negative, zero, or positive integer
     // DEPENDENCIES: None
-    // NOTE: This is the ONLY method required by the engine.
+    // NOTE: Comparison is the ONLY method required by the engine.
     //       All domain logic is encapsulated in the implementation.
-
-    /**
-     * Get the algotype (sorting algorithm policy) of this cell.
-     * This determines neighbor visibility and swap rules per Levin paper.
-     * @return the baked-in algotype (BUBBLE, INSERTION, or SELECTION)
-     */
-    Algotype getAlgotype();
+    //       Execution metadata is managed separately via CellMetadata.
 }
