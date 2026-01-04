@@ -207,9 +207,10 @@ class ChimericPopulationTest {
             ChimericPopulation<GenericCell> population =
                 new ChimericPopulation<>(factory, provider);
 
-            assertThrows(IllegalArgumentException.class, () ->
+            // Methods are deprecated and throw UnsupportedOperationException
+            assertThrows(UnsupportedOperationException.class, () ->
                 population.countAlgotype(null, Algotype.BUBBLE));
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(UnsupportedOperationException.class, () ->
                 population.countAlgotype(null, "BUBBLE"));
         }
 
@@ -227,9 +228,10 @@ class ChimericPopulationTest {
             ChimericPopulation<GenericCell> population =
                 new ChimericPopulation<>(factory, provider);
 
-            assertThrows(IllegalArgumentException.class, () ->
+            // Methods are deprecated and throw UnsupportedOperationException
+            assertThrows(UnsupportedOperationException.class, () ->
                 population.countAlgotype(cells, (Algotype) null));
-            assertThrows(IllegalArgumentException.class, () ->
+            assertThrows(UnsupportedOperationException.class, () ->
                 population.countAlgotype(cells, (String) null));
         }
     }

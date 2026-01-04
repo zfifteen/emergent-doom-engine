@@ -286,7 +286,11 @@ class LockBasedExecutionEngineTest {
             // Custom detector that tracks if it was called
             TrackingConvergenceDetector<TestBubbleCell> trackingDetector = new TrackingConvergenceDetector<>();
 
-            engine = new LockBasedExecutionEngine<>(cells, swapEngine, probe, trackingDetector);
+            // Create metadata provider for BUBBLE cells
+            java.util.function.IntFunction<CellMetadata> metadataProvider = i -> 
+                new CellMetadata(com.emergent.doom.cell.Algotype.BUBBLE, com.emergent.doom.cell.SortDirection.ASCENDING);
+
+            engine = new LockBasedExecutionEngine<>(cells, swapEngine, probe, trackingDetector, metadataProvider);
             engine.runUntilConvergence(1000);
             engine.shutdown();
 
@@ -309,7 +313,11 @@ class LockBasedExecutionEngineTest {
             ImmediateConvergenceDetector<TestBubbleCell> immediateDetector =
                 new ImmediateConvergenceDetector<>();
 
-            engine = new LockBasedExecutionEngine<>(cells, swapEngine, probe, immediateDetector);
+            // Create metadata provider for BUBBLE cells
+            java.util.function.IntFunction<CellMetadata> metadataProvider = i -> 
+                new CellMetadata(com.emergent.doom.cell.Algotype.BUBBLE, com.emergent.doom.cell.SortDirection.ASCENDING);
+
+            engine = new LockBasedExecutionEngine<>(cells, swapEngine, probe, immediateDetector, metadataProvider);
             engine.runUntilConvergence(10000);
             engine.shutdown();
 
@@ -330,9 +338,13 @@ class LockBasedExecutionEngineTest {
             probe = new ThreadSafeProbe<>();
             ConvergenceDetector<TestBubbleCell> detector = new NoSwapConvergence<>(3);
 
+            // Create metadata provider for BUBBLE cells
+            java.util.function.IntFunction<CellMetadata> metadataProvider = i -> 
+                new CellMetadata(com.emergent.doom.cell.Algotype.BUBBLE, com.emergent.doom.cell.SortDirection.ASCENDING);
+
             // Custom polling: 5ms interval, 10 stable polls required
             engine = new LockBasedExecutionEngine<>(
-                cells, swapEngine, probe, detector, 5, 10);
+                cells, swapEngine, probe, detector, metadataProvider, 5, 10);
             engine.runUntilConvergence(100);
             engine.shutdown();
 

@@ -83,7 +83,6 @@ public class RemainderCell implements Cell<RemainderCell>, GroupAwareCell<Remain
         return remainder.intValue();
     }
 
-    @Override
     public Algotype getAlgotype() {
         return algotype;
     }
@@ -121,22 +120,18 @@ public class RemainderCell implements Cell<RemainderCell>, GroupAwareCell<Remain
     @Override
     public void setPreviousStatus(CellStatus previousStatus) { this.previousStatus = previousStatus; }
 
-    @Override
     public int getIdealPos() {
         return idealPos.get();
     }
 
-    @Override
     public int incrementIdealPos() {
         return idealPos.incrementAndGet();
     }
 
-    @Override
     public void setIdealPos(int newIdealPos) {
         this.idealPos.set(newIdealPos);
     }
 
-    @Override
     public boolean compareAndSetIdealPos(int expected, int newValue) {
         return idealPos.compareAndSet(expected, newValue);
     }
