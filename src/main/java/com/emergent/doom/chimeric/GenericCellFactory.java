@@ -145,7 +145,9 @@ public class GenericCellFactory implements CellFactory<GenericCell> {
         Algotype algotype = Algotype.valueOf(algotypeStr.toUpperCase());
         int value = getValue(position);
         SortDirection direction = getDirection(position);
-        return new GenericCell(value, algotype, direction);
+        // Note: GenericCell is now lightweight and doesn't carry metadata
+        // TODO: GenericCellFactory needs refactoring to provide metadata separately
+        return new GenericCell(value);
     }
 
     private int getValue(int position) {

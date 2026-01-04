@@ -456,21 +456,23 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
     // ========== Helper Methods ==========
 
-    private int getIdealPosition(T cell) {
-        if (cell instanceof SelectionCell) {
-            return ((SelectionCell<?>) cell).getIdealPos();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            return ((com.emergent.doom.cell.GenericCell) cell).getIdealPos();
+    private int getIdealPosition(int cellIndex) {
+        if (metadata != null) {
+            return metadata[cellIndex].getIdealPos();
         }
-        return 0;
+        throw new UnsupportedOperationException(
+            "Cells no longer carry ideal position metadata. " +
+            "Use constructor with metadata provider.");
     }
 
-    private void incrementIdealPosition(T cell) {
-        if (cell instanceof SelectionCell) {
-            ((SelectionCell<?>) cell).incrementIdealPos();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            ((com.emergent.doom.cell.GenericCell) cell).incrementIdealPos();
+    private void incrementIdealPosition(int cellIndex) {
+        if (metadata != null) {
+            metadata[cellIndex].incrementIdealPos();
+            return;
         }
+        throw new UnsupportedOperationException(
+            "Cells no longer carry ideal position metadata. " +
+            "Use constructor with metadata provider.");
     }
 
     private List<Integer> getNeighborsForAlgotype(int i, Algotype algotype) {
@@ -480,7 +482,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
             case INSERTION:
                 return insertionTopology.getNeighbors(i, cells.length, algotype);
             case SELECTION:
-                int idealPos = getIdealPosition(cells[i]);
+                int idealPos = getIdealPosition(i);
                 int target = Math.min(idealPos, cells.length - 1);
                 return Arrays.asList(target);
             default:
@@ -511,9 +513,9 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
                 if (cells[i].compareTo(cells[j]) < 0) {
                     return true;
                 } else {
-                    int currentIdealPos = getIdealPosition(cells[i]);
+                    int currentIdealPos = getIdealPosition(i);
                     if (currentIdealPos < cells.length - 1) {
-                        incrementIdealPosition(cells[i]);
+                        incrementIdealPosition(i);
                     }
                     return false;
                 }
