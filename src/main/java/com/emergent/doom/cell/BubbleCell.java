@@ -3,7 +3,6 @@ package com.emergent.doom.cell;
 import com.emergent.doom.cell.HasValue;
 import com.emergent.doom.cell.HasGroup;
 import com.emergent.doom.cell.HasStatus;
-import com.emergent.doom.cell.HasAlgotype;
 import com.emergent.doom.group.CellGroup;
 import com.emergent.doom.group.CellStatus;
 
@@ -32,7 +31,7 @@ import com.emergent.doom.group.GroupAwareCell;
  * return self.value > target if check_right else self.value < target
  * </pre>
  */
-public abstract class BubbleCell<T extends BubbleCell<T>> implements Cell<T>, GroupAwareCell<T>, HasSortDirection, HasValue, HasGroup, HasStatus, HasAlgotype {
+public abstract class BubbleCell<T extends BubbleCell<T>> implements Cell<T>, GroupAwareCell<T>, HasValue, HasGroup, HasStatus {
     protected final int value;
     protected CellGroup<T> group = null;
     protected CellStatus status = CellStatus.ACTIVE;
@@ -68,12 +67,10 @@ public abstract class BubbleCell<T extends BubbleCell<T>> implements Cell<T>, Gr
         return value;
     }
 
-    @Override
     public Algotype getAlgotype() {
         return Algotype.BUBBLE;  // Baked-in concrete impl
     }
 
-    @Override
     public SortDirection getSortDirection() {
         return sortDirection;
     }

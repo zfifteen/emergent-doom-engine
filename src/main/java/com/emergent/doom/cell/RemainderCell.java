@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * this cell stores N mod p. The sorting behavior naturally drives
  * better factors to the front when cells are swapped by the engine.</p>
  */
-public class RemainderCell implements Cell<RemainderCell>, GroupAwareCell<RemainderCell>, HasValue, HasGroup, HasStatus, HasAlgotype, HasIdealPosition {
+public class RemainderCell implements Cell<RemainderCell>, GroupAwareCell<RemainderCell>, HasValue, HasGroup, HasStatus {
     
     private final BigInteger remainder;
     private final int position;

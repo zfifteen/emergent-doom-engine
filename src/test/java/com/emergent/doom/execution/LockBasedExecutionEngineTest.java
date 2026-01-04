@@ -60,7 +60,11 @@ class LockBasedExecutionEngineTest {
         probe = new ThreadSafeProbe<>();
         ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(3);
 
-        engine = new LockBasedExecutionEngine<>(cells, swapEngine, probe, convergenceDetector);
+        // Create metadata provider - all cells use BUBBLE algotype, ASCENDING direction
+        java.util.function.IntFunction<CellMetadata> metadataProvider = i -> 
+            new CellMetadata(Algotype.BUBBLE, com.emergent.doom.cell.SortDirection.ASCENDING);
+
+        engine = new LockBasedExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, metadataProvider);
     }
 
     // ========================================================================
