@@ -34,18 +34,45 @@ class SpearmanDistanceTest {
     @DisplayName("Edge Cases")
     class EdgeCases {
 
+        /**
+         * PURPOSE: As a developer, I want null array to return 0.0
+         * so that I can handle null input safely without NullPointerException.
+         *
+         * INPUTS: null array
+         * EXPECTED OUTPUT: compute() returns 0.0
+         * TEST DATA: null
+         * REPRODUCTION: metric.compute((IntCell[]) null)
+         */
         @Test
         @DisplayName("null array returns 0.0")
         void nullArray() {
             assertEquals(0.0, metric.compute((IntCell[]) null));
         }
 
+        /**
+         * PURPOSE: As a developer, I want empty array to return 0.0
+         * so that I can handle edge cases with zero-length arrays.
+         *
+         * INPUTS: Empty array
+         * EXPECTED OUTPUT: compute() returns 0.0
+         * TEST DATA: new IntCell[0]
+         * REPRODUCTION: metric.compute(new IntCell[0])
+         */
         @Test
         @DisplayName("empty array returns 0.0")
         void emptyArray() {
             assertEquals(0.0, metric.compute(new IntCell[0]));
         }
 
+        /**
+         * PURPOSE: As a developer, I want single element array to return 0.0
+         * so that I can verify trivially sorted arrays have zero distance.
+         *
+         * INPUTS: Array with single element [42]
+         * EXPECTED OUTPUT: compute() returns 0.0
+         * TEST DATA: [42]
+         * REPRODUCTION: metric.compute(createCells(42))
+         */
         @Test
         @DisplayName("single element returns 0.0")
         void singleElement() {
@@ -57,6 +84,15 @@ class SpearmanDistanceTest {
     @DisplayName("Reference Implementation Tests (cell_research/analysis/utils.py)")
     class ReferenceTests {
 
+        /**
+         * PURPOSE: As a developer, I want sorted array to return 0.0
+         * so that I can verify perfectly sorted data has zero Spearman distance.
+         *
+         * INPUTS: Sorted array [0,1,2,3,4]
+         * EXPECTED OUTPUT: compute() returns 0.0 (all elements at expected positions)
+         * TEST DATA: [0,1,2,3,4]
+         * REPRODUCTION: metric.compute(createCells(0, 1, 2, 3, 4))
+         */
         @Test
         @DisplayName("sorted array [0,1,2,3,4] returns 0.0")
         void sortedArray() {
@@ -66,6 +102,15 @@ class SpearmanDistanceTest {
             assertEquals(0.0, metric.compute(cells), 0.01);
         }
 
+        /**
+         * PURPOSE: As a developer, I want reverse sorted array to have maximum distance
+         * so that I can verify the metric correctly identifies worst-case unsorted data.
+         *
+         * INPUTS: Reverse sorted array [4,3,2,1,0]
+         * EXPECTED OUTPUT: compute() returns 12.0 (sum of position displacements)
+         * TEST DATA: [4,3,2,1,0]
+         * REPRODUCTION: Spearman distance = Σ|actual_pos - expected_pos| = 4+2+0+2+4 = 12
+         */
         @Test
         @DisplayName("reverse sorted array [4,3,2,1,0] has maximum distance")
         void reverseSortedArray() {
@@ -86,6 +131,15 @@ class SpearmanDistanceTest {
             assertEquals(12.0, metric.compute(cells), 0.01);
         }
 
+        /**
+         * PURPOSE: As a developer, I want three-element unsorted array to calculate distance correctly
+         * so that I can verify the metric works on small arrays.
+         *
+         * INPUTS: Unsorted array [3,1,2]
+         * EXPECTED OUTPUT: compute() returns 4.0 (sum of position displacements)
+         * TEST DATA: [3,1,2]
+         * REPRODUCTION: Spearman distance = |0-2| + |1-0| + |2-1| = 2+1+1 = 4
+         */
         @Test
         @DisplayName("[3,1,2] has distance 4")
         void threeElementsUnsorted() {
@@ -99,6 +153,15 @@ class SpearmanDistanceTest {
             assertEquals(4.0, metric.compute(cells), 0.01);
         }
 
+        /**
+         * PURPOSE: As a developer, I want sorted three-element array to return 0.0
+         * so that I can verify small sorted arrays have zero distance.
+         *
+         * INPUTS: Sorted array [1,2,3]
+         * EXPECTED OUTPUT: compute() returns 0.0
+         * TEST DATA: [1,2,3]
+         * REPRODUCTION: metric.compute(createCells(1, 2, 3))
+         */
         @Test
         @DisplayName("[1,2,3] has distance 0")
         void threeElementsSorted() {
@@ -106,6 +169,15 @@ class SpearmanDistanceTest {
             assertEquals(0.0, metric.compute(cells), 0.01);
         }
 
+        /**
+         * PURPOSE: As a developer, I want two swapped elements to calculate distance correctly
+         * so that I can verify the metric handles minimal unsorted arrays.
+         *
+         * INPUTS: Swapped two-element array [2,1]
+         * EXPECTED OUTPUT: compute() returns 2.0
+         * TEST DATA: [2,1]
+         * REPRODUCTION: Spearman distance = |0-1| + |1-0| = 1+1 = 2
+         */
         @Test
         @DisplayName("[2,1] has distance 2")
         void twoElementsSwapped() {
@@ -123,6 +195,15 @@ class SpearmanDistanceTest {
     @DisplayName("Equal Elements")
     class EqualElements {
 
+        /**
+         * PURPOSE: As a developer, I want equal elements to return 0.0
+         * so that I can verify arrays with all equal values have zero distance.
+         *
+         * INPUTS: Array with all equal elements [5,5,5]
+         * EXPECTED OUTPUT: compute() returns 0.0
+         * TEST DATA: [5,5,5]
+         * REPRODUCTION: metric.compute(createCells(5, 5, 5))
+         */
         @Test
         @DisplayName("equal elements [5,5,5] returns 0.0")
         void equalElements() {
@@ -131,6 +212,15 @@ class SpearmanDistanceTest {
             assertEquals(0.0, metric.compute(cells), 0.01);
         }
 
+        /**
+         * PURPOSE: As a developer, I want duplicates in order to return 0.0
+         * so that I can verify sorted arrays with duplicates have zero distance.
+         *
+         * INPUTS: Sorted array with duplicates [1,1,2]
+         * EXPECTED OUTPUT: compute() returns 0.0
+         * TEST DATA: [1,1,2]
+         * REPRODUCTION: metric.compute(createCells(1, 1, 2))
+         */
         @Test
         @DisplayName("[1,1,2] returns 0.0")
         void duplicatesInOrder() {
@@ -144,12 +234,30 @@ class SpearmanDistanceTest {
     @DisplayName("Metric Properties")
     class MetricProperties {
 
+        /**
+         * PURPOSE: As a developer, I want to verify the metric name is 'Spearman Distance'
+         * so that I can identify the metric correctly in reports.
+         *
+         * INPUTS: SpearmanDistance metric instance
+         * EXPECTED OUTPUT: getName() returns "Spearman Distance"
+         * TEST DATA: metric instance
+         * REPRODUCTION: metric.getName()
+         */
         @Test
         @DisplayName("metric name is 'Spearman Distance'")
         void metricName() {
             assertEquals("Spearman Distance", metric.getName());
         }
 
+        /**
+         * PURPOSE: As a developer, I want to verify lower values are better for Spearman Distance
+         * so that I can correctly interpret metric results in experiments.
+         *
+         * INPUTS: SpearmanDistance metric instance
+         * EXPECTED OUTPUT: isLowerBetter() returns true (lower distance is better)
+         * TEST DATA: metric instance
+         * REPRODUCTION: metric.isLowerBetter()
+         */
         @Test
         @DisplayName("lower is better")
         void lowerIsBetter() {

@@ -29,6 +29,15 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class VisualizationIntegrationTest {
     
+    /**
+     * PURPOSE: As a developer, I want to test the complete visualization workflow
+     * so that I can verify all components work together from probe to export.
+     *
+     * INPUTS: Probe with 3 snapshots showing sorting progress
+     * EXPECTED OUTPUT: Successfully generate trajectories, plot data, and export to CSV/JSON
+     * TEST DATA: cells1=[5,3,1,4,2], cells2=[3,1,5,2,4], cells3=[1,2,3,4,5]
+     * REPRODUCTION: Create probe, analyze, plot, and export data
+     */
     @Test
     void testCompleteVisualizationWorkflow(@TempDir Path tempDir) throws IOException {
         // Step 1: Create a probe with some test data
@@ -119,6 +128,15 @@ class VisualizationIntegrationTest {
         assertTrue(jsonContent.contains("\"Sortedness\""), "JSON should contain Sortedness data");
     }
     
+    /**
+     * PURPOSE: As a developer, I want to create multi-series plot data
+     * so that I can compare multiple algorithms on the same chart.
+     *
+     * INPUTS: Two trajectories (Bubble Sort and Selection Sort) with 5 points each
+     * EXPECTED OUTPUT: MultiSeriesPlotData with 2 series, each containing 5 data points
+     * TEST DATA: bubbleSort=[20,40,60,80,100], selectionSort=[15,35,55,75,100]
+     * REPRODUCTION: Generate multi-series plot data and verify series are accessible by name
+     */
     @Test
     void testMultiSeriesPlotData() {
         // Create multiple trajectories for comparison
@@ -143,6 +161,15 @@ class VisualizationIntegrationTest {
         assertEquals(5, bubbleData.getYValues().length);
     }
     
+    /**
+     * PURPOSE: As a developer, I want to export probe snapshots to CSV
+     * so that I can analyze raw snapshot data externally.
+     *
+     * INPUTS: Probe with 1 snapshot of cells [3,1,2]
+     * EXPECTED OUTPUT: CSV file created with header and data rows
+     * TEST DATA: cells=[3,1,2]
+     * REPRODUCTION: Export snapshots to CSV and verify file exists with content
+     */
     @Test
     void testSnapshotExport(@TempDir Path tempDir) throws IOException {
         // Create a probe with snapshots
