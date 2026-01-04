@@ -311,6 +311,68 @@ class ParallelExecutionEngineTest {
     }
 
     // ========================================================================
+    // Metadata Provider Tests (Phase 2)
+    // ========================================================================
+
+    @Nested
+    @DisplayName("Metadata Provider Pattern")
+    class MetadataProviderTests {
+
+        /**
+         * As a User I want to create engines with metadata providers
+         * so that I can use lightweight cells without embedded metadata.
+         * 
+         * PURPOSE: Test new constructor accepting IntFunction<CellMetadata>
+         * INPUTS: Cell array, metadata provider function
+         * EXPECTED: Engine initializes with metadata array
+         */
+        @Test
+        @DisplayName("Engine accepts metadata provider constructor")
+        void engineAcceptsMetadataProvider() {
+            // TODO PHASE TWO: Implement test
+            // 1. Create minimal cells with only values (no algotype)
+            // 2. Create metadata provider: index -> new CellMetadata(BUBBLE, ASCENDING)
+            // 3. Construct engine with metadata provider
+            // 4. Verify engine initializes without error
+        }
+
+        /**
+         * As a User I want metadata to swap with cells during execution
+         * so that metadata stays attached to the logical agent identity.
+         * 
+         * PURPOSE: Verify metadata swaps alongside cells
+         * INPUTS: Cells with identifiable metadata
+         * EXPECTED: After swaps, metadata[i] corresponds to logical cell at position i
+         */
+        @Test
+        @DisplayName("Metadata swaps with cells during execution")
+        void metadataSwapsWithCells() {
+            // TODO PHASE THREE: Implement test
+            // 1. Create cells and metadata with identifiable markers
+            // 2. Run engine for a few steps
+            // 3. Verify metadata stayed attached to correct logical cell after swaps
+        }
+
+        /**
+         * As a User I want engines to use metadata providers instead of cell interfaces
+         * so that I can migrate to lightweight cells without breaking functionality.
+         * 
+         * PURPOSE: Test engine sorts using metadata provider instead of cell.getAlgotype()
+         * INPUTS: Cells without getAlgotype(), metadata provider with BUBBLE algotype
+         * EXPECTED: Engine sorts array correctly using metadata
+         */
+        @Test
+        @DisplayName("Engine sorts using metadata provider instead of cell interfaces")
+        void engineUsesMetadataProvider() {
+            // TODO PHASE THREE: Implement test
+            // 1. Create minimal cells (just Comparable, no HasAlgotype)
+            // 2. Provide metadata externally via IntFunction<CellMetadata>
+            // 3. Run engine to convergence
+            // 4. Verify array is sorted (proving metadata was used, not cell.getAlgotype())
+        }
+    }
+
+    // ========================================================================
     // Test Cell Implementation
     // ========================================================================
 

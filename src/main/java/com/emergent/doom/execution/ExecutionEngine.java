@@ -156,7 +156,7 @@ public class ExecutionEngine<T extends Cell<T>> {
 
         // For each cell in iteration order, try swapping with neighbors based on algotype
         for (int i : iterationOrder) {
-            Algotype algotype = cells[i].getAlgotype();
+            Algotype algotype = getCellAlgotype(i);
             SortDirection direction = getCellDirection(cells[i]);
 
             if (algotype == Algotype.BUBBLE) {
@@ -249,6 +249,34 @@ public class ExecutionEngine<T extends Cell<T>> {
             prevValue = currentValue;
         }
         return true;
+    }
+
+    // ========== Helper Methods for Cell Access ==========
+
+    /**
+     * Get algotype from cell (legacy mode - requires HasAlgotype).
+     *
+     * <p>PURPOSE: Support legacy cell introspection during Phase 2 migration.
+     * ExecutionEngine doesn't support metadata providers yet, so this is a
+     * temporary fix to enable compilation.</p>
+     *
+     * <p>INPUTS: cellIndex - position of cell to query</p>
+     *
+     * <p>PROCESS: Cast cell to HasAlgotype and call getAlgotype()</p>
+     *
+     * <p>OUTPUTS: Algotype for this cell position</p>
+     *
+     * <p>DEPENDENCIES: Cell must implement HasAlgotype</p>
+     */
+    private Algotype getCellAlgotype(int cellIndex) {
+        // Legacy mode: query cell directly (requires HasAlgotype)
+        if (cells[cellIndex] instanceof com.emergent.doom.cell.HasAlgotype) {
+            return ((com.emergent.doom.cell.HasAlgotype) cells[cellIndex]).getAlgotype();
+        }
+
+        throw new IllegalStateException(
+            "Cell at index " + cellIndex + " does not implement HasAlgotype. " +
+            "ExecutionEngine does not yet support metadata providers.");
     }
 
     /**
@@ -602,10 +630,11 @@ public class ExecutionEngine<T extends Cell<T>> {
         int leftBoundary = 0;
         int rightBoundary = cells.length - 1;
 
-        for (T cell : cells) {
-            if (cell.getAlgotype() == Algotype.SELECTION) {
-                if (cell instanceof HasIdealPosition) {
-                    ((HasIdealPosition) cell).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
+        for (int i = 0; i < cells.length; i++) {
+            Algotype algotype = getCellAlgotype(i);
+            if (algotype == Algotype.SELECTION) {
+                if (cells[i] instanceof HasIdealPosition) {
+                    ((HasIdealPosition) cells[i]).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
                 }
             }
         }

@@ -111,6 +111,25 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
     private final SelectionTopology<T> selectionTopology;
 
     /**
+     * PURPOSE: Metadata array storing execution behavior for each cell position.
+     * 
+     * <p>ARCHITECTURE: Parallel array indexed by cell position. When metadata provider
+     * is used, this array stores algotype, sort direction, and ideal position state
+     * that would otherwise be queried from cell objects. This enables lightweight cells
+     * that are pure Comparable data carriers.</p>
+     * 
+     * <p>INPUTS: Initialized from IntFunction&lt;CellMetadata&gt; provider in constructor</p>
+     * 
+     * <p>PROCESS: May be swapped alongside cells during step() to keep metadata
+     * attached to logical agent identity (implementation depends on swap strategy)</p>
+     * 
+     * <p>OUTPUTS: metadata[i] provides CellMetadata for cell at position i</p>
+     * 
+     * <p>DEPENDENCIES: May be null for legacy mode (backward compatibility)</p>
+     */
+    private CellMetadata[] metadata;
+
+    /**
      * PURPOSE: Swap engine for executing approved swaps and tracking frozen cells.
      * 
      * <p>ARCHITECTURE: After conflict resolution, this engine executes the
@@ -272,6 +291,9 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         this.insertionTopology = new InsertionTopology<>();
         this.selectionTopology = new SelectionTopology<>();
         
+        // No metadata provider - legacy mode (backward compatibility)
+        this.metadata = null;
+        
         // Initialize state
         this.currentStep = 0;
         this.converged = false;
@@ -283,6 +305,120 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         
         // Record initial state
         probe.recordSnapshot(0, cells, 0);
+    }
+
+    /**
+     * Initialize with metadata provider for lightweight cells.
+     *
+     * <p>PURPOSE: Create engine with externally-managed metadata array, enabling
+     * cells to be pure Comparable wrappers without execution metadata.</p>
+     *
+     * <p>INPUTS:
+     * <ul>
+     *   <li>cells - Array of cells to sort (may be pure Comparable wrappers)</li>
+     *   <li>swapEngine - Swap execution and frozen cell tracking</li>
+     *   <li>probe - Metrics and trajectory recording</li>
+     *   <li>convergenceDetector - Determines when execution completes</li>
+     *   <li>metadataProvider - Function mapping index → CellMetadata</li>
+     *   <li>random - Random instance for BUBBLE direction choice</li>
+     * </ul>
+     * </p>
+     *
+     * <p>PROCESS:
+     * <ol>
+     *   <li>Store all component references</li>
+     *   <li>Initialize topology helpers</li>
+     *   <li>Create metadata array from provider: metadata[i] = metadataProvider.apply(i)</li>
+     *   <li>Initialize state variables</li>
+     *   <li>Wire probe to swap engine</li>
+     *   <li>Record initial snapshot</li>
+     * </ol>
+     * </p>
+     *
+     * <p>OUTPUTS: Fully initialized engine using metadata provider pattern</p>
+     *
+     * <p>DEPENDENCIES: metadataProvider must return non-null CellMetadata for all valid indices</p>
+     *
+     * @param cells the cell array to sort
+     * @param swapEngine the swap engine
+     * @param probe the probe for recording
+     * @param convergenceDetector the convergence detector
+     * @param metadataProvider function providing metadata for each cell index
+     * @param random the Random instance for direction selection
+     */
+    public SynchronousExecutionEngine(
+            T[] cells,
+            SwapEngine<T> swapEngine,
+            Probe<T> probe,
+            ConvergenceDetector<T> convergenceDetector,
+            java.util.function.IntFunction<CellMetadata> metadataProvider,
+            Random random) {
+
+        // PURPOSE: Initialize engine with metadata provider pattern
+        // PROCESS:
+        //   1. Store component references
+        //   2. Initialize topology helpers
+        //   3. Create metadata array from provider
+        //   4. Initialize state variables
+        //   5. Wire probe and record initial state
+
+        this.cells = cells;
+        this.swapEngine = swapEngine;
+        this.probe = probe;
+        this.convergenceDetector = convergenceDetector;
+        this.random = random;
+        
+        // Initialize topology helpers
+        this.bubbleTopology = new BubbleTopology<>();
+        this.insertionTopology = new InsertionTopology<>();
+        this.selectionTopology = new SelectionTopology<>();
+        
+        // PHASE TWO: Initialize metadata from provider
+        // PURPOSE: Populate metadata array by calling provider function for each index
+        // PROCESS:
+        //   1. Create metadata array with same length as cells array
+        //   2. For each index i, call metadataProvider.apply(i) to get metadata
+        //   3. Store result in metadata[i]
+        // OUTPUTS: Fully populated metadata array
+        // DATA FLOW: metadataProvider(index) -> CellMetadata -> metadata[index]
+        this.metadata = new CellMetadata[cells.length];
+        for (int i = 0; i < cells.length; i++) {
+            this.metadata[i] = metadataProvider.apply(i);
+        }
+        
+        // Initialize state
+        this.currentStep = 0;
+        this.converged = false;
+        this.running = false;
+        this.reverseDirection = false;  // Default to ascending sort
+        
+        // Wire up probe to swap engine for frozen swap attempt tracking
+        swapEngine.setProbe(probe);
+        
+        // Record initial state
+        probe.recordSnapshot(0, cells, 0);
+    }
+
+    /**
+     * Convenience constructor with metadata provider and default Random.
+     *
+     * <p>PURPOSE: Create engine with metadata provider using unseeded Random
+     * (non-deterministic execution). For deterministic execution, use the constructor
+     * that accepts both metadataProvider and seeded Random instance.</p>
+     *
+     * @param cells the cell array to sort
+     * @param swapEngine the swap engine
+     * @param probe the probe for recording
+     * @param convergenceDetector the convergence detector
+     * @param metadataProvider function providing metadata for each cell index
+     */
+    public SynchronousExecutionEngine(
+            T[] cells,
+            SwapEngine<T> swapEngine,
+            Probe<T> probe,
+            ConvergenceDetector<T> convergenceDetector,
+            java.util.function.IntFunction<CellMetadata> metadataProvider) {
+        this(cells, swapEngine, probe, convergenceDetector, metadataProvider, new Random());
     }
 
     /**
@@ -345,7 +481,7 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         
         // For each cell in iteration order, try swapping with neighbors based on algotype
         for (int i : iterationOrder) {
-            Algotype algotype = cells[i].getAlgotype();
+            Algotype algotype = getCellAlgotype(i);
             SortDirection direction = getCellDirection(cells[i]);
 
             if (algotype == Algotype.BUBBLE) {
@@ -382,7 +518,24 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
 
         // Execute approved swaps
         for (SwapProposal proposal : resolvedSwaps) {
-            swapEngine.attemptSwap(cells, proposal.getInitiatorIndex(), proposal.getTargetIndex());
+            int i = proposal.getInitiatorIndex();
+            int j = proposal.getTargetIndex();
+
+            swapEngine.attemptSwap(cells, i, j);
+
+            // Swap metadata alongside cells (Phase 2 implementation)
+            // PURPOSE: Keep metadata attached to logical agent identity as cells move
+            // PROCESS:
+            //   1. Check if metadata provider mode (metadata != null)
+            //   2. If yes, swap metadata[i] and metadata[j] using temp variable
+            //   3. This ensures metadata[i] always describes behavior of cell at position i
+            // RATIONALE: When cells swap positions, their metadata must follow them
+            //   to maintain the invariant that metadata[i] describes cells[i]
+            if (metadata != null) {
+                CellMetadata tempMetadata = metadata[i];
+                metadata[i] = metadata[j];
+                metadata[j] = tempMetadata;
+            }
         }
 
         // Get swap count for this step
@@ -502,6 +655,48 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         }
         
         return resolved;
+    }
+
+    // ========== Helper Methods for Metadata/Cell Access ==========
+
+    /**
+     * Get algotype from metadata provider (if available) or cell (legacy fallback).
+     *
+     * <p>PURPOSE: Support both metadata provider pattern and legacy cell introspection
+     * for backward compatibility during migration.</p>
+     *
+     * <p>INPUTS: cellIndex - position of cell to query</p>
+     *
+     * <p>PROCESS:
+     * <ol>
+     *   <li>If metadata != null: return metadata[cellIndex].getAlgotype()</li>
+     *   <li>Otherwise: cast cell to HasAlgotype and call getAlgotype()</li>
+     * </ol>
+     * </p>
+     *
+     * <p>OUTPUTS: Algotype for this cell position</p>
+     *
+     * <p>DEPENDENCIES: In legacy mode, cell must implement HasAlgotype</p>
+     */
+    private Algotype getCellAlgotype(int cellIndex) {
+        // PHASE TWO: Use metadata if available (metadata provider mode)
+        // PURPOSE: Query algotype from metadata array instead of cell
+        // PROCESS: Check if metadata array exists, if yes return metadata[cellIndex].getAlgotype()
+        // BENEFITS: Enables lightweight cells without embedded algotype field
+        if (metadata != null) {
+            return metadata[cellIndex].getAlgotype();
+        }
+
+        // Legacy mode: query cell directly (requires HasAlgotype)
+        // PURPOSE: Maintain backward compatibility with existing cell implementations
+        // PROCESS: Cast cell to HasAlgotype interface and call getAlgotype()
+        // FALLBACK: Used when no metadata provider was given to constructor
+        if (cells[cellIndex] instanceof com.emergent.doom.cell.HasAlgotype) {
+            return ((com.emergent.doom.cell.HasAlgotype) cells[cellIndex]).getAlgotype();
+        }
+
+        throw new IllegalStateException(
+            "Cell at index " + cellIndex + " does not implement HasAlgotype and no metadata provider was given");
     }
 
     /**
@@ -900,10 +1095,11 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         int leftBoundary = 0;
         int rightBoundary = cells.length - 1;
 
-        for (T cell : cells) {
-            if (cell.getAlgotype() == Algotype.SELECTION) {
-                if (cell instanceof HasIdealPosition) {
-                    ((HasIdealPosition) cell).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
+        for (int i = 0; i < cells.length; i++) {
+            Algotype algotype = getCellAlgotype(i);
+            if (algotype == Algotype.SELECTION) {
+                if (cells[i] instanceof HasIdealPosition) {
+                    ((HasIdealPosition) cells[i]).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
                 }
             }
         }

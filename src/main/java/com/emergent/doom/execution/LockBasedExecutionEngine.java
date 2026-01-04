@@ -55,6 +55,25 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
     private final BubbleTopology<T> bubbleTopology;
     private final InsertionTopology<T> insertionTopology;
 
+    /**
+     * PURPOSE: Metadata array storing execution behavior for each cell position.
+     * 
+     * <p>ARCHITECTURE: Parallel array indexed by cell position. When metadata provider
+     * is used, this array stores algotype, sort direction, and ideal position state
+     * that would otherwise be queried from cell objects. This enables lightweight cells
+     * that are pure Comparable data carriers.</p>
+     * 
+     * <p>INPUTS: Initialized from IntFunction&lt;CellMetadata&gt; provider in constructor</p>
+     * 
+     * <p>PROCESS: Swapped alongside cells in evaluateAndSwap() to keep metadata
+     * attached to logical agent identity. Requires synchronization with global lock.</p>
+     * 
+     * <p>OUTPUTS: metadata[i] provides CellMetadata for cell at position i</p>
+     * 
+     * <p>DEPENDENCIES: May be null for legacy mode (backward compatibility)</p>
+     */
+    private CellMetadata[] metadata;
+
     private volatile boolean running = false;
     private volatile boolean converged = false;
     private volatile boolean reverseDirection = false;  // Track sort direction for isLeftSorted
@@ -123,6 +142,9 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         this.bubbleTopology = new BubbleTopology<>();
         this.insertionTopology = new InsertionTopology<>();
 
+        // No metadata provider - legacy mode (backward compatibility)
+        this.metadata = null;
+
         // Wire up probe to swap engine for frozen swap attempt tracking
         swapEngine.setProbe(probe);
 
@@ -138,6 +160,129 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
         // Record initial state
         probe.recordSnapshot(0, cells, 0);
+    }
+
+    /**
+     * Create a new lock-based execution engine with metadata provider.
+     *
+     * <p>PURPOSE: Initialize engine with externally-managed metadata array, enabling
+     * lightweight cells that don't carry execution metadata internally.</p>
+     *
+     * <p>INPUTS:
+     * <ul>
+     *   <li>cells - Array of cells to sort (may be pure Comparable wrappers)</li>
+     *   <li>swapEngine - Swap execution and frozen cell tracking</li>
+     *   <li>probe - Metrics and trajectory recording</li>
+     *   <li>convergenceDetector - Determines when execution completes</li>
+     *   <li>metadataProvider - Function mapping index → CellMetadata</li>
+     *   <li>pollIntervalMs - Polling interval for convergence checks</li>
+     *   <li>requiredStablePolls - Number of stable polls required for convergence</li>
+     * </ul>
+     * </p>
+     *
+     * <p>PROCESS:
+     * <ol>
+     *   <li>Store all component references</li>
+     *   <li>Initialize topology helpers</li>
+     *   <li>Create metadata array from provider: metadata[i] = metadataProvider.apply(i)</li>
+     *   <li>Create global lock for thread synchronization</li>
+     *   <li>Create cell worker threads</li>
+     *   <li>Wire probe to swap engine</li>
+     *   <li>Record initial snapshot</li>
+     * </ol>
+     * </p>
+     *
+     * <p>OUTPUTS: Fully initialized engine using metadata provider pattern</p>
+     *
+     * <p>DEPENDENCIES: metadataProvider must return non-null CellMetadata for all valid indices</p>
+     *
+     * @param cells the cell array to sort
+     * @param swapEngine the swap engine for executing swaps
+     * @param probe the probe for recording snapshots
+     * @param convergenceDetector the convergence detector
+     * @param metadataProvider function providing metadata for each cell index
+     * @param pollIntervalMs polling interval in milliseconds for convergence checks
+     * @param requiredStablePolls number of consecutive stable polls required for fallback convergence
+     */
+    @SuppressWarnings("unchecked")
+    public LockBasedExecutionEngine(
+            T[] cells,
+            SwapEngine<T> swapEngine,
+            Probe<T> probe,
+            ConvergenceDetector<T> convergenceDetector,
+            java.util.function.IntFunction<CellMetadata> metadataProvider,
+            int pollIntervalMs,
+            int requiredStablePolls) {
+
+        // PURPOSE: Initialize engine with metadata provider pattern
+        // PROCESS:
+        //   1. Store component references
+        //   2. Initialize topology helpers
+        //   3. Create metadata array from provider
+        //   4. Set up global lock and cell threads
+        //   5. Wire probe and record initial state
+
+        this.cells = cells;
+        this.swapEngine = swapEngine;
+        this.probe = probe;
+        this.convergenceDetector = convergenceDetector;
+        this.convergencePollIntervalMs = pollIntervalMs;
+        this.requiredStablePolls = requiredStablePolls;
+
+        // Single global lock (matches Python cell_research)
+        this.globalLock = new ReentrantLock();
+
+        // Initialize topology helpers
+        this.bubbleTopology = new BubbleTopology<>();
+        this.insertionTopology = new InsertionTopology<>();
+
+        // PHASE TWO: Initialize metadata from provider
+        // PURPOSE: Populate metadata array by calling provider function for each index
+        // PROCESS:
+        //   1. Create metadata array with same length as cells array
+        //   2. For each index i, call metadataProvider.apply(i) to get metadata
+        //   3. Store result in metadata[i]
+        // OUTPUTS: Fully populated metadata array
+        // DATA FLOW: metadataProvider(index) -> CellMetadata -> metadata[index]
+        this.metadata = new CellMetadata[cells.length];
+        for (int i = 0; i < cells.length; i++) {
+            this.metadata[i] = metadataProvider.apply(i);
+        }
+
+        // Wire up probe to swap engine for frozen swap attempt tracking
+        swapEngine.setProbe(probe);
+
+        // Create cell threads
+        this.cellThreads = new Thread[cells.length];
+        this.cellWorkers = (LockBasedCellWorker<T>[]) new LockBasedCellWorker[cells.length];
+
+        for (int i = 0; i < cells.length; i++) {
+            cellWorkers[i] = new LockBasedCellWorker<>(i);
+            cellThreads[i] = new Thread(cellWorkers[i], "LockCell-" + i);
+            cellThreads[i].setDaemon(true);
+        }
+
+        // Record initial state
+        probe.recordSnapshot(0, cells, 0);
+    }
+
+    /**
+     * Convenience constructor with metadata provider and default polling configuration.
+     *
+     * @param cells the cell array to sort
+     * @param swapEngine the swap engine for executing swaps
+     * @param probe the probe for recording snapshots
+     * @param convergenceDetector the convergence detector
+     * @param metadataProvider function providing metadata for each cell index
+     */
+    public LockBasedExecutionEngine(
+            T[] cells,
+            SwapEngine<T> swapEngine,
+            Probe<T> probe,
+            ConvergenceDetector<T> convergenceDetector,
+            java.util.function.IntFunction<CellMetadata> metadataProvider) {
+        this(cells, swapEngine, probe, convergenceDetector, metadataProvider,
+                DEFAULT_POLL_INTERVAL_MS, DEFAULT_REQUIRED_STABLE_POLLS);
     }
 
     /**
@@ -257,7 +402,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         @SuppressWarnings("unchecked")
         private void evaluateAndSwap() {
             T cell = cells[cellIndex];
-            Algotype algotype = cell.getAlgotype();
+            Algotype algotype = getCellAlgotype(cellIndex);
 
             List<Integer> neighbors;
             if (algotype == Algotype.BUBBLE) {
@@ -280,6 +425,21 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
                 if (shouldSwapForAlgotype(cellIndex, neighborIndex, algotype)) {
                     if (swapEngine.attemptSwap(cells, cellIndex, neighborIndex)) {
+                        // Swap metadata alongside cells (Phase 2 implementation)
+                        // PURPOSE: Keep metadata attached to logical agent identity as cells move
+                        // PROCESS:
+                        //   1. Check if metadata provider mode (metadata != null)
+                        //   2. If yes, swap metadata[cellIndex] and metadata[neighborIndex]
+                        //   3. This ensures metadata stays synchronized with cell positions
+                        // CRITICAL: Must be synchronized with global lock (already held)
+                        // RATIONALE: In lock-based execution, all swaps happen under global lock,
+                        //   so metadata swaps are automatically thread-safe
+                        if (metadata != null) {
+                            CellMetadata tempMetadata = metadata[cellIndex];
+                            metadata[cellIndex] = metadata[neighborIndex];
+                            metadata[neighborIndex] = tempMetadata;
+                        }
+
                         int swaps = totalSwaps.incrementAndGet();
 
                         // Record snapshot periodically
@@ -409,6 +569,48 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         return true;
     }
 
+    // ========== Helper Methods for Metadata/Cell Access ==========
+
+    /**
+     * Get algotype from metadata provider (if available) or cell (legacy fallback).
+     *
+     * <p>PURPOSE: Support both metadata provider pattern and legacy cell introspection
+     * for backward compatibility during migration.</p>
+     *
+     * <p>INPUTS: cellIndex - position of cell to query</p>
+     *
+     * <p>PROCESS:
+     * <ol>
+     *   <li>If metadata != null: return metadata[cellIndex].getAlgotype()</li>
+     *   <li>Otherwise: cast cell to HasAlgotype and call getAlgotype()</li>
+     * </ol>
+     * </p>
+     *
+     * <p>OUTPUTS: Algotype for this cell position</p>
+     *
+     * <p>DEPENDENCIES: In legacy mode, cell must implement HasAlgotype</p>
+     */
+    private Algotype getCellAlgotype(int cellIndex) {
+        // PHASE TWO: Use metadata if available (metadata provider mode)
+        // PURPOSE: Query algotype from metadata array instead of cell
+        // PROCESS: Check if metadata array exists, if yes return metadata[cellIndex].getAlgotype()
+        // BENEFITS: Enables lightweight cells without embedded algotype field
+        if (metadata != null) {
+            return metadata[cellIndex].getAlgotype();
+        }
+
+        // Legacy mode: query cell directly (requires HasAlgotype)
+        // PURPOSE: Maintain backward compatibility with existing cell implementations
+        // PROCESS: Cast cell to HasAlgotype interface and call getAlgotype()
+        // FALLBACK: Used when no metadata provider was given to constructor
+        if (cells[cellIndex] instanceof com.emergent.doom.cell.HasAlgotype) {
+            return ((com.emergent.doom.cell.HasAlgotype) cells[cellIndex]).getAlgotype();
+        }
+
+        throw new IllegalStateException(
+            "Cell at index " + cellIndex + " does not implement HasAlgotype and no metadata provider was given");
+    }
+
     /**
      * Helper: Extract comparable value from cell for isLeftSorted comparison.
      * 
@@ -517,10 +719,11 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         int leftBoundary = 0;
         int rightBoundary = cells.length - 1;
 
-        for (T cell : cells) {
-            if (cell.getAlgotype() == Algotype.SELECTION) {
-                if (cell instanceof HasIdealPosition) {
-                    ((HasIdealPosition) cell).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
+        for (int i = 0; i < cells.length; i++) {
+            Algotype algotype = getCellAlgotype(i);
+            if (algotype == Algotype.SELECTION) {
+                if (cells[i] instanceof HasIdealPosition) {
+                    ((HasIdealPosition) cells[i]).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
                 }
             }
         }

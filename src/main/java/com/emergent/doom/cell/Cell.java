@@ -16,14 +16,16 @@ import com.emergent.doom.group.CellStatus;
  * entities that can only be ordered. This minimal contract enables emergence
  * through simple swap mechanics without any knowledge of the underlying domain.</p>
  * 
- * <p><strong>REFACTORING NOTE (Issue #TBD):</strong> Cell interface has been stripped
- * of HasAlgotype dependency. Execution metadata (algotype, sort direction, ideal position)
- * is now managed by engines via CellMetadata and metadata provider pattern, achieving
- * true domain-agnostic cells as pure Comparable data carriers.</p>
+ * <p><strong>REFACTORING IN PROGRESS (Phase 2 of 5):</strong> Cell interface temporarily
+ * extends HasAlgotype for backward compatibility during metadata provider migration.
+ * Execution metadata (algotype, sort direction, ideal position) is being moved to
+ * engine-managed CellMetadata arrays via metadata provider pattern. HasAlgotype will be
+ * removed from Cell interface in Phase 3, achieving true domain-agnostic cells as pure
+ * Comparable data carriers.</p>
  * 
  * @param <T> the type of cell (must be comparable to itself)
  */
-public interface Cell<T extends Cell<T>> extends Comparable<T>, HasValue, HasGroup, HasStatus {
+public interface Cell<T extends Cell<T>> extends Comparable<T>, HasValue, HasGroup, HasStatus, HasAlgotype {
     // PURPOSE: Compare this cell to another cell
     // INPUTS: other (T) - the cell to compare against
     // PROCESS:
@@ -35,7 +37,7 @@ public interface Cell<T extends Cell<T>> extends Comparable<T>, HasValue, HasGro
     //   6. Must be transitive: if a < b and b < c, then a < c
     // OUTPUTS: int - negative, zero, or positive integer
     // DEPENDENCIES: None
-    // NOTE: Comparison is the ONLY method required by the engine.
+    // NOTE: Comparison is the primary method required by the engine.
     //       All domain logic is encapsulated in the implementation.
-    //       Execution metadata is managed separately via CellMetadata.
+    //       Execution metadata (getAlgotype) will be managed separately via CellMetadata in Phase 3.
 }
