@@ -195,7 +195,7 @@ public class LinearScalingValidatorTest {
         @DisplayName("ScalingReport computes B ≈ 0 for constant steps")
         void scalingReportComputesZeroBForConstantSteps() {
             // As a researcher, I want B ≈ 0 when steps don't vary with array size
-            // so that I can confirm linear scaling hypothesis
+            // so that I can confirm constant convergence behavior
             
             // Test parameters to reproduce:
             // - Mock trial results: array sizes [1000, 2000, 4000]
