@@ -3,10 +3,6 @@ package com.emergent.doom.probe;
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.group.CellStatus;
-import com.emergent.doom.cell.HasValue;
-import com.emergent.doom.cell.HasGroup;
-import com.emergent.doom.cell.HasStatus;
-import com.emergent.doom.cell.HasAlgotype;
 import com.emergent.doom.group.CellGroup;
 
 import java.util.*;
@@ -14,8 +10,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Records execution trajectory by capturing snapshots at each step.
+ * 
+ * <p>Note: Probe now works with lightweight cells that don't carry metadata.
+ * Snapshot recording extracts only cell values (via Comparable interface).</p>
  */
-public class Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
+public class Probe<T extends Cell<T>> {
 
     private final List<StepSnapshot<T>> snapshots;
     private boolean recordingEnabled;
@@ -42,6 +41,9 @@ public class Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
     /**
      * Record a snapshot.
      * CRITICAL: Now tracks convergence metrics even if recordingEnabled is false.
+     * 
+     * <p>Note: With lightweight cells, we record only cell values as Comparable objects.
+     * Metadata (algotype, group, status) is no longer extracted from cells as they don't carry it.</p>
      */
     public void recordSnapshot(int stepNumber, T[] cells, int localSwapCount) {
         updateCounters(stepNumber, localSwapCount);
@@ -50,12 +52,13 @@ public class Probe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
             List<Comparable<?>> values = new ArrayList<>();
             List<Object[]> types = new ArrayList<>();
             for (T cell : cells) {
-                values.add(cell.getComparableValue());
-                int groupId = (cell.getGroup() != null) ? cell.getGroup().getGroupId() : -1;
-                int algotypeLabel = cell.getAlgotype().ordinal();
-                Comparable<?> value = cell.getComparableValue();
-                int isFrozen = (cell.getStatus() == CellStatus.FREEZE) ? 1 : 0;
-                types.add(new Object[]{groupId, algotypeLabel, value, isFrozen});
+                // Cell is Comparable - use it directly as value
+                values.add(cell);
+                // Metadata no longer available from cells - record minimal info
+                int groupId = -1;  // Groups not supported with lightweight cells
+                int algotypeLabel = 0;  // Algotype not available from cell
+                int isFrozen = 0;  // Status not available from cell
+                types.add(new Object[]{groupId, algotypeLabel, cell, isFrozen});
             }
             snapshots.add(new StepSnapshot<>(stepNumber, values, types, localSwapCount));
         }

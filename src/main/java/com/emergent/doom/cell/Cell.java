@@ -1,32 +1,27 @@
 package com.emergent.doom.cell;
 
-import com.emergent.doom.cell.HasValue;
-import com.emergent.doom.cell.HasGroup;
-import com.emergent.doom.cell.HasStatus;
-import com.emergent.doom.group.CellGroup;
-import com.emergent.doom.group.CellStatus;
 /**
- * Minimal contract for cells in the Emergent Doom Engine.
+ * Minimal cell contract for domain-agnostic sorting.
  * 
- * <p>This interface enforces a pure comparison-based design where cells
- * can only be compared to each other. All domain-specific logic is hidden
- * within the implementation, allowing the engine to remain domain-agnostic.</p>
+ * <p>Cells are pure data carriers implementing only the Comparable contract.
+ * All sorting-specific metadata (algotype, sort direction, ideal position) 
+ * is managed externally by execution engines via CellMetadata.</p>
  * 
- * <p><strong>Design Principle:</strong> The engine treats cells as opaque
- * entities that can only be ordered. This minimal contract enables emergence
- * through simple swap mechanics without any knowledge of the underlying domain.</p>
+ * <p>Implementations must provide:</p>
+ * <ul>
+ *   <li>compareTo() - domain-specific comparison logic</li>
+ *   <li>getValue() - optional, for metrics/logging</li>
+ * </ul>
  * 
- * <p><strong>REFACTORING IN PROGRESS (Phase 2 of 5):</strong> Cell interface temporarily
- * extends HasAlgotype for backward compatibility during metadata provider migration.
- * Execution metadata (algotype, sort direction, ideal position) is being moved to
- * engine-managed CellMetadata arrays via metadata provider pattern. HasAlgotype will be
- * removed from Cell interface in Phase 3, achieving true domain-agnostic cells as pure
- * Comparable data carriers.</p>
+ * <p>Implementations should NOT implement deprecated Has* interfaces 
+ * (HasAlgotype, HasSortDirection, HasIdealPosition). These are maintained 
+ * only for backward compatibility during migration.</p>
  * 
- * @param <T> the type of cell (must be comparable to itself)
+ * @param <T> the concrete cell type
+ * @see com.emergent.doom.execution.CellMetadata
  */
-public interface Cell<T extends Cell<T>> extends Comparable<T>, HasValue, HasGroup, HasStatus, HasAlgotype {
-    // PURPOSE: Compare this cell to another cell
+public interface Cell<T extends Cell<T>> extends Comparable<T> {
+    // PURPOSE: Compare this cell to another cell for ordering
     // INPUTS: other (T) - the cell to compare against
     // PROCESS:
     //   1. Implement domain-specific comparison logic
@@ -37,7 +32,25 @@ public interface Cell<T extends Cell<T>> extends Comparable<T>, HasValue, HasGro
     //   6. Must be transitive: if a < b and b < c, then a < c
     // OUTPUTS: int - negative, zero, or positive integer
     // DEPENDENCIES: None
-    // NOTE: Comparison is the primary method required by the engine.
-    //       All domain logic is encapsulated in the implementation.
-    //       Execution metadata (getAlgotype) will be managed separately via CellMetadata in Phase 3.
+    // ARCHITECTURE NOTE:
+    //   - Comparison is the ONLY method required by the engine
+    //   - All domain logic is encapsulated in the implementation
+    //   - Execution metadata (algotype, sort direction, ideal position) is managed
+    //     externally by execution engines via CellMetadata arrays
+    //   - This achieves true domain-agnostic sorting where cells are pure value carriers
+    
+    /**
+     * Get the value of this cell for metrics and logging.
+     * 
+     * <p>This method is optional and primarily used by metrics that need to extract
+     * numeric values from cells. Implementations that don't have a simple integer value
+     * should throw UnsupportedOperationException.</p>
+     * 
+     * @return the cell's value
+     * @throws UnsupportedOperationException if the cell doesn't have a simple value representation
+     */
+    default int getValue() {
+        throw new UnsupportedOperationException(
+            "This cell type does not support getValue()");
+    }
 }

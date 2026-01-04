@@ -75,8 +75,8 @@ class ProbeTest {
         @DisplayName("resetCounters() resets counters without clearing snapshots")
         void resetCountersWithoutClearingSnapshots() {
             GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE),
-                new GenericCell(2, Algotype.BUBBLE)
+                new GenericCell(1),
+                new GenericCell(2)
             };
             probe.recordSnapshot(0, cells, 0);
             probe.recordCompareAndSwap();
@@ -117,62 +117,6 @@ class ProbeTest {
 
     @Nested
     @DisplayName("Cell Type Distribution Tracking")
-    class CellTypeDistributionTests {
-
-        @Test
-        @DisplayName("recordSnapshotWithTypes captures algotype distribution")
-        void recordSnapshotWithTypesCapturesDistribution() {
-            GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE),
-                new GenericCell(2, Algotype.BUBBLE),
-                new GenericCell(3, Algotype.SELECTION),
-                new GenericCell(4, Algotype.INSERTION)
-            };
-
-            probe.recordSnapshotWithTypes(0, cells, 0);
-
-            Map<Algotype, Integer> distribution = probe.getCellTypeDistribution(0);
-            assertNotNull(distribution);
-            assertEquals(2, distribution.get(Algotype.BUBBLE));
-            assertEquals(1, distribution.get(Algotype.SELECTION));
-            assertEquals(1, distribution.get(Algotype.INSERTION));
-        }
-
-        @Test
-        @DisplayName("getCellTypeDistribution returns null for non-existent step")
-        void getCellTypeDistributionReturnsNullForMissingStep() {
-            assertNull(probe.getCellTypeDistribution(999));
-        }
-
-        @Test
-        @DisplayName("StepSnapshot hasCellTypeDistribution returns true for regular snapshots (unified behavior)")
-        void regularSnapshotHasCellTypeDistribution() {
-            GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE)
-            };
-
-            probe.recordSnapshot(0, cells, 0);
-
-            StepSnapshot<GenericCell> snapshot = probe.getSnapshot(0);
-            assertTrue(snapshot.hasCellTypeDistribution());
-            assertNotNull(snapshot.getCellTypeDistribution());
-        }
-
-        @Test
-        @DisplayName("StepSnapshot hasCellTypeDistribution returns true for typed snapshots")
-        void typedSnapshotHasCellTypeDistribution() {
-            GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE),
-                new GenericCell(2, Algotype.SELECTION)
-            };
-
-            probe.recordSnapshotWithTypes(0, cells, 0);
-
-            StepSnapshot<GenericCell> snapshot = probe.getSnapshot(0);
-            assertTrue(snapshot.hasCellTypeDistribution());
-            assertNotNull(snapshot.getCellTypeDistribution());
-        }
-    }
 
     @Nested
     @DisplayName("Basic Snapshot Functionality")
@@ -182,7 +126,7 @@ class ProbeTest {
         @DisplayName("recordSnapshot adds snapshot to list")
         void recordSnapshotAddsToList() {
             GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE)
+                new GenericCell(1)
             };
 
             probe.recordSnapshot(0, cells, 0);
@@ -195,7 +139,7 @@ class ProbeTest {
         @DisplayName("getSnapshot returns correct snapshot by step number")
         void getSnapshotReturnsByStepNumber() {
             GenericCell[] cells = {
-                new GenericCell(42, Algotype.BUBBLE)
+                new GenericCell(42)
             };
 
             probe.recordSnapshot(5, cells, 3);
@@ -210,7 +154,7 @@ class ProbeTest {
         @DisplayName("setRecordingEnabled(false) prevents snapshot recording")
         void disabledRecordingPreventsSnapshots() {
             GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE)
+                new GenericCell(1)
             };
 
             probe.setRecordingEnabled(false);

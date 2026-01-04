@@ -328,26 +328,35 @@ public class ExecutionEngine<T extends Cell<T>> {
     }
 
     /**
-     * Helper: Get ideal position from a SELECTION cell (supports both SelectionCell and GenericCell)
+     * Helper: Get ideal position from metadata (SELECTION algotype only).
+     * 
+     * <p>Note: ExecutionEngine doesn't support metadata providers yet.
+     * This method cannot be implemented without metadata array support.</p>
+     * 
+     * @deprecated ExecutionEngine needs metadata provider support to track ideal positions
      */
+    @Deprecated
     private int getIdealPosition(T cell) {
-        if (cell instanceof SelectionCell) {
-            return ((SelectionCell<?>) cell).getIdealPos();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            return ((com.emergent.doom.cell.GenericCell) cell).getIdealPos();
-        }
-        return 0;  // Default for other cell types
+        throw new UnsupportedOperationException(
+            "ExecutionEngine does not support ideal position tracking. " +
+            "Use ParallelExecutionEngine, SynchronousExecutionEngine, or LockBasedExecutionEngine " +
+            "with metadata providers instead.");
     }
 
     /**
-     * Helper: Increment ideal position for a SELECTION cell (supports both SelectionCell and GenericCell)
+     * Helper: Increment ideal position for SELECTION cells.
+     * 
+     * <p>Note: ExecutionEngine doesn't support metadata providers yet.
+     * This method cannot be implemented without metadata array support.</p>
+     * 
+     * @deprecated ExecutionEngine needs metadata provider support to track ideal positions
      */
+    @Deprecated
     private void incrementIdealPosition(T cell) {
-        if (cell instanceof SelectionCell) {
-            ((SelectionCell<?>) cell).incrementIdealPos();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            ((com.emergent.doom.cell.GenericCell) cell).incrementIdealPos();
-        }
+        throw new UnsupportedOperationException(
+            "ExecutionEngine does not support ideal position tracking. " +
+            "Use ParallelExecutionEngine, SynchronousExecutionEngine, or LockBasedExecutionEngine " +
+            "with metadata providers instead.");
     }
 
     /**

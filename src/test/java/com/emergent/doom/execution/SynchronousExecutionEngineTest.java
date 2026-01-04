@@ -1,6 +1,7 @@
 package com.emergent.doom.execution;
 
 import com.emergent.doom.cell.Algotype;
+import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.HasValue;
 import com.emergent.doom.group.GroupAwareCell;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Timeout;
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.function.IntFunction;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -73,7 +75,11 @@ class SynchronousExecutionEngineTest {
         probe.setRecordingEnabled(true);
         ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(10);
 
-        engine = new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector);
+        // Provide metadata for lightweight cells
+        IntFunction<CellMetadata> metadataProvider = index -> 
+            new CellMetadata(Algotype.BUBBLE, SortDirection.ASCENDING);
+        
+        engine = new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, metadataProvider);
     }
 
     /**
@@ -91,7 +97,11 @@ class SynchronousExecutionEngineTest {
         probe.setRecordingEnabled(true);
         ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(10);
 
-        engine = new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, new Random(seed));
+        // Provide metadata for lightweight cells
+        IntFunction<CellMetadata> metadataProvider = index -> 
+            new CellMetadata(Algotype.BUBBLE, SortDirection.ASCENDING);
+        
+        engine = new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, metadataProvider, new Random(seed));
     }
 
     // ========================================================================
@@ -529,7 +539,7 @@ class SynchronousExecutionEngineTest {
      * <p>As a test author, I want a minimal cell implementation
      * so that I can focus tests on engine behavior rather than cell complexity.</p>
      */
-    static class TestBubbleCell implements Cell<TestBubbleCell>, GroupAwareCell<TestBubbleCell>, HasValue {
+    static class TestBubbleCell implements Cell<TestBubbleCell> {
         private final int value;
 
         TestBubbleCell(int value) {
@@ -541,33 +551,19 @@ class SynchronousExecutionEngineTest {
             return value;
         }
 
-        @Override
-        public Algotype getAlgotype() {
-            return Algotype.BUBBLE;
-        }
+        
 
-        @Override
-        public com.emergent.doom.group.CellGroup<TestBubbleCell> getGroup() { return null; }
-        @Override
-        public com.emergent.doom.group.CellStatus getStatus() { return com.emergent.doom.group.CellStatus.ACTIVE; }
-        @Override
-        public com.emergent.doom.group.CellStatus getPreviousStatus() { return com.emergent.doom.group.CellStatus.ACTIVE; }
-        @Override
-        public void setStatus(com.emergent.doom.group.CellStatus status) {}
-        @Override
-        public void setPreviousStatus(com.emergent.doom.group.CellStatus status) {}
-        @Override
-        public void setGroup(com.emergent.doom.group.CellGroup<TestBubbleCell> group) {}
-        @Override
-        public int getLeftBoundary() { return 0; }
-        @Override
-        public void setLeftBoundary(int leftBoundary) {}
-        @Override
-        public int getRightBoundary() { return 0; }
-        @Override
-        public void setRightBoundary(int rightBoundary) {}
-        @Override
-        public void updateForGroupMerge() {}
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
         @Override
         public int compareTo(TestBubbleCell other) {

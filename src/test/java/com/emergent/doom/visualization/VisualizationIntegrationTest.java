@@ -36,25 +36,25 @@ class VisualizationIntegrationTest {
         
         // Simulate a sorting process with improving sortedness
         GenericCell[] cells1 = {
-            new GenericCell(5, Algotype.BUBBLE), 
-            new GenericCell(3, Algotype.BUBBLE), 
-            new GenericCell(1, Algotype.BUBBLE), 
-            new GenericCell(4, Algotype.BUBBLE), 
-            new GenericCell(2, Algotype.BUBBLE)
+            new GenericCell(5), 
+            new GenericCell(3), 
+            new GenericCell(1), 
+            new GenericCell(4), 
+            new GenericCell(2)
         };
         GenericCell[] cells2 = {
-            new GenericCell(3, Algotype.BUBBLE), 
-            new GenericCell(1, Algotype.BUBBLE), 
-            new GenericCell(5, Algotype.BUBBLE), 
-            new GenericCell(2, Algotype.BUBBLE), 
-            new GenericCell(4, Algotype.BUBBLE)
+            new GenericCell(3), 
+            new GenericCell(1), 
+            new GenericCell(5), 
+            new GenericCell(2), 
+            new GenericCell(4)
         };
         GenericCell[] cells3 = {
-            new GenericCell(1, Algotype.BUBBLE), 
-            new GenericCell(2, Algotype.BUBBLE), 
-            new GenericCell(3, Algotype.BUBBLE), 
-            new GenericCell(4, Algotype.BUBBLE), 
-            new GenericCell(5, Algotype.BUBBLE)
+            new GenericCell(1), 
+            new GenericCell(2), 
+            new GenericCell(3), 
+            new GenericCell(4), 
+            new GenericCell(5)
         };
         
         probe.recordSnapshot(0, cells1, 0);
@@ -148,9 +148,9 @@ class VisualizationIntegrationTest {
         // Create a probe with snapshots
         Probe<GenericCell> probe = new Probe<>();
         GenericCell[] cells = {
-            new GenericCell(3, Algotype.BUBBLE), 
-            new GenericCell(1, Algotype.BUBBLE), 
-            new GenericCell(2, Algotype.BUBBLE)
+            new GenericCell(3), 
+            new GenericCell(1), 
+            new GenericCell(2)
         };
         probe.recordSnapshot(0, cells, 0);
         

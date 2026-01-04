@@ -1,10 +1,7 @@
 package com.emergent.doom.probe;
 
 import com.emergent.doom.cell.Algotype;
-import com.emergent.doom.cell.HasAlgotype;
-import com.emergent.doom.cell.HasGroup;
-import com.emergent.doom.cell.HasStatus;
-import com.emergent.doom.cell.HasValue;
+import com.emergent.doom.cell.Cell;
 import com.emergent.doom.group.CellStatus;
 
 import java.util.ArrayList;
@@ -19,8 +16,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <p>Uses CopyOnWriteArrayList for concurrent snapshot adds and iterations.</p>
  *
  * <p>Overrides extraction in recordSnapshot for consistency.</p>
+ * 
+ * <p>Note: Works with lightweight cells that don't carry metadata.</p>
  */
-public class ThreadSafeProbe<T extends HasValue & HasGroup & HasStatus & HasAlgotype> extends Probe<T> {
+public class ThreadSafeProbe<T extends Cell<T>> extends Probe<T> {
 
     private final CopyOnWriteArrayList<StepSnapshot<T>> concurrentSnapshots;
 
@@ -38,12 +37,13 @@ public class ThreadSafeProbe<T extends HasValue & HasGroup & HasStatus & HasAlgo
             List<Comparable<?>> values = new ArrayList<>();
             List<Object[]> types = new ArrayList<>();
             for (T cell : cells) {
-                values.add(cell.getComparableValue());
-                int groupId = (cell.getGroup() != null) ? cell.getGroup().getGroupId() : -1;
-                int algotypeLabel = cell.getAlgotype().ordinal();
-                Comparable<?> value = cell.getComparableValue();
-                int isFrozen = (cell.getStatus() == CellStatus.FREEZE) ? 1 : 0;
-                types.add(new Object[]{groupId, algotypeLabel, value, isFrozen});
+                // Cell is Comparable - use it directly as value
+                values.add(cell);
+                // Metadata no longer available from cells - record minimal info
+                int groupId = -1;  // Groups not supported with lightweight cells
+                int algotypeLabel = 0;  // Algotype not available from cell
+                int isFrozen = 0;  // Status not available from cell
+                types.add(new Object[]{groupId, algotypeLabel, cell, isFrozen});
             }
             concurrentSnapshots.add(new StepSnapshot<>(stepNumber, values, types, localSwapCount));
         }

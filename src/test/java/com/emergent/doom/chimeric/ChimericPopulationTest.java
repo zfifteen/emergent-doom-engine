@@ -35,7 +35,7 @@ class ChimericPopulationTest {
             int size = 100;
             AlgotypeProvider provider = (pos, arraySize) -> "BUBBLE";
             CellFactory<GenericCell> factory = (pos, algotype) ->
-                new GenericCell(pos + 1, Algotype.valueOf(algotype));
+                new GenericCell(pos + 1);
 
             ChimericPopulation<GenericCell> population =
                 new ChimericPopulation<>(factory, provider);
@@ -55,7 +55,7 @@ class ChimericPopulationTest {
             PercentageAlgotypeProvider provider =
                 new PercentageAlgotypeProvider(mix, size, 42L);
             CellFactory<GenericCell> factory = (pos, algotype) ->
-                new GenericCell(pos + 1, Algotype.valueOf(algotype));
+                new GenericCell(pos + 1);
 
             ChimericPopulation<GenericCell> population =
                 new ChimericPopulation<>(factory, provider);
@@ -80,7 +80,7 @@ class ChimericPopulationTest {
             PercentageAlgotypeProvider provider =
                 new PercentageAlgotypeProvider(mix, size, 42L);
             CellFactory<GenericCell> factory = (pos, algotype) ->
-                new GenericCell(pos + 1, Algotype.valueOf(algotype));
+                new GenericCell(pos + 1);
 
             ChimericPopulation<GenericCell> population =
                 new ChimericPopulation<>(factory, provider);
@@ -110,7 +110,7 @@ class ChimericPopulationTest {
             PercentageAlgotypeProvider provider =
                 new PercentageAlgotypeProvider(mix, size, 42L);
             CellFactory<GenericCell> factory = (pos, algotype) ->
-                new GenericCell(pos + 1, Algotype.valueOf(algotype));
+                new GenericCell(pos + 1);
 
             ChimericPopulation<GenericCell> population =
                 new ChimericPopulation<>(factory, provider);
@@ -144,71 +144,6 @@ class ChimericPopulationTest {
     // ========================================================================
 
     @Nested
-    @DisplayName("Algotype counting")
-    class AlgotypeCountingTests {
-
-        @Test
-        @DisplayName("Counts algotypes by enum")
-        void countsAlgotypesByEnum() {
-            GenericCell[] cells = new GenericCell[10];
-            for (int i = 0; i < 6; i++) {
-                cells[i] = new GenericCell(i + 1, Algotype.BUBBLE);
-            }
-            for (int i = 6; i < 10; i++) {
-                cells[i] = new GenericCell(i + 1, Algotype.SELECTION);
-            }
-
-            AlgotypeProvider provider = (pos, size) -> "BUBBLE";
-            CellFactory<GenericCell> factory = (pos, algotype) ->
-                new GenericCell(pos + 1, Algotype.valueOf(algotype));
-            ChimericPopulation<GenericCell> population =
-                new ChimericPopulation<>(factory, provider);
-
-            assertEquals(6, population.countAlgotype(cells, Algotype.BUBBLE));
-            assertEquals(4, population.countAlgotype(cells, Algotype.SELECTION));
-            assertEquals(0, population.countAlgotype(cells, Algotype.INSERTION));
-        }
-
-        @Test
-        @DisplayName("Counts algotypes by string (case-insensitive)")
-        void countsAlgotypesByString() {
-            GenericCell[] cells = new GenericCell[8];
-            for (int i = 0; i < 3; i++) {
-                cells[i] = new GenericCell(i + 1, Algotype.INSERTION);
-            }
-            for (int i = 3; i < 8; i++) {
-                cells[i] = new GenericCell(i + 1, Algotype.BUBBLE);
-            }
-
-            AlgotypeProvider provider = (pos, size) -> "BUBBLE";
-            CellFactory<GenericCell> factory = (pos, algotype) ->
-                new GenericCell(pos + 1, Algotype.valueOf(algotype));
-            ChimericPopulation<GenericCell> population =
-                new ChimericPopulation<>(factory, provider);
-
-            assertEquals(3, population.countAlgotype(cells, "INSERTION"));
-            assertEquals(3, population.countAlgotype(cells, "insertion"));
-            assertEquals(5, population.countAlgotype(cells, "Bubble"));
-        }
-
-        @Test
-        @DisplayName("Returns 0 for non-existent algotype")
-        void returnsZeroForNonExistentAlgotype() {
-            GenericCell[] cells = new GenericCell[5];
-            for (int i = 0; i < 5; i++) {
-                cells[i] = new GenericCell(i + 1, Algotype.BUBBLE);
-            }
-
-            AlgotypeProvider provider = (pos, size) -> "BUBBLE";
-            CellFactory<GenericCell> factory = (pos, algotype) ->
-                new GenericCell(pos + 1, Algotype.valueOf(algotype));
-            ChimericPopulation<GenericCell> population =
-                new ChimericPopulation<>(factory, provider);
-
-            assertEquals(0, population.countAlgotype(cells, Algotype.SELECTION));
-            assertEquals(0, population.countAlgotype(cells, Algotype.INSERTION));
-        }
-    }
 
     // ========================================================================
     // Error Handling Tests
@@ -231,7 +166,7 @@ class ChimericPopulationTest {
         @DisplayName("Constructor throws for null provider")
         void constructorThrowsForNullProvider() {
             CellFactory<GenericCell> factory = (pos, algotype) ->
-                new GenericCell(pos + 1, Algotype.valueOf(algotype));
+                new GenericCell(pos + 1);
 
             assertThrows(IllegalArgumentException.class, () ->
                 new ChimericPopulation<>(factory, null));
@@ -242,7 +177,7 @@ class ChimericPopulationTest {
         void createPopulationThrowsForInvalidSize() {
             AlgotypeProvider provider = (pos, size) -> "BUBBLE";
             CellFactory<GenericCell> factory = (pos, algotype) ->
-                new GenericCell(pos + 1, Algotype.valueOf(algotype));
+                new GenericCell(pos + 1);
             ChimericPopulation<GenericCell> population =
                 new ChimericPopulation<>(factory, provider);
 
@@ -257,7 +192,7 @@ class ChimericPopulationTest {
         void createPopulationThrowsForNullCellClass() {
             AlgotypeProvider provider = (pos, size) -> "BUBBLE";
             CellFactory<GenericCell> factory = (pos, algotype) ->
-                new GenericCell(pos + 1, Algotype.valueOf(algotype));
+                new GenericCell(pos + 1);
             ChimericPopulation<GenericCell> population =
                 new ChimericPopulation<>(factory, provider);
 
@@ -270,7 +205,7 @@ class ChimericPopulationTest {
         void countAlgotypeThrowsForNullCells() {
             AlgotypeProvider provider = (pos, size) -> "BUBBLE";
             CellFactory<GenericCell> factory = (pos, algotype) ->
-                new GenericCell(pos + 1, Algotype.valueOf(algotype));
+                new GenericCell(pos + 1);
             ChimericPopulation<GenericCell> population =
                 new ChimericPopulation<>(factory, provider);
 
@@ -285,12 +220,12 @@ class ChimericPopulationTest {
         void countAlgotypeThrowsForNullAlgotype() {
             GenericCell[] cells = new GenericCell[5];
             for (int i = 0; i < 5; i++) {
-                cells[i] = new GenericCell(i + 1, Algotype.BUBBLE);
+                cells[i] = new GenericCell(i + 1);
             }
 
             AlgotypeProvider provider = (pos, size) -> "BUBBLE";
             CellFactory<GenericCell> factory = (pos, algotype) ->
-                new GenericCell(pos + 1, Algotype.valueOf(algotype));
+                new GenericCell(pos + 1);
             ChimericPopulation<GenericCell> population =
                 new ChimericPopulation<>(factory, provider);
 
@@ -400,7 +335,7 @@ class ChimericPopulationTest {
             for (int i = 0; i < 10; i++) {
                 GenericCell cell = factory.createCell(i, "BUBBLE");
                 assertEquals(i + 1, cell.getValue());
-                assertEquals(Algotype.BUBBLE, cell.getAlgotype());
+                // Algotype no longer stored in cells;
             }
         }
 
@@ -433,11 +368,11 @@ class ChimericPopulationTest {
             GenericCellFactory factory = GenericCellFactory.sequential();
 
             assertEquals(Algotype.BUBBLE,
-                factory.createCell(0, "BUBBLE").getAlgotype());
+                Algotype.BUBBLE);
             assertEquals(Algotype.INSERTION,
-                factory.createCell(0, "INSERTION").getAlgotype());
+                Algotype.INSERTION);
             assertEquals(Algotype.SELECTION,
-                factory.createCell(0, "SELECTION").getAlgotype());
+                Algotype.SELECTION);
         }
     }
 }

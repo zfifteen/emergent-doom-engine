@@ -23,28 +23,13 @@ import java.util.Arrays;
  */
 public class SelectionSortTest {
 
-    static class TestCell extends SelectionCell<TestCell> implements HasGroup, HasStatus, HasAlgotype {
+    static class TestCell extends SelectionCell<TestCell> {
         public TestCell(int value) {
             super(value);
         }
 
         @Override
-        public CellGroup<TestCell> getGroup() { return null; }
-
-    public CellStatus getStatus() { return CellStatus.ACTIVE; }
-
-    public CellStatus getPreviousStatus() { return CellStatus.ACTIVE; }
-
-    public void setStatus(CellStatus status) { /* no-op */ }
-
-    public void setPreviousStatus(CellStatus previousStatus) { /* no-op */ }
-
-    public void setGroup(CellGroup<TestCell> group) { /* no-op */ }
-
-    @Override
-    public Algotype getAlgotype() { return Algotype.SELECTION; }
-
-    public int compareTo(TestCell other) {
+        public int compareTo(TestCell other) {
             return Integer.compare(this.getValue(), other.getValue());
         }
     }
