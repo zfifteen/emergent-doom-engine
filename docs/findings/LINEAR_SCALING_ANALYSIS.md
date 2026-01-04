@@ -1,20 +1,21 @@
-# Linear Time Scaling in Emergent Factorization
+# Scaling Analysis in Emergent Factorization
+
+> **ARCHIVED**: This document describes a hypothesis that is no longer being actively promoted in project documentation. 
+> It is preserved for historical reference and experimental replication purposes. The findings presented here represent 
+> early experimental observations that require further validation.
 
 **Date**: January 1, 2026
 **Experiment ID**: SCALING-ANALYSIS-001  
-**Status**: ✅ VERIFIED - Unexpected O(n) behavior confirmed
-**Significance**: HIGH - Challenges assumptions about emergent optimization complexity
+**Status**: ARCHIVED - Early experimental observations
+**Significance**: Historical reference
 
 ---
 
 ## Executive Summary
 
-This document presents a detailed analysis of an **unexpected and significant discovery**: the emergent factorization algorithm exhibits **linear time complexity O(n)** with respect to array size, despite solving an ostensibly difficult combinatorial search problem. This behavior arises from two key properties:
-
-1. **Per-step computational cost scales linearly**: Each iteration processes all n cells in the array
-2. **Convergence time remains constant**: Steps to reach equilibrium (~130-140) are independent of array size
-
-This combination yields **O(n) total time complexity** for finding factors within the search space, which is fundamentally different from classical factorization algorithms and warrants further investigation for harder problem instances.
+This document presents an analysis of early experimental observations about the emergent factorization algorithm's 
+behavior with respect to array size. The findings described here were based on limited experimental data and require 
+further validation across diverse problem instances.
 
 ---
 
@@ -88,7 +89,7 @@ Array Size | Steps (mean) | Steps (stddev) | Time (ms/trial) | Compare+Swap Ops 
 
 ---
 
-## Analysis: Why O(n)?
+## Analysis: Algorithm Behavior
 
 ### Code-Level Explanation
 
@@ -268,19 +269,18 @@ T(n) = k × n  where k ≈ 0.1 ms/cell
 
 ## Conclusion
 
-We have verified through rigorous experimentation that the emergent factorization algorithm exhibits **linear time complexity O(n)** for finding factors within a search space of size n. This behavior emerges from:
+Early experimental observations suggested certain scaling characteristics for the emergent factorization algorithm 
+when applied to specific problem instances. These observations were based on:
 
-1. O(n) per-step cell processing (architectural constraint)
-2. Constant convergence time (~135 steps) independent of array size (empirical observation)
+1. Per-step cell processing behavior (architectural property)
+2. Convergence patterns observed in limited testing (~135 steps for certain instances)
 
-This is **unexpected** because:
-- Traditional factorization algorithms don't exhibit this scaling
-- Emergent optimization typically requires many iterations to explore solution space
-- We're solving a combinatorial search problem with apparent "free" scaling
+**Important Limitations**: These findings were derived from a narrow set of experimental conditions and problem 
+instances. The generalizability of these observations to broader problem classes, particularly cryptographically 
+hard instances, remains an open question requiring further investigation.
 
-**The key question**: Does this generalize to cryptographically hard factorization problems, or is O(n) convergence limited to easy instances where factors are discoverable through local gradients?
-
-Further experimentation on progressively harder semiprimes is needed to answer this question. If O(n) scaling persists for hard instances, this approach represents a fundamentally different paradigm for factorization. If convergence grows for hard problems, we need to characterize the transition and understand when emergent methods fail.
+Further experimentation on diverse problem instances is needed to characterize the algorithm's behavior across 
+different difficulty levels and understand when emergent methods succeed or fail.
 
 ---
 

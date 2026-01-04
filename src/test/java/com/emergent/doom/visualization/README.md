@@ -239,7 +239,7 @@ try (PrintWriter writer = new PrintWriter("trial_details.csv")) {
 
 ### Creating Scaling Plot Data
 
-Visualize linear scaling:
+Visualize scaling behavior:
 
 ```java
 Map<Integer, Double> sizeToAvgSteps = new HashMap<>();
@@ -260,13 +260,13 @@ try (PrintWriter writer = new PrintWriter("scaling.csv")) {
 }
 ```
 
-**Plot to verify O(n) scaling:**
+**Plot to analyze scaling behavior:**
 ```python
 data = pd.read_csv('scaling.csv')
 plt.scatter(data['array_size'], data['average_steps'])
 plt.xlabel('Array Size (n)')
 plt.ylabel('Average Steps to Convergence')
-plt.title('Linear Time Scaling Validation')
+plt.title('Scaling Analysis')
 
 # Add linear regression line
 from scipy import stats

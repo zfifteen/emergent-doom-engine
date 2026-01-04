@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Progressive Linear Scaling Validation Experiment Runner
+# Progressive Scaling Validation Experiment Runner
 #
-# This script runs the experimental ladder defined in the issue:
+# This script runs the experimental ladder defined in the validation system:
 # Stage 1 (10^6) → Stage 2 (10^9) → Stage 3 (10^12) → Stage 4 (10^18)
 #
 # Early termination occurs automatically if B > 0.5 (failure boundary detected)
@@ -22,7 +22,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo "========================================================================"
-echo "  Linear Scaling Validation: Progressive Experimental Ladder"
+echo "  Scaling Validation: Progressive Experimental Ladder"
 echo "========================================================================"
 echo ""
 
