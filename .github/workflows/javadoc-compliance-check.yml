@@ -348,7 +348,6 @@ jobs:
             custom-validation-report.txt
             javadoc-build.txt
           retention-days: 30
-          include-hidden-files: false
       
       # ============================================================
       # Check if any violations were found
