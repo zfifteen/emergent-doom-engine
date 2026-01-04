@@ -236,12 +236,18 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         this.bubbleTopology = new BubbleTopology<>();
         this.insertionTopology = new InsertionTopology<>();
 
-        // Initialize metadata from provider (PHASE TWO implementation pending)
+        // PHASE TWO: Initialize metadata from provider
+        // PURPOSE: Populate metadata array by calling provider function for each index
+        // PROCESS:
+        //   1. Create metadata array with same length as cells array
+        //   2. For each index i, call metadataProvider.apply(i) to get metadata
+        //   3. Store result in metadata[i]
+        // OUTPUTS: Fully populated metadata array
+        // DATA FLOW: metadataProvider(index) -> CellMetadata -> metadata[index]
         this.metadata = new CellMetadata[cells.length];
-        // TODO PHASE TWO: Populate metadata array:
-        // for (int i = 0; i < cells.length; i++) {
-        //     this.metadata[i] = metadataProvider.apply(i);
-        // }
+        for (int i = 0; i < cells.length; i++) {
+            this.metadata[i] = metadataProvider.apply(i);
+        }
 
         // Wire up probe to swap engine for frozen swap attempt tracking
         swapEngine.setProbe(probe);
@@ -577,12 +583,18 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
      * <p>DEPENDENCIES: In legacy mode, cell must implement HasAlgotype</p>
      */
     private Algotype getCellAlgotype(int cellIndex) {
-        // TODO PHASE TWO: Implement metadata provider fallback
-        // if (metadata != null) {
-        //     return metadata[cellIndex].getAlgotype();
-        // }
+        // PHASE TWO: Use metadata if available (metadata provider mode)
+        // PURPOSE: Query algotype from metadata array instead of cell
+        // PROCESS: Check if metadata array exists, if yes return metadata[cellIndex].getAlgotype()
+        // BENEFITS: Enables lightweight cells without embedded algotype field
+        if (metadata != null) {
+            return metadata[cellIndex].getAlgotype();
+        }
 
         // Legacy mode: query cell directly (requires HasAlgotype)
+        // PURPOSE: Maintain backward compatibility with existing cell implementations
+        // PROCESS: Cast cell to HasAlgotype interface and call getAlgotype()
+        // FALLBACK: Used when no metadata provider was given to constructor
         if (cells[cellIndex] instanceof com.emergent.doom.cell.HasAlgotype) {
             return ((com.emergent.doom.cell.HasAlgotype) cells[cellIndex]).getAlgotype();
         }
