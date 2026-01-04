@@ -355,10 +355,10 @@ See `docs/requirements/FIRST_NON_SORTING_EXPERIMENT.md` for first non-sorting ap
 **End of Canonical Document Sync Report**
 
 Sources
-[1] FIRST_NON_SORTING_EXPERIMENT.md https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_cd8c922a-4868-4f41-a92c-d8f6594b8b05/3449adbc-6453-4998-8b4a-e16b5e94d23d/FIRST_NON_SORTING_EXPERIMENT.md
-[2] CLUSTERING_PRIMITIVE_SPEC.md https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_cd8c922a-4868-4f41-a92c-d8f6594b8b05/22997274-8c13-4aaf-b323-83e95a1f261e/CLUSTERING_PRIMITIVE_SPEC.md
-[3] README.md https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_cd8c922a-4868-4f41-a92c-d8f6594b8b05/063a5f1c-af7c-4ea1-96ea-3a2c8a8e6a06/README.md
-[4] EDE_PM_INSTRUCTIONS.md https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_cd8c922a-4868-4f41-a92c-d8f6594b8b05/5b3a4efb-5529-47cc-bf2e-c3a16c4208d2/EDE_PM_INSTRUCTIONS.md
-[5] REQUIREMENTS.md https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_cd8c922a-4868-4f41-a92c-d8f6594b8b05/49eb67d2-0378-4dc1-9c0a-a5198863cb6b/REQUIREMENTS.md
-[6] 2401.05375v1.md https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_cd8c922a-4868-4f41-a92c-d8f6594b8b05/671d9f96-9511-4b39-959e-125dd45a898b/2401.05375v1.md
-[7] 2401.05375v1.pdf https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_cd8c922a-4868-4f41-a92c-d8f6594b8b05/06ac4479-578c-40d8-a19e-ac391004090b/2401.05375v1.pdf
+[1] FIRST_NON_SORTING_EXPERIMENT.md https://github.com/zfifteen/emergent-doom-engine/blob/main/docs/requirements/FIRST_NON_SORTING_EXPERIMENT.md
+[2] CLUSTERING_PRIMITIVE_SPEC.md https://github.com/zfifteen/emergent-doom-engine/blob/main/docs/requirements/CLUSTERING_PRIMITIVE_SPEC.md
+[3] README.md https://github.com/zfifteen/emergent-doom-engine/blob/main/README.md
+[4] EDE_PM_INSTRUCTIONS.md https://github.com/zfifteen/emergent-doom-engine/blob/main/.github/agents/ede_project_manager.md
+[5] REQUIREMENTS.md https://github.com/zfifteen/emergent-doom-engine/blob/main/docs/requirements/REQUIREMENTS.md
+[6] 2401.05375v1.md https://github.com/zfifteen/emergent-doom-engine/blob/main/docs/theory/2401.05375v1.md
+[7] 2401.05375v1.pdf https://github.com/zfifteen/emergent-doom-engine/blob/main/docs/theory/2401.05375v1.pdf
