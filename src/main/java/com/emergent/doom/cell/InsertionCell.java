@@ -22,7 +22,7 @@ import com.emergent.doom.group.GroupAwareCell;
  *   <li>Domain implements compareTo.</li>
  * </ol>
  * <p>OUTPUTS: Cell with INSERTION policy.</p>
- * <p>DEPENDENCIES: Cell interface, HasSortDirection interface.</p>
+ * <p>DEPENDENCIES: Cell interface, CellMetadata for sort direction.</p>
  *
  * <p>GROUND TRUTH REFERENCE: cell_research/InsertionSortCell.py:59-61</p>
  * <pre>

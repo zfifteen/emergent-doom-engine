@@ -22,7 +22,7 @@ import com.emergent.doom.group.GroupAwareCell;
  *   <li>Domain implements compareTo using value.</li>
  * </ol>
  * <p>OUTPUTS: Cell with BUBBLE policy.</p>
- * <p>DEPENDENCIES: Cell interface, HasSortDirection interface.</p>
+ * <p>DEPENDENCIES: Cell interface, CellMetadata for sort direction.</p>
  *
  * <p>GROUND TRUTH REFERENCE: cell_research/BubbleSortCell.py:54-56</p>
  * <pre>

@@ -13,9 +13,8 @@ package com.emergent.doom.cell;
  *   <li>getValue() - optional, for metrics/logging</li>
  * </ul>
  * 
- * <p>Implementations should NOT implement deprecated Has* interfaces 
- * (HasAlgotype, HasSortDirection, HasIdealPosition). These are maintained 
- * only for backward compatibility during migration.</p>
+ * <p>Implementations should NOT carry any engine-specific metadata fields.
+ * All sorting metadata is managed externally via metadata providers.</p>
  * 
  * @param <T> the concrete cell type
  * @see com.emergent.doom.execution.CellMetadata

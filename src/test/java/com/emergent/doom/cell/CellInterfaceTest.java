@@ -8,11 +8,11 @@ import static org.junit.jupiter.api.Assertions.*;
  * Test suite for Cell interface contract.
  *
  * PURPOSE: Verify that Cell interface defines minimal contract for domain-agnostic sorting
- * after Phase 3 refactoring.
+ * after lightweight cell refactoring.
  *
  * ARCHITECTURE: Tests validate that Cell:
  * - Extends only Comparable<T>
- * - Does not extend Has* interfaces (HasAlgotype, HasSortDirection, etc.)
+ * - Does not carry engine-specific metadata (managed externally via CellMetadata)
  * - Requires only compareTo() method from implementations
  * - Supports pure data carrier pattern
  */
@@ -46,7 +46,8 @@ class CellInterfaceTest {
     @Test
     @DisplayName("Cell interface extends only Comparable")
     void testInterfaceExtendsOnlyComparable() {
-        // Test will verify: Cell interface does not extend Has* interfaces
+        // Verify Cell interface does not carry engine-specific metadata
+        // All metadata is managed externally via CellMetadata
         // TODO: Implement after scaffold phase
     }
 

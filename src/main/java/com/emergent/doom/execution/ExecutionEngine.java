@@ -413,32 +413,28 @@ public class ExecutionEngine<T extends Cell<T>> {
     }
 
     /**
-     * Helper: Get the sort direction of a cell, if it implements HasSortDirection.
+     * Helper: Get the sort direction (deprecated - ExecutionEngine doesn't support metadata).
      * 
-     * <p>PURPOSE: Provides safe access to cell sort direction for cross-purpose
-     * sorting support. Returns ASCENDING as default for cells without direction.</p>
+     * <p>PURPOSE: This method is deprecated. ExecutionEngine is a legacy class that
+     * doesn't support metadata providers. Use ParallelExecutionEngine or
+     * SynchronousExecutionEngine for metadata-aware sorting.</p>
      * 
-     * <p>INPUTS: cell (T) - the cell to query for direction</p>
+     * <p>INPUTS: cell (T) - the cell (ignored)</p>
      * 
-     * <p>PROCESS:
-     * <ol>
-     *   <li>Check if cell implements HasSortDirection interface</li>
-     *   <li>If yes, call getSortDirection() and return result</li>
-     *   <li>If no, return SortDirection.ASCENDING as default</li>
-     * </ol>
-     * </p>
+     * <p>PROCESS: Returns ASCENDING by default (metadata not supported)</p>
      * 
-     * <p>OUTPUTS: SortDirection - cell's preference or ASCENDING default</p>
+     * <p>OUTPUTS: SortDirection.ASCENDING (always)</p>
      * 
-     * <p>DEPENDENCIES: SortDirection enum, HasSortDirection interface</p>
+     * <p>DEPENDENCIES: SortDirection enum</p>
      * 
-     * <p>ARCHITECTURE NOTE: This provides backward compatibility for cells that
-     * don't implement HasSortDirection while enabling cross-purpose sorting for
-     * cells that do (e.g., GenericCell with direction support).</p>
+     * <p>ARCHITECTURE NOTE: For direction-aware sorting, use modern execution engines
+     * that accept metadata providers (ParallelExecutionEngine, SynchronousExecutionEngine).</p>
      * 
-     * @param cell the cell to query
-     * @return the cell's sort direction, or ASCENDING if not direction-aware
+     * @param cell the cell (ignored)
+     * @return SortDirection.ASCENDING (always)
+     * @deprecated Use execution engines with metadata provider support
      */
+    @Deprecated
     private SortDirection getCellDirection(T cell) {
         // ExecutionEngine is deprecated and doesn't support metadata providers
         // Default to ascending for all cells

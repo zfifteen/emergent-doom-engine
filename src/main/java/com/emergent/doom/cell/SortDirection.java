@@ -11,14 +11,15 @@ package com.emergent.doom.cell;
  * *decreasing* order while the other sorted in *increasing* order."
  * </blockquote>
  * 
- * <p>ARCHITECTURE ROLE: This enum is a fundamental property of cells that influences
- * how they compare values and make swap decisions. When combined with different algotypes,
- * it allows studying equilibrium states where cells with conflicting goals interact.</p>
+ * <p>ARCHITECTURE ROLE: This enum is a fundamental property managed via CellMetadata.
+ * It influences how cells compare values and make swap decisions. When combined with
+ * different algotypes, it allows studying equilibrium states where cells with
+ * conflicting goals interact.</p>
  * 
  * <p>IMPLEMENTATION FLOW:
  * <ol>
- *   <li>Cell is created with a SortDirection (ASCENDING or DESCENDING)</li>
- *   <li>During swap evaluation, the cell's direction determines comparison logic</li>
+ *   <li>CellMetadata is created with a SortDirection (ASCENDING or DESCENDING)</li>
+ *   <li>During swap evaluation, the metadata's direction determines comparison logic</li>
  *   <li>ASCENDING cells prefer smaller values to their left, larger to their right</li>
  *   <li>DESCENDING cells prefer larger values to their left, smaller to their right</li>
  *   <li>In cross-purpose scenarios, cells reach equilibrium when opposing forces balance</li>
@@ -27,7 +28,7 @@ package com.emergent.doom.cell;
  * 
  * <p>EXPECTED INPUTS: None (enum constants)</p>
  * <p>EXPECTED OUTPUTS: Direction policy for swap decisions</p>
- * <p>DATA FLOW: Cell construction → Swap evaluation → Direction-aware comparison</p>
+ * <p>DATA FLOW: Metadata provider → CellMetadata → Direction-aware comparison</p>
  * 
  * <p>GROUND TRUTH REFERENCE: cell_research/MultiThreadCell.py:
  * <pre>
@@ -35,8 +36,6 @@ package com.emergent.doom.cell;
  *     reverse_direction: bool  # True = descending, False = ascending
  * </pre>
  * </p>
- * 
- * @see HasSortDirection
  */
 public enum SortDirection {
     /**

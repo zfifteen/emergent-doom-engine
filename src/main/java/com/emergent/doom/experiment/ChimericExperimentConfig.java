@@ -255,4 +255,38 @@ public class ChimericExperimentConfig extends ExperimentConfig {
             return new ChimericExperimentConfig(this);
         }
     }
+
+    /**
+     * Create a metadata provider function from this configuration.
+     *
+     * <p>This method integrates the chimeric algotype mix with the sort direction
+     * to produce a metadata provider suitable for execution engines.</p>
+     *
+     * @param algotypeProvider the algotype assignment strategy
+     * @return metadata provider function mapping cell index to CellMetadata
+     * @throws IllegalArgumentException if algotype provider returns invalid algotype name
+     */
+    public java.util.function.IntFunction<com.emergent.doom.execution.CellMetadata> createMetadataProvider(
+            com.emergent.doom.chimeric.AlgotypeProvider algotypeProvider) {
+        
+        final int arraySize = getArraySize();
+        final com.emergent.doom.cell.SortDirection cellSortDirection = 
+            sortDirection == SortDirection.INCREASING 
+                ? com.emergent.doom.cell.SortDirection.ASCENDING 
+                : com.emergent.doom.cell.SortDirection.DESCENDING;
+        
+        return index -> {
+            String algotypeStr = algotypeProvider.getAlgotype(index, arraySize);
+            try {
+                com.emergent.doom.cell.Algotype algotype = 
+                    com.emergent.doom.cell.Algotype.valueOf(algotypeStr.toUpperCase());
+                return new com.emergent.doom.execution.CellMetadata(algotype, cellSortDirection);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(
+                    String.format("Invalid algotype '%s' returned by provider for index %d. " +
+                                 "Expected one of: BUBBLE, INSERTION, SELECTION", 
+                                 algotypeStr, index), e);
+            }
+        };
+    }
 }

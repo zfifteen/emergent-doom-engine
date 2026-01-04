@@ -375,10 +375,10 @@ class ParallelExecutionEngineTest {
         @DisplayName("Engine sorts using metadata provider instead of cell interfaces")
         void engineUsesMetadataProvider() {
             // TODO PHASE THREE: Implement test
-            // 1. Create minimal cells (just Comparable, no HasAlgotype)
+            // 1. Create minimal cells (just Comparable, no embedded metadata)
             // 2. Provide metadata externally via IntFunction<CellMetadata>
             // 3. Run engine to convergence
-            // 4. Verify array is sorted (proving metadata was used, not cell.getAlgotype())
+            // 4. Verify array is sorted (proving metadata provider was used)
         }
     }
 
