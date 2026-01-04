@@ -34,7 +34,7 @@ public class CrossPurposeSortingTest {
 
     @Test
     public void testGenericCellDefaultDirection() {
-        GenericCell cell = new GenericCell(42, Algotype.BUBBLE);
+        GenericCell cell = new GenericCell(42);
         assertEquals(SortDirection.ASCENDING, cell.getSortDirection());
     }
 

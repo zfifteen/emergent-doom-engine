@@ -75,8 +75,8 @@ class ProbeTest {
         @DisplayName("resetCounters() resets counters without clearing snapshots")
         void resetCountersWithoutClearingSnapshots() {
             GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE),
-                new GenericCell(2, Algotype.BUBBLE)
+                new GenericCell(1),
+                new GenericCell(2)
             };
             probe.recordSnapshot(0, cells, 0);
             probe.recordCompareAndSwap();
@@ -123,10 +123,10 @@ class ProbeTest {
         @DisplayName("recordSnapshotWithTypes captures algotype distribution")
         void recordSnapshotWithTypesCapturesDistribution() {
             GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE),
-                new GenericCell(2, Algotype.BUBBLE),
-                new GenericCell(3, Algotype.SELECTION),
-                new GenericCell(4, Algotype.INSERTION)
+                new GenericCell(1),
+                new GenericCell(2),
+                new GenericCell(3),
+                new GenericCell(4)
             };
 
             probe.recordSnapshotWithTypes(0, cells, 0);
@@ -148,7 +148,7 @@ class ProbeTest {
         @DisplayName("StepSnapshot hasCellTypeDistribution returns true for regular snapshots (unified behavior)")
         void regularSnapshotHasCellTypeDistribution() {
             GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE)
+                new GenericCell(1)
             };
 
             probe.recordSnapshot(0, cells, 0);
@@ -162,8 +162,8 @@ class ProbeTest {
         @DisplayName("StepSnapshot hasCellTypeDistribution returns true for typed snapshots")
         void typedSnapshotHasCellTypeDistribution() {
             GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE),
-                new GenericCell(2, Algotype.SELECTION)
+                new GenericCell(1),
+                new GenericCell(2)
             };
 
             probe.recordSnapshotWithTypes(0, cells, 0);
@@ -182,7 +182,7 @@ class ProbeTest {
         @DisplayName("recordSnapshot adds snapshot to list")
         void recordSnapshotAddsToList() {
             GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE)
+                new GenericCell(1)
             };
 
             probe.recordSnapshot(0, cells, 0);
@@ -195,7 +195,7 @@ class ProbeTest {
         @DisplayName("getSnapshot returns correct snapshot by step number")
         void getSnapshotReturnsByStepNumber() {
             GenericCell[] cells = {
-                new GenericCell(42, Algotype.BUBBLE)
+                new GenericCell(42)
             };
 
             probe.recordSnapshot(5, cells, 3);
@@ -210,7 +210,7 @@ class ProbeTest {
         @DisplayName("setRecordingEnabled(false) prevents snapshot recording")
         void disabledRecordingPreventsSnapshots() {
             GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE)
+                new GenericCell(1)
             };
 
             probe.setRecordingEnabled(false);

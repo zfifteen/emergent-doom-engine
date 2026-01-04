@@ -47,7 +47,7 @@ class GapImplementationTest {
         @Test
         @DisplayName("updateForBoundary sets idealPos to leftBoundary for ascending sort")
         void updateForBoundaryAscending() {
-            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            GenericCell cell = new GenericCell(42);
             cell.setIdealPos(50); // Some arbitrary position
 
             cell.updateForBoundary(0, 99, false); // ascending
@@ -59,7 +59,7 @@ class GapImplementationTest {
         @Test
         @DisplayName("updateForBoundary sets idealPos to rightBoundary for descending sort")
         void updateForBoundaryDescending() {
-            GenericCell cell = new GenericCell(42, Algotype.SELECTION);
+            GenericCell cell = new GenericCell(42);
             cell.setIdealPos(50); // Some arbitrary position
 
             cell.updateForBoundary(0, 99, true); // descending
@@ -122,9 +122,9 @@ class GapImplementationTest {
         @DisplayName("reset() only affects SELECTION algotype cells")
         void resetOnlyAffectsSelectionCells() {
             GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE),
-                new GenericCell(2, Algotype.SELECTION),
-                new GenericCell(3, Algotype.INSERTION)
+                new GenericCell(1),
+                new GenericCell(2),
+                new GenericCell(3)
             };
 
             // Set all to some position
@@ -184,8 +184,8 @@ class GapImplementationTest {
         @DisplayName("Frozen swap attempts are recorded to probe")
         void frozenSwapAttemptsRecordedToProbe() {
             GenericCell[] cells = {
-                new GenericCell(2, Algotype.BUBBLE),
-                new GenericCell(1, Algotype.BUBBLE)
+                new GenericCell(2),
+                new GenericCell(1)
             };
 
             FrozenCellStatus frozenStatus = new FrozenCellStatus();
@@ -207,8 +207,8 @@ class GapImplementationTest {
         @DisplayName("Active cell can displace MOVABLE frozen cell")
         void activeCellCanDisplaceMovableFrozen() {
             GenericCell[] cells = {
-                new GenericCell(2, Algotype.BUBBLE),
-                new GenericCell(1, Algotype.BUBBLE)
+                new GenericCell(2),
+                new GenericCell(1)
             };
 
             FrozenCellStatus frozenStatus = new FrozenCellStatus();
@@ -230,8 +230,8 @@ class GapImplementationTest {
         @DisplayName("Active cell cannot displace IMMOVABLE frozen cell")
         void activeCellCannotDisplaceImmovableFrozen() {
             GenericCell[] cells = {
-                new GenericCell(2, Algotype.BUBBLE),
-                new GenericCell(1, Algotype.BUBBLE)
+                new GenericCell(2),
+                new GenericCell(1)
             };
 
             FrozenCellStatus frozenStatus = new FrozenCellStatus();
@@ -249,10 +249,10 @@ class GapImplementationTest {
         void isLeftSortedDescendingWithFrozen() {
             // Array: [5, FROZEN(99), 3, 1] - descending order with frozen cell at idx 1
             GenericCell[] cells = {
-                new GenericCell(5, Algotype.INSERTION),
-                new GenericCell(99, Algotype.INSERTION), // frozen (out of desc order, should be skipped)
-                new GenericCell(3, Algotype.INSERTION),
-                new GenericCell(1, Algotype.INSERTION)
+                new GenericCell(5),
+                new GenericCell(99), // frozen (out of desc order, should be skipped)
+                new GenericCell(3),
+                new GenericCell(1)
             };
 
             FrozenCellStatus frozenStatus = new FrozenCellStatus();
@@ -287,10 +287,10 @@ class GapImplementationTest {
         void isLeftSortedAscendingWithFrozen() {
             // Array: [1, FROZEN(0), 3, 5] - ascending order with frozen cell at idx 1
             GenericCell[] cells = {
-                new GenericCell(1, Algotype.INSERTION),
-                new GenericCell(0, Algotype.INSERTION), // frozen (out of asc order, should be skipped)
-                new GenericCell(3, Algotype.INSERTION),
-                new GenericCell(5, Algotype.INSERTION)
+                new GenericCell(1),
+                new GenericCell(0), // frozen (out of asc order, should be skipped)
+                new GenericCell(3),
+                new GenericCell(5)
             };
 
             FrozenCellStatus frozenStatus = new FrozenCellStatus();
@@ -332,8 +332,8 @@ class GapImplementationTest {
         @DisplayName("ExecutionEngine wires probe to SwapEngine")
         void executionEngineWiresProbeToSwapEngine() {
             GenericCell[] cells = {
-                new GenericCell(2, Algotype.BUBBLE),
-                new GenericCell(1, Algotype.BUBBLE)
+                new GenericCell(2),
+                new GenericCell(1)
             };
 
             FrozenCellStatus frozenStatus = new FrozenCellStatus();
@@ -360,8 +360,8 @@ class GapImplementationTest {
         @DisplayName("ExecutionEngine records compare-and-swap events")
         void executionEngineRecordsCompareAndSwap() {
             GenericCell[] cells = {
-                new GenericCell(2, Algotype.BUBBLE),
-                new GenericCell(1, Algotype.BUBBLE)
+                new GenericCell(2),
+                new GenericCell(1)
             };
 
             FrozenCellStatus frozenStatus = new FrozenCellStatus();
@@ -384,9 +384,9 @@ class GapImplementationTest {
         void compareAndSwapCountsAllComparisons() {
             // Create array where BUBBLE will compare but not always swap
             GenericCell[] cells = {
-                new GenericCell(1, Algotype.BUBBLE),
-                new GenericCell(2, Algotype.BUBBLE),
-                new GenericCell(3, Algotype.BUBBLE)  // Already sorted
+                new GenericCell(1),
+                new GenericCell(2),
+                new GenericCell(3)  // Already sorted
             };
 
             FrozenCellStatus frozenStatus = new FrozenCellStatus();
