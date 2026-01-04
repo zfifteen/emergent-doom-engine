@@ -10,7 +10,7 @@
 
 Tested two semiprimes intended to be "unbalanced" vs "balanced", but **both turned out to have small factors** discoverable in the array range [1, 1000].
 
-**Key Discovery:** The system successfully found hidden small factors in both cases—all trials completed sorting successfully (100% across 100 trials each).
+**Key Discovery:** The system successfully found hidden small factors in both cases—all trials completed sorting successfully (100/100 trials converged, as expected from algorithm design).
 
 ---
 
