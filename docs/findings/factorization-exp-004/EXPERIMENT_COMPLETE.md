@@ -144,7 +144,7 @@ For comparison, in **wave-crispr-signal experiments** (experiment-095), converge
 - Performance degradation: negligible
 - Steps variation: <10%
 
-**Conclusion:** Algorithm complexity appears O(1) or O(log N) with respect to target magnitude for sorting completion.
+**Conclusion:** Experimental results suggest roughly constant or slowly growing (sublinear) scaling with respect to target magnitude for sorting completion, but this does not establish a formal complexity class.
 
 ### 3. Sorting Algorithm Reliability
 
