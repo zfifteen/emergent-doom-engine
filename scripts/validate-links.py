@@ -11,12 +11,10 @@ Usage:
     python scripts/validate-links.py [--fix] [--verbose]
 """
 
-import os
 import re
 import sys
 from pathlib import Path
-from typing import List, Tuple, Dict
-from urllib.parse import urlparse
+from typing import List
 
 
 class LinkValidator:

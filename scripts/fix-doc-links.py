@@ -6,7 +6,6 @@ This script corrects the relative paths to source files in the README files.
 The issue: links use ../../../../../main/ instead of ../../../../../../src/main/
 """
 
-import re
 from pathlib import Path
 
 
