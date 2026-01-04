@@ -68,19 +68,41 @@ The EDE translates the theoretical concepts from the Levin et al. research into 
 ### Core Components
 
 #### Cell Interface
-The foundation of the EDE is the Cell interface, which extends java.lang.Comparable<Cell>. Each Cell represents an autonomous agent with minimal agency, analogous to the array elements in the Levin paper. Cells must implement compareTo() to define their natural ordering, enabling them to participate in sorting operations. The Cell interface also defines methods for local state management, neighbor interaction, and damage/error simulation, allowing implementations to model various forms of basal intelligence and adaptive behavior.
+The foundation of the EDE is the Cell interface, which extends `java.lang.Comparable<Cell>`. Cells are pure data carriers that implement only `compareTo()` for domain-specific comparison logic. All sorting metadata (algotype, sort direction, ideal position) is managed externally via `CellMetadata`, achieving true domain-agnostic sorting where cells contain zero engine-specific state.
 
-#### SortingStrategy
-This is an abstract strategy pattern implementation that encapsulates the three core sorting algorithms: SelectionSort, BubbleSort, and InsertionSort. Each strategy interprets Cells as autonomous agents rather than passive data, treating comparisons and swaps as local interactions between neighboring elements. The SortingStrategy interface provides hooks for observing sorting progress, detecting temporary disorder increases (delayed gratification), and tracking problem-space traversal metrics like those defined in the Levin research.
+#### Execution Engines
+The execution package provides three engine implementations:
+- **SynchronousExecutionEngine**: Sequential cell evaluation for deterministic, step-by-step execution
+- **ParallelExecutionEngine**: One-thread-per-cell model matching the Levin paper specification
+- **LockBasedExecutionEngine**: Optimized parallel execution with reduced overhead
 
-#### CellArray
-The CellArray class manages collections of Cells and serves as the primary data structure for emergent phenomena. Unlike traditional arrays, CellArray tracks not only element positions but also interaction histories, clustering patterns, and adaptive responses to perturbations. It provides methods for introducing "damaged" cells, creating chimeric arrays (mixing cells following different strategies), and monitoring emergent organizational patterns. The CellArray automatically instruments sorting operations to collect the problem-space navigation metrics described in the Levin paper.
+Each engine coordinates cell swap decisions, applies convergence detection, and records execution trajectories via the Probe interface.
 
-#### EmergentEngine
-This is the top-level orchestration component that ties together the Cell, SortingStrategy, and CellArray abstractions. The EmergentEngine provides the public API for configuring experiments, selecting sorting algorithms, defining initial conditions, and collecting emergent behavior metrics. It implements the pattern of treating each sorting execution as a traversal through problem space, automatically measuring robustness, delayed gratification, clustering behavior, and other competencies identified in the Levin research. The engine supports both single-run simulations and batch experiments for statistical analysis.
+#### CellMetadata
+External metadata provider system that associates sorting metadata with cell positions without modifying cell implementations. Each metadata entry specifies:
+- **Algotype**: Sorting algorithm (BUBBLE, SELECTION, or INSERTION)
+- **SortDirection**: Ordering preference (ASCENDING or DESCENDING)
+- **Ideal Position**: Target position for convergence detection
 
-#### ProblemSpaceAnalyzer
-This component implements the quantitative characterization methods from the Levin paper, measuring metrics such as Monotonicity Error (disorder remaining at each step), Sortedness (progress toward goal state), and Delayed Gratification (temporary error increases that lead to long-term gains). The analyzer treats the sorting process as goal-directed navigation through a problem space, automatically detecting cognitive-like behaviors such as obstacle avoidance, adaptive route-finding, and memory-like state persistence. These measurements provide the empirical grounding for claims about emergent intelligence in minimal substrates.
+This architecture enables chimeric populations where different cells follow different algorithms and sort in opposite directions.
+
+#### Metrics and Analysis
+The metrics package implements quantitative characterization methods from the Levin paper:
+- **MonotonicityError**: Disorder remaining at each step (inversion count)
+- **SortednessValue**: Progress toward sorted state
+- **DelayedGratificationCalculator**: Temporary error increases that lead to long-term gains
+- **AggregationValue**: Clustering behavior in chimeric populations
+
+The analysis package provides trajectory visualization and statistical analysis of emergent behaviors.
+
+#### Probe System
+Trajectory recording infrastructure that captures:
+- Step-by-step snapshots of array state
+- Swap counts and comparison operations
+- Convergence metrics and timing data
+- Domain-specific metadata for post-hoc analysis
+
+Enables detailed examination of emergent problem-solving behaviors without impacting execution performance.
 
 ### Key Features
 
