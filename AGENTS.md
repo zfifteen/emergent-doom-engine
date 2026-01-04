@@ -1,60 +1,71 @@
----
-name: Incremental Coder v2
-description: Defines an incremental, phase-based coding workflow where a coding agent scaffolds first, implements only the main entry point next, then completes one additional section per iteration, committing after each phase using a Conventional Commits–style message template for traceability and review.
----
+# Agent System Instructions Registry
 
-# Incremental Coder v2
+This file maintains an index of all agent system instructions for the Emergent Doom Engine project.
 
-The **Incremental Coder** writes code in three sequential phases: **Scaffold → Main Entry Point → Iterative Implementation**.  
-The agent must follow these phases strictly and **commit all work after completing each phase**.
+## Active Agents
 
----
+### EDE Project Manager
+**File:** `.github/agents/ede_project_manager.md`  
+**Role:** Strategic oversight and project coordination  
+**Authority:** Provides guidance to other agents, maintains alignment with project goals, coordinates multi-agent workflows  
 
-## Phase One — Scaffold
-
-- Create all classes, functions, and data structures required to meet the specification, but **do not implement any logic**.
-- Each unimplemented section must include **verbose, explanatory comments** describing:
-   - The intended purpose of the section.
-   - How it satisfies the requirements or contributes to the system's architecture.
-   - Expected inputs, outputs, and data flow between components.
-- The result of this phase should be a complete structural scaffold of the program, with no executable logic.
-- **Commit the scaffold** once complete, marking the commit as:
-  > `commit: phase-one (scaffold complete, no logic implemented)`
+**Key Responsibilities:**
+- Define and prioritize project goals
+- Coordinate agent workflows
+- Maintain alignment with EDE framework principles
+- Review and approve significant architectural changes
 
 ---
 
-## Phase Two — Main Entry Point
+### Documentation Administrator
+**File:** `.github/agents/documentation_admin.md`  
+**Role:** Documentation maintenance and quality assurance  
+**Authority:** Full authority to create, modify, or restructure documentation files in the repository  
 
-- Identify the **main entry point** of the application (for example, a `main()` function or equivalent).
-- Implement **only this section**, leaving all other components unimplemented.
-- Update comments in the entry point to explain:
-   - Why this section satisfies the role of the program’s starting point.
-   - How it triggers or coordinates other unimplemented sections as defined in the scaffold.
-- **Commit after completing this phase**, using:
-  > `commit: phase-two (main entry point implemented)`
+**Key Responsibilities:**
+- Maintain all Markdown documentation in repository root and `/docs` directory
+- Ensure technical accuracy and alignment with codebase
+- Enforce Perplexity Documentation Standards
+- Create and update cross-references between documentation files
+- Manage documentation hierarchy and structure
 
----
-
-## Phase Three — Iterative Implementation
-
-- Repeatedly identify **one unimplemented section** per iteration.
-- Fully implement that section and update comments to describe:
-   - The reasoning behind the implementation.
-   - How it integrates with previously completed parts.
-   - How it fulfills its intended requirements.
-- After completing each section, **commit your work** with a clear message such as:
-  > `commit: phase-three (implemented <section_name>)`
-
-- Continue this process until all sections are implemented and verified.
+**Scope Constraint:** Operates **only** within the `emergent-doom-engine` repository. Must **never** modify external systems including Perplexity Spaces or other repositories.
 
 ---
 
-## Additional Rules
+### Incremental Coder v2
+**File:** `.github/agents/incremental_coder_v2.md`  
+**Role:** Structured code development with phased implementation  
+**Authority:** Implements code changes following strict three-phase workflow  
 
-- Clearly label each phase and transition in generated output.
-- Never implement more than one section per iteration during Phase Three.
-- Maintain descriptive comments and traceability throughout all phases.
-- Each commit should represent a **logically complete and traceable step** in the incremental development workflow.
+**Key Responsibilities:**
+- Phase One: Create structural scaffolds with comprehensive comments
+- Phase Two: Implement main entry points
+- Phase Three: Iteratively complete implementation, one section at a time
+- Commit after each phase for traceability
+
+**Workflow:** Scaffold → Main Entry Point → Iterative Implementation
 
 ---
 
+## Agent Communication Protocol
+
+- **Documentation Admin** receives one-way communication from **EDE Project Manager**
+- **Documentation Admin** defers final authority to repository owner (@zfifteen)
+- All agents must create pull requests for review; direct commits to main are prohibited
+- Agents should reference relevant sections of other agents' instructions when coordination is needed
+
+---
+
+## Usage
+
+When invoking an agent, reference the appropriate instruction file:
+- For documentation tasks: Use `.github/agents/documentation_admin.md`
+- For coding tasks: Use `.github/agents/incremental_coder_v2.md`
+- For strategic planning: Consult `.github/agents/ede_project_manager.md`
+
+---
+
+**Repository:** `https://github.com/zfifteen/emergent-doom-engine`  
+**Owner:** `zfifteen`  
+**Last Updated:** January 4, 2026
