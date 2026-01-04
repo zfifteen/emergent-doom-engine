@@ -71,7 +71,7 @@ Tests for the chimeric population builder and utilities.
    - Custom factory patterns
    - Deterministic seeding for reproducibility
 
-**Link to source:** [ChimericPopulation.java](../../../../../main/java/com/emergent/doom/chimeric/ChimericPopulation.java)
+**Link to source:** [ChimericPopulation.java](../../../../../../main/java/com/emergent/doom/chimeric/ChimericPopulation.java)
 
 ### AlgotypeProvider Interface
 
@@ -81,7 +81,7 @@ Tests for algotype assignment strategies:
 - `PercentageAlgotypeProvider`: Distributes algotypes by percentage
 - Custom providers for spatial or rule-based assignment
 
-**Link to source:** [AlgotypeProvider.java](../../../../../main/java/com/emergent/doom/chimeric/AlgotypeProvider.java)
+**Link to source:** [AlgotypeProvider.java](../../../../../../main/java/com/emergent/doom/chimeric/AlgotypeProvider.java)
 
 ### CellFactory Interface
 
@@ -91,7 +91,7 @@ Tests for flexible cell construction:
 - `GenericCellFactory`: Creates generic wrapper cells
 - Custom factories for domain-specific cells
 
-**Link to source:** [CellFactory.java](../../../../../main/java/com/emergent/doom/chimeric/CellFactory.java)
+**Link to source:** [CellFactory.java](../../../../../../main/java/com/emergent/doom/chimeric/CellFactory.java)
 
 ## Usage Examples
 

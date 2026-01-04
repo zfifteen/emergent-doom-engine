@@ -151,10 +151,10 @@ Every test in this suite illustrates one or more EDE core principles:
 
 ## Reference Materials
 
-- **[Production Code](../../../../../main/java/com/emergent/doom/)** - Implementations being tested
-- **[Main README](../../../../../../../README.md)** - Project overview and quick start
+- **[Production Code](../../../../../../src/main/java/com/emergent/doom/)** - Implementations being tested
+- **[Main README](../../../../../../README.md)** - Project overview and quick start
 - **[Levin et al. (2024)](https://github.com/zfifteen/emergent-doom-engine/blob/main/docs/theory/)** - Theoretical foundation
-- **[REQUIREMENTS.md](../../../../../../../REQUIREMENTS.md)** - Technical specifications
+- **[REQUIREMENTS.md](../../../../../../docs/requirements/REQUIREMENTS.md)** - Technical specifications
 
 ## Quick Start: Running Tests
 
