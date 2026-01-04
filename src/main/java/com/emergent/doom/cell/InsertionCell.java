@@ -3,7 +3,6 @@ package com.emergent.doom.cell;
 import com.emergent.doom.cell.HasValue;
 import com.emergent.doom.cell.HasGroup;
 import com.emergent.doom.cell.HasStatus;
-import com.emergent.doom.cell.HasAlgotype;
 import com.emergent.doom.group.CellGroup;
 import com.emergent.doom.group.CellStatus;
 
@@ -32,7 +31,7 @@ import com.emergent.doom.group.GroupAwareCell;
  * return self.value < self.cells[int(target_position[0])].value
  * </pre>
  */
-public abstract class InsertionCell<T extends InsertionCell<T>> implements Cell<T>, GroupAwareCell<T>, HasSortDirection, HasValue, HasGroup, HasStatus, HasAlgotype {
+public abstract class InsertionCell<T extends InsertionCell<T>> implements Cell<T>, GroupAwareCell<T>, HasValue, HasGroup, HasStatus {
     protected final int value;
     protected CellGroup<T> group = null;
     protected CellStatus status = CellStatus.ACTIVE;
@@ -68,12 +67,10 @@ public abstract class InsertionCell<T extends InsertionCell<T>> implements Cell<
         return value;
     }
 
-    @Override
     public Algotype getAlgotype() {
         return Algotype.INSERTION;  // Baked-in
     }
 
-    @Override
     public SortDirection getSortDirection() {
         return sortDirection;
     }

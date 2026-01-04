@@ -71,61 +71,43 @@ public class ChimericPopulation<T extends Cell<T>> {
     /**
      * Count cells of a specific algotype in an array.
      *
-     * <p>Iterates through the array and counts cells whose algotype
-     * matches the specified name (case-insensitive).</p>
+     * <p><strong>DEPRECATED:</strong> This method requires cells to implement HasAlgotype,
+     * which has been removed. To count algotypes, use metadata providers or snapshot data instead.</p>
      *
      * @param cells the cell array to analyze
      * @param algotype the algotype name to count (e.g., "BUBBLE", "SELECTION")
      * @return number of cells with the specified algotype
-     * @throws IllegalArgumentException if cells or algotype is null
+     * @throws UnsupportedOperationException always thrown
+     * @deprecated Cells no longer implement HasAlgotype. Use metadata providers instead.
      */
+    @Deprecated
     public int countAlgotype(T[] cells, String algotype) {
-        if (cells == null) {
-            throw new IllegalArgumentException("Cells array cannot be null");
-        }
-        if (algotype == null) {
-            throw new IllegalArgumentException("Algotype cannot be null");
-        }
-
-        int count = 0;
-        for (T cell : cells) {
-            // Cast to HasAlgotype for legacy support during Phase 2 migration
-            if (cell != null && cell instanceof com.emergent.doom.cell.HasAlgotype) {
-                Algotype cellAlgotype = ((com.emergent.doom.cell.HasAlgotype) cell).getAlgotype();
-                if (cellAlgotype != null && cellAlgotype.name().equalsIgnoreCase(algotype)) {
-                    count++;
-                }
-            }
-        }
-        return count;
+        throw new UnsupportedOperationException(
+            "ChimericPopulation.countAlgotype() is no longer supported. " +
+            "Cells do not implement HasAlgotype interface. " +
+            "Use metadata providers or snapshot data to track algotypes."
+        );
     }
 
     /**
      * Count cells of a specific algotype enum in an array.
      *
+     * <p><strong>DEPRECATED:</strong> This method requires cells to implement HasAlgotype,
+     * which has been removed. To count algotypes, use metadata providers or snapshot data instead.</p>
+     *
      * @param cells the cell array to analyze
      * @param algotype the algotype enum to count
      * @return number of cells with the specified algotype
+     * @throws UnsupportedOperationException always thrown
+     * @deprecated Cells no longer implement HasAlgotype. Use metadata providers instead.
      */
+    @Deprecated
     public int countAlgotype(T[] cells, Algotype algotype) {
-        if (cells == null) {
-            throw new IllegalArgumentException("Cells array cannot be null");
-        }
-        if (algotype == null) {
-            throw new IllegalArgumentException("Algotype cannot be null");
-        }
-
-        int count = 0;
-        for (T cell : cells) {
-            // Cast to HasAlgotype for legacy support during Phase 2 migration
-            if (cell != null && cell instanceof com.emergent.doom.cell.HasAlgotype) {
-                Algotype cellAlgotype = ((com.emergent.doom.cell.HasAlgotype) cell).getAlgotype();
-                if (cellAlgotype == algotype) {
-                    count++;
-                }
-            }
-        }
-        return count;
+        throw new UnsupportedOperationException(
+            "ChimericPopulation.countAlgotype() is no longer supported. " +
+            "Cells do not implement HasAlgotype interface. " +
+            "Use metadata providers or snapshot data to track algotypes."
+        );
     }
 
     /**

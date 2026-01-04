@@ -2,8 +2,6 @@ package com.emergent.doom.execution;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
-import com.emergent.doom.cell.HasIdealPosition;
-import com.emergent.doom.cell.HasSortDirection;
 import com.emergent.doom.cell.SelectionCell;
 import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.probe.Probe;
@@ -254,29 +252,42 @@ public class ExecutionEngine<T extends Cell<T>> {
     // ========== Helper Methods for Cell Access ==========
 
     /**
-     * Get algotype from cell (legacy mode - requires HasAlgotype).
+     * Get algotype from cell (legacy mode - infers from cell type).
      *
-     * <p>PURPOSE: Support legacy cell introspection during Phase 2 migration.
-     * ExecutionEngine doesn't support metadata providers yet, so this is a
-     * temporary fix to enable compilation.</p>
+     * <p>PURPOSE: Support legacy cell introspection during Phase 4 migration.
+     * ExecutionEngine doesn't support metadata providers, so this infers
+     * algotype from the cell's concrete class type.</p>
      *
      * <p>INPUTS: cellIndex - position of cell to query</p>
      *
-     * <p>PROCESS: Cast cell to HasAlgotype and call getAlgotype()</p>
+     * <p>PROCESS: Check cell type and return corresponding algotype</p>
      *
      * <p>OUTPUTS: Algotype for this cell position</p>
      *
-     * <p>DEPENDENCIES: Cell must implement HasAlgotype</p>
+     * <p>DEPENDENCIES: Cell must be BubbleCell, InsertionCell, SelectionCell, or GenericCell</p>
      */
     private Algotype getCellAlgotype(int cellIndex) {
-        // Legacy mode: query cell directly (requires HasAlgotype)
-        if (cells[cellIndex] instanceof com.emergent.doom.cell.HasAlgotype) {
-            return ((com.emergent.doom.cell.HasAlgotype) cells[cellIndex]).getAlgotype();
+        T cell = cells[cellIndex];
+        
+        // Infer algotype from cell type
+        if (cell instanceof com.emergent.doom.cell.BubbleCell) {
+            return Algotype.BUBBLE;
+        } else if (cell instanceof com.emergent.doom.cell.InsertionCell) {
+            return Algotype.INSERTION;
+        } else if (cell instanceof com.emergent.doom.cell.SelectionCell) {
+            return Algotype.SELECTION;
+        } else if (cell instanceof com.emergent.doom.cell.RemainderCell) {
+            // RemainderCell has getAlgotype() method
+            return ((com.emergent.doom.cell.RemainderCell) cell).getAlgotype();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            // GenericCell doesn't store algotype - default to BUBBLE
+            // In practice, GenericCell should be used with metadata providers, not ExecutionEngine
+            return Algotype.BUBBLE;
         }
 
         throw new IllegalStateException(
-            "Cell at index " + cellIndex + " does not implement HasAlgotype. " +
-            "ExecutionEngine does not yet support metadata providers.");
+            "Cell at index " + cellIndex + " is of unknown type: " + cell.getClass().getName() + ". " +
+            "ExecutionEngine does not support metadata providers.");
     }
 
     /**
@@ -429,12 +440,8 @@ public class ExecutionEngine<T extends Cell<T>> {
      * @return the cell's sort direction, or ASCENDING if not direction-aware
      */
     private SortDirection getCellDirection(T cell) {
-        // Check if cell implements HasSortDirection interface
-        if (cell instanceof HasSortDirection) {
-            // Cell supports direction - return its preference
-            return ((HasSortDirection) cell).getSortDirection();
-        }
-        // Cell doesn't support direction - default to ascending
+        // ExecutionEngine is deprecated and doesn't support metadata providers
+        // Default to ascending for all cells
         return SortDirection.ASCENDING;
     }
 
@@ -636,16 +643,9 @@ public class ExecutionEngine<T extends Cell<T>> {
      *                         false for ascending (ideal = left boundary)
      */
     private void resetSelectionCellIdealPositions(boolean reverseDirection) {
-        int leftBoundary = 0;
-        int rightBoundary = cells.length - 1;
-
-        for (int i = 0; i < cells.length; i++) {
-            Algotype algotype = getCellAlgotype(i);
-            if (algotype == Algotype.SELECTION) {
-                if (cells[i] instanceof HasIdealPosition) {
-                    ((HasIdealPosition) cells[i]).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
-                }
-            }
-        }
+        // ExecutionEngine is deprecated and doesn't support metadata providers
+        // Selection cell ideal position tracking requires metadata providers
+        // This method is a no-op for ExecutionEngine
+        // Use ParallelExecutionEngine, SynchronousExecutionEngine, or LockBasedExecutionEngine instead
     }
 }

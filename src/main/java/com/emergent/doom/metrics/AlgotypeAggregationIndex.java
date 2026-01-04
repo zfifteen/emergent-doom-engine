@@ -48,57 +48,26 @@ public class AlgotypeAggregationIndex<T extends Cell<T>> implements Metric<T> {
     /**
      * Compute the aggregation index for the given cell array.
      *
+     * <p><strong>DEPRECATED:</strong> This method requires cells to implement HasAlgotype,
+     * which has been removed. Use {@link #compute(StepSnapshot)} instead, which works
+     * with snapshot data from Probe recordings.</p>
+     *
      * <p>Counts cells that have at least one adjacent neighbor of the same algotype
      * and returns as a percentage of total cells.</p>
      *
-     * <p>PROCESS:
-     * <ol>
-     *   <li>Handle edge cases (null, empty, single cell)</li>
-     *   <li>For each cell, check left and right neighbors</li>
-     *   <li>If either neighbor has same algotype, count the cell</li>
-     *   <li>Return (count / total) × 100</li>
-     * </ol>
-     * </p>
-     *
      * @param cells the array of cells to analyze
      * @return aggregation as a percentage (0.0 to 100.0)
+     * @throws UnsupportedOperationException always thrown - use compute(StepSnapshot) instead
+     * @deprecated Cells no longer implement HasAlgotype. Use compute(StepSnapshot) instead.
      */
     @Override
+    @Deprecated
     public double compute(T[] cells) {
-        // Handle edge cases
-        if (cells == null || cells.length == 0) {
-            return 100.0; // Empty is trivially "aggregated"
-        }
-        if (cells.length == 1) {
-            return 100.0; // Single cell has no neighbors to compare
-        }
-
-        int sameTypeNeighborCount = 0;
-
-        for (int i = 0; i < cells.length; i++) {
-            // Cast to HasAlgotype for legacy support during Phase 2 migration
-            if (!(cells[i] instanceof com.emergent.doom.cell.HasAlgotype)) {
-                continue; // Skip cells without algotype
-            }
-            Algotype current = ((com.emergent.doom.cell.HasAlgotype) cells[i]).getAlgotype();
-
-            // Check left neighbor
-            boolean hasLeftSame = (i > 0) 
-                && (cells[i - 1] instanceof com.emergent.doom.cell.HasAlgotype)
-                && (((com.emergent.doom.cell.HasAlgotype) cells[i - 1]).getAlgotype() == current);
-
-            // Check right neighbor
-            boolean hasRightSame = (i < cells.length - 1) 
-                && (cells[i + 1] instanceof com.emergent.doom.cell.HasAlgotype)
-                && (((com.emergent.doom.cell.HasAlgotype) cells[i + 1]).getAlgotype() == current);
-
-            // Cell is "aggregated" if it has at least one same-type neighbor
-            if (hasLeftSame || hasRightSame) {
-                sameTypeNeighborCount++;
-            }
-        }
-
-        return (sameTypeNeighborCount * 100.0) / cells.length;
+        throw new UnsupportedOperationException(
+            "AlgotypeAggregationIndex.compute(T[] cells) is no longer supported. " +
+            "Cells do not implement HasAlgotype interface. " +
+            "Use compute(StepSnapshot) instead, which works with probe snapshot data."
+        );
     }
 
     @Override

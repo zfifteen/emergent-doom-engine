@@ -2,8 +2,6 @@ package com.emergent.doom.execution;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
-import com.emergent.doom.cell.HasIdealPosition;
-import com.emergent.doom.cell.HasSortDirection;
 import com.emergent.doom.cell.SelectionCell;
 import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.probe.Probe;
@@ -91,9 +89,8 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     /**
      * PURPOSE: Metadata array storing execution behavior for each cell position.
      * 
-     * <p>ARCHITECTURE: Parallel array indexed by cell position. When metadata provider
-     * is used, this array stores algotype, sort direction, and ideal position state
-     * that would otherwise be queried from cell objects. This enables lightweight cells
+     * <p>ARCHITECTURE: Parallel array indexed by cell position. Stores algotype,
+     * sort direction, and ideal position state. This enables lightweight cells
      * that are pure Comparable data carriers.</p>
      * 
      * <p>INPUTS: Initialized from IntFunction&lt;CellMetadata&gt; provider in constructor</p>
@@ -102,10 +99,8 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
      * attached to logical agent identity</p>
      * 
      * <p>OUTPUTS: metadata[i] provides CellMetadata for cell at position i</p>
-     * 
-     * <p>DEPENDENCIES: May be null for legacy mode (backward compatibility)</p>
      */
-    private CellMetadata[] metadata;
+    private final CellMetadata[] metadata;
 
     private volatile boolean running = false;
     private volatile boolean converged = false;
@@ -115,56 +110,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     // Barrier timeout to prevent infinite waits during shutdown
     private static final long BARRIER_TIMEOUT_MS = 5000;
 
-    /**
-     * Create a new parallel execution engine.
-     *
-     * @param cells the cell array to sort
-     * @param swapEngine the swap engine for executing swaps
-     * @param probe the probe for recording snapshots
-     * @param convergenceDetector the convergence detector
-     */
-    @SuppressWarnings("unchecked")
-    public ParallelExecutionEngine(
-            T[] cells,
-            SwapEngine<T> swapEngine,
-            Probe<T> probe,
-            ConvergenceDetector<T> convergenceDetector) {
 
-        this.cells = cells;
-        this.swapEngine = swapEngine;
-        this.probe = probe;
-        this.convergenceDetector = convergenceDetector;
-
-        // Initialize topology helpers
-        this.bubbleTopology = new BubbleTopology<>();
-        this.insertionTopology = new InsertionTopology<>();
-
-        // Wire up probe to swap engine for frozen swap attempt tracking
-        swapEngine.setProbe(probe);
-
-        // Create barrier with N+1 parties (N cells + 1 main thread)
-        this.barrier = new CyclicBarrier(cells.length + 1);
-        this.swapCollector = new ConcurrentSwapCollector();
-
-        // Create cell threads
-        this.cellThreads = new Thread[cells.length];
-        this.cellWorkers = (CellThread<T>[]) new CellThread[cells.length];
-
-        // Create evaluator function
-        CellEvaluator<T> evaluator = this::evaluateCell;
-
-        for (int i = 0; i < cells.length; i++) {
-            cellWorkers[i] = new CellThread<>(i, cells, barrier, swapCollector, evaluator);
-            cellThreads[i] = new Thread(cellWorkers[i], "Cell-" + i);
-            cellThreads[i].setDaemon(true);
-        }
-
-        // No metadata provider - legacy mode (backward compatibility)
-        this.metadata = null;
-
-        // Record initial state
-        probe.recordSnapshot(0, cells, 0);
-    }
 
     /**
      * Create a new parallel execution engine with metadata provider.
@@ -178,12 +124,13 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
      *   <li>swapEngine - Swap execution and frozen cell tracking</li>
      *   <li>probe - Metrics and trajectory recording</li>
      *   <li>convergenceDetector - Determines when execution completes</li>
-     *   <li>metadataProvider - Function mapping index → CellMetadata</li>
+     *   <li>metadataProvider - Function mapping index → CellMetadata (required, non-null)</li>
      * </ul>
      * </p>
      *
      * <p>PROCESS:
      * <ol>
+     *   <li>Validate metadataProvider is non-null</li>
      *   <li>Store all component references</li>
      *   <li>Initialize topology helpers</li>
      *   <li>Create metadata array from provider: metadata[i] = metadataProvider.apply(i)</li>
@@ -202,7 +149,8 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
      * @param swapEngine the swap engine for executing swaps
      * @param probe the probe for recording snapshots
      * @param convergenceDetector the convergence detector
-     * @param metadataProvider function providing metadata for each cell index
+     * @param metadataProvider function providing metadata for each cell index (required, non-null)
+     * @throws NullPointerException if metadataProvider is null
      */
     @SuppressWarnings("unchecked")
     public ParallelExecutionEngine(
@@ -212,14 +160,10 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             ConvergenceDetector<T> convergenceDetector,
             java.util.function.IntFunction<CellMetadata> metadataProvider) {
 
-        // PURPOSE: Initialize engine with metadata provider pattern
-        // PROCESS:
-        //   1. Store component references
-        //   2. Initialize topology helpers
-        //   3. Create metadata array from provider
-        //   4. Set up parallel coordination (barrier, swap collector)
-        //   5. Create cell threads
-        //   6. Wire probe and record initial state
+        // Validate required metadata provider
+        if (metadataProvider == null) {
+            throw new NullPointerException("metadataProvider cannot be null");
+        }
 
         this.cells = cells;
         this.swapEngine = swapEngine;
@@ -230,14 +174,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
         this.bubbleTopology = new BubbleTopology<>();
         this.insertionTopology = new InsertionTopology<>();
 
-        // PHASE TWO: Initialize metadata from provider
-        // PURPOSE: Populate metadata array by calling provider function for each index
-        // PROCESS:
-        //   1. Create metadata array with same length as cells array
-        //   2. For each index i, call metadataProvider.apply(i) to get metadata
-        //   3. Store result in metadata[i]
-        // OUTPUTS: Fully populated metadata array
-        // DATA FLOW: metadataProvider(index) -> CellMetadata -> metadata[index]
+        // Initialize metadata from provider
         this.metadata = new CellMetadata[cells.length];
         for (int i = 0; i < cells.length; i++) {
             this.metadata[i] = metadataProvider.apply(i);
@@ -389,7 +326,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     private Optional<SwapProposal> evaluateCell(int cellIndex, T[] cellArray) {
         T cell = cellArray[cellIndex];
         Algotype algotype = getCellAlgotype(cellIndex);
-        SortDirection direction = getCellDirection(cell);
+        SortDirection direction = getCellDirection(cell, cellIndex);
 
         List<Integer> neighbors;
 
@@ -423,90 +360,48 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     // ========== Helper Methods for Metadata/Cell Access ==========
 
     /**
-     * Get algotype from metadata provider (if available) or cell (legacy fallback).
+     * Get algotype from metadata array.
      *
-     * <p>PURPOSE: Support both metadata provider pattern and legacy cell introspection
-     * for backward compatibility during migration.</p>
+     * <p>PURPOSE: Query algotype from externally-managed metadata array
+     * instead of cell introspection.</p>
      *
      * <p>INPUTS: cellIndex - position of cell to query</p>
      *
-     * <p>PROCESS:
-     * <ol>
-     *   <li>If metadata != null: return metadata[cellIndex].getAlgotype()</li>
-     *   <li>Otherwise: cast cell to HasAlgotype and call getAlgotype()</li>
-     * </ol>
-     * </p>
+     * <p>PROCESS: Return metadata[cellIndex].getAlgotype()</p>
      *
      * <p>OUTPUTS: Algotype for this cell position</p>
      *
-     * <p>DEPENDENCIES: In legacy mode, cell must implement HasAlgotype</p>
+     * <p>DEPENDENCIES: Metadata provider must have been supplied to constructor</p>
      */
     private Algotype getCellAlgotype(int cellIndex) {
-        // PHASE TWO: Use metadata if available (metadata provider mode)
-        // PURPOSE: Query algotype from metadata array instead of cell
-        // PROCESS: Check if metadata array exists, if yes return metadata[cellIndex].getAlgotype()
-        // BENEFITS: Enables lightweight cells without embedded algotype field
-        if (metadata != null) {
-            return metadata[cellIndex].getAlgotype();
-        }
-
-        // Legacy mode: query cell directly (requires HasAlgotype)
-        // PURPOSE: Maintain backward compatibility with existing cell implementations
-        // PROCESS: Cast cell to HasAlgotype interface and call getAlgotype()
-        // FALLBACK: Used when no metadata provider was given to constructor
-        if (cells[cellIndex] instanceof com.emergent.doom.cell.HasAlgotype) {
-            return ((com.emergent.doom.cell.HasAlgotype) cells[cellIndex]).getAlgotype();
-        }
-
-        throw new IllegalStateException(
-            "Cell at index " + cellIndex + " does not implement HasAlgotype and no metadata provider was given");
+        return metadata[cellIndex].getAlgotype();
     }
 
     /**
-     * Helper: Get ideal position from metadata or cell (backward compatibility).
+     * Helper: Get ideal position from metadata array.
      * 
-     * <p>With metadata provider pattern: uses metadata[cellIndex].getIdealPos()</p>
-     * <p>Legacy mode: throws UnsupportedOperationException since cells no longer carry metadata</p>
+     * <p>Uses metadata[cellIndex].getIdealPos()</p>
      */
     private int getIdealPosition(int cellIndex) {
-        if (metadata != null) {
-            return metadata[cellIndex].getIdealPos();
-        }
-        throw new UnsupportedOperationException(
-            "Cells no longer carry ideal position metadata. " +
-            "Use constructor with metadata provider.");
+        return metadata[cellIndex].getIdealPos();
     }
 
     /**
-     * Helper: Increment ideal position in metadata or cell (backward compatibility).
+     * Helper: Increment ideal position in metadata array.
      * 
-     * <p>With metadata provider pattern: uses metadata[cellIndex].incrementIdealPos()</p>
-     * <p>Legacy mode: throws UnsupportedOperationException since cells no longer carry metadata</p>
+     * <p>Uses metadata[cellIndex].incrementIdealPos()</p>
      */
     private void incrementIdealPosition(int cellIndex) {
-        if (metadata != null) {
-            metadata[cellIndex].incrementIdealPos();
-            return;
-        }
-        throw new UnsupportedOperationException(
-            "Cells no longer carry ideal position metadata. " +
-            "Use constructor with metadata provider.");
+        metadata[cellIndex].incrementIdealPos();
     }
 
     /**
-     * Helper: Set ideal position in metadata or cell (backward compatibility).
+     * Helper: Set ideal position in metadata array.
      * 
-     * <p>With metadata provider pattern: uses metadata[cellIndex].setIdealPos()</p>
-     * <p>Legacy mode: throws UnsupportedOperationException since cells no longer carry metadata</p>
+     * <p>Uses metadata[cellIndex].setIdealPos()</p>
      */
     private void setIdealPosition(int cellIndex, int newIdealPos) {
-        if (metadata != null) {
-            metadata[cellIndex].setIdealPos(newIdealPos);
-            return;
-        }
-        throw new UnsupportedOperationException(
-            "Cells no longer carry ideal position metadata. " +
-            "Use constructor with metadata provider.");
+        metadata[cellIndex].setIdealPos(newIdealPos);
     }
 
     /**
@@ -528,22 +423,17 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     }
 
     /**
-     * Helper: Get the sort direction of a cell, if it implements HasSortDirection.
+     * Helper: Get the sort direction from metadata array.
      * 
-     * <p>PURPOSE: Provides safe access to cell sort direction for cross-purpose
-     * sorting support. Returns ASCENDING as default for cells without direction.</p>
+     * <p>PURPOSE: Provides access to cell sort direction for cross-purpose
+     * sorting support via metadata array.</p>
      * 
-     * @param cell the cell to query
-     * @return the cell's sort direction, or ASCENDING if not direction-aware
+     * @param cell the cell to query (unused, kept for signature compatibility)
+     * @param cellIndex the index of the cell
+     * @return the cell's sort direction from metadata
      */
-    private SortDirection getCellDirection(T cell) {
-        // Check if cell implements HasSortDirection interface
-        if (cell instanceof HasSortDirection) {
-            // Cell supports direction - return its preference
-            return ((HasSortDirection) cell).getSortDirection();
-        }
-        // Cell doesn't support direction - default to ascending
-        return SortDirection.ASCENDING;
+    private SortDirection getCellDirection(T cell, int cellIndex) {
+        return metadata[cellIndex].getSortDirection();
     }
 
     /**
@@ -721,7 +611,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
      *   <li>For each swap proposal:
      *     <ul>
      *       <li>Execute cell swap via swapEngine.attemptSwap()</li>
-     *       <li>If metadata provider mode: swap metadata[i] and metadata[j]</li>
+     *       <li>Swap metadata[i] and metadata[j]</li>
      *       <li>Increment count if swap succeeded</li>
      *     </ul>
      *   </li>
@@ -733,12 +623,6 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
      * <p>DEPENDENCIES: swapEngine for cell swapping</p>
      */
     private int executeSwaps(List<SwapProposal> resolved) {
-        // PURPOSE: Execute approved swaps and maintain metadata attachment
-        // PROCESS:
-        //   1. For each proposal, attempt swap via swapEngine
-        //   2. If using metadata provider, swap metadata entries
-        //   3. Count successful swaps
-
         int count = 0;
         for (SwapProposal proposal : resolved) {
             int i = proposal.getInitiatorIndex();
@@ -747,20 +631,10 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             if (swapEngine.attemptSwap(cells, i, j)) {
                 count++;
 
-                // Swap metadata alongside cells (Phase 2 implementation)
-                // PURPOSE: Keep metadata attached to logical agent identity as cells move
-                // PROCESS:
-                //   1. Check if metadata provider mode (metadata != null)
-                //   2. If yes, swap metadata[i] and metadata[j] using temp variable
-                //   3. This ensures metadata[i] always describes behavior of cell at position i
-                // RATIONALE: When cells swap positions, their metadata must follow them
-                //   Example: If BUBBLE cell at index 5 swaps with cell at index 6,
-                //            the BUBBLE metadata must move to index 6 with the cell
-                if (metadata != null) {
-                    CellMetadata tempMetadata = metadata[i];
-                    metadata[i] = metadata[j];
-                    metadata[j] = tempMetadata;
-                }
+                // Swap metadata alongside cells
+                CellMetadata tempMetadata = metadata[i];
+                metadata[i] = metadata[j];
+                metadata[j] = tempMetadata;
             }
         }
         return count;
@@ -832,7 +706,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
 
     /**
      * Reset ideal positions for SELECTION algotype cells.
-     * Uses updateForBoundary matching Python cell_research SelectionSortCell.update() behavior.
+     * Uses metadata array to reset ideal positions based on sort direction.
      *
      * @param reverseDirection true for descending sort (ideal = right boundary),
      *                         false for ascending (ideal = left boundary)
@@ -844,8 +718,10 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
         for (int i = 0; i < cells.length; i++) {
             Algotype algotype = getCellAlgotype(i);
             if (algotype == Algotype.SELECTION) {
-                if (cells[i] instanceof HasIdealPosition) {
-                    ((HasIdealPosition) cells[i]).updateForBoundary(leftBoundary, rightBoundary, reverseDirection);
+                if (reverseDirection) {
+                    metadata[i].setIdealPos(rightBoundary);
+                } else {
+                    metadata[i].setIdealPos(leftBoundary);
                 }
             }
         }

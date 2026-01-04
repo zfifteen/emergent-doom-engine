@@ -60,7 +60,11 @@ class ParallelExecutionEngineTest {
         probe = new ThreadSafeProbe<>();
         ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(10);
 
-        engine = new ParallelExecutionEngine<>(cells, swapEngine, probe, convergenceDetector);
+        // Create metadata provider - all cells use BUBBLE algotype, ASCENDING direction
+        java.util.function.IntFunction<CellMetadata> metadataProvider = i -> 
+            new CellMetadata(Algotype.BUBBLE, com.emergent.doom.cell.SortDirection.ASCENDING);
+
+        engine = new ParallelExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, metadataProvider);
     }
 
     // ========================================================================
