@@ -159,7 +159,7 @@ Target B (factor 41) shows lower sortedness and higher variance.
 
 Despite differences in sortedness, both targets completed sorting in nearly identical steps.
 
-**Insight:** 3-step no-swap criterion may be insensitive to final sortedness quality.
+**Insight:** Our convergence detection rule (a 3-step no-swap criterion: three consecutive passes with no swaps) may be insensitive to final sortedness quality.
 
 ---
 
