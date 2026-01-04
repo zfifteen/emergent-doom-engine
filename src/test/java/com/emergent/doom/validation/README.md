@@ -4,25 +4,22 @@ Integration validation tests provide **system-level verification** that all comp
 
 ## Purpose
 
-Tests in this package validate:
+Tests in this package examine:
 - End-to-end sorting workflows from cell creation to convergence
-- Linear time scaling hypothesis for factorization
+- Algorithm scaling behavior for factorization
 - Integration between execution engines, probes, metrics, and convergence detectors
 - Performance characteristics at various scales (n = 1K to 1M)
 - Robustness under stress (large arrays, long runs)
 
 ## Concepts Covered
 
-### Linear Scaling Hypothesis
+### Scaling Hypothesis
 
-The **critical research question**: Does emergent factorization exhibit O(n) time complexity?
+Tests examine whether emergent factorization convergence steps remain constant as array size grows.
 
 - **Hypothesis**: Convergence steps remain constant as array size grows
 - **Validation**: Run experiments on progressively harder semiprimes (10⁶ to 10¹⁸)
-- **Metric**: B = ∂steps/∂array_size (should ≈ 0 for linear scaling)
-
-From [LINEAR_SCALING_ANALYSIS.md](../../../../../../../docs/findings/LINEAR_SCALING_ANALYSIS.md):
-> "Rigorous testing across array sizes from 1000 to 4000 elements revealed unexpected linear time complexity O(n)."
+- **Metric**: B = ∂steps/∂array_size (measures step growth rate)
 
 ### Scaling Stages
 
@@ -50,15 +47,13 @@ Tests verify integration across:
 - [Chapter 1: Cell Foundations](../cell/README.md) - Cell implementations
 
 **Helpful:**
-- Understanding of linear time complexity
-- [LINEAR_SCALING_ANALYSIS.md](../../../../../../../docs/findings/LINEAR_SCALING_ANALYSIS.md) - Scaling research findings
 - Prime factorization domain knowledge
 
 ## Test Files
 
 ### LinearScalingValidatorTest.java
 
-Tests the experimental infrastructure for validating linear scaling hypothesis.
+Tests the experimental infrastructure for validating scaling hypothesis.
 
 **Test Categories:**
 
@@ -87,9 +82,9 @@ Tests the experimental infrastructure for validating linear scaling hypothesis.
 
 ## Usage Examples
 
-### Running Linear Scaling Validation
+### Running Scaling Validation
 
-Test the O(n) hypothesis:
+Test the scaling hypothesis:
 
 ```java
 // Configure Stage 1 (baseline)
@@ -119,7 +114,7 @@ double B = calculateScalingCoefficient(results);
 System.out.printf("Scaling coefficient B = %.6f%n", B);
 
 if (Math.abs(B) < 0.0001) {
-    System.out.println("✅ Linear scaling confirmed (B ≈ 0)");
+    System.out.println("✅ Constant convergence confirmed (B ≈ 0)");
 } else {
     System.out.println("⚠️  Non-linear behavior detected");
 }
@@ -131,7 +126,7 @@ n=10000: converged in 135 steps
 n=100000: converged in 138 steps
 n=1000000: converged in 140 steps
 Scaling coefficient B = 0.000005
-✅ Linear scaling confirmed (B ≈ 0)
+✅ Constant convergence confirmed (B ≈ 0)
 ```
 
 ### Progressive Difficulty Testing
@@ -243,7 +238,7 @@ public enum ScalingStage {
 - Array sizes remain constant to isolate scaling behavior
 - Progressive difficulty tests hypothesis robustness
 
-### Linear Scaling Metric (B Coefficient)
+### Scaling Metric (B Coefficient)
 
 B quantifies scaling behavior via linear regression:
 
@@ -253,8 +248,8 @@ steps = A + B × array_size
 Where:
 - A = intercept (base complexity)
 - B = slope (scaling coefficient)
-- B ≈ 0 → linear time (steps independent of array size)
-- B > 0 → superlinear time (steps grow with array size)
+- B ≈ 0 → constant convergence (steps independent of array size)
+- B > 0 → growing convergence (steps grow with array size)
 ```
 
 **Implementation:**
@@ -334,7 +329,7 @@ System.out.printf("B = %.6f ± %.6f%n", meanB, stdDevB);
 // 95% confidence interval
 double margin = 1.96 * stdDevB;
 if (Math.abs(meanB) < margin) {
-    System.out.println("✅ Linear scaling confirmed with 95% confidence");
+    System.out.println("✅ Constant convergence confirmed with 95% confidence");
 }
 ```
 

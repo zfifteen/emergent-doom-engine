@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * Test suite for Linear Scaling Validation system.
+ * Test suite for Scaling Validation system.
  * 
  * <p>This test suite validates the experimental infrastructure for testing
- * the linear scaling hypothesis (B ≈ 0) on progressively harder semiprimes.</p>
+ * the scaling hypothesis (B ≈ 0) on progressively harder semiprimes.</p>
  */
-@DisplayName("Linear Scaling Validation Tests")
+@DisplayName("Scaling Validation Tests")
 public class LinearScalingValidatorTest {
     
     @Nested
@@ -195,7 +195,7 @@ public class LinearScalingValidatorTest {
         @DisplayName("ScalingReport computes B ≈ 0 for constant steps")
         void scalingReportComputesZeroBForConstantSteps() {
             // As a researcher, I want B ≈ 0 when steps don't vary with array size
-            // so that I can confirm linear scaling hypothesis
+            // so that I can confirm constant convergence behavior
             
             // Test parameters to reproduce:
             // - Mock trial results: array sizes [1000, 2000, 4000]

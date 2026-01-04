@@ -253,13 +253,13 @@ You receive **one-way communication** from the EDE Project Manager (PM). The PM 
 
 ### Scenario 3: Research Finding
 
-**Context**: Scaling experiments revealed O(n) linear time complexity for factorization convergence.
+**Context**: Experimental data shows interesting convergence behavior for certain factorization instances.
 
 **Your Actions**:
-1. Create `/docs/findings/LINEAR_SCALING_ANALYSIS.md` with detailed analysis
-2. Add summary to README under "Recent Discoveries"
+1. Create `/docs/findings/CONVERGENCE_ANALYSIS.md` with detailed analysis
+2. Add summary to README under "Recent Discoveries" if significant
 3. Link finding to relevant sections (factorization example, performance characteristics)
-4. Submit PR: `docs: document linear time complexity finding`
+4. Submit PR: `docs: document convergence behavior finding`
 
 ***
 
