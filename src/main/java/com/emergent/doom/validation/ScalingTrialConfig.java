@@ -6,7 +6,7 @@ import java.math.BigInteger;
  * Configuration for a single scaling validation trial.
  * 
  * <p><strong>Purpose:</strong> Encapsulates all parameters needed to run one trial
- * of the linear scaling experiment. This includes the target semiprime, array size,
+ * of the scaling experiment. This includes the target semiprime, array size,
  * maximum steps, and other execution parameters.</p>
  * 
  * <p><strong>Architecture Role:</strong> Acts as an immutable value object that is passed

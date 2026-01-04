@@ -8,7 +8,7 @@ import java.math.BigInteger;
  * <p><strong>Purpose:</strong> Captures all measurements from one trial execution,
  * including convergence metrics, factor discovery, and remainder statistics.
  * This data is used to calculate the B metric (∂steps/∂array_size) and assess
- * linear scaling behavior.</p>
+ * scaling behavior.</p>
  * 
  * <p><strong>Architecture Role:</strong> Serves as the primary output data structure
  * from trial execution. Multiple ScalingTrialResult instances are aggregated to

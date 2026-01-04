@@ -4,9 +4,9 @@ import java.math.BigInteger;
 import java.util.List;
 
 /**
- * Main orchestrator for linear scaling validation experiments.
+ * Main orchestrator for scaling validation experiments.
  * 
- * <p><strong>Purpose:</strong> Systematically tests the linear scaling hypothesis
+ * <p><strong>Purpose:</strong> Systematically tests the scaling hypothesis
  * (B ≈ 0) on progressively harder semiprimes to identify the failure boundary where
  * convergence time transitions from constant to growing with array size.</p>
  * 
@@ -102,8 +102,8 @@ public class LinearScalingValidator {
         // Phase 2 Implementation: Main orchestration logic
         
         System.out.println("=".repeat(70));
-        System.out.println("LINEAR SCALING VALIDATION EXPERIMENT");
-        System.out.println("Testing O(n) hypothesis on progressively harder semiprimes");
+        System.out.println("SCALING VALIDATION EXPERIMENT");
+        System.out.println("Testing scaling hypothesis on progressively harder semiprimes");
         System.out.println("=".repeat(70));
         System.out.println();
         

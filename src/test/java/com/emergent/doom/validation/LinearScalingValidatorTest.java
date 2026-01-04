@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * Test suite for Linear Scaling Validation system.
+ * Test suite for Scaling Validation system.
  * 
  * <p>This test suite validates the experimental infrastructure for testing
- * the linear scaling hypothesis (B ≈ 0) on progressively harder semiprimes.</p>
+ * the scaling hypothesis (B ≈ 0) on progressively harder semiprimes.</p>
  */
-@DisplayName("Linear Scaling Validation Tests")
+@DisplayName("Scaling Validation Tests")
 public class LinearScalingValidatorTest {
     
     @Nested

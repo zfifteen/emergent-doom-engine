@@ -1,19 +1,25 @@
-# Linear Scaling Validation System
+# Scaling Validation System
+
+> **Note**: This package was created to test a specific hypothesis about algorithm performance scaling. 
+> The hypothesis is no longer being actively promoted in project documentation. This code remains 
+> for historical purposes and experimental replication.
 
 ## Overview
 
-This package implements the experimental validation system described in GitHub issue "Experimental Validation: Test Linear Scaling on Progressively Harder Semiprimes". The system systematically tests whether the emergent factorization algorithm maintains **O(n) time complexity** (constant convergence steps regardless of array size) as problem difficulty increases.
+This package implements an experimental validation system that tests whether the emergent factorization 
+algorithm maintains constant convergence steps regardless of array size as problem difficulty increases.
 
 ## Background
 
-Recent analysis in `docs/findings/LINEAR_SCALING_ANALYSIS.md` demonstrated that the algorithm exhibits linear scaling for easy semiprimes (N=100043), with convergence time invariant to array size expansion (B ≈ 0, where B = ∂steps/∂array_size). This system tests whether this property generalizes to cryptographically hard semiprimes.
+This system tests whether the algorithm's convergence time remains constant as array size grows 
+(B ≈ 0, where B = ∂steps/∂array_size) across different semiprime difficulties.
 
 ## Key Metric: The B Coefficient
 
 **B = ∂(mean_steps)/∂(array_size)**
 
-- **B ≈ 0**: Steps constant regardless of array size → **O(n) scaling confirmed**
-- **B > 0.5**: Steps grow with array size → **Failure boundary found**
+- **B ≈ 0**: Steps constant regardless of array size
+- **B > 0.5**: Steps grow with array size (failure boundary)
 
 ## Experimental Ladder
 
@@ -70,7 +76,7 @@ KEY METRICS:
   Z-normalization (CV): 0.0541
   Success rate: 100.0%
 
-ASSESSMENT: LINEAR SCALING CONFIRMED (B ≈ 0, high R², high success rate)
+ASSESSMENT: CONSTANT CONVERGENCE CONFIRMED (B ≈ 0, high R², high success rate)
 
 PER-ARRAY-SIZE BREAKDOWN:
   Array size 10000: mean=134.2, std=7.1, successes=30/30 (100%)
@@ -167,7 +173,7 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 
 ### If B > 0.5 at some stage
 - **Significance**: Found the failure boundary
-- **Implication**: Linear scaling limited to certain difficulty range
+- **Implication**: Constant convergence limited to certain difficulty range
 - **Action**: Characterize what changed (remainder variance, gradient strength)
 
 ### If non-convergence within step limits
@@ -213,7 +219,7 @@ mvn test -Dtest=LinearScalingValidatorTest
 ## References
 
 - Original finding: `docs/findings/LINEAR_SCALING_ANALYSIS.md`
-- Issue: "Experimental Validation: Test Linear Scaling on Progressively Harder Semiprimes"
+- Issue: "Experimental Validation: Test Scaling on Progressively Harder Semiprimes"
 - Z-framework analysis: Claude chat 91e7054f-c7e2-4599-ad71-c93f411e2e25
 - Experimental protocol agreed upon: 2026-01-01
 

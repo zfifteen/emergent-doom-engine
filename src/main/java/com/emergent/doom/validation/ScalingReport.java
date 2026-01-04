@@ -10,11 +10,11 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
  * Aggregated analysis report for scaling validation experiments.
  * 
  * <p><strong>Purpose:</strong> Computes the critical B metric (∂steps/∂array_size)
- * from trial results. B ≈ 0 indicates linear scaling (O(n)), while B > 0.5 indicates
+ * from trial results. B ≈ 0 indicates constant convergence, while B > 0.5 indicates
  * the failure boundary where convergence time grows with array size.</p>
  * 
  * <p><strong>Architecture Role:</strong> Central analysis component that determines
- * whether linear scaling hypothesis holds for a given stage/target. Produces both
+ * whether scaling hypothesis holds for a given stage/target. Produces both
  * quantitative metrics (B, Z-normalization, R²) and qualitative assessment.</p>
  * 
  * <p><strong>Data Flow:</strong>
@@ -101,13 +101,13 @@ public class ScalingReport {
         if (successRate < 0.5) {
             return "NON-CONVERGENT (success rate < 50%)";
         } else if (Math.abs(bCoefficient) < 0.01 && rSquared > 0.90 && successRate > 0.9) {
-            return "LINEAR SCALING CONFIRMED (B ≈ 0, high R², high success rate)";
+            return "CONSTANT CONVERGENCE CONFIRMED (B ≈ 0, high R², high success rate)";
         } else if (bCoefficient > 0.5) {
             return "FAILURE BOUNDARY FOUND (B > 0.5, super-linear growth detected)";
         } else if (rSquared < 0.70) {
             return "INCONCLUSIVE (poor linear fit, high variance)";
         } else {
-            return "MODERATE LINEAR SCALING (B small but non-zero)";
+            return "MODERATE SCALING (B small but non-zero)";
         }
     }
     
@@ -119,9 +119,9 @@ public class ScalingReport {
      * 
      * <p><strong>Interpretation:</strong>
      * <ul>
-     *   <li>B ≈ 0: Steps invariant to array size → O(n) scaling confirmed</li>
-     *   <li>B > 0.5: Steps grow with array size → failure boundary found</li>
-     *   <li>B < 0: Steps decrease with array size → artifact, investigate</li>
+     *   <li>B ≈ 0: Steps invariant to array size (constant convergence)</li>
+     *   <li>B > 0.5: Steps grow with array size (failure boundary found)</li>
+     *   <li>B < 0: Steps decrease with array size (artifact, investigate)</li>
      * </ul>
      * </p>
      * 
@@ -281,7 +281,7 @@ public class ScalingReport {
      * 
      * <p><strong>Reasoning:</strong>
      * <ul>
-     *   <li>Proceed if B ≈ 0 and success rate high (linear scaling holds)</li>
+     *   <li>Proceed if B ≈ 0 and success rate high (constant convergence holds)</li>
      *   <li>Stop if B > 0.5 (found failure boundary)</li>
      *   <li>Stop if non-convergence detected (success rate low)</li>
      * </ul>

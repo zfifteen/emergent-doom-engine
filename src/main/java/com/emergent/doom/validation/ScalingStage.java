@@ -1,11 +1,11 @@
 package com.emergent.doom.validation;
 
 /**
- * Defines progressive difficulty stages for linear scaling validation experiments.
+ * Defines progressive difficulty stages for scaling validation experiments.
  * 
  * <p><strong>Purpose:</strong> This enum represents the experimental ladder as defined in
  * the research protocol. Each stage tests progressively harder semiprimes to identify
- * the failure boundary where linear scaling (B ≈ 0) transitions to super-linear growth (B > 0.5).</p>
+ * the failure boundary where constant convergence (B ≈ 0) transitions to super-linear growth (B > 0.5).</p>
  * 
  * <p><strong>Architecture Role:</strong> Provides type-safe configuration for experiment stages,
  * ensuring systematic testing from easy (N=10^6) to cryptographically hard (N=10^18) targets.</p>
@@ -57,7 +57,7 @@ public enum ScalingStage {
      * (e.g., 6 for 10^6). This determines the difficulty level of the semiprime.</p>
      * 
      * <p><strong>Reasoning:</strong> Each stage tests a specific magnitude to map
-     * the transition from linear scaling (easy targets) to super-linear (hard targets).
+     * the transition from constant convergence (easy targets) to super-linear (hard targets).
      * The magnitude directly correlates with cryptographic hardness.</p>
      * 
      * @return The target magnitude exponent
@@ -80,7 +80,7 @@ public enum ScalingStage {
      * 
      * <p><strong>Reasoning:</strong> Consistent array sizes across stages enable
      * direct comparison of B coefficients. If B stays ~0, array size doesn't matter
-     * (linear scaling). If B grows, we've found the failure boundary.</p>
+     * (constant convergence). If B grows, we've found the failure boundary.</p>
      * 
      * @return Array of array sizes to test
      */
