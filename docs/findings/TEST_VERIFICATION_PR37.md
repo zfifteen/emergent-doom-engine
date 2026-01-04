@@ -1,7 +1,11 @@
-# Test Verification Report: Linear Scaling Validation Framework
+# Test Verification Report: Scaling Validation Framework
+
+> **ARCHIVED**: This report documents early experimental validation framework testing. The hypothesis 
+> discussed here is no longer being actively promoted. Preserved for historical reference.
 
 ## Overview
-This report documents the verification of the Linear Scaling Validation framework introduced in PR #37. The framework is designed to test the O(n) time complexity hypothesis of the emergent factorization algorithm across progressively harder semiprimes.
+This report documents the verification of the Scaling Validation framework introduced in PR #37. The framework 
+tests algorithm scaling behavior across progressively harder semiprimes.
 
 ## Testing Procedure
 1.  **Code Review**: Analyzed the merged code, including `LinearScalingValidator`, `ScalingStage`, `ScalingReport`, and `ScalingTrialResult`.
