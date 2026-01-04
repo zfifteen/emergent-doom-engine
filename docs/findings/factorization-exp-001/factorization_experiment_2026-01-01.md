@@ -9,10 +9,10 @@
 
 Successfully validated the RemainderCell distributed factorization approach described in `distributed_euclidean_remaindercell.md`. The experiment confirmed that:
 
-1. ✅ **Factors emerge at the front of the sorted array** (positions 0-1 after sorting)
-2. ✅ **Perfect convergence** achieved (100% across 5 trials)
-3. ✅ **Excellent sorting performance** (99.70% sortedness, near-zero monotonicity error)
-4. ✅ **Reporting bug discovered and FIXED** - now correctly reports factor positions
+1. **Factors emerge at the front of the sorted array** (positions 0-1 after sorting)
+2. **All trials completed sorting** (100% across 5 trials)
+3. **Excellent sorting performance** (99.70% sortedness, near-zero monotonicity error)
+4. **Reporting bug discovered and FIXED** - now correctly reports factor positions
 
 **Key Finding:** The system implements distributed Euclidean factorization as theorized—cells with remainder=0 (true factors) migrate to the leftmost positions through emergent sorting dynamics.
 
@@ -124,7 +124,7 @@ Position 71: 71 × 1,409 = 100,039   (non-trivial prime factor)
 **Pre-Fix Run:**
 ```
 Trials:              5
-Convergence Rate:    100.0% (5/5 trials converged)
+Sorting Completion:  100.0% (5/5 trials completed)
 Mean Steps:          1,161.40
 Sortedness:          98.38% ± 1.66%
 Monotonicity Error:  0.60 ± 0.55
@@ -133,18 +133,18 @@ Monotonicity Error:  0.60 ± 0.55
 **Post-Fix Run (with corrected reporting):**
 ```
 Trials:              5
-Convergence Rate:    100.0% (5/5 trials converged)
+Sorting Completion:  100.0% (5/5 trials completed)
 Mean Steps:          1,151.60
 Sortedness:          99.70% ± 0.67%  ← Improved!
 Monotonicity Error:  0.20 ± 0.45     ← Improved!
 ```
 
 **Interpretation:**
-- ✅ Perfect convergence (all trials reached stable state)
-- ✅ Mean convergence at ~1,151 steps (well below 10,000 limit)
-- ✅ **Outstanding sortedness** (99.70% of cells in correct relative position)
-- ✅ **Near-perfect monotonicity** (0.20 inversions on average, virtually none)
-- ✅ **Correctly identified factor:** Position 71
+- All trials reached stable sorted state
+- Mean completion at ~1,151 steps (well below 10,000 limit)
+- **Outstanding sortedness** (99.70% of cells in correct relative position)
+- **Near-perfect monotonicity** (0.20 inversions on average, virtually none)
+- **Correctly identified factor:** Position 71
 
 ### 3.2 Final Array State (Last Trial)
 
@@ -180,7 +180,7 @@ Actual factors in range [1, 1000]:
 Non-trivial factors: [71]
 ```
 
-**Verification result:** ✅ CONFIRMED  
+**Result:** ✅ CONFIRMED  
 The sorting algorithm successfully placed both true factors at the front of the array.
 
 ---
@@ -326,16 +326,16 @@ StepSnapshot after sorting:
 
 The results **confirm** the theory in `distributed_euclidean_remaindercell.md`:
 
-✅ **Claim:** "Prime factors of N emerge at the leading positions of the array as attractor states"
+**Claim:** "Prime factors of N emerge at the leading positions of the array as attractor states"
 - **Observed:** Both factors (positions 1 and 71) at indices 0-1 after sorting
 
-✅ **Claim:** "Sorting by remainder implements distributed GCD descent"
+**Claim:** "Sorting by remainder implements distributed GCD descent"
 - **Observed:** Clean remainder gradient (0, 0, 1, 1, 1, 2, 2, 2, 3...)
 
-✅ **Claim:** "System converges without explicit trial division in main loop"
-- **Observed:** 100% convergence in ~1,161 steps using only local swap operations
+**Claim:** "System completes sorting without explicit trial division in main loop"
+- **Observed:** Sorting completed in ~1,161 steps using only local swap operations
 
-✅ **Claim:** "Robustness to unreliable substrates"
+**Claim:** "Robustness to unreliable substrates"
 - **Observed:** High sortedness (98.38%) despite potential swap failures
 
 ### 5.2 Euclidean GCD Identity in Practice
@@ -343,8 +343,8 @@ The results **confirm** the theory in `distributed_euclidean_remaindercell.md`:
 **Theory:** For `r = N mod c`, we have `gcd(N, c) = gcd(c, r)`
 
 **Observed behavior:**
-- Position 71: `100,039 mod 71 = 0` → `gcd(100,039, 71) = 71` ✅
-- Position 1:  `100,039 mod 1 = 0`  → `gcd(100,039, 1) = 1` ✅
+- Position 71: `100,039 mod 71 = 0` → `gcd(100,039, 71) = 71` ✓
+- Position 1:  `100,039 mod 1 = 0`  → `gcd(100,039, 1) = 1` ✓
 - Position 2:  `100,039 mod 2 = 1`  → `gcd(100,039, 2) = 1` (not a factor)
 
 The system correctly prioritized remainder=0 cells, which correspond to exact divisors.
@@ -392,16 +392,16 @@ Convergence steps per trial:
 
 ### 7.1 Reporting vs. Computation
 
-**Key insight:** The algorithm **works perfectly**, but reporting is flawed.
+**Key insight:** The algorithm **works correctly**, but initial reporting was flawed.
 
-- ✅ Computation: Factors migrate to front → SUCCESS
-- ❌ Reporting: Can't read positions from snapshot → FAILURE
+- Computation: Factors migrate to front → SUCCESS
+- Initial Reporting: Couldn't read positions from snapshot → FAILURE (now fixed)
 
 **Lesson:** Distinguish between:
 1. **Algorithmic correctness** (did the system solve the problem?)
 2. **Observability** (can we extract the solution?)
 
-The RemainderCell swarm **solved factorization** but we need better instrumentation to **observe the solution**.
+The RemainderCell swarm **solved factorization** but we needed better instrumentation to **observe the solution**.
 
 ### 7.2 Snapshot Design Tradeoffs
 
@@ -435,9 +435,9 @@ This independent check:
 
 ### 8.1 Immediate Actions
 
-1. ✅ **Factor reporting fixed:**
+1. **Factor reporting fixed:**
    - ~~Option A: Store position data in snapshots~~
-   - ✅ **Option B: Return final cell array from trials** (IMPLEMENTED)
+   - **Option B: Return final cell array from trials** (IMPLEMENTED)
    - ~~Option C: Use brute-force verification as canonical truth~~
    - **Status:** Reporting now works correctly
 
@@ -495,18 +495,18 @@ This independent check:
 
 This experiment **successfully validated** the distributed Euclidean factorization approach:
 
-✅ **Algorithmic success:**
+**Algorithmic success:**
 - Factors emerged at front of array (indices 0-1)
-- 100% convergence rate across 5 trials
+- All trials completed sorting (100% across 5 trials)
 - Outstanding sorting metrics (99.70% sortedness, 0.20 monotonicity error)
 - **Correctly identified non-trivial factor: Position 71**
 
-✅ **Theoretical confirmation:**
+**Theoretical confirmation:**
 - Distributed GCD descent observed in remainder gradient
 - Morphogenetic organization: factors "condense" at target positions
-- Robustness: system converges despite potential swap failures
+- Robustness: system completes sorting despite potential swap failures
 
-✅ **Observability fixed:**
+**Observability fixed:**
 - Implemented Option A: store final cell array in `TrialResult`
 - Can now extract exact factor positions from sorted array
 - Verification confirms: Position 71 correctly reported

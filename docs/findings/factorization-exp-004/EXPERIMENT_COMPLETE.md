@@ -2,7 +2,7 @@
 
 **Experiment ID:** FACT-EXP-004  
 **Date:** January 1, 2026  
-**Status:** ✅ COMPLETE - Remarkable Scalability!
+**Status:** ✅ COMPLETE - Large Number Testing
 
 ---
 
@@ -10,9 +10,9 @@
 
 Tested the Emergent Doom Engine on a **38-digit number** (10^20 times larger than previous experiments) with **NO small factors** in the discoverable range.
 
-**Key Discovery:** The system achieved **100% convergence** across 100 trials despite having **no target factor to find!**
+**Key Result:** All trials completed sorting successfully (100/100 trials converged, as expected from algorithm design), but **no factors were discovered** in the range [1, 1000].
 
-**Critical Finding:** This proves the system is a **robust sorting algorithm** independent of factor discovery, not just an optimization tool.
+**Critical Finding:** This confirms the system is a **general-purpose sorting algorithm** that discovers factors when they exist, but factorization success depends on whether factors are present in the searchable range.
 
 ---
 
@@ -33,28 +33,29 @@ Tested the Emergent Doom Engine on a **38-digit number** (10^20 times larger tha
 | **Target Scale** | 10^38 | **10^20× larger!** |
 | **Factors Found** | 0 (none) | -1 (had factor 47) |
 | **Trials** | 100 | Same |
-| **Convergence Rate** | **100.0%** ✅ | Same (100%) |
+| **Convergence Rate** | 100.0% (sorting completed) | Same (expected) |
 | **Mean Steps** | **1,163.97** | -30 steps (faster!) |
 | **Sortedness** | 98.27% ± 2.42% | -1.47% (slightly lower) |
 | **Monotonicity Error** | 0.50 ± 0.54 | +0.29 (slightly higher) |
 
 ---
 
-## Astonishing Findings
+## Results Analysis
 
-### 1. Perfect Convergence Without Factors! ✅
+### 1. Sorting Completed Successfully
 
-**Most Significant Result:**
-- **100% convergence rate** across 100 trials
-- **No discoverable factors** to act as attractors
-- System **still converges** reliably
+**All trials completed sorting** (100/100 trials converged, as expected from algorithm design)
+
+**Factor Discovery Result:**
+- **No factors found** in range [1, 1000]
+- Target likely has no small factors (possibly prime or semiprime with large factors)
 
 **Interpretation:**
-- The system is **not dependent on factor discovery** for convergence
-- It's a **general-purpose sorting algorithm** that happens to discover factors
-- Convergence is driven by **remainder distribution**, not factor existence
+- Convergence confirms sorting algorithm functions correctly
+- The meaningful metric for factorization experiments is **factor discovery**; none were found for this target
+- This is a **failure** from a factorization perspective, despite successful sorting
 
-### 2. Exceptional Scalability ✅
+### 2. Scalability Observations
 
 **Target scale:** 10^38 (10^20 times larger than EXP-003)
 
@@ -64,15 +65,15 @@ Tested the Emergent Doom Engine on a **38-digit number** (10^20 times larger tha
 - No arithmetic overhead observed
 
 **Interpretation:**
-- **Near-constant performance** across 20 orders of magnitude!
-- BigInteger arithmetic doesn't significantly impact convergence
-- Algorithm complexity appears **independent of target magnitude**
+- Performance remains consistent across 20 orders of magnitude
+- BigInteger arithmetic doesn't significantly impact sorting completion time
+- Algorithm complexity appears independent of target magnitude
 
-### 3. Faster Than Factor-Rich Targets ⚡
+### 3. Comparison with Factor-Rich Targets
 
-**Surprising:** EXP-004 converged **faster** than EXP-003a despite:
+**Observation:** EXP-004 completed sorting slightly faster than EXP-003a despite:
 - 10^20 times larger target
-- No factors to create attractors
+- No factors to create zero-remainder attractors
 - More complex arithmetic
 
 **Possible explanations:**
@@ -80,15 +81,15 @@ Tested the Emergent Doom Engine on a **38-digit number** (10^20 times larger tha
 - Less competition between cells for low-remainder positions
 - Random variance (within statistical bounds)
 
-### 4. Excellent Metrics Without Attractors ✅
+### 4. Sorting Metrics Analysis
 
 **Sortedness:** 98.27% (only 1.47% lower than factor-rich EXP-003a)  
-**Monotonicity:** 0.50 (still very low, <1.0)
+**Monotonicity:** 0.50 (very low, <1.0)
 
 **Interpretation:**
-- System achieves high-quality sorting **independent of factors**
+- System achieves high-quality sorting independent of factor presence
 - Remainder gradient is smooth even without zero-remainder cells
-- Emergent organization doesn't require special attractors
+- Emergent organization functions without special attractors
 
 ---
 
@@ -104,52 +105,66 @@ Tested the Emergent Doom Engine on a **38-digit number** (10^20 times larger tha
 
 ### Key Observations
 
-1. **Convergence is universal:** 100% across all experiments (5 targets, 260 trials total)
+1. **All trials completed sorting:** 100% of trials across all experiments completed sorting (5 targets, 260 trials total, as expected)
 2. **Steps remain constant:** ~1,160-1,280 regardless of magnitude or factors
 3. **Sortedness stays high:** 95-100% across all scenarios
-4. **No factor penalty:** EXP-004 performs as well as factor-rich experiments
+4. **No performance difference:** EXP-004 sorting performance similar to factor-rich experiments
+
+---
+
+## Note on Convergence Metrics
+
+For **factorization experiments**, convergence is a necessary but **not sufficient** condition for success:
+
+- **Convergence** = Sorting algorithm completed (expected behavior)
+- **Success** = Non-trivial factor discovered
+- **Failure** = Convergence occurred but no factor found (as in EXP-004)
+
+The meaningful metric is **factor discovery rate**, not convergence rate.
+
+For comparison, in **wave-crispr-signal experiments** (experiment-095), convergence **stability** (reproducibility across seeds) is a primary validation criterion, as it indicates biologically meaningful tier assignments.
 
 ---
 
 ## Theoretical Implications
 
-### 1. The System is Domain-Agnostic ✅
+### 1. The System is Domain-Agnostic
 
-**Proof:**
-- Converges with factors (EXP-001, 002, 003)
-- Converges **without factors** (EXP-004)
-- Same performance in both cases
+**Evidence:**
+- Completes sorting with factors (EXP-001, 002, 003)
+- Completes sorting without factors (EXP-004)
+- Similar performance in both cases
 
 **Conclusion:** The RemainderCell framework is a **general sorting algorithm**, not a specialized factorization tool. Factor discovery is an **emergent property**, not the optimization target.
 
-### 2. Scalability is Exceptional ✅
+### 2. Scalability Observations
 
 **Evidence:**
 - 1e5 → 1e18 → 1e38 (across 33 orders of magnitude)
-- Performance degradation: **negligible**
+- Performance degradation: negligible
 - Steps variation: <10%
 
-**Conclusion:** Algorithm complexity is **O(1) or O(log N)** with respect to target magnitude, not O(N) or worse.
+**Conclusion:** Experimental results suggest roughly constant or slowly growing (sublinear) scaling with respect to target magnitude for sorting completion, but this does not establish a formal complexity class.
 
-### 3. Convergence is Robust ✅
+### 3. Sorting Algorithm Reliability
 
-**100% success rate across:**
+**Consistent completion across:**
 - 5 different targets
 - 260 total trials
 - 33 orders of magnitude
 - With and without factors
 
-**Conclusion:** The framework demonstrates **production-grade reliability**.
+**Conclusion:** The sorting algorithm demonstrates reliable completion behavior.
 
-### 4. Factor Discovery is Bonus, Not Requirement ✅
+### 4. Factor Discovery is Emergent, Not Guaranteed
 
 **Key insight:** The system:
-- ✅ Sorts by remainder values (always)
-- ✅ Converges to sorted state (always)
-- ✅ Discovers factors **if they exist** (bonus)
-- ✅ Works fine **if they don't exist** (robust)
+- Sorts by remainder values (always)
+- Completes sorting to stable state (always)
+- Discovers factors **if they exist in searchable range** (emergent property)
+- Completes sorting **even if no factors exist in range** (robust sorting behavior)
 
-This makes it **more versatile** than a pure factorization algorithm!
+This confirms it's a **general-purpose sorting algorithm** with factorization as an application domain.
 
 ---
 
@@ -157,10 +172,10 @@ This makes it **more versatile** than a pure factorization algorithm!
 
 ### About the System
 
-1. **It's a sorting algorithm first:** Factorization is emergent behavior
-2. **Scalability is exceptional:** Works across 33 orders of magnitude
-3. **Reliability is perfect:** 100% convergence in all tests
-4. **Factor-independence:** Doesn't need factors to function
+1. **It's a sorting algorithm first:** Factorization is emergent behavior when factors are present
+2. **Scalability is strong:** Sorting completes across 33 orders of magnitude
+3. **Sorting reliability:** All trials completed sorting as expected
+4. **Factor-independence:** Sorting functions regardless of factor presence in range
 
 ### About Target Selection
 
@@ -168,11 +183,11 @@ This makes it **more versatile** than a pure factorization algorithm!
 2. **EXP-003 targets were atypical:** Having small factors at 1e18 scale is rare
 3. **Verification is essential:** Always check factorization before experiments
 
-### About Convergence
+### About the Algorithm's Behavior
 
 1. **Not goal-directed:** System doesn't "seek" factors
 2. **Remainder-driven:** Sorts by remainder values naturally
-3. **Stable:** 3-step convergence criterion works universally
+3. **Stable completion:** 3-step no-swap criterion detects sorting completion
 4. **Predictable:** ~1,160-1,280 steps regardless of scenario
 
 ---
@@ -203,30 +218,31 @@ No significant outliers observed across 100 trials.
 
 ### For Factorization
 
-**Good news:**
-- System will find small factors if they exist
+**Capabilities:**
+- System will find small factors if they exist in searchable range
 - Scales to cryptographic-sized numbers
-- 100% reliable across 260 trials
+- Sorting completes reliably across 260 trials
 
-**Limitation:**
+**Limitations:**
 - Only finds factors in array range [1, 1000]
 - Cannot discover large factors
 - Not a replacement for QS, ECM, or GNFS
+- **EXP-004 result: No factors found** (factorization failure despite successful sorting)
 
 ### For Distributed Computing
 
-**Excellent platform:**
+**Platform characteristics:**
 - Robust sorting across extreme scales
 - Predictable performance
 - Minimal overhead from BigInteger
-- Could be adapted to other domains
+- Can be adapted to other domains
 
 ### For Research
 
-**Validated framework:**
-- Morphogenetic computing works at scale
-- Emergent sorting is reliable
-- Can handle cryptographic-sized inputs
+**Framework validation:**
+- Morphogenetic computing approach functions at scale
+- Emergent sorting completes reliably
+- Handles cryptographic-sized inputs
 
 ---
 
@@ -265,16 +281,16 @@ Create targets with factors at positions: 2, 10, 50, 100, 500, 1000
 
 ## Conclusion
 
-FACT-EXP-004 is the **most theoretically significant** experiment to date:
+FACT-EXP-004 provides important validation:
 
-1. ✅ **Proves factor-independence:** System works without factors
-2. ✅ **Validates scalability:** 10^38 targets as reliable as 10^5
-3. ✅ **Confirms robustness:** 100% convergence in all scenarios
-4. ✅ **Demonstrates versatility:** General sorting, not just factorization
+1. **Confirms factor-independence:** Sorting completes regardless of factor presence
+2. **Validates scalability:** 10^38 targets sort as reliably as 10^5
+3. **Confirms sorting reliability:** All trials completed sorting successfully
+4. **Demonstrates versatility:** General sorting capability, not limited to factorization
 
-**Key Insight:** The Emergent Doom Engine is a **domain-agnostic morphogenetic sorting framework** that discovers factors as an emergent property, not as its primary function.
+**Key Insight:** The Emergent Doom Engine is a **domain-agnostic morphogenetic sorting framework** that discovers factors as an emergent property when they exist in the searchable range.
 
-**This makes it more powerful and versatile than originally theorized!**
+**Factorization Result:** This experiment is a **failure** from a factorization perspective (no factors found), but validates the sorting algorithm's robustness.
 
 ---
 
@@ -282,7 +298,7 @@ FACT-EXP-004 is the **most theoretically significant** experiment to date:
 **Date:** January 1, 2026  
 **Target:** 137,524,771,864208,156,028,430,259,349,934,309,717 (38 digits)  
 **Trials:** 100  
-**Convergence:** 100%  
-**Factors Found:** 0 (none in range)  
-**Status:** ✅ COMPLETE - BREAKTHROUGH RESULT
+**Sorting Completion:** 100% (as expected)  
+**Factors Found:** 0 (none in range) ❌  
+**Status:** ✅ COMPLETE - Sorting validated, no factors discovered
 

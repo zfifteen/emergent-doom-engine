@@ -2,7 +2,7 @@
 
 **Experiment ID:** FACT-EXP-003  
 **Date:** January 1, 2026  
-**Status:** ✅ COMPLETE - Surprising Results!
+**Status:** ✅ COMPLETE - Unbalanced Semiprimes Analysis
 
 ---
 
@@ -10,7 +10,7 @@
 
 Tested two semiprimes intended to be "unbalanced" vs "balanced", but **both turned out to have small factors** discoverable in the array range [1, 1000].
 
-**Key Discovery:** The system successfully found hidden small factors in both cases with 100% convergence across 100 trials each!
+**Key Discovery:** The system successfully found hidden small factors in both cases—all trials completed sorting successfully (100/100 trials converged, as expected from algorithm design).
 
 ---
 
@@ -39,32 +39,39 @@ Tested two semiprimes intended to be "unbalanced" vs "balanced", but **both turn
 | **Target** | 1,000,000,000,000,000,091 | 999,999,944,006,315,359 | - |
 | **Factor Found** | 47 | 41 | -6 |
 | **Trials** | 100 | 100 | - |
-| **Convergence Rate** | 100.0% | 100.0% | 0% |
+| **Convergence Rate** | 100.0% (sorting completed) | 100.0% (sorting completed) | 0% |
 | **Mean Steps** | 1,194.70 | 1,195.86 | +1.16 |
 | **Sortedness** | 99.74% ± 0.82% | 95.09% ± 3.68% | **-4.65%** ⚠️ |
 | **Monotonicity Error** | 0.21 ± 0.43 | 0.75 ± 0.46 | **+0.54** ⚠️ |
 
 ---
 
+## Note on Convergence Metrics
+
+For **factorization experiments**, convergence (sorting completion) is a necessary but **not sufficient** condition for success: the key outcome is whether a **non-trivial factor** is discovered.
+
+For full, shared guidance on how to interpret convergence, factor discovery rate, and comparison to other experiment families, see the **shared note on convergence metrics for factorization experiments**.
+---
+
 ## Key Findings
 
-### 1. Perfect Convergence on Both Targets ✅
+### 1. Sorting Completed on Both Targets
 
-- **100% convergence rate** across 200 total trials (100 each)
+- All trials completed sorting successfully (100% across 200 total trials: 100 each)
 - No failed trials
-- System is remarkably robust
+- System demonstrates robust sorting behavior
 
-### 2. Nearly Identical Convergence Speed ✅
+### 2. Nearly Identical Sorting Speed
 
 - Target A: 1,194.70 steps
 - Target B: 1,195.86 steps  
-- **Difference: Only 1.16 steps (0.1%)!**
+- **Difference: Only 1.16 steps (0.1%)**
 
-This suggests convergence time is independent of:
+This suggests sorting completion time is independent of:
 - Which specific small factor exists
 - The exact remainder distribution
 
-### 3. Significant Sortedness Difference ⚠️
+### 3. Sortedness Variation
 
 - Target A: 99.74% sortedness (excellent)
 - Target B: 95.09% sortedness (good, but 4.65% lower)
@@ -74,7 +81,7 @@ This suggests convergence time is independent of:
 - Position 41 vs 47 creates different remainder patterns
 - Random variation (note higher std dev: 3.68% vs 0.82%)
 
-### 4. Higher Monotonicity Error in Target B ⚠️
+### 4. Monotonicity Error Variation
 
 - Target A: 0.21 (very low)
 - Target B: 0.75 (still low, but 3.6× higher)
@@ -88,7 +95,7 @@ This suggests convergence time is independent of:
 
 ## Comparison with Previous Experiments
 
-| Experiment | Target | Factor | Trials | Conv% | Steps | Sortedness | Monotonicity |
+| Experiment | Target | Factor | Trials | Completed% | Steps | Sortedness | Monotonicity |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **EXP-001** | ~1e5 | 71 | 5→30 | 100% | 1,157 | 99.70% | 0.20 |
 | **EXP-002** | 1e18 | 2,4,5,8,... | 30 | 100% | 1,279 | 98.45% | 0.57 |
@@ -97,9 +104,9 @@ This suggests convergence time is independent of:
 
 ### Observations
 
-1. **Scaling holds:** 1e18 targets converge as reliably as 1e5
+1. **Scaling holds:** 1e18 targets sort as reliably as 1e5
 2. **Single factors:** EXP-003 has only 1 factor (like EXP-001) vs 28 factors (EXP-002)
-3. **Best sortedness:** Target A (99.74%) exceeds all previous experiments!
+3. **Strong sortedness:** Target A (99.74%) exceeds all previous experiments
 4. **Statistical power:** 100 trials provides robust standard deviations
 
 ---
@@ -148,11 +155,11 @@ Target B (factor 41) shows lower sortedness and higher variance.
 
 **Hypothesis:** Remainder patterns from N % 41 create more complex sorting landscape than N % 47.
 
-### 3. Convergence is Remarkably Stable
+### 3. Sorting Completion is Stable
 
-Despite differences in sortedness, both targets converged in nearly identical steps.
+Despite differences in sortedness, both targets completed sorting in nearly identical steps.
 
-**Insight:** Convergence criterion (3 stable steps) may be insensitive to final sortedness quality.
+**Insight:** Our convergence detection rule (a 3-step no-swap criterion: three consecutive passes with no swaps) may be insensitive to final sortedness quality.
 
 ---
 
@@ -212,13 +219,13 @@ java FactorizationExperiment <target> <trials>
 
 FACT-EXP-003 demonstrates:
 
-1. ✅ **Exceptional robustness:** 100% convergence across 200 trials
-2. ✅ **Scalability confirmed:** 1e18 targets as reliable as 1e5
-3. ✅ **Factor independence:** Positions 41, 47, 71 all work equally well
-4. ⚠️ **Variance exists:** Target-dependent sortedness variation observed
-5. 🎯 **Statistical power:** 100 trials provides excellent confidence
+1. **Robust sorting behavior:** All trials completed sorting successfully (100% across 200 trials)
+2. **Scalability confirmed:** 1e18 targets sort as reliably as 1e5
+3. **Factor position independence:** Positions 41, 47, 71 all discovered successfully
+4. **Target-dependent variance:** Sortedness variation observed between targets
+5. **Strong statistical power:** 100 trials provides excellent confidence
 
-**Most importantly:** The system found factors we didn't expect, demonstrating true discovery capability!
+**Most importantly:** The system found factors we didn't expect, demonstrating true discovery capability.
 
 ---
 
@@ -226,6 +233,7 @@ FACT-EXP-003 demonstrates:
 **Date:** January 1, 2026  
 **Total Trials:** 200 (100 per target)  
 **Total Execution Time:** ~1 hour  
-**Success Rate:** 100%  
+**Sorting Completion Rate:** 100%  
+**Factors Discovered:** Both targets had small factors found  
 **Status:** ✅ COMPLETE AND DOCUMENTED
 
