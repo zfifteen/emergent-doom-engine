@@ -92,6 +92,75 @@ This component implements the quantitative characterization methods from the Lev
 - **Chimeric Populations**: Mix multiple cell behaviors in single experiments
 - **Frozen Constraints**: Progressive crystallization of partial solutions
 
+## Lightweight Cell Architecture
+
+The EDE achieves true domain-agnostic sorting through a **lightweight cell** design where cells are pure `Comparable` data carriers with zero engine-specific state. All sorting metadata (algorithm type, sort direction, ideal position) is managed externally by execution engines via metadata providers.
+
+### Pure Domain Cells
+
+Cells only implement `compareTo()` - they contain no knowledge of sorting algorithms:
+
+```java
+public class MyDomainCell implements Cell<MyDomainCell> {
+    private final MyDomainValue value;
+    
+    @Override
+    public int compareTo(MyDomainCell other) {
+        return this.value.compareTo(other.value);
+    }
+}
+```
+
+### External Metadata Management
+
+All sorting metadata is provided to the engine via a metadata provider function:
+
+```java
+// Define metadata for each cell position
+IntFunction<CellMetadata> metadataProvider = index -> 
+    new CellMetadata(
+        Algotype.BUBBLE,              // sorting algorithm
+        SortDirection.ASCENDING       // sort direction
+    );
+
+// Create engine with metadata provider
+ParallelExecutionEngine<MyDomainCell> engine = 
+    new ParallelExecutionEngine<>(
+        cells, 
+        swapEngine, 
+        probe, 
+        convergenceDetector, 
+        metadataProvider  // externally managed metadata
+    );
+```
+
+### Chimeric Populations
+
+For experiments mixing different algorithms, combine an algotype provider with metadata configuration:
+
+```java
+// Create algotype provider (50% BUBBLE, 50% SELECTION)
+AlgotypeProvider algotypeProvider = new PercentageAlgotypeProvider(
+    Map.of(Algotype.BUBBLE, 0.5, Algotype.SELECTION, 0.5),
+    arraySize,
+    seed
+);
+
+// Build configuration with metadata provider factory
+ChimericExperimentConfig config = ChimericExperimentConfig.builder()
+    .arraySize(100)
+    .maxSteps(5000)
+    .algotypeMix(Map.of(Algotype.BUBBLE, 0.5, Algotype.SELECTION, 0.5))
+    .sortDirection(SortDirection.INCREASING)
+    .build();
+
+// Create metadata provider from configuration
+IntFunction<CellMetadata> metadataProvider = 
+    config.createMetadataProvider(algotypeProvider);
+```
+
+This architecture achieves **true generality** - any `Comparable` object can be sorted without implementing engine-specific interfaces or carrying sorting metadata.
+
 ## Design Principles
 
 1. **Minimal Cell Contract**: Cells only need to be comparable - the engine remains blind to domain semantics
@@ -191,15 +260,20 @@ public interface Topology<T extends Cell<T>> {
 
 ### Execution Engine
 
-Orchestrates the cell dynamics:
+Orchestrates the cell dynamics using metadata providers:
 
 ```java
-ExecutionEngine<T> engine = new ExecutionEngine<>(
+// Create metadata provider
+IntFunction<CellMetadata> metadataProvider = index -> 
+    new CellMetadata(Algotype.BUBBLE, SortDirection.ASCENDING);
+
+// Modern execution engines with metadata support
+SynchronousExecutionEngine<T> engine = new SynchronousExecutionEngine<>(
     cells,                  // initial cell array
-    topology,               // neighborhood strategy
     swapEngine,             // swap mechanics
     probe,                  // trajectory recorder
-    convergenceDetector     // termination criterion
+    convergenceDetector,    // termination criterion
+    metadataProvider        // external metadata
 );
 
 engine.runUntilConvergence(maxSteps);
