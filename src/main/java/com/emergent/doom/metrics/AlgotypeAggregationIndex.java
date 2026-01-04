@@ -76,13 +76,21 @@ public class AlgotypeAggregationIndex<T extends Cell<T>> implements Metric<T> {
         int sameTypeNeighborCount = 0;
 
         for (int i = 0; i < cells.length; i++) {
-            Algotype current = cells[i].getAlgotype();
+            // Cast to HasAlgotype for legacy support during Phase 2 migration
+            if (!(cells[i] instanceof com.emergent.doom.cell.HasAlgotype)) {
+                continue; // Skip cells without algotype
+            }
+            Algotype current = ((com.emergent.doom.cell.HasAlgotype) cells[i]).getAlgotype();
 
             // Check left neighbor
-            boolean hasLeftSame = (i > 0) && (cells[i - 1].getAlgotype() == current);
+            boolean hasLeftSame = (i > 0) 
+                && (cells[i - 1] instanceof com.emergent.doom.cell.HasAlgotype)
+                && (((com.emergent.doom.cell.HasAlgotype) cells[i - 1]).getAlgotype() == current);
 
             // Check right neighbor
-            boolean hasRightSame = (i < cells.length - 1) && (cells[i + 1].getAlgotype() == current);
+            boolean hasRightSame = (i < cells.length - 1) 
+                && (cells[i + 1] instanceof com.emergent.doom.cell.HasAlgotype)
+                && (((com.emergent.doom.cell.HasAlgotype) cells[i + 1]).getAlgotype() == current);
 
             // Cell is "aggregated" if it has at least one same-type neighbor
             if (hasLeftSame || hasRightSame) {
