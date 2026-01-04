@@ -34,7 +34,6 @@ Contains historical documentation, pull request reviews, and summaries of past c
 ### [findings/](findings/)
 The primary repository for experimental data and analysis reports.
 - **[README.md](findings/README.md)**: Main index of all conducted experiments.
-- **[LINEAR_SCALING_ANALYSIS.md](findings/LINEAR_SCALING_ANALYSIS.md)**: Verification of the O(n) time complexity discovery.
 - **factorization-exp-001/ to factorization-exp-004/**: Individual folders containing artifacts for each major factorization experiment.
 
 ### [implementation/](implementation/)
