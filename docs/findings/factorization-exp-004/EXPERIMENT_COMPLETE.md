@@ -183,7 +183,7 @@ This confirms it's a **general-purpose sorting algorithm** with factorization as
 2. **EXP-003 targets were atypical:** Having small factors at 1e18 scale is rare
 3. **Verification is essential:** Always check factorization before experiments
 
-### About Sorting Completion
+### About the Algorithm's Behavior
 
 1. **Not goal-directed:** System doesn't "seek" factors
 2. **Remainder-driven:** Sorts by remainder values naturally
