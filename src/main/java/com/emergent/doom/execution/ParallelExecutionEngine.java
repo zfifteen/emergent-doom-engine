@@ -463,36 +463,51 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
     }
 
     /**
-     * Helper: Get ideal position from a SELECTION cell (supports both SelectionCell and GenericCell)
+     * Helper: Get ideal position from metadata or cell (backward compatibility).
+     * 
+     * <p>With metadata provider pattern: uses metadata[cellIndex].getIdealPos()</p>
+     * <p>Legacy mode: throws UnsupportedOperationException since cells no longer carry metadata</p>
      */
-    private int getIdealPosition(T cell) {
-        if (cell instanceof SelectionCell) {
-            return ((SelectionCell<?>) cell).getIdealPos();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            return ((com.emergent.doom.cell.GenericCell) cell).getIdealPos();
+    private int getIdealPosition(int cellIndex) {
+        if (metadata != null) {
+            return metadata[cellIndex].getIdealPos();
         }
-        return 0;  // Default for other cell types
+        throw new UnsupportedOperationException(
+            "Cells no longer carry ideal position metadata. " +
+            "Use constructor with metadata provider.");
     }
 
     /**
-     * Helper: Increment ideal position for a SELECTION cell (supports both SelectionCell and GenericCell)
+     * Helper: Increment ideal position in metadata or cell (backward compatibility).
+     * 
+     * <p>With metadata provider pattern: uses metadata[cellIndex].incrementIdealPos()</p>
+     * <p>Legacy mode: throws UnsupportedOperationException since cells no longer carry metadata</p>
      */
-    private void incrementIdealPosition(T cell) {
-        if (cell instanceof SelectionCell) {
-            ((SelectionCell<?>) cell).incrementIdealPos();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            ((com.emergent.doom.cell.GenericCell) cell).incrementIdealPos();
+    private void incrementIdealPosition(int cellIndex) {
+        if (metadata != null) {
+            metadata[cellIndex].incrementIdealPos();
+            return;
         }
+        throw new UnsupportedOperationException(
+            "Cells no longer carry ideal position metadata. " +
+            "Use constructor with metadata provider.");
     }
 
     /**
-     * Helper: Set ideal position for a SELECTION cell (supports both SelectionCell and GenericCell)
+     * Helper: Set ideal position in metadata or cell (backward compatibility).
+     * 
+     * <p>With metadata provider pattern: uses metadata[cellIndex].setIdealPos()</p>
+     * <p>Legacy mode: throws UnsupportedOperationException since cells no longer carry metadata</p>
      */
-    private void setIdealPosition(T cell, int newIdealPos) {
-        if (cell instanceof SelectionCell) {
-            ((SelectionCell<?>) cell).setIdealPos(newIdealPos);
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            ((com.emergent.doom.cell.GenericCell) cell).setIdealPos(newIdealPos);
+    private void setIdealPosition(int cellIndex, int newIdealPos) {
+        if (metadata != null) {
+            metadata[cellIndex].setIdealPos(newIdealPos);
+            return;
+        }
+        throw new UnsupportedOperationException(
+            "Cells no longer carry ideal position metadata. " +
+            "Use constructor with metadata provider.");
+    }
         }
     }
 
@@ -506,7 +521,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             case INSERTION:
                 return insertionTopology.getNeighbors(i, cellArray.length, algotype);
             case SELECTION:
-                int idealPos = getIdealPosition(cellArray[i]);
+                int idealPos = getIdealPosition(i);
                 int target = Math.min(idealPos, cellArray.length - 1);
                 return Arrays.asList(target);
             default:
@@ -589,9 +604,9 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
                     return true;
                 } else {
                     // Swap denied: increment ideal position if not at end
-                    int currentIdealPos = getIdealPosition(cellArray[i]);
+                    int currentIdealPos = getIdealPosition(i);
                     if (currentIdealPos < cellArray.length - 1) {
-                        incrementIdealPosition(cellArray[i]);
+                        incrementIdealPosition(i);
                     }
                     return false;
                 }

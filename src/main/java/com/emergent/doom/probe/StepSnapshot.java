@@ -1,14 +1,10 @@
 package com.emergent.doom.probe;
 
-import com.emergent.doom.group.CellStatus;
-import com.emergent.doom.cell.HasValue;
-import com.emergent.doom.cell.HasGroup;
-import com.emergent.doom.cell.HasStatus;
-import com.emergent.doom.cell.HasAlgotype;
-import com.emergent.doom.group.CellGroup;
-
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.group.CellStatus;
+import com.emergent.doom.group.CellGroup;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,9 +20,11 @@ import java.util.Map;
  *
  * <p>Format: values = List of cell values; types = List of [groupId, algotypeLabel, value, isFrozen].</p>
  *
+ * <p>Note: With lightweight cells, metadata fields are no longer extracted from cells.</p>
+ *
  * @param <T> the type of cell (for compatibility)
  */
-public class StepSnapshot<T extends HasValue & HasGroup & HasStatus & HasAlgotype> {
+public class StepSnapshot<T extends Cell<T>> {
 
     private final int stepNumber;
     private final List<Comparable<?>> values;
