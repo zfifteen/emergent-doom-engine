@@ -20,6 +20,10 @@ jobs:
     name: Validate Documentation Links
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: read
+      pull-requests: write  # Needed to comment on PRs
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

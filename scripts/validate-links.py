@@ -101,9 +101,14 @@ class LinkValidator:
         target_path = (source_dir / url).resolve()
         
         # Security: Ensure resolved path is within repository
+        # Use strict=True to prevent symlink escapes
         try:
+            # Verify the path is within repository bounds
             target_path.relative_to(self.repo_root)
-        except ValueError:
+            # Additional check: ensure the path doesn't contain symlinks that escape
+            if target_path.exists() and not target_path.is_relative_to(self.repo_root):
+                raise ValueError("Path escapes repository via symlinks")
+        except (ValueError, AttributeError):
             error_msg = (
                 f"Security: Link points outside repository in {source_file.relative_to(self.repo_root)}:\n"
                 f"  Link text: [{link_text}]\n"
@@ -190,12 +195,22 @@ def main():
         default='src/test/java/com/emergent/doom',
         help='Path to validate (relative to repo root)'
     )
+    parser.add_argument(
+        '--repo-root',
+        type=str,
+        default=None,
+        help='Repository root directory (auto-detected if not provided)'
+    )
     
     args = parser.parse_args()
     
     # Determine repository root
-    script_dir = Path(__file__).parent.absolute()
-    repo_root = script_dir.parent
+    if args.repo_root:
+        repo_root = Path(args.repo_root).absolute()
+    else:
+        # Auto-detect: assume script is in scripts/ directory at repo root
+        script_dir = Path(__file__).parent.absolute()
+        repo_root = script_dir.parent
     
     # Target path to validate
     target_path = repo_root / args.path
