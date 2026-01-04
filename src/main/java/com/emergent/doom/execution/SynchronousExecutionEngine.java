@@ -523,12 +523,19 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
 
             swapEngine.attemptSwap(cells, i, j);
 
-            // TODO PHASE THREE: Swap metadata alongside cells
-            // if (metadata != null) {
-            //     CellMetadata tempMetadata = metadata[i];
-            //     metadata[i] = metadata[j];
-            //     metadata[j] = tempMetadata;
-            // }
+            // PHASE THREE: Swap metadata alongside cells
+            // PURPOSE: Keep metadata attached to logical agent identity as cells move
+            // PROCESS:
+            //   1. Check if metadata provider mode (metadata != null)
+            //   2. If yes, swap metadata[i] and metadata[j] using temp variable
+            //   3. This ensures metadata[i] always describes behavior of cell at position i
+            // RATIONALE: When cells swap positions, their metadata must follow them
+            //   to maintain the invariant that metadata[i] describes cells[i]
+            if (metadata != null) {
+                CellMetadata tempMetadata = metadata[i];
+                metadata[i] = metadata[j];
+                metadata[j] = tempMetadata;
+            }
         }
 
         // Get swap count for this step
