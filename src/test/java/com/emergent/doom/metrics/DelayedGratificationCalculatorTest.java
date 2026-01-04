@@ -30,24 +30,60 @@ class DelayedGratificationCalculatorTest {
     @DisplayName("Edge cases")
     class EdgeCases {
 
+        /**
+         * PURPOSE: As a developer, I want null trajectory to return 0.0
+         * so that I can handle null input safely without NullPointerException.
+         *
+         * INPUTS: null trajectory
+         * EXPECTED OUTPUT: calculate() returns 0.0
+         * TEST DATA: null
+         * REPRODUCTION: calculator.calculate(null)
+         */
         @Test
         @DisplayName("null trajectory returns 0.0")
         void nullTrajectory() {
             assertEquals(0.0, calculator.calculate(null));
         }
 
+        /**
+         * PURPOSE: As a developer, I want empty trajectory to return 0.0
+         * so that I can handle edge cases with zero-length data.
+         *
+         * INPUTS: Empty list
+         * EXPECTED OUTPUT: calculate() returns 0.0
+         * TEST DATA: Collections.emptyList()
+         * REPRODUCTION: calculator.calculate(Collections.emptyList())
+         */
         @Test
         @DisplayName("empty trajectory returns 0.0")
         void emptyTrajectory() {
             assertEquals(0.0, calculator.calculate(Collections.emptyList()));
         }
 
+        /**
+         * PURPOSE: As a developer, I want single value to return 0.0
+         * so that I can verify no DG events are possible with only one data point.
+         *
+         * INPUTS: Single-value list [50.0]
+         * EXPECTED OUTPUT: calculate() returns 0.0
+         * TEST DATA: List.of(50.0)
+         * REPRODUCTION: calculator.calculate(List.of(50.0))
+         */
         @Test
         @DisplayName("single value returns 0.0")
         void singleValue() {
             assertEquals(0.0, calculator.calculate(List.of(50.0)));
         }
 
+        /**
+         * PURPOSE: As a developer, I want two values to return 0.0
+         * so that I can verify DG requires at least 3 points (dip and recovery).
+         *
+         * INPUTS: Two-value list [50.0, 60.0]
+         * EXPECTED OUTPUT: calculate() returns 0.0
+         * TEST DATA: [50.0, 60.0]
+         * REPRODUCTION: calculator.calculate(Arrays.asList(50.0, 60.0))
+         */
         @Test
         @DisplayName("two values returns 0.0 (need 3 for dip-and-recovery)")
         void twoValues() {
@@ -59,6 +95,15 @@ class DelayedGratificationCalculatorTest {
     @DisplayName("Monotonic trajectories (no DG)")
     class MonotonicTrajectories {
 
+        /**
+         * PURPOSE: As a developer, I want strictly increasing trajectory to return 0.0
+         * so that I can verify no DG events occur when sortedness only improves.
+         *
+         * INPUTS: Strictly increasing trajectory [50.0, 60.0, 70.0, 80.0, 90.0, 100.0]
+         * EXPECTED OUTPUT: calculate() returns 0.0, countDGEvents() returns 0
+         * TEST DATA: [50.0, 60.0, 70.0, 80.0, 90.0, 100.0]
+         * REPRODUCTION: No dips mean no delayed gratification events
+         */
         @Test
         @DisplayName("strictly increasing trajectory returns 0.0")
         void strictlyIncreasing() {
@@ -67,6 +112,15 @@ class DelayedGratificationCalculatorTest {
             assertEquals(0, calculator.countDGEvents(trajectory));
         }
 
+        /**
+         * PURPOSE: As a developer, I want strictly decreasing trajectory to return 0.0
+         * so that I can verify no DG events occur when sortedness only decreases.
+         *
+         * INPUTS: Strictly decreasing trajectory [100.0, 90.0, 80.0, 70.0, 60.0, 50.0]
+         * EXPECTED OUTPUT: calculate() returns 0.0, countDGEvents() returns 0
+         * TEST DATA: [100.0, 90.0, 80.0, 70.0, 60.0, 50.0]
+         * REPRODUCTION: No recovery after dips means no DG
+         */
         @Test
         @DisplayName("strictly decreasing trajectory returns 0.0")
         void strictlyDecreasing() {
@@ -75,6 +129,15 @@ class DelayedGratificationCalculatorTest {
             assertEquals(0, calculator.countDGEvents(trajectory));
         }
 
+        /**
+         * PURPOSE: As a developer, I want constant trajectory to return 0.0
+         * so that I can verify no DG events occur when sortedness stays constant.
+         *
+         * INPUTS: Constant trajectory [75.0, 75.0, 75.0, 75.0, 75.0]
+         * EXPECTED OUTPUT: calculate() returns 0.0, countDGEvents() returns 0
+         * TEST DATA: [75.0, 75.0, 75.0, 75.0, 75.0]
+         * REPRODUCTION: No changes mean no dips or recoveries
+         */
         @Test
         @DisplayName("constant trajectory returns 0.0")
         void constant() {
