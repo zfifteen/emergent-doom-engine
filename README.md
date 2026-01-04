@@ -222,7 +222,7 @@ mvn clean compile
 
 ```bash
 mvn package
-java -jar target/emergent-doom-engine-0.2.1-alpha.jar
+java -jar target/emergent-doom-engine-0.3.0-alpha.jar
 ```
 
 ## Usage Example
