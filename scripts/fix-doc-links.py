@@ -29,19 +29,28 @@ def fix_readme_links(readme_path: Path) -> int:
     # Pattern 1: Fix ../../../../../main/ to ../../../../../../main/ (add one more ../)
     # Note: This fixes the path to go up 7 levels instead of 6
     # Skip links that are already correct to avoid breaking them
-    content_before = content
     
     # Only fix if it's the incorrect pattern (6 levels) but NOT if it's already the correct pattern (7 levels)
     if '(../../../../../main/' in content and '(../../../../../../main/' not in content:
-        content = content.replace('(../../../../../main/', '(../../../../../../main/')
+        pattern_from = '(../../../../../main/'
+        count_from = content.count(pattern_from)
+        if count_from:
+            fixes += count_from
+            content = content.replace(pattern_from, '(../../../../../../main/')
     
     # Pattern 2: Fix root README links (only in the root test README)
     # Fix 8 ../ to 7 ../ for README.md and REQUIREMENTS.md
-    content = content.replace('(../../../../../../../README.md)', '(../../../../../../README.md)')
-    content = content.replace('(../../../../../../../REQUIREMENTS.md)', '(../../../../../../docs/requirements/REQUIREMENTS.md)')
+    pattern_readme_from = '(../../../../../../../README.md)'
+    count_readme_from = content.count(pattern_readme_from)
+    if count_readme_from:
+        fixes += count_readme_from
+        content = content.replace(pattern_readme_from, '(../../../../../../README.md)')
     
-    # Count how many replacements were made
-    fixes = content.count('(../../../../../../main/') - content_before.count('(../../../../../../main/')
+    pattern_requirements_from = '(../../../../../../../REQUIREMENTS.md)'
+    count_requirements_from = content.count(pattern_requirements_from)
+    if count_requirements_from:
+        fixes += count_requirements_from
+        content = content.replace(pattern_requirements_from, '(../../../../../../docs/requirements/REQUIREMENTS.md)')
     
     # Write back if changed
     if content != original_content:
