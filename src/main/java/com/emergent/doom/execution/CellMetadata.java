@@ -78,8 +78,23 @@ public class CellMetadata {
      * @throws IllegalArgumentException if algotype or sortDirection is null
      */
     public CellMetadata(Algotype algotype, SortDirection sortDirection) {
-        // PHASE THREE: Implement validation and field initialization
-        throw new UnsupportedOperationException("Not implemented yet");
+        // PURPOSE: Validate inputs and initialize metadata fields
+        // PROCESS:
+        //   1. Validate algotype is not null
+        //   2. Validate sortDirection is not null
+        //   3. Store algotype and sortDirection as immutable fields
+        //   4. Initialize idealPos to 0 (will be updated via updateForBoundary if needed)
+        
+        if (algotype == null) {
+            throw new IllegalArgumentException("Algotype cannot be null");
+        }
+        if (sortDirection == null) {
+            throw new IllegalArgumentException("SortDirection cannot be null");
+        }
+        
+        this.algotype = algotype;
+        this.sortDirection = sortDirection;
+        this.idealPos = new AtomicInteger(0);  // Levin: initial ideal position is leftmost (0)
     }
     
     /**
@@ -103,8 +118,9 @@ public class CellMetadata {
      * @return the algotype (never null)
      */
     public Algotype getAlgotype() {
-        // PHASE THREE: Implement getter
-        throw new UnsupportedOperationException("Not implemented yet");
+        // PURPOSE: Return the stored algotype for engine evaluation
+        // PROCESS: Return immutable field (thread-safe due to final + enum immutability)
+        return algotype;
     }
     
     /**
@@ -128,8 +144,9 @@ public class CellMetadata {
      * @return the sort direction (never null)
      */
     public SortDirection getSortDirection() {
-        // PHASE THREE: Implement getter
-        throw new UnsupportedOperationException("Not implemented yet");
+        // PURPOSE: Return the stored sort direction for engine evaluation
+        // PROCESS: Return immutable field (thread-safe due to final + enum immutability)
+        return sortDirection;
     }
     
     /**
@@ -155,8 +172,9 @@ public class CellMetadata {
      * @return the current ideal position
      */
     public int getIdealPos() {
-        // PHASE THREE: Implement getter
-        throw new UnsupportedOperationException("Not implemented yet");
+        // PURPOSE: Return the current ideal position for SELECTION algotype
+        // PROCESS: Thread-safe read via AtomicInteger.get()
+        return idealPos.get();
     }
     
     /**
@@ -181,8 +199,9 @@ public class CellMetadata {
      * @param newIdealPos the new ideal position
      */
     public void setIdealPos(int newIdealPos) {
-        // PHASE THREE: Implement setter
-        throw new UnsupportedOperationException("Not implemented yet");
+        // PURPOSE: Update the ideal position for SELECTION algotype
+        // PROCESS: Thread-safe write via AtomicInteger.set()
+        idealPos.set(newIdealPos);
     }
     
     /**
@@ -207,8 +226,10 @@ public class CellMetadata {
      * @return the new ideal position after increment
      */
     public int incrementIdealPos() {
-        // PHASE THREE: Implement increment
-        throw new UnsupportedOperationException("Not implemented yet");
+        // PURPOSE: Atomically increment ideal position when swap is denied
+        // PROCESS: Thread-safe increment via AtomicInteger.incrementAndGet()
+        // OUTPUTS: New value after increment
+        return idealPos.incrementAndGet();
     }
     
     /**
@@ -239,8 +260,10 @@ public class CellMetadata {
      * @return true if successful
      */
     public boolean compareAndSetIdealPos(int expected, int newValue) {
-        // PHASE THREE: Implement compare-and-set
-        throw new UnsupportedOperationException("Not implemented yet");
+        // PURPOSE: Atomically update ideal position only if current value matches expected
+        // PROCESS: Thread-safe CAS via AtomicInteger.compareAndSet()
+        // OUTPUTS: true if update succeeded, false if current value didn't match expected
+        return idealPos.compareAndSet(expected, newValue);
     }
     
     /**
@@ -282,7 +305,16 @@ public class CellMetadata {
      * @param rightBoundary the right boundary position
      */
     public void updateForBoundary(int leftBoundary, int rightBoundary) {
-        // PHASE THREE: Implement boundary update
-        throw new UnsupportedOperationException("Not implemented yet");
+        // PURPOSE: Reset ideal position based on sort direction after group merge
+        // PROCESS:
+        //   1. If DESCENDING, set idealPos to rightBoundary (cells start at right end)
+        //   2. If ASCENDING, set idealPos to leftBoundary (cells start at left end)
+        // GROUND TRUTH: Matches SelectionSortCell.py:77-81 update() behavior
+        
+        if (sortDirection == SortDirection.DESCENDING) {
+            setIdealPos(rightBoundary);
+        } else {
+            setIdealPos(leftBoundary);
+        }
     }
 }
