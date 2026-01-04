@@ -23,19 +23,29 @@ This behavior challenges traditional assumptions about emergent optimization com
 ## Key Concepts from the Levin et al. Research
 
 ### Decentralized Intelligence and Bottom-Up Control
-The Levin paper breaks the traditional assumption of top-down control in sorting algorithms. Instead of treating sorting as a centralized process controlled by an external executor, the research reconceptualizes each array element as an autonomous agent with minimal agency. Each element implements sorting policies from the bottom up through local interactions with neighbors, demonstrating that complex collective behaviors can emerge from simple, decentralized rules without centralized coordination.
+The Levin paper breaks the traditional assumption of top-down control in sorting algorithms. Instead of treating sorting as a centralized process controlled by an external executor, the research reconceptualizes each array element as an autonomous agent with minimal agency.
+
+Each element implements sorting policies from the bottom up through local interactions with neighbors. This demonstrates that complex collective behaviors can emerge from simple, decentralized rules without centralized coordination.
 
 ### Robustness Through Autonomous Element Agency
-A key finding is that arrays of autonomous elements sort themselves more reliably and robustly than traditional implementations, particularly in the presence of errors or "damaged" elements. This robustness emerges from the distributed nature of the sorting process—when individual elements possess agency, the system can adapt to failures without catastrophic breakdown. This demonstrates that basal forms of intelligence can provide unexpected resilience in computational systems.
+A key finding is that arrays of autonomous elements sort themselves more reliably and robustly than traditional implementations, particularly in the presence of errors or "damaged" elements. This robustness emerges from the distributed nature of the sorting process.
+
+When individual elements possess agency, the system can adapt to failures without catastrophic breakdown. This demonstrates that basal forms of intelligence can provide unexpected resilience in computational systems.
 
 ### Delayed Gratification and Problem-Space Navigation
-The research quantitatively characterizes sorting activity as traversal through a problem space, revealing that autonomous sorting systems exhibit delayed gratification behavior. Elements can temporarily increase disorder (reduce progress toward sorted state) to navigate around defects or obstacles, then resume progress toward the goal. This capacity to accept temporary setbacks for long-term gain represents a form of minimal goal-directed behavior that emerges from the sorting dynamics themselves.
+The research quantitatively characterizes sorting activity as traversal through a problem space, revealing that autonomous sorting systems exhibit delayed gratification behavior. Elements can temporarily increase disorder (reduce progress toward sorted state) to navigate around defects or obstacles, then resume progress toward the goal.
+
+This capacity to accept temporary setbacks for long-term gain represents a form of minimal goal-directed behavior. The behavior emerges from the sorting dynamics themselves without explicit programming.
 
 ### Emergent Clustering in Chimeric Systems
-When arrays contain elements following different sorting algorithms ("chimeric arrays"), unexpected clustering behavior emerges. Elements sort themselves not only by value but also spontaneously organize by algorithm type, revealing that the sorting process encodes information about both the target state and the method being used. This emergent pattern formation demonstrates that simple systems can exhibit multiple simultaneous organizational principles.
+When arrays contain elements following different sorting algorithms ("chimeric arrays"), unexpected clustering behavior emerges. Elements sort themselves not only by value but also spontaneously organize by algorithm type.
+
+This reveals that the sorting process encodes information about both the target state and the method being used. The emergent pattern formation demonstrates that simple systems can exhibit multiple simultaneous organizational principles.
 
 ### Basal Cognition Without Explicit Encoding
-The most significant insight is that problem-solving capacities emerge in simple, familiar algorithms without being explicitly encoded in their underlying mechanics. The sorting algorithms, when viewed through the lens of autonomous elements navigating problem spaces, reveal memory-like persistence, decision-making at interaction points, and adaptive responses to perturbations. This demonstrates that basal forms of intelligence can exist in minimal computational substrates, providing a new perspective on the field of Diverse Intelligence and suggesting that cognitive-like competencies may be far more widespread in simple systems than previously recognized.
+The most significant insight is that problem-solving capacities emerge in simple, familiar algorithms without being explicitly encoded in their underlying mechanics. The sorting algorithms, when viewed through the lens of autonomous elements navigating problem spaces, reveal memory-like persistence, decision-making at interaction points, and adaptive responses to perturbations.
+
+This demonstrates that basal forms of intelligence can exist in minimal computational substrates. The finding provides a new perspective on the field of Diverse Intelligence, suggesting that cognitive-like competencies may be far more widespread in simple systems than previously recognized.
 
 ## Design Concept
 
@@ -381,6 +391,18 @@ mvn test
 ```
 
 ## Documentation
+
+### Project Documentation
+
+Comprehensive documentation is available in the `/docs` directory:
+
+- **[Documentation Index](docs/README.md)** - Complete documentation structure
+- **[Theory](docs/theory/2401.05375v1.md)** - Levin et al. paper on sorting as morphogenesis
+- **[Findings](docs/findings/README.md)** - Experimental results and analyses
+- **[Requirements](docs/requirements/REQUIREMENTS.md)** - Technical specifications
+- **[Linear Scaling Analysis](docs/findings/LINEAR_SCALING_ANALYSIS.md)** - O(n) complexity discovery
+
+### API Documentation
 
 Generate Javadoc:
 
