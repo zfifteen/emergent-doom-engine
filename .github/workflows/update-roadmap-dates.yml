@@ -1,0 +1,132 @@
+name: Update Project Roadmap Dates
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-dates:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      projects: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Update Project V2 Date Fields
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PROJECT_ID="PVT_kwDOQxAaNs4AAk3o"
+          
+          # Map of issue_number to "start_date|target_date"
+          declare -A TIMELINE=(
+            ["42"]="2026-01-06|2026-03-31"
+            ["47"]="2026-01-06|2026-01-31"
+            ["46"]="2026-02-03|2026-02-28"
+            ["44"]="2026-02-03|2026-02-28"
+            ["45"]="2026-03-03|2026-03-31"
+            ["43"]="2026-01-20|2026-02-14"
+          )
+          
+          # Fetch project field IDs
+          echo "Fetching project field IDs..."
+          
+          FIELDS=$(gh api graphql -f projectId="$PROJECT_ID" -f query='query($projectId: ID!) {
+            node(id: $projectId) {
+              ... on ProjectV2 {
+                fields(first: 20) {
+                  nodes {
+                    ... on ProjectV2Field {
+                      id
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }')
+          
+          START_DATE_FIELD=$(echo "$FIELDS" | jq -r '.data.node.fields.nodes[] | select(.name == "Start Date") | .id')
+          TARGET_DATE_FIELD=$(echo "$FIELDS" | jq -r '.data.node.fields.nodes[] | select(.name == "Target Date") | .id')
+          
+          echo "Start Date field ID: $START_DATE_FIELD"
+          echo "Target Date field ID: $TARGET_DATE_FIELD"
+          
+          # Update each issue
+          for ISSUE_NUM in "${!TIMELINE[@]}"; do
+            echo ""
+            echo "Processing issue #$ISSUE_NUM..."
+            
+            IFS='|' read -r START_DATE TARGET_DATE <<< "${TIMELINE[$ISSUE_NUM]}"
+            
+            # Get issue node ID
+            ISSUE_ID=$(gh api graphql -f query="query { 
+              repository(owner: \"zfifteen\", name: \"emergent-doom-engine\") { 
+                issue(number: $ISSUE_NUM) { 
+                  id 
+                } 
+              } 
+            }" | jq -r '.data.repository.issue.id')
+            
+            if [ "$ISSUE_ID" == "null" ] || [ -z "$ISSUE_ID" ]; then
+              echo "  ERROR: Could not find issue #$ISSUE_NUM"
+              continue
+            fi
+            
+            # Find project item for this issue
+            ITEM=$(gh api graphql -f projectId="$PROJECT_ID" -f issueId="$ISSUE_ID" -f query='query($projectId: ID!, $issueId: ID!) {
+              node(id: $projectId) {
+                ... on ProjectV2 {
+                  items(first: 100) {
+                    nodes {
+                      ... on ProjectV2Item {
+                        id
+                        content {
+                          ... on Issue {
+                            id
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }' | jq -r ".data.node.items.nodes[] | select(.content.id == \"$ISSUE_ID\") | .id")
+            
+            if [ -z "$ITEM" ] || [ "$ITEM" == "null" ]; then
+              echo "  WARNING: Issue not in project yet"
+              continue
+            fi
+            
+            # Update Start Date
+            echo "  Setting Start Date to $START_DATE"
+            gh api graphql -f query="mutation {
+              updateProjectV2ItemFieldValue(
+                input: {
+                  projectId: \"$PROJECT_ID\"
+                  itemId: \"$ITEM\"
+                  fieldId: \"$START_DATE_FIELD\"
+                  value: { date: \"$START_DATE\" }
+                }
+              ) { projectV2Item { id } }
+            }"
+            
+            # Update Target Date
+            echo "  Setting Target Date to $TARGET_DATE"
+            gh api graphql -f query="mutation {
+              updateProjectV2ItemFieldValue(
+                input: {
+                  projectId: \"$PROJECT_ID\"
+                  itemId: \"$ITEM\"
+                  fieldId: \"$TARGET_DATE_FIELD\"
+                  value: { date: \"$TARGET_DATE\" }
+                }
+              ) { projectV2Item { id } }
+            }"
+            
+            echo "  ✓ Issue #$ISSUE_NUM updated"
+          done
+          
+          echo ""
+          echo "✓ Roadmap updates complete!"
