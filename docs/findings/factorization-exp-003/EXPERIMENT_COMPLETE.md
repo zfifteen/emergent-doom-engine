@@ -48,16 +48,9 @@ Tested two semiprimes intended to be "unbalanced" vs "balanced", but **both turn
 
 ## Note on Convergence Metrics
 
-For **factorization experiments**, convergence is a necessary but **not sufficient** condition for success:
+For **factorization experiments**, convergence (sorting completion) is a necessary but **not sufficient** condition for success: the key outcome is whether a **non-trivial factor** is discovered.
 
-- **Convergence** = Sorting algorithm completed (expected behavior)
-- **Success** = Non-trivial factor discovered
-- **Failure** = Convergence occurred but no factor found
-
-The meaningful metric is **factor discovery rate**, not convergence rate.
-
-For comparison, in **wave-crispr-signal experiments** (experiment-095), convergence **stability** (reproducibility across seeds) is a primary validation criterion, as it indicates biologically meaningful tier assignments.
-
+For full, shared guidance on how to interpret convergence, factor discovery rate, and comparison to other experiment families, see the **shared note on convergence metrics for factorization experiments**.
 ---
 
 ## Key Findings
