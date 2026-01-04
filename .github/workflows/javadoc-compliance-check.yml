@@ -1,0 +1,674 @@
+name: Javadoc Compliance Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    paths:
+      - '**/*.java'
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  javadoc-compliance:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Set up Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      
+      # ============================================================
+      # TIER 1: Checkstyle Validation
+      # ============================================================
+      - name: Create Checkstyle configuration
+        run: |
+          cat > checkstyle.xml << 'EOF'
+          <?xml version="1.0"?>
+          <!DOCTYPE module PUBLIC
+              "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+              "https://checkstyle.org/dtds/configuration_1_3.dtd">
+          <module name="Checker">
+            <property name="severity" value="warning"/>
+            <module name="TreeWalker">
+              <!-- Javadoc Checks -->
+              <module name="JavadocMethod">
+                <property name="accessModifiers" value="public, protected"/>
+                <property name="validateThrows" value="true"/>
+              </module>
+              <module name="JavadocType">
+                <property name="scope" value="public"/>
+              </module>
+              <module name="JavadocVariable">
+                <property name="scope" value="public"/>
+              </module>
+              <module name="JavadocStyle">
+                <property name="checkFirstSentence" value="true"/>
+                <property name="checkEmptyJavadoc" value="true"/>
+                <property name="checkHtml" value="true"/>
+              </module>
+              <module name="MissingJavadocMethod">
+                <property name="scope" value="public"/>
+                <property name="allowMissingPropertyJavadoc" value="false"/>
+              </module>
+              <module name="MissingJavadocType">
+                <property name="scope" value="public"/>
+              </module>
+            </module>
+          </module>
+          EOF
+      
+      - name: Download Checkstyle
+        run: |
+          mkdir -p tools
+          wget -q https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.5/checkstyle-10.12.5-all.jar -O tools/checkstyle.jar
+      
+      - name: Run Checkstyle validation
+        id: checkstyle
+        continue-on-error: true
+        run: |
+          echo "Running Checkstyle validation..."
+          java -jar tools/checkstyle.jar -c checkstyle.xml \
+            src/main/java \
+            lab/experiment-095 \
+            -f plain > checkstyle-report.txt 2>&1 || true
+          
+          # Display report
+          cat checkstyle-report.txt
+          
+          # Check if there are violations
+          if grep -q "Starting audit" checkstyle-report.txt && grep -q "\[WARN\]" checkstyle-report.txt; then
+            echo "checkstyle_violations=true" >> $GITHUB_OUTPUT
+          else
+            echo "checkstyle_violations=false" >> $GITHUB_OUTPUT
+          fi
+      
+      # ============================================================
+      # TIER 2: Framework-Specific Custom Validation
+      # ============================================================
+      - name: Create custom validation script
+        run: |
+          cat > validate_javadoc.py << 'EOF'
+          #!/usr/bin/env python3
+          """
+          Custom Javadoc validation for Emergent Doom Engine framework.
+          
+          Checks for:
+          - Framework context in relevant classes/methods
+          - Precision specifications in calculation methods
+          - Error handling documentation
+          - Parameter description quality
+          - Exception documentation in validation methods
+          """
+          import os
+          import re
+          import sys
+          from pathlib import Path
+          
+          class JavadocValidator:
+              def __init__(self):
+                  self.violations = []
+                  self.warnings = []
+              
+              def check_file(self, filepath):
+                  """Check a single Java file for documentation issues."""
+                  try:
+                      with open(filepath, 'r', encoding='utf-8') as f:
+                          content = f.read()
+                  except Exception as e:
+                      print(f"Error reading {filepath}: {e}")
+                      return
+                  
+                  lines = content.split('\n')
+                  
+                  # Find all Javadoc blocks and associated code
+                  self.check_javadoc_blocks(filepath, content, lines)
+              
+              def check_javadoc_blocks(self, filepath, content, lines):
+                  """Extract and validate Javadoc blocks."""
+                  # Pattern to find Javadoc comments
+                  javadoc_pattern = re.compile(r'/\*\*(.*?)\*/', re.DOTALL)
+                  
+                  for match in javadoc_pattern.finditer(content):
+                      javadoc_content = match.group(1)
+                      javadoc_start = content[:match.start()].count('\n')
+                      
+                      # Find what follows this Javadoc (class, method, field)
+                      remainder = content[match.end():].strip()
+                      next_line_match = re.match(r'(public|protected|private)?\s*(static|final|abstract)?\s*(class|interface|enum|\w+)\s+(\w+)', remainder)
+                      
+                      if next_line_match:
+                          declaration_type = next_line_match.group(3) if next_line_match.group(3) in ['class', 'interface', 'enum'] else 'method'
+                          element_name = next_line_match.group(4)
+                          
+                          # Check for calculation/normalization methods
+                          if declaration_type == 'method' and any(keyword in element_name.lower() for keyword in ['compute', 'calculate', 'normalize', 'transform']):
+                              self.check_calculation_method(filepath, javadoc_start, javadoc_content, element_name)
+                          
+                          # Check for validation methods
+                          if declaration_type == 'method' and any(keyword in element_name.lower() for keyword in ['validate', 'check', 'verify']):
+                              self.check_validation_method(filepath, javadoc_start, javadoc_content, element_name)
+                          
+                          # Check parameter descriptions
+                          self.check_parameter_quality(filepath, javadoc_start, javadoc_content)
+                          
+                          # Check for framework context in core classes
+                          if declaration_type in ['class', 'interface'] and any(keyword in element_name.lower() for keyword in ['metric', 'calculator', 'engine', 'analyzer']):
+                              self.check_framework_context(filepath, javadoc_start, javadoc_content, element_name)
+              
+              def check_calculation_method(self, filepath, line_num, javadoc, method_name):
+                  """Verify calculation methods specify precision."""
+                  if 'precision' not in javadoc.lower() and 'accuracy' not in javadoc.lower():
+                      self.warnings.append(
+                          f"{filepath}:{line_num}: Calculation method '{method_name}' should specify precision/accuracy"
+                      )
+              
+              def check_validation_method(self, filepath, line_num, javadoc, method_name):
+                  """Ensure validation methods document exceptions."""
+                  if '@throws' not in javadoc and '@exception' not in javadoc:
+                      self.warnings.append(
+                          f"{filepath}:{line_num}: Validation method '{method_name}' should document exceptions with @throws"
+                      )
+              
+              def check_parameter_quality(self, filepath, line_num, javadoc):
+                  """Check that parameter descriptions are meaningful (>10 characters)."""
+                  param_pattern = re.compile(r'@param\s+\w+\s+(.+?)(?=\n\s*@|\n\s*\*/|\n\s*\*\s*$)', re.DOTALL)
+                  
+                  for param_match in param_pattern.finditer(javadoc):
+                      description = param_match.group(1).strip()
+                      # Remove asterisks and whitespace
+                      clean_desc = re.sub(r'\s*\*\s*', ' ', description).strip()
+                      
+                      if len(clean_desc) < 10:
+                          self.violations.append(
+                              f"{filepath}:{line_num}: Parameter description too brief: '{clean_desc}' (should be >10 characters)"
+                          )
+              
+              def check_framework_context(self, filepath, line_num, javadoc, class_name):
+                  """Check if core classes provide framework context."""
+                  # Look for references to the Emergent Doom Engine framework concepts
+                  framework_keywords = ['emergent', 'cell', 'sorting', 'levin', 'basal cognition', 'morphogenesis']
+                  
+                  if not any(keyword in javadoc.lower() for keyword in framework_keywords):
+                      self.warnings.append(
+                          f"{filepath}:{line_num}: Core class '{class_name}' should reference Emergent Doom Engine framework context"
+                      )
+              
+              def find_java_files(self, directories):
+                  """Find all Java files in the given directories."""
+                  java_files = []
+                  for directory in directories:
+                      if os.path.exists(directory):
+                          for root, dirs, files in os.walk(directory):
+                              for file in files:
+                                  if file.endswith('.java'):
+                                      java_files.append(os.path.join(root, file))
+                  return java_files
+              
+              def run(self, directories):
+                  """Run validation on all Java files."""
+                  java_files = self.find_java_files(directories)
+                  
+                  if not java_files:
+                      print("No Java files found to validate.")
+                      return 0
+                  
+                  print(f"Validating {len(java_files)} Java files...")
+                  
+                  for filepath in java_files:
+                      self.check_file(filepath)
+                  
+                  # Report results
+                  if self.violations or self.warnings:
+                      print("\n" + "="*80)
+                      print("CUSTOM VALIDATION RESULTS")
+                      print("="*80 + "\n")
+                      
+                      if self.violations:
+                          print("VIOLATIONS (errors):")
+                          for violation in self.violations:
+                              print(f"  ❌ {violation}")
+                          print()
+                      
+                      if self.warnings:
+                          print("WARNINGS (enhancements):")
+                          for warning in self.warnings:
+                              print(f"  ⚠️  {warning}")
+                          print()
+                      
+                      print(f"Total violations: {len(self.violations)}")
+                      print(f"Total warnings: {len(self.warnings)}")
+                      
+                      # Save to file
+                      with open('custom-validation-report.txt', 'w') as f:
+                          f.write("CUSTOM VALIDATION RESULTS\n")
+                          f.write("="*80 + "\n\n")
+                          if self.violations:
+                              f.write("VIOLATIONS:\n")
+                              for violation in self.violations:
+                                  f.write(f"  {violation}\n")
+                              f.write("\n")
+                          if self.warnings:
+                              f.write("WARNINGS:\n")
+                              for warning in self.warnings:
+                                  f.write(f"  {warning}\n")
+                              f.write("\n")
+                          f.write(f"Total violations: {len(self.violations)}\n")
+                          f.write(f"Total warnings: {len(self.warnings)}\n")
+                      
+                      return 1 if self.violations else 0
+                  else:
+                      print("✅ All custom validation checks passed!")
+                      with open('custom-validation-report.txt', 'w') as f:
+                          f.write("All custom validation checks passed!\n")
+                      return 0
+          
+          if __name__ == '__main__':
+              validator = JavadocValidator()
+              directories = ['src/main/java', 'lab/experiment-095']
+              exit_code = validator.run(directories)
+              sys.exit(exit_code)
+          EOF
+          
+          chmod +x validate_javadoc.py
+      
+      - name: Run custom framework validation
+        id: custom_validation
+        continue-on-error: true
+        run: |
+          python3 validate_javadoc.py
+          if [ $? -ne 0 ]; then
+            echo "custom_violations=true" >> $GITHUB_OUTPUT
+          else
+            echo "custom_violations=false" >> $GITHUB_OUTPUT
+          fi
+      
+      # ============================================================
+      # TIER 3: Javadoc Build Test
+      # ============================================================
+      - name: Run Javadoc build test
+        id: javadoc_build
+        continue-on-error: true
+        run: |
+          echo "Running Javadoc build with strict validation..."
+          
+          # Create a simple pom.xml for javadoc generation if needed
+          mvn javadoc:javadoc -Djavadoc.opts="-Xdoclint:all" > javadoc-build.txt 2>&1 || true
+          
+          cat javadoc-build.txt
+          
+          # Check for errors
+          if grep -qi "error" javadoc-build.txt || grep -qi "BUILD FAILURE" javadoc-build.txt; then
+            echo "javadoc_errors=true" >> $GITHUB_OUTPUT
+          else
+            echo "javadoc_errors=false" >> $GITHUB_OUTPUT
+          fi
+      
+      # ============================================================
+      # Upload Artifacts
+      # ============================================================
+      - name: Upload compliance reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: javadoc-compliance-reports
+          path: |
+            checkstyle-report.txt
+            custom-validation-report.txt
+            javadoc-build.txt
+          retention-days: 30
+      
+      # ============================================================
+      # Check if any violations were found
+      # ============================================================
+      - name: Check for violations
+        id: check_violations
+        run: |
+          CHECKSTYLE="${{ steps.checkstyle.outputs.checkstyle_violations }}"
+          CUSTOM="${{ steps.custom_validation.outputs.custom_violations }}"
+          JAVADOC="${{ steps.javadoc_build.outputs.javadoc_errors }}"
+          
+          if [ "$CHECKSTYLE" = "true" ] || [ "$CUSTOM" = "true" ] || [ "$JAVADOC" = "true" ]; then
+            echo "has_violations=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_violations=false" >> $GITHUB_OUTPUT
+          fi
+      
+      # ============================================================
+      # Create or Update GitHub Issue
+      # ============================================================
+      - name: Create or update GitHub issue
+        if: steps.check_violations.outputs.has_violations == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read the violation reports
+            let checkstyleReport = '';
+            let customReport = '';
+            let javadocReport = '';
+            
+            try {
+              checkstyleReport = fs.readFileSync('checkstyle-report.txt', 'utf8');
+            } catch (e) {
+              checkstyleReport = 'No checkstyle report available';
+            }
+            
+            try {
+              customReport = fs.readFileSync('custom-validation-report.txt', 'utf8');
+            } catch (e) {
+              customReport = 'No custom validation report available';
+            }
+            
+            try {
+              javadocReport = fs.readFileSync('javadoc-build.txt', 'utf8');
+            } catch (e) {
+              javadocReport = 'No Javadoc build report available';
+            }
+            
+            // Create issue body
+            const issueBody = `## 🤖 Javadoc Compliance Violations - Copilot Fix Required
+            
+            Automated compliance check detected documentation violations that need to be addressed.
+            
+            **Workflow Run:** [#${context.runNumber}](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            **Triggered by:** ${context.eventName}
+            **Commit:** ${context.sha.substring(0, 7)}
+            
+            ---
+            
+            ## Validation Results
+            
+            ### ✅ Tier 1: Checkstyle Validation
+            
+            <details>
+            <summary>Checkstyle Report</summary>
+            
+            \`\`\`
+            ${checkstyleReport.substring(0, 60000)}
+            \`\`\`
+            
+            </details>
+            
+            ### ✅ Tier 2: Framework-Specific Validation
+            
+            <details>
+            <summary>Custom Validation Report</summary>
+            
+            \`\`\`
+            ${customReport.substring(0, 60000)}
+            \`\`\`
+            
+            </details>
+            
+            ### ✅ Tier 3: Javadoc Build Test
+            
+            <details>
+            <summary>Javadoc Build Report</summary>
+            
+            \`\`\`
+            ${javadocReport.substring(0, 60000)}
+            \`\`\`
+            
+            </details>
+            
+            ---
+            
+            ## 📚 Emergent Doom Engine Documentation Standards
+            
+            ### Required Javadoc Elements
+            
+            #### For Classes and Interfaces
+            - **Purpose**: Clear description of what the class/interface does
+            - **Framework Context**: How it relates to the Emergent Doom Engine framework
+            - **Domain**: What problem domain it addresses (sorting, metrics, execution, etc.)
+            - **Key Concepts**: Reference to relevant Levin et al. research concepts where applicable
+            
+            #### For Methods
+            - **Description**: What the method does and why
+            - **Framework Context**: How it implements or supports framework principles
+            - **@param**: All parameters with meaningful descriptions (>10 characters)
+            - **@return**: Return value description with precision/accuracy notes for calculations
+            - **@throws**: All exceptions with conditions that trigger them
+            
+            #### For Calculation Methods
+            - **Precision/Accuracy**: Specify expected precision (e.g., "returns value with double precision")
+            - **Edge Cases**: Document behavior for boundary conditions
+            - **Formula**: Include mathematical formula or algorithm reference where applicable
+            
+            #### For Validation Methods
+            - **@throws**: Document all validation exceptions
+            - **Conditions**: Clearly state what conditions are validated
+            - **Error Messages**: Indicate what error messages users can expect
+            
+            ### Example Javadoc Format
+            
+            \`\`\`java
+            /**
+             * Measures the percentage of cells in their correct sorted position.
+             *
+             * <p>Implements the Sortedness Value metric from Levin et al. (2024),
+             * which quantifies progress toward the sorted state in emergent sorting
+             * systems. This metric is fundamental to tracking delayed gratification
+             * behavior in autonomous cell populations.</p>
+             *
+             * <p>Formula: (cells in correct final position / total cells) × 100</p>
+             *
+             * <h4>Framework Context:</h4>
+             * <ul>
+             *   <li><b>Domain:</b> Emergent behavior measurement</li>
+             *   <li><b>Metric Type:</b> Problem-space navigation indicator</li>
+             *   <li><b>Precision:</b> Double precision (IEEE 754)</li>
+             * </ul>
+             *
+             * @param cells the array of cells to analyze; must not be null
+             * @return sortedness percentage from 0.0 to 100.0 with double precision
+             * @throws IllegalArgumentException if cells array is null
+             */
+            public double compute(T[] cells) {
+                // implementation
+            }
+            \`\`\`
+            
+            ### Before/After Example
+            
+            ❌ **Before (Insufficient):**
+            \`\`\`java
+            /**
+             * Computes metric.
+             * @param cells cells
+             * @return value
+             */
+            public double compute(T[] cells) { ... }
+            \`\`\`
+            
+            ✅ **After (Complete):**
+            \`\`\`java
+            /**
+             * Computes the Spearman distance correlation coefficient for cell ordering.
+             *
+             * <p>This metric measures how close the current cell arrangement is to
+             * the target sorted order, providing insight into the sorting progress
+             * in emergent systems. Based on Spearman's rank correlation coefficient.</p>
+             *
+             * @param cells the array of cells to analyze; must not be null or empty
+             * @return correlation coefficient between -1.0 and 1.0 with double precision;
+             *         1.0 indicates perfect order, -1.0 indicates reverse order
+             * @throws IllegalArgumentException if cells array is null or empty
+             */
+            public double compute(T[] cells) { ... }
+            \`\`\`
+            
+            ---
+            
+            ## ✅ Acceptance Criteria
+            
+            - [ ] All Checkstyle violations resolved
+            - [ ] All framework-specific validation warnings addressed
+            - [ ] Javadoc builds successfully with \`-Xdoclint:all\`
+            - [ ] All public classes have comprehensive documentation
+            - [ ] All public methods have complete @param, @return, and @throws tags
+            - [ ] Parameter descriptions are meaningful (>10 characters)
+            - [ ] Calculation methods specify precision/accuracy
+            - [ ] Validation methods document exceptions
+            - [ ] Framework context included in core classes
+            - [ ] Code examples provided where helpful
+            
+            ---
+            
+            ## 🤖 Copilot Instructions
+            
+            GitHub Copilot, please:
+            
+            1. Review all violation reports above
+            2. Fix Javadoc compliance issues in the affected files
+            3. Follow the Emergent Doom Engine documentation standards
+            4. Ensure all public APIs are properly documented
+            5. Add framework context to core classes and methods
+            6. Include precision specifications in calculation methods
+            7. Document all exceptions in validation methods
+            8. Provide meaningful parameter descriptions
+            9. Verify Javadoc builds successfully
+            10. Run compliance checks to ensure all issues are resolved
+            
+            **Priority:** High  
+            **Category:** Documentation Quality  
+            **Framework:** Emergent Doom Engine
+            
+            ---
+            
+            *This issue was automatically generated by the Javadoc Compliance Check workflow.*
+            *Last updated: ${new Date().toISOString()}*
+            `;
+            
+            // Check for existing open issue
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'javadoc-compliance,copilot-assigned'
+            });
+            
+            const existingIssue = issues.data.find(issue => 
+              issue.title.includes('Javadoc Compliance Violations')
+            );
+            
+            if (existingIssue) {
+              // Update existing issue
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: issueBody
+              });
+              
+              // Add a comment noting the update
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: `🔄 Issue updated with new violations from workflow run [#${context.runNumber}](${context.payload.repository.html_url}/actions/runs/${context.runId})`
+              });
+              
+              console.log(`Updated existing issue #${existingIssue.number}`);
+            } else {
+              // Create new issue
+              const newIssue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🤖 Javadoc Compliance Violations - Copilot Fix Required',
+                body: issueBody,
+                labels: ['javadoc-compliance', 'copilot-assigned', 'documentation', 'auto-generated']
+              });
+              
+              console.log(`Created new issue #${newIssue.data.number}`);
+            }
+      
+      # ============================================================
+      # Add PR Comment (for pull request events)
+      # ============================================================
+      - name: Add PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const hasViolations = '${{ steps.check_violations.outputs.has_violations }}' === 'true';
+            
+            let commentBody;
+            
+            if (hasViolations) {
+              let violationSummary = '';
+              
+              try {
+                const customReport = fs.readFileSync('custom-validation-report.txt', 'utf8');
+                const violationMatch = customReport.match(/Total violations: (\d+)/);
+                const warningMatch = customReport.match(/Total warnings: (\d+)/);
+                
+                if (violationMatch || warningMatch) {
+                  violationSummary += `- Custom Validation: ${violationMatch ? violationMatch[1] : 0} violations, ${warningMatch ? warningMatch[1] : 0} warnings\n`;
+                }
+              } catch (e) {}
+              
+              commentBody = `## ⚠️ Javadoc Compliance Check Failed
+              
+              This pull request has Javadoc compliance violations that need to be addressed.
+              
+              ${violationSummary}
+              
+              **Details:** Check the [workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for complete reports.
+              
+              **Next Steps:**
+              1. Review the compliance reports in the workflow artifacts
+              2. Fix the documented violations
+              3. Ensure all public APIs have proper Javadoc
+              4. Re-run the checks
+              
+              See the [Emergent Doom Engine documentation standards](${context.payload.repository.html_url}/blob/main/docs/README.md) for guidelines.
+              `;
+            } else {
+              commentBody = `## ✅ Javadoc Compliance Check Passed
+              
+              All Javadoc compliance checks passed successfully!
+              
+              - Checkstyle validation: ✅
+              - Framework-specific checks: ✅
+              - Javadoc build test: ✅
+              `;
+            }
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
+      
+      # ============================================================
+      # Final Status
+      # ============================================================
+      - name: Report final status
+        if: steps.check_violations.outputs.has_violations == 'true'
+        run: |
+          echo "❌ Javadoc compliance check failed!"
+          echo "Review the reports and GitHub issue for details."
+          exit 1
