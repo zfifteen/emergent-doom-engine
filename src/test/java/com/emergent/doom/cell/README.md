@@ -299,4 +299,4 @@ Now that you understand cells as pure data carriers, proceed to:
 
 ---
 
-**[← Back to Test Suite Home](README.md)** | **[Next: Swap Mechanics →](../swap/README.md)**
+**[← Back to Test Suite Home](../README.md)** | **[Next: Swap Mechanics →](../swap/README.md)**
