@@ -325,19 +325,6 @@ jobs:
       # ============================================================
       # Upload Artifacts
       # ============================================================
-      - name: Verify report files exist
-        if: always()
-        run: |
-          echo "Checking for report files..."
-          for file in checkstyle-report.txt custom-validation-report.txt javadoc-build.txt; do
-            if [ -f "$file" ]; then
-              echo "✓ Found: $file"
-            else
-              echo "✗ Missing: $file (creating empty placeholder)"
-              touch "$file"
-            fi
-          done
-      
       - name: Upload compliance reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -348,6 +335,7 @@ jobs:
             custom-validation-report.txt
             javadoc-build.txt
           retention-days: 30
+          if-no-files-found: warn
       
       # ============================================================
       # Check if any violations were found
