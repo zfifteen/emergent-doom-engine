@@ -4,7 +4,7 @@ Integration validation tests provide **system-level verification** that all comp
 
 ## Purpose
 
-Tests in this package validate:
+Tests in this package examine:
 - End-to-end sorting workflows from cell creation to convergence
 - Algorithm scaling behavior for factorization
 - Integration between execution engines, probes, metrics, and convergence detectors
@@ -15,7 +15,7 @@ Tests in this package validate:
 
 ### Scaling Hypothesis
 
-Tests validate whether emergent factorization convergence steps remain constant as array size grows.
+Tests examine whether emergent factorization convergence steps remain constant as array size grows.
 
 - **Hypothesis**: Convergence steps remain constant as array size grows
 - **Validation**: Run experiments on progressively harder semiprimes (10⁶ to 10¹⁸)

@@ -282,7 +282,7 @@ public class ScalingReport {
      * <p><strong>Reasoning:</strong>
      * <ul>
      *   <li>Proceed if B ≈ 0 and success rate high (constant convergence holds)</li>
-     *   <li>Stop if B > 0.5 (found failure boundary)</li>
+     *   <li>Stop if B > 0.5 (found scaling transition point)</li>
      *   <li>Stop if non-convergence detected (success rate low)</li>
      * </ul>
      * </p>

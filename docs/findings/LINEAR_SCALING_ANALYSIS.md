@@ -279,8 +279,8 @@ when applied to specific problem instances. These observations were based on:
 instances. The generalizability of these observations to broader problem classes, particularly cryptographically 
 hard instances, remains an open question requiring further investigation.
 
-Further experimentation on diverse problem instances is needed to characterize the algorithm's behavior across 
-different difficulty levels and understand when emergent methods succeed or fail.
+Further experimentation on diverse problem instances is needed to characterize the algorithm's behavior 
+characteristics across different difficulty levels and problem conditions.
 
 ---
 

@@ -19,7 +19,7 @@ This system tests whether the algorithm's convergence time remains constant as a
 **B = ∂(mean_steps)/∂(array_size)**
 
 - **B ≈ 0**: Steps constant regardless of array size
-- **B > 0.5**: Steps grow with array size (failure boundary)
+- **B > 0.5**: Steps grow with array size (scaling transition point)
 
 ## Experimental Ladder
 
