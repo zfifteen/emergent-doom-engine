@@ -57,7 +57,7 @@ public class StepSnapshot<T extends Cell<T>> {
             vals.add(cell);
             // Metadata no longer available from cells
             int groupId = -1;
-            int label = 0;
+            int label = -1;  // Use -1 to indicate algotype unavailable
             int frozen = 0;
             tys.add(new Object[]{groupId, label, cell, frozen});
         }

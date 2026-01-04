@@ -41,7 +41,7 @@ public class ThreadSafeProbe<T extends Cell<T>> extends Probe<T> {
                 values.add(cell);
                 // Metadata no longer available from cells - record minimal info
                 int groupId = -1;  // Groups not supported with lightweight cells
-                int algotypeLabel = 0;  // Algotype not available from cell
+                int algotypeLabel = -1;  // Algotype not available from cell (use -1 to indicate unavailable)
                 int isFrozen = 0;  // Status not available from cell
                 types.add(new Object[]{groupId, algotypeLabel, cell, isFrozen});
             }

@@ -51,6 +51,6 @@ public interface Cell<T extends Cell<T>> extends Comparable<T> {
      */
     default int getValue() {
         throw new UnsupportedOperationException(
-            "This cell type does not support getValue()");
+            "This cell type does not support getValue(). If you need to extract values for metrics, consider implementing a custom value extractor for this cell type.");
     }
 }

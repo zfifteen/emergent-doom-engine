@@ -116,9 +116,6 @@ class ProbeTest {
     }
 
     @Nested
-    @DisplayName("Cell Type Distribution Tracking")
-
-    @Nested
     @DisplayName("Basic Snapshot Functionality")
     class BasicSnapshotTests {
 
