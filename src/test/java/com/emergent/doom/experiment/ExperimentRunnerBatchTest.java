@@ -37,7 +37,7 @@ class ExperimentRunnerBatchTest {
     private GenericCell[] createRandomArray(int size) {
         GenericCell[] cells = new GenericCell[size];
         for (int i = 0; i < size; i++) {
-            cells[i] = new GenericCell(random.nextInt(1000), Algotype.BUBBLE);
+            cells[i] = new GenericCell(random.nextInt(1000));
         }
         return cells;
     }
@@ -49,7 +49,7 @@ class ExperimentRunnerBatchTest {
         Random localRandom = new Random(seed);
         GenericCell[] cells = new GenericCell[size];
         for (int i = 0; i < size; i++) {
-            cells[i] = new GenericCell(localRandom.nextInt(1000), Algotype.BUBBLE);
+            cells[i] = new GenericCell(localRandom.nextInt(1000));
         }
         return cells;
     }
