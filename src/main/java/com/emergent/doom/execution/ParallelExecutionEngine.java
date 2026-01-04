@@ -737,12 +737,20 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             if (swapEngine.attemptSwap(cells, i, j)) {
                 count++;
 
-                // TODO PHASE THREE: Swap metadata alongside cells
-                // if (metadata != null) {
-                //     CellMetadata tempMetadata = metadata[i];
-                //     metadata[i] = metadata[j];
-                //     metadata[j] = tempMetadata;
-                // }
+                // PHASE THREE: Swap metadata alongside cells
+                // PURPOSE: Keep metadata attached to logical agent identity as cells move
+                // PROCESS:
+                //   1. Check if metadata provider mode (metadata != null)
+                //   2. If yes, swap metadata[i] and metadata[j] using temp variable
+                //   3. This ensures metadata[i] always describes behavior of cell at position i
+                // RATIONALE: When cells swap positions, their metadata must follow them
+                //   Example: If BUBBLE cell at index 5 swaps with cell at index 6,
+                //            the BUBBLE metadata must move to index 6 with the cell
+                if (metadata != null) {
+                    CellMetadata tempMetadata = metadata[i];
+                    metadata[i] = metadata[j];
+                    metadata[j] = tempMetadata;
+                }
             }
         }
         return count;
