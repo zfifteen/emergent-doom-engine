@@ -295,7 +295,7 @@ Now that you understand cells as pure data carriers, proceed to:
 
 **Also see:**
 - [Chapter 3: Execution Engines](../execution/README.md) - How metadata providers work with lightweight cells
-- [Production Cell Examples](../../../../../../main/java/com/emergent/doom/examples/) - Real-world cell implementations
+- [Production Cell Examples](../../../../../../src/main/java/com/emergent/doom/examples/) - Real-world cell implementations
 
 ---
 
