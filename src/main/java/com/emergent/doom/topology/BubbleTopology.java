@@ -56,14 +56,25 @@ public class BubbleTopology<T extends Cell<T>> implements Topology<T> {
      * @return list of neighbor indices
      */
     public List<Integer> getNeighborsForMetadata(int position, CellMetadata[] metadata, int arraySize) {
-        // TODO PHASE THREE: Query algotype from metadata instead of cell
-        // Algotype algotype = metadata[position].getAlgotype();
-        // if (algotype != Algotype.BUBBLE) {
-        //     throw new IllegalArgumentException("BubbleTopology only supports BUBBLE algotype");
-        // }
+        // PHASE THREE: Query algotype from metadata instead of cell
+        // PURPOSE: Support metadata provider pattern where algotype is stored
+        //   in metadata array rather than cell object
+        // PROCESS:
+        //   1. Get algotype from metadata[position]
+        //   2. Validate it's BUBBLE algotype
+        //   3. Return left and right neighbors (same logic as getNeighbors)
+        // BENEFITS: Enables topology queries without accessing cell objects
+        
+        Algotype algotype = metadata[position].getAlgotype();
+        if (algotype != Algotype.BUBBLE) {
+            throw new IllegalArgumentException("BubbleTopology only supports BUBBLE algotype, got: " + algotype);
+        }
 
-        // For now, delegate to existing method
-        return getNeighbors(position, arraySize, Algotype.BUBBLE);
+        // Same neighbor logic as getNeighbors method
+        List<Integer> neighbors = new ArrayList<>();
+        if (position > 0) neighbors.add(position - 1);  // left
+        if (position < arraySize - 1) neighbors.add(position + 1);  // right
+        return neighbors;
     }
 
     @Override

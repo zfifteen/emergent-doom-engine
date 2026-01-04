@@ -58,14 +58,25 @@ public class InsertionTopology<T extends Cell<T>> implements Topology<T> {
      * @return list of neighbor indices
      */
     public List<Integer> getNeighborsForMetadata(int position, CellMetadata[] metadata, int arraySize) {
-        // TODO PHASE THREE: Query algotype from metadata instead of cell
-        // Algotype algotype = metadata[position].getAlgotype();
-        // if (algotype != Algotype.INSERTION) {
-        //     throw new IllegalArgumentException("InsertionTopology only supports INSERTION algotype");
-        // }
+        // PHASE THREE: Query algotype from metadata instead of cell
+        // PURPOSE: Support metadata provider pattern where algotype is stored
+        //   in metadata array rather than cell object
+        // PROCESS:
+        //   1. Get algotype from metadata[position]
+        //   2. Validate it's INSERTION algotype
+        //   3. Return left neighbor (same logic as getNeighbors)
+        // BENEFITS: Enables topology queries without accessing cell objects
+        
+        Algotype algotype = metadata[position].getAlgotype();
+        if (algotype != Algotype.INSERTION) {
+            throw new IllegalArgumentException("InsertionTopology only supports INSERTION algotype, got: " + algotype);
+        }
 
-        // For now, delegate to existing method
-        return getNeighbors(position, arraySize, Algotype.INSERTION);
+        // Same neighbor logic as getNeighbors method
+        if (position > 0) {
+            return Arrays.asList(position - 1);
+        }
+        return Arrays.asList();
     }
 
     @Override

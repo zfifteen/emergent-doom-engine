@@ -58,17 +58,25 @@ public class SelectionTopology<T extends Cell<T>> implements Topology<T> {
      * @return list containing ideal target index
      */
     public List<Integer> getNeighborsForMetadata(int position, CellMetadata[] metadata, int arraySize) {
-        // TODO PHASE THREE: Query algotype and ideal position from metadata
-        // Algotype algotype = metadata[position].getAlgotype();
-        // if (algotype != Algotype.SELECTION) {
-        //     throw new IllegalArgumentException("SelectionTopology only supports SELECTION algotype");
-        // }
-        // int idealPos = metadata[position].getIdealPos();
-        // int target = Math.min(idealPos, arraySize - 1);
-        // return Arrays.asList(target);
-
-        // For now, return empty list (handled externally in engines)
-        return Arrays.asList();
+        // PHASE THREE: Query algotype and ideal position from metadata
+        // PURPOSE: Support metadata provider pattern where algotype and ideal position
+        //   are stored in metadata array rather than cell object
+        // PROCESS:
+        //   1. Get algotype from metadata[position]
+        //   2. Validate it's SELECTION algotype
+        //   3. Get ideal position from metadata[position]
+        //   4. Clamp to valid range and return as singleton list
+        // BENEFITS: Enables SELECTION topology to work with lightweight cells
+        
+        Algotype algotype = metadata[position].getAlgotype();
+        if (algotype != Algotype.SELECTION) {
+            throw new IllegalArgumentException("SelectionTopology only supports SELECTION algotype, got: " + algotype);
+        }
+        
+        // Get ideal position from metadata and clamp to valid range
+        int idealPos = metadata[position].getIdealPos();
+        int target = Math.min(idealPos, arraySize - 1);
+        return Arrays.asList(target);
     }
 
     @Override
