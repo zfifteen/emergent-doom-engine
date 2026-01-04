@@ -327,7 +327,7 @@ jobs:
       # ============================================================
       - name: Upload compliance reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: javadoc-compliance-reports
           path: |
@@ -335,6 +335,7 @@ jobs:
             custom-validation-report.txt
             javadoc-build.txt
           retention-days: 30
+          if-no-files-found: warn
       
       # ============================================================
       # Check if any violations were found
