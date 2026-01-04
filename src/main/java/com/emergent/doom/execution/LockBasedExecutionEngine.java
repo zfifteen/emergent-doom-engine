@@ -425,12 +425,20 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
                 if (shouldSwapForAlgotype(cellIndex, neighborIndex, algotype)) {
                     if (swapEngine.attemptSwap(cells, cellIndex, neighborIndex)) {
-                        // TODO PHASE THREE: Swap metadata alongside cells
-                        // if (metadata != null) {
-                        //     CellMetadata tempMetadata = metadata[cellIndex];
-                        //     metadata[cellIndex] = metadata[neighborIndex];
-                        //     metadata[neighborIndex] = tempMetadata;
-                        // }
+                        // PHASE THREE: Swap metadata alongside cells
+                        // PURPOSE: Keep metadata attached to logical agent identity as cells move
+                        // PROCESS:
+                        //   1. Check if metadata provider mode (metadata != null)
+                        //   2. If yes, swap metadata[cellIndex] and metadata[neighborIndex]
+                        //   3. This ensures metadata stays synchronized with cell positions
+                        // CRITICAL: Must be synchronized with global lock (already held)
+                        // RATIONALE: In lock-based execution, all swaps happen under global lock,
+                        //   so metadata swaps are automatically thread-safe
+                        if (metadata != null) {
+                            CellMetadata tempMetadata = metadata[cellIndex];
+                            metadata[cellIndex] = metadata[neighborIndex];
+                            metadata[neighborIndex] = tempMetadata;
+                        }
 
                         int swaps = totalSwaps.incrementAndGet();
 
