@@ -1,6 +1,8 @@
 package com.emergent.doom.examples;
 
-import com.emergent.doom.cell.HasAlgotype;
+import com.emergent.doom.cell.HasValue;
+import com.emergent.doom.cell.HasGroup;
+import com.emergent.doom.cell.HasStatus;
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.group.CellGroup;
 import com.emergent.doom.group.CellStatus;
@@ -20,52 +22,10 @@ import java.util.Arrays;
  */
 public class SelectionSortTest {
 
-    static class TestCell extends SelectionCell<TestCell> implements com.emergent.doom.group.GroupAwareCell<TestCell>, HasAlgotype {
+    static class TestCell extends SelectionCell<TestCell> {
         public TestCell(int value) {
             super(value);
         }
-
-        // ========== GroupAwareCell stubs ==========
-        private CellStatus status = CellStatus.ACTIVE;
-        private CellStatus previousStatus = CellStatus.ACTIVE;
-
-        @Override
-        public CellGroup<TestCell> getGroup() { return null; }
-
-        @Override
-        public void setGroup(CellGroup<TestCell> group) { /* no-op */ }
-
-        @Override
-        public int getLeftBoundary() { return 0; }
-
-        @Override
-        public void setLeftBoundary(int leftBoundary) { /* no-op */ }
-
-        @Override
-        public int getRightBoundary() { return 0; }
-
-        @Override
-        public void setRightBoundary(int rightBoundary) { /* no-op */ }
-
-        @Override
-        public CellStatus getStatus() { return status; }
-
-        @Override
-        public CellStatus getPreviousStatus() { return previousStatus; }
-
-        @Override
-        public void setStatus(CellStatus status) { this.status = status; }
-
-        @Override
-        public void setPreviousStatus(CellStatus previousStatus) { this.previousStatus = previousStatus; }
-
-        @Override
-        public void updateForGroupMerge() {
-            // Selection merge behavior is implementation-specific; for this demo cell, do nothing.
-        }
-
-        @Override
-        public Algotype getAlgotype() { return Algotype.SELECTION; }
 
         @Override
         public int compareTo(TestCell other) {

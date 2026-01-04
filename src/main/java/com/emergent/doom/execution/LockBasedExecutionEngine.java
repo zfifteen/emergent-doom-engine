@@ -2,8 +2,7 @@ package com.emergent.doom.execution;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
-import com.emergent.doom.cell.HasIdealPosition;
-import com.emergent.doom.cell.SortDirection;
+import com.emergent.doom.cell.SelectionCell;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.topology.BubbleTopology;
@@ -55,6 +54,22 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
     private final BubbleTopology<T> bubbleTopology;
     private final InsertionTopology<T> insertionTopology;
 
+    /**
+     * PURPOSE: Metadata array storing execution behavior for each cell position.
+     * 
+     * <p>ARCHITECTURE: Parallel array indexed by cell position. Stores algotype,
+     * sort direction, and ideal position state. This enables lightweight cells
+     * that are pure Comparable data carriers.</p>
+     * 
+     * <p>INPUTS: Initialized from IntFunction&lt;CellMetadata&gt; provider in constructor</p>
+     * 
+     * <p>PROCESS: Swapped alongside cells in evaluateAndSwap() to keep metadata
+     * attached to logical agent identity. Requires synchronization with global lock.</p>
+     * 
+     * <p>OUTPUTS: metadata[i] provides CellMetadata for cell at position i</p>
+     */
+    private final CellMetadata[] metadata;
+
     private volatile boolean running = false;
     private volatile boolean converged = false;
     private volatile boolean reverseDirection = false;  // Track sort direction for isLeftSorted
@@ -73,64 +88,51 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
     private final int convergencePollIntervalMs;
     private final int requiredStablePolls;
 
-    private final CellMetadata[] metadata;
+
 
     /**
-     * Create a new lock-based execution engine with default polling configuration.
+     * Create a new lock-based execution engine with metadata provider.
+     *
+     * <p>PURPOSE: Initialize engine with externally-managed metadata array, enabling
+     * lightweight cells that don't carry execution metadata internally.</p>
+     *
+     * <p>INPUTS:
+     * <ul>
+     *   <li>cells - Array of cells to sort (may be pure Comparable wrappers)</li>
+     *   <li>swapEngine - Swap execution and frozen cell tracking</li>
+     *   <li>probe - Metrics and trajectory recording</li>
+     *   <li>convergenceDetector - Determines when execution completes</li>
+     *   <li>metadataProvider - Function mapping index → CellMetadata (required, non-null)</li>
+     *   <li>pollIntervalMs - Polling interval for convergence checks</li>
+     *   <li>requiredStablePolls - Number of stable polls required for convergence</li>
+     * </ul>
+     * </p>
+     *
+     * <p>PROCESS:
+     * <ol>
+     *   <li>Validate metadataProvider is non-null</li>
+     *   <li>Store all component references</li>
+     *   <li>Initialize topology helpers</li>
+     *   <li>Create metadata array from provider: metadata[i] = metadataProvider.apply(i)</li>
+     *   <li>Create global lock for thread synchronization</li>
+     *   <li>Create cell worker threads</li>
+     *   <li>Wire probe to swap engine</li>
+     *   <li>Record initial snapshot</li>
+     * </ol>
+     * </p>
+     *
+     * <p>OUTPUTS: Fully initialized engine using metadata provider pattern</p>
+     *
+     * <p>DEPENDENCIES: metadataProvider must return non-null CellMetadata for all valid indices</p>
      *
      * @param cells the cell array to sort
      * @param swapEngine the swap engine for executing swaps
      * @param probe the probe for recording snapshots
      * @param convergenceDetector the convergence detector
-     */
-    public LockBasedExecutionEngine(
-            T[] cells,
-            SwapEngine<T> swapEngine,
-            Probe<T> probe,
-            ConvergenceDetector<T> convergenceDetector) {
-        this(cells, swapEngine, probe, convergenceDetector,
-                DEFAULT_POLL_INTERVAL_MS, DEFAULT_REQUIRED_STABLE_POLLS);
-    }
-
-    private void initializeMetadata(T[] cells) {
-        for (int i = 0; i < cells.length; i++) {
-            Algotype algotype = Algotype.BUBBLE;
-            SortDirection direction = com.emergent.doom.cell.SortDirection.ASCENDING;
-            int idealPos = 0;
-            int left = 0;
-            int right = cells.length - 1;
-
-            T cell = cells[i];
-            if (cell instanceof com.emergent.doom.cell.HasAlgotype) {
-                algotype = ((com.emergent.doom.cell.HasAlgotype) cell).getAlgotype();
-            }
-
-            if (cell instanceof com.emergent.doom.cell.HasSortDirection) {
-                direction = ((com.emergent.doom.cell.HasSortDirection) cell).getSortDirection();
-            }
-
-            if (cell instanceof com.emergent.doom.cell.HasIdealPosition) {
-                idealPos = ((com.emergent.doom.cell.HasIdealPosition) cell).getIdealPos();
-            }
-
-            if (cell instanceof com.emergent.doom.group.GroupAwareCell) {
-                left = ((com.emergent.doom.group.GroupAwareCell<?>) cell).getLeftBoundary();
-                right = ((com.emergent.doom.group.GroupAwareCell<?>) cell).getRightBoundary();
-            }
-
-            this.metadata[i] = new CellMetadata(algotype, direction, new AtomicInteger(idealPos), left, right);
-        }
-    }
-
-    /**
-     * Create a new lock-based execution engine with custom polling configuration.
-     *
-     * @param cells the cell array to sort
-     * @param swapEngine the swap engine for executing swaps
-     * @param probe the probe for recording snapshots
-     * @param convergenceDetector the convergence detector
+     * @param metadataProvider function providing metadata for each cell index (required, non-null)
      * @param pollIntervalMs polling interval in milliseconds for convergence checks
      * @param requiredStablePolls number of consecutive stable polls required for fallback convergence
+     * @throws NullPointerException if metadataProvider is null
      */
     @SuppressWarnings("unchecked")
     public LockBasedExecutionEngine(
@@ -138,8 +140,14 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
             SwapEngine<T> swapEngine,
             Probe<T> probe,
             ConvergenceDetector<T> convergenceDetector,
+            java.util.function.IntFunction<CellMetadata> metadataProvider,
             int pollIntervalMs,
             int requiredStablePolls) {
+
+        // Validate required metadata provider
+        if (metadataProvider == null) {
+            throw new NullPointerException("metadataProvider cannot be null");
+        }
 
         this.cells = cells;
         this.swapEngine = swapEngine;
@@ -148,16 +156,18 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         this.convergencePollIntervalMs = pollIntervalMs;
         this.requiredStablePolls = requiredStablePolls;
 
-        // Initialize metadata from cells
-        this.metadata = new CellMetadata[cells.length];
-        initializeMetadata(cells);
-
         // Single global lock (matches Python cell_research)
         this.globalLock = new ReentrantLock();
 
         // Initialize topology helpers
         this.bubbleTopology = new BubbleTopology<>();
         this.insertionTopology = new InsertionTopology<>();
+
+        // Initialize metadata from provider
+        this.metadata = new CellMetadata[cells.length];
+        for (int i = 0; i < cells.length; i++) {
+            this.metadata[i] = metadataProvider.apply(i);
+        }
 
         // Wire up probe to swap engine for frozen swap attempt tracking
         swapEngine.setProbe(probe);
@@ -174,6 +184,25 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
         // Record initial state
         probe.recordSnapshot(0, cells, 0);
+    }
+
+    /**
+     * Convenience constructor with metadata provider and default polling configuration.
+     *
+     * @param cells the cell array to sort
+     * @param swapEngine the swap engine for executing swaps
+     * @param probe the probe for recording snapshots
+     * @param convergenceDetector the convergence detector
+     * @param metadataProvider function providing metadata for each cell index
+     */
+    public LockBasedExecutionEngine(
+            T[] cells,
+            SwapEngine<T> swapEngine,
+            Probe<T> probe,
+            ConvergenceDetector<T> convergenceDetector,
+            java.util.function.IntFunction<CellMetadata> metadataProvider) {
+        this(cells, swapEngine, probe, convergenceDetector, metadataProvider,
+                DEFAULT_POLL_INTERVAL_MS, DEFAULT_REQUIRED_STABLE_POLLS);
     }
 
     /**
@@ -292,7 +321,8 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
         @SuppressWarnings("unchecked")
         private void evaluateAndSwap() {
-            Algotype algotype = metadata[cellIndex].algotype();
+            T cell = cells[cellIndex];
+            Algotype algotype = getCellAlgotype(cellIndex);
 
             List<Integer> neighbors;
             if (algotype == Algotype.BUBBLE) {
@@ -315,10 +345,10 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
                 if (shouldSwapForAlgotype(cellIndex, neighborIndex, algotype)) {
                     if (swapEngine.attemptSwap(cells, cellIndex, neighborIndex)) {
-                        // Synchronize metadata
-                        CellMetadata temp = metadata[cellIndex];
+                        // Swap metadata alongside cells
+                        CellMetadata tempMetadata = metadata[cellIndex];
                         metadata[cellIndex] = metadata[neighborIndex];
-                        metadata[neighborIndex] = temp;
+                        metadata[neighborIndex] = tempMetadata;
 
                         int swaps = totalSwaps.incrementAndGet();
 
@@ -336,12 +366,12 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
     // ========== Helper Methods ==========
 
-    private int getIdealPosition(int index) {
-        return metadata[index].idealPos().get();
+    private int getIdealPosition(int cellIndex) {
+        return metadata[cellIndex].getIdealPos();
     }
 
-    private void incrementIdealPosition(int index) {
-        metadata[index].idealPos().incrementAndGet();
+    private void incrementIdealPosition(int cellIndex) {
+        metadata[cellIndex].incrementIdealPos();
     }
 
     private List<Integer> getNeighborsForAlgotype(int i, Algotype algotype) {
@@ -425,7 +455,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
             }
 
             // Get cell value for comparison
-            int currentValue = cells[k].getValue();
+            int currentValue = getCellValue(cells[k]);
             
             // Check if out of order based on direction
             boolean outOfOrder = reverseDirection 
@@ -438,6 +468,55 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
             prevValue = currentValue;
         }
         return true;
+    }
+
+    // ========== Helper Methods for Metadata/Cell Access ==========
+
+    /**
+     * Get algotype from metadata array.
+     *
+     * <p>PURPOSE: Query algotype from externally-managed metadata array
+     * instead of cell introspection.</p>
+     *
+     * <p>INPUTS: cellIndex - position of cell to query</p>
+     *
+     * <p>PROCESS: Return metadata[cellIndex].getAlgotype()</p>
+     *
+     * <p>OUTPUTS: Algotype for this cell position</p>
+     *
+     * <p>DEPENDENCIES: Metadata provider must have been supplied to constructor</p>
+     */
+    private Algotype getCellAlgotype(int cellIndex) {
+        return metadata[cellIndex].getAlgotype();
+    }
+
+    /**
+     * Helper: Extract comparable value from cell for isLeftSorted comparison.
+     * 
+     * <p>P1 FIX: All cell types now properly handled via getValue().
+     * Previously fell back to hashCode() for InsertionCell/BubbleCell,
+     * which broke insertion-mode runs using those types.</p>
+     * 
+     * <p>COPILOT REVIEW FIX: Throws UnsupportedOperationException instead of
+     * using hashCode() fallback, since hashCode() is unreliable for sorting
+     * comparisons (hash codes don't maintain ordering relationships).</p>
+     */
+    private int getCellValue(T cell) {
+        if (cell instanceof SelectionCell) {
+            return ((SelectionCell<?>) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            return ((com.emergent.doom.cell.GenericCell) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.InsertionCell) {
+            return ((com.emergent.doom.cell.InsertionCell<?>) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.BubbleCell) {
+            return ((com.emergent.doom.cell.BubbleCell<?>) cell).getValue();
+        }
+        // Fail-fast: throw exception for unsupported cell types
+        // (hashCode is unreliable for sorting - doesn't maintain ordering relationships)
+        throw new UnsupportedOperationException(
+            "Cell type " + cell.getClass().getName() + " does not support getValue(). " +
+            "All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell."
+        );
     }
 
     // ========== Accessors ==========
@@ -510,7 +589,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
     /**
      * Reset ideal positions for SELECTION algotype cells.
-     * Uses updateForBoundary matching Python cell_research SelectionSortCell.update() behavior.
+     * Uses metadata array to reset ideal positions based on sort direction.
      *
      * @param reverseDirection true for descending sort (ideal = right boundary),
      *                         false for ascending (ideal = left boundary)
@@ -520,11 +599,12 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
         int rightBoundary = cells.length - 1;
 
         for (int i = 0; i < cells.length; i++) {
-            if (metadata[i].algotype() == Algotype.SELECTION) {
+            Algotype algotype = getCellAlgotype(i);
+            if (algotype == Algotype.SELECTION) {
                 if (reverseDirection) {
-                    metadata[i].idealPos().set(rightBoundary);
+                    metadata[i].setIdealPos(rightBoundary);
                 } else {
-                    metadata[i].idealPos().set(leftBoundary);
+                    metadata[i].setIdealPos(leftBoundary);
                 }
             }
         }

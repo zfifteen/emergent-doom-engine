@@ -2,8 +2,7 @@ package com.emergent.doom.execution;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
-import com.emergent.doom.cell.HasIdealPosition;
-import com.emergent.doom.cell.HasSortDirection;
+import com.emergent.doom.cell.SelectionCell;
 import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.SwapEngine;
@@ -17,9 +16,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Synchronous execution engine implementing single-threaded trial execution.
@@ -110,6 +109,22 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
     private final SelectionTopology<T> selectionTopology;
 
     /**
+     * PURPOSE: Metadata array storing execution behavior for each cell position.
+     * 
+     * <p>ARCHITECTURE: Parallel array indexed by cell position. Stores algotype,
+     * sort direction, and ideal position state. This enables lightweight cells
+     * that are pure Comparable data carriers.</p>
+     * 
+     * <p>INPUTS: Initialized from IntFunction&lt;CellMetadata&gt; provider in constructor</p>
+     * 
+     * <p>PROCESS: Swapped alongside cells during step() to keep metadata
+     * attached to logical agent identity</p>
+     * 
+     * <p>OUTPUTS: metadata[i] provides CellMetadata for cell at position i</p>
+     */
+    private final CellMetadata[] metadata;
+
+    /**
      * PURPOSE: Swap engine for executing approved swaps and tracking frozen cells.
      * 
      * <p>ARCHITECTURE: After conflict resolution, this engine executes the
@@ -132,7 +147,6 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * (NoSwapConvergence). Signals when execution can terminate early.</p>
      */
     private final ConvergenceDetector<T> convergenceDetector;
-    private final CellMetadata[] metadata;
 
     /**
      * PURPOSE: Random number generator for BUBBLE algotype direction choice.
@@ -173,138 +187,48 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      */
     private boolean reverseDirection;
 
+
+
     /**
-     * Initialize the synchronous execution engine with default random seed.
+     * Initialize with metadata provider for lightweight cells.
      *
-     * <p>PURPOSE: Set up all required components for single-threaded trial execution
-     * using an unseeded Random instance (non-deterministic behavior).</p>
-     *
-     * <p><strong>DETERMINISM NOTE:</strong> This constructor uses {@code new Random()}
-     * which is NOT seeded, resulting in non-deterministic execution. For reproducible
-     * experiments and testing, use the constructor that accepts a {@link Random} parameter:
-     * {@link #SynchronousExecutionEngine(Cell[], SwapEngine, Probe, ConvergenceDetector, Random)}
-     * with a pre-seeded Random instance, e.g.:</p>
-     * <pre>
-     * // For deterministic, reproducible execution:
-     * Random seededRandom = new Random(12345L);
-     * new SynchronousExecutionEngine<>(cells, swapEngine, probe, detector, seededRandom);
-     * </pre>
+     * <p>PURPOSE: Create engine with externally-managed metadata array, enabling
+     * cells to be pure Comparable wrappers without execution metadata.</p>
      *
      * <p>INPUTS:
      * <ul>
-     *   <li>cells - Array of cells to sort</li>
-     *   <li>swapEngine - Engine for executing swaps</li>
-     *   <li>probe - Metrics recorder</li>
-     *   <li>convergenceDetector - Determines when to stop</li>
+     *   <li>cells - Array of cells to sort (may be pure Comparable wrappers)</li>
+     *   <li>swapEngine - Swap execution and frozen cell tracking</li>
+     *   <li>probe - Metrics and trajectory recording</li>
+     *   <li>convergenceDetector - Determines when execution completes</li>
+     *   <li>metadataProvider - Function mapping index → CellMetadata (required, non-null)</li>
+     *   <li>random - Random instance for BUBBLE direction choice</li>
      * </ul>
      * </p>
      *
      * <p>PROCESS:
      * <ol>
+     *   <li>Validate metadataProvider is non-null</li>
      *   <li>Store all component references</li>
      *   <li>Initialize topology helpers</li>
-     *   <li>Create random instance with default seed</li>
-     *   <li>Initialize state variables (step=0, converged=false)</li>
-     *   <li>Wire probe to swap engine for frozen swap tracking</li>
-     *   <li>Record initial snapshot (step 0)</li>
+     *   <li>Create metadata array from provider: metadata[i] = metadataProvider.apply(i)</li>
+     *   <li>Initialize state variables</li>
+     *   <li>Wire probe to swap engine</li>
+     *   <li>Record initial snapshot</li>
      * </ol>
      * </p>
      *
-     * <p>OUTPUTS: Fully initialized engine ready for execution</p>
+     * <p>OUTPUTS: Fully initialized engine using metadata provider pattern</p>
      *
-     * <p>DEPENDENCIES: All constructor parameters must be non-null</p>
-     *
-     * @param cells the cell array to sort
-     * @param swapEngine the swap engine
-     * @param probe the probe for recording
-     * @param convergenceDetector the convergence detector
-     * @see #SynchronousExecutionEngine(Cell[], SwapEngine, Probe, ConvergenceDetector, Random)
-     */
-    public SynchronousExecutionEngine(
-            T[] cells,
-            SwapEngine<T> swapEngine,
-            Probe<T> probe,
-            ConvergenceDetector<T> convergenceDetector) {
-        this(cells, swapEngine, probe, convergenceDetector, new Random());
-    }
-
-    private void initializeMetadata(T[] cells) {
-        for (int i = 0; i < cells.length; i++) {
-            Algotype algotype = Algotype.BUBBLE;
-            SortDirection direction = SortDirection.ASCENDING;
-            int idealPos = 0;
-            int left = 0;
-            int right = cells.length - 1;
-
-            T cell = cells[i];
-            if (cell instanceof com.emergent.doom.cell.HasAlgotype) {
-                algotype = ((com.emergent.doom.cell.HasAlgotype) cell).getAlgotype();
-            }
-
-            if (cell instanceof com.emergent.doom.cell.HasSortDirection) {
-                direction = ((com.emergent.doom.cell.HasSortDirection) cell).getSortDirection();
-            }
-
-            if (cell instanceof com.emergent.doom.cell.HasIdealPosition) {
-                idealPos = ((com.emergent.doom.cell.HasIdealPosition) cell).getIdealPos();
-            }
-
-            if (cell instanceof com.emergent.doom.group.GroupAwareCell) {
-                left = ((com.emergent.doom.group.GroupAwareCell<?>) cell).getLeftBoundary();
-                right = ((com.emergent.doom.group.GroupAwareCell<?>) cell).getRightBoundary();
-            }
-
-            this.metadata[i] = new CellMetadata(algotype, direction, new AtomicInteger(idealPos), left, right);
-        }
-    }
-
-    /**
-     * Initialize with explicit Random instance for deterministic execution.
-     *
-     * <p>PURPOSE: Allow deterministic execution for testing, validation, and
-     * reproducible experiments by accepting a pre-seeded Random instance.</p>
-     *
-     * <p><strong>USAGE FOR DETERMINISM:</strong> Pass a seeded Random instance
-     * to ensure reproducible execution across runs:</p>
-     * <pre>
-     * // Deterministic execution with seed 42
-     * Random seededRandom = new Random(42L);
-     * SynchronousExecutionEngine<MyCell> engine = new SynchronousExecutionEngine<>(
-     *     cells, swapEngine, probe, detector, seededRandom);
-     * </pre>
-     *
-     * <p>INPUTS: Same as primary constructor, plus Random instance</p>
-     *
-     * <p>PROCESS: Same as primary constructor, but uses provided Random instance</p>
-     *
-     * <p>OUTPUTS: Fully initialized engine with deterministic random behavior</p>
+     * <p>DEPENDENCIES: metadataProvider must return non-null CellMetadata for all valid indices</p>
      *
      * @param cells the cell array to sort
      * @param swapEngine the swap engine
      * @param probe the probe for recording
      * @param convergenceDetector the convergence detector
-     * @param random the Random instance for direction selection (use seeded instance for determinism)
-     */
-    public SynchronousExecutionEngine(
-            T[] cells,
-            SwapEngine<T> swapEngine,
-            Probe<T> probe,
-            ConvergenceDetector<T> convergenceDetector,
-            Random random) {
-        this(cells, swapEngine, probe, convergenceDetector, null, random);
-    }
-
-    /**
-     * Initialize with metadata provider and Random instance.
-     *
-     * <p>This is the master constructor that all other constructors delegate to.</p>
-     *
-     * @param cells the cell array to sort
-     * @param swapEngine the swap engine
-     * @param probe the probe for recording
-     * @param convergenceDetector the convergence detector
-     * @param metadataProvider optional function to initialize metadata (index -> CellMetadata)
+     * @param metadataProvider function providing metadata for each cell index (required, non-null)
      * @param random the Random instance for direction selection
+     * @throws NullPointerException if metadataProvider is null
      */
     public SynchronousExecutionEngine(
             T[] cells,
@@ -313,26 +237,28 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
             ConvergenceDetector<T> convergenceDetector,
             java.util.function.IntFunction<CellMetadata> metadataProvider,
             Random random) {
+
+        // Validate required metadata provider
+        if (metadataProvider == null) {
+            throw new NullPointerException("metadataProvider cannot be null");
+        }
+
         this.cells = cells;
         this.swapEngine = swapEngine;
         this.probe = probe;
         this.convergenceDetector = convergenceDetector;
         this.random = random;
-
-        // Initialize metadata from provider or cells
-        this.metadata = new CellMetadata[cells.length];
-        if (metadataProvider != null) {
-            for (int i = 0; i < cells.length; i++) {
-                this.metadata[i] = metadataProvider.apply(i);
-            }
-        } else {
-            initializeMetadata(cells);
-        }
         
         // Initialize topology helpers
         this.bubbleTopology = new BubbleTopology<>();
         this.insertionTopology = new InsertionTopology<>();
         this.selectionTopology = new SelectionTopology<>();
+        
+        // Initialize metadata from provider
+        this.metadata = new CellMetadata[cells.length];
+        for (int i = 0; i < cells.length; i++) {
+            this.metadata[i] = metadataProvider.apply(i);
+        }
         
         // Initialize state
         this.currentStep = 0;
@@ -345,6 +271,28 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         
         // Record initial state
         probe.recordSnapshot(0, cells, 0);
+    }
+
+    /**
+     * Convenience constructor with metadata provider and default Random.
+     *
+     * <p>PURPOSE: Create engine with metadata provider using unseeded Random
+     * (non-deterministic execution). For deterministic execution, use the constructor
+     * that accepts both metadataProvider and seeded Random instance.</p>
+     *
+     * @param cells the cell array to sort
+     * @param swapEngine the swap engine
+     * @param probe the probe for recording
+     * @param convergenceDetector the convergence detector
+     * @param metadataProvider function providing metadata for each cell index
+     */
+    public SynchronousExecutionEngine(
+            T[] cells,
+            SwapEngine<T> swapEngine,
+            Probe<T> probe,
+            ConvergenceDetector<T> convergenceDetector,
+            java.util.function.IntFunction<CellMetadata> metadataProvider) {
+        this(cells, swapEngine, probe, convergenceDetector, metadataProvider, new Random());
     }
 
     /**
@@ -407,8 +355,8 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         
         // For each cell in iteration order, try swapping with neighbors based on algotype
         for (int i : iterationOrder) {
-            Algotype algotype = metadata[i].algotype();
-            SortDirection direction = getCellDirection(i);
+            Algotype algotype = getCellAlgotype(i);
+            SortDirection direction = getCellDirection(cells[i], i);
 
             if (algotype == Algotype.BUBBLE) {
                 // Random 50/50 direction choice - matches cell_research Python behavior
@@ -446,12 +394,13 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         for (SwapProposal proposal : resolvedSwaps) {
             int i = proposal.getInitiatorIndex();
             int j = proposal.getTargetIndex();
-            if (swapEngine.attemptSwap(cells, i, j)) {
-                // Synchronize metadata
-                CellMetadata temp = metadata[i];
-                metadata[i] = metadata[j];
-                metadata[j] = temp;
-            }
+
+            swapEngine.attemptSwap(cells, i, j);
+
+            // Swap metadata alongside cells
+            CellMetadata tempMetadata = metadata[i];
+            metadata[i] = metadata[j];
+            metadata[j] = tempMetadata;
         }
 
         // Get swap count for this step
@@ -573,6 +522,26 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         return resolved;
     }
 
+    // ========== Helper Methods for Metadata/Cell Access ==========
+
+    /**
+     * Get algotype from metadata array.
+     *
+     * <p>PURPOSE: Query algotype from externally-managed metadata array
+     * instead of cell introspection.</p>
+     *
+     * <p>INPUTS: cellIndex - position of cell to query</p>
+     *
+     * <p>PROCESS: Return metadata[cellIndex].getAlgotype()</p>
+     *
+     * <p>OUTPUTS: Algotype for this cell position</p>
+     *
+     * <p>DEPENDENCIES: Metadata provider must have been supplied to constructor</p>
+     */
+    private Algotype getCellAlgotype(int cellIndex) {
+        return metadata[cellIndex].getAlgotype();
+    }
+
     /**
      * Get neighbors for a cell based on its algotype.
      *
@@ -615,27 +584,23 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
     }
 
     /**
-     * Get the sort direction of a cell.
+     * Get the sort direction from metadata array.
      *
-     * <p>PURPOSE: Determine if cell prefers ascending or descending sort order.</p>
+     * <p>PURPOSE: Determine if cell prefers ascending or descending sort order
+     * from metadata array.</p>
      *
-     * <p>INPUTS: cell - the cell to query</p>
+     * <p>INPUTS: cellIndex - the index of the cell to query</p>
      *
-     * <p>PROCESS:
-     * <ol>
-     *   <li>Check if cell implements HasSortDirection</li>
-     *   <li>If yes: return cell.getSortDirection()</li>
-     *   <li>If no: return SortDirection.ASCENDING (default)</li>
-     * </ol>
-     * </p>
+     * <p>PROCESS: Return metadata[cellIndex].getSortDirection()</p>
      *
      * <p>OUTPUTS: SortDirection (ASCENDING or DESCENDING)</p>
      *
-     * @param index the index of the cell to query
+     * @param cell the cell to query (unused, kept for signature compatibility)
+     * @param cellIndex the index of the cell
      * @return sort direction preference
      */
-    private SortDirection getCellDirection(int index) {
-        return metadata[index].direction();
+    private SortDirection getCellDirection(T cell, int cellIndex) {
+        return metadata[cellIndex].getSortDirection();
     }
 
     /**
@@ -780,41 +745,79 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
     }
 
     /**
-     * Get ideal position from a SELECTION algotype cell.
+     * Extract comparable value from a cell.
      *
-     * <p>PURPOSE: Access ideal position field for SELECTION cells.</p>
+     * <p>PURPOSE: Provide uniform value access across different cell types.</p>
      *
-     * <p>INPUTS: cell - the cell (must be SELECTION algotype)</p>
+     * <p>INPUTS: cell - the cell to extract value from</p>
      *
      * <p>PROCESS:
      * <ol>
-     *   <li>Check if cell is SelectionCell or GenericCell</li>
-     *   <li>Cast and call getIdealPos()</li>
-     *   <li>If not SELECTION type: return 0 (default)</li>
+     *   <li>Check cell type via instanceof</li>
+     *   <li>Cast and call appropriate getValue() method</li>
+     *   <li>If unsupported type: throw UnsupportedOperationException</li>
      * </ol>
      * </p>
      *
+     * <p>OUTPUTS: int value for comparison</p>
+     *
+     * @param cell the cell
+     * @return comparable value
+     */
+    private int getCellValue(T cell) {
+        if (cell instanceof com.emergent.doom.cell.HasValue) {
+            return ((com.emergent.doom.cell.HasValue) cell).getValue();
+        }
+        if (cell instanceof com.emergent.doom.cell.SelectionCell) {
+            return ((com.emergent.doom.cell.SelectionCell<?>) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            return ((com.emergent.doom.cell.GenericCell) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.InsertionCell) {
+            return ((com.emergent.doom.cell.InsertionCell<?>) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.BubbleCell) {
+            return ((com.emergent.doom.cell.BubbleCell<?>) cell).getValue();
+        }
+        // Fail-fast: throw exception for unsupported cell types
+        // (hashCode is unreliable for sorting - doesn't maintain ordering relationships)
+        throw new UnsupportedOperationException(
+            "Cell type " + cell.getClass().getName() + " does not support getValue(). " +
+            "All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell, or implement HasValue."
+        );
+    }
+
+    /**
+     * Get ideal position from metadata array.
+     *
+     * <p>PURPOSE: Access ideal position field for SELECTION cells.</p>
+     *
+     * <p>INPUTS: cellIndex - index of the cell</p>
+     *
+     * <p>PROCESS: Return metadata[cellIndex].getIdealPos()</p>
+     *
      * <p>OUTPUTS: ideal position index</p>
      *
-     * @param index the index of the cell
+     * @param cellIndex index of the cell
      * @return ideal position
      */
-    private int getIdealPosition(int index) {
-        return metadata[index].idealPos().get();
+    private int getIdealPosition(int cellIndex) {
+        return metadata[cellIndex].getIdealPos();
     }
 
     /**
-     * Helper: Increment ideal position for a SELECTION cell.
+     * Increment ideal position in metadata array.
+     *
+     * <p>PURPOSE: Update target position when swap is denied.</p>
+     *
+     * <p>INPUTS: cellIndex - index of the cell</p>
+     *
+     * <p>PROCESS: Call metadata[cellIndex].incrementIdealPos()</p>
+     *
+     * <p>OUTPUTS: None (modifies metadata state)</p>
+     *
+     * @param cellIndex index of the cell
      */
-    private void incrementIdealPosition(int index) {
-        metadata[index].idealPos().incrementAndGet();
-    }
-
-    /**
-     * Helper: Set ideal position for a SELECTION cell.
-     */
-    private void setIdealPosition(int index, int newIdealPos) {
-        metadata[index].idealPos().set(newIdealPos);
+    private void incrementIdealPosition(int cellIndex) {
+        metadata[cellIndex].incrementIdealPos();
     }
 
     /**
@@ -871,7 +874,7 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * Reset SELECTION cell ideal positions to boundary.
      *
      * <p>PURPOSE: Initialize SELECTION cells to correct starting position
-     * based on sort direction.</p>
+     * based on sort direction using metadata array.</p>
      *
      * <p>INPUTS: reverseDirection - true for descending (start at right boundary)</p>
      *
@@ -882,14 +885,13 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      *   <li>For each cell:
      *     <ul>
      *       <li>If algotype is SELECTION</li>
-     *       <li>And cell implements HasIdealPosition</li>
-     *       <li>Call updateForBoundary(left, right, reverseDirection)</li>
+     *       <li>Set ideal position via metadata array</li>
      *     </ul>
      *   </li>
      * </ol>
      * </p>
      *
-     * <p>OUTPUTS: None (modifies cell state)</p>
+     * <p>OUTPUTS: None (modifies metadata state)</p>
      *
      * @param reverseDirection true for descending sort
      */
@@ -898,11 +900,12 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         int rightBoundary = cells.length - 1;
 
         for (int i = 0; i < cells.length; i++) {
-            if (metadata[i].algotype() == Algotype.SELECTION) {
+            Algotype algotype = getCellAlgotype(i);
+            if (algotype == Algotype.SELECTION) {
                 if (reverseDirection) {
-                    metadata[i].idealPos().set(rightBoundary);
+                    metadata[i].setIdealPos(rightBoundary);
                 } else {
-                    metadata[i].idealPos().set(leftBoundary);
+                    metadata[i].setIdealPos(leftBoundary);
                 }
             }
         }

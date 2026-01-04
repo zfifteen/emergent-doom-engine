@@ -1,6 +1,7 @@
 package com.emergent.doom.execution;
 
 import com.emergent.doom.cell.Algotype;
+import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.cell.HasValue;
 import com.emergent.doom.group.GroupAwareCell;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Timeout;
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.function.IntFunction;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -73,7 +75,11 @@ class SynchronousExecutionEngineTest {
         probe.setRecordingEnabled(true);
         ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(10);
 
-        engine = new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector);
+        // Provide metadata for lightweight cells
+        IntFunction<CellMetadata> metadataProvider = index -> 
+            new CellMetadata(Algotype.BUBBLE, SortDirection.ASCENDING);
+        
+        engine = new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, metadataProvider);
     }
 
     /**
@@ -91,7 +97,11 @@ class SynchronousExecutionEngineTest {
         probe.setRecordingEnabled(true);
         ConvergenceDetector<TestBubbleCell> convergenceDetector = new NoSwapConvergence<>(10);
 
-        engine = new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, new Random(seed));
+        // Provide metadata for lightweight cells
+        IntFunction<CellMetadata> metadataProvider = index -> 
+            new CellMetadata(Algotype.BUBBLE, SortDirection.ASCENDING);
+        
+        engine = new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, metadataProvider, new Random(seed));
     }
 
     // ========================================================================
@@ -458,6 +468,68 @@ class SynchronousExecutionEngineTest {
     }
 
     // ========================================================================
+    // Metadata Provider Tests (Phase 2)
+    // ========================================================================
+
+    @Nested
+    @DisplayName("Metadata Provider Pattern")
+    class MetadataProviderTests {
+
+        /**
+         * As a User I want to create engines with metadata providers
+         * so that I can use lightweight cells without embedded metadata.
+         * 
+         * PURPOSE: Test new constructor accepting IntFunction<CellMetadata>
+         * INPUTS: Cell array, metadata provider function
+         * EXPECTED: Engine initializes with metadata array
+         */
+        @Test
+        @DisplayName("Engine accepts metadata provider constructor")
+        void engineAcceptsMetadataProvider() {
+            // TODO PHASE TWO: Implement test
+            // 1. Create minimal cells with only values (no algotype)
+            // 2. Create metadata provider: index -> new CellMetadata(BUBBLE, ASCENDING)
+            // 3. Construct engine with metadata provider
+            // 4. Verify engine initializes without error
+        }
+
+        /**
+         * As a User I want metadata to swap with cells during execution
+         * so that metadata stays attached to the logical agent identity.
+         * 
+         * PURPOSE: Verify metadata swaps alongside cells
+         * INPUTS: Cells with identifiable metadata
+         * EXPECTED: After swaps, metadata[i] corresponds to logical cell at position i
+         */
+        @Test
+        @DisplayName("Metadata swaps with cells during execution")
+        void metadataSwapsWithCells() {
+            // TODO PHASE THREE: Implement test
+            // 1. Create cells and metadata with identifiable markers
+            // 2. Run engine for a few steps
+            // 3. Verify metadata stayed attached to correct logical cell after swaps
+        }
+
+        /**
+         * As a User I want engines to use metadata providers instead of cell interfaces
+         * so that I can migrate to lightweight cells without breaking functionality.
+         * 
+         * PURPOSE: Test engine sorts using metadata provider instead of cell.getAlgotype()
+         * INPUTS: Cells without getAlgotype(), metadata provider with BUBBLE algotype
+         * EXPECTED: Engine sorts array correctly using metadata
+         */
+        @Test
+        @DisplayName("Engine sorts using metadata provider instead of cell interfaces")
+        void engineUsesMetadataProvider() {
+            // TODO PHASE THREE: Implement test
+            // 1. Create minimal cells (just Comparable, no embedded metadata)
+            // 2. Provide metadata externally via IntFunction<CellMetadata>
+            // 3. Run engine to convergence
+            // 4. Verify array is sorted (proving metadata provider was used)
+        }
+    }
+
+    // ========================================================================
     // Test Cell Implementation
     // ========================================================================
 
@@ -467,7 +539,7 @@ class SynchronousExecutionEngineTest {
      * <p>As a test author, I want a minimal cell implementation
      * so that I can focus tests on engine behavior rather than cell complexity.</p>
      */
-    static class TestBubbleCell implements Cell<TestBubbleCell>, GroupAwareCell<TestBubbleCell>, HasValue {
+    static class TestBubbleCell implements Cell<TestBubbleCell> {
         private final int value;
 
         TestBubbleCell(int value) {
@@ -479,32 +551,19 @@ class SynchronousExecutionEngineTest {
             return value;
         }
 
-        public Algotype getAlgotype() {
-            return Algotype.BUBBLE;
-        }
+        
 
-        @Override
-        public com.emergent.doom.group.CellGroup<TestBubbleCell> getGroup() { return null; }
-        @Override
-        public com.emergent.doom.group.CellStatus getStatus() { return com.emergent.doom.group.CellStatus.ACTIVE; }
-        @Override
-        public com.emergent.doom.group.CellStatus getPreviousStatus() { return com.emergent.doom.group.CellStatus.ACTIVE; }
-        @Override
-        public void setStatus(com.emergent.doom.group.CellStatus status) {}
-        @Override
-        public void setPreviousStatus(com.emergent.doom.group.CellStatus status) {}
-        @Override
-        public void setGroup(com.emergent.doom.group.CellGroup<TestBubbleCell> group) {}
-        @Override
-        public int getLeftBoundary() { return 0; }
-        @Override
-        public void setLeftBoundary(int leftBoundary) {}
-        @Override
-        public int getRightBoundary() { return 0; }
-        @Override
-        public void setRightBoundary(int rightBoundary) {}
-        @Override
-        public void updateForGroupMerge() {}
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
         @Override
         public int compareTo(TestBubbleCell other) {

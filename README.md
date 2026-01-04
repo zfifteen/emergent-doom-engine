@@ -23,19 +23,29 @@ This behavior challenges traditional assumptions about emergent optimization com
 ## Key Concepts from the Levin et al. Research
 
 ### Decentralized Intelligence and Bottom-Up Control
-The Levin paper breaks the traditional assumption of top-down control in sorting algorithms. Instead of treating sorting as a centralized process controlled by an external executor, the research reconceptualizes each array element as an autonomous agent with minimal agency. Each element implements sorting policies from the bottom up through local interactions with neighbors, demonstrating that complex collective behaviors can emerge from simple, decentralized rules without centralized coordination.
+The Levin paper breaks the traditional assumption of top-down control in sorting algorithms. Instead of treating sorting as a centralized process controlled by an external executor, the research reconceptualizes each array element as an autonomous agent with minimal agency.
+
+Each element implements sorting policies from the bottom up through local interactions with neighbors. This demonstrates that complex collective behaviors can emerge from simple, decentralized rules without centralized coordination.
 
 ### Robustness Through Autonomous Element Agency
-A key finding is that arrays of autonomous elements sort themselves more reliably and robustly than traditional implementations, particularly in the presence of errors or "damaged" elements. This robustness emerges from the distributed nature of the sorting process—when individual elements possess agency, the system can adapt to failures without catastrophic breakdown. This demonstrates that basal forms of intelligence can provide unexpected resilience in computational systems.
+A key finding is that arrays of autonomous elements sort themselves more reliably and robustly than traditional implementations, particularly in the presence of errors or "damaged" elements. This robustness emerges from the distributed nature of the sorting process.
+
+When individual elements possess agency, the system can adapt to failures without catastrophic breakdown. This demonstrates that basal forms of intelligence can provide unexpected resilience in computational systems.
 
 ### Delayed Gratification and Problem-Space Navigation
-The research quantitatively characterizes sorting activity as traversal through a problem space, revealing that autonomous sorting systems exhibit delayed gratification behavior. Elements can temporarily increase disorder (reduce progress toward sorted state) to navigate around defects or obstacles, then resume progress toward the goal. This capacity to accept temporary setbacks for long-term gain represents a form of minimal goal-directed behavior that emerges from the sorting dynamics themselves.
+The research quantitatively characterizes sorting activity as traversal through a problem space, revealing that autonomous sorting systems exhibit delayed gratification behavior. Elements can temporarily increase disorder (reduce progress toward sorted state) to navigate around defects or obstacles, then resume progress toward the goal.
+
+This capacity to accept temporary setbacks for long-term gain represents a form of minimal goal-directed behavior. The behavior emerges from the sorting dynamics themselves without explicit programming.
 
 ### Emergent Clustering in Chimeric Systems
-When arrays contain elements following different sorting algorithms ("chimeric arrays"), unexpected clustering behavior emerges. Elements sort themselves not only by value but also spontaneously organize by algorithm type, revealing that the sorting process encodes information about both the target state and the method being used. This emergent pattern formation demonstrates that simple systems can exhibit multiple simultaneous organizational principles.
+When arrays contain elements following different sorting algorithms ("chimeric arrays"), unexpected clustering behavior emerges. Elements sort themselves not only by value but also spontaneously organize by algorithm type.
+
+This reveals that the sorting process encodes information about both the target state and the method being used. The emergent pattern formation demonstrates that simple systems can exhibit multiple simultaneous organizational principles.
 
 ### Basal Cognition Without Explicit Encoding
-The most significant insight is that problem-solving capacities emerge in simple, familiar algorithms without being explicitly encoded in their underlying mechanics. The sorting algorithms, when viewed through the lens of autonomous elements navigating problem spaces, reveal memory-like persistence, decision-making at interaction points, and adaptive responses to perturbations. This demonstrates that basal forms of intelligence can exist in minimal computational substrates, providing a new perspective on the field of Diverse Intelligence and suggesting that cognitive-like competencies may be far more widespread in simple systems than previously recognized.
+The most significant insight is that problem-solving capacities emerge in simple, familiar algorithms without being explicitly encoded in their underlying mechanics. The sorting algorithms, when viewed through the lens of autonomous elements navigating problem spaces, reveal memory-like persistence, decision-making at interaction points, and adaptive responses to perturbations.
+
+This demonstrates that basal forms of intelligence can exist in minimal computational substrates. The finding provides a new perspective on the field of Diverse Intelligence, suggesting that cognitive-like competencies may be far more widespread in simple systems than previously recognized.
 
 ## Design Concept
 
@@ -68,19 +78,41 @@ The EDE translates the theoretical concepts from the Levin et al. research into 
 ### Core Components
 
 #### Cell Interface
-The foundation of the EDE is the Cell interface, which extends java.lang.Comparable<Cell>. Each Cell represents an autonomous agent with minimal agency, analogous to the array elements in the Levin paper. Cells must implement compareTo() to define their natural ordering, enabling them to participate in sorting operations. The Cell interface also defines methods for local state management, neighbor interaction, and damage/error simulation, allowing implementations to model various forms of basal intelligence and adaptive behavior.
+The foundation of the EDE is the Cell interface, which extends `java.lang.Comparable<Cell>`. Cells are pure data carriers that implement only `compareTo()` for domain-specific comparison logic. All sorting metadata (algotype, sort direction, ideal position) is managed externally via `CellMetadata`, achieving true domain-agnostic sorting where cells contain zero engine-specific state.
 
-#### SortingStrategy
-This is an abstract strategy pattern implementation that encapsulates the three core sorting algorithms: SelectionSort, BubbleSort, and InsertionSort. Each strategy interprets Cells as autonomous agents rather than passive data, treating comparisons and swaps as local interactions between neighboring elements. The SortingStrategy interface provides hooks for observing sorting progress, detecting temporary disorder increases (delayed gratification), and tracking problem-space traversal metrics like those defined in the Levin research.
+#### Execution Engines
+The execution package provides three engine implementations:
+- **SynchronousExecutionEngine**: Sequential cell evaluation for deterministic, step-by-step execution
+- **ParallelExecutionEngine**: One-thread-per-cell model matching the Levin paper specification
+- **LockBasedExecutionEngine**: Optimized parallel execution with reduced overhead
 
-#### CellArray
-The CellArray class manages collections of Cells and serves as the primary data structure for emergent phenomena. Unlike traditional arrays, CellArray tracks not only element positions but also interaction histories, clustering patterns, and adaptive responses to perturbations. It provides methods for introducing "damaged" cells, creating chimeric arrays (mixing cells following different strategies), and monitoring emergent organizational patterns. The CellArray automatically instruments sorting operations to collect the problem-space navigation metrics described in the Levin paper.
+Each engine coordinates cell swap decisions, applies convergence detection, and records execution trajectories via the Probe interface.
 
-#### EmergentEngine
-This is the top-level orchestration component that ties together the Cell, SortingStrategy, and CellArray abstractions. The EmergentEngine provides the public API for configuring experiments, selecting sorting algorithms, defining initial conditions, and collecting emergent behavior metrics. It implements the pattern of treating each sorting execution as a traversal through problem space, automatically measuring robustness, delayed gratification, clustering behavior, and other competencies identified in the Levin research. The engine supports both single-run simulations and batch experiments for statistical analysis.
+#### CellMetadata
+External metadata provider system that associates sorting metadata with cell positions without modifying cell implementations. Each metadata entry specifies:
+- **Algotype**: Sorting algorithm (BUBBLE, SELECTION, or INSERTION)
+- **SortDirection**: Ordering preference (ASCENDING or DESCENDING)
+- **Ideal Position**: Target position for convergence detection
 
-#### ProblemSpaceAnalyzer
-This component implements the quantitative characterization methods from the Levin paper, measuring metrics such as Monotonicity Error (disorder remaining at each step), Sortedness (progress toward goal state), and Delayed Gratification (temporary error increases that lead to long-term gains). The analyzer treats the sorting process as goal-directed navigation through a problem space, automatically detecting cognitive-like behaviors such as obstacle avoidance, adaptive route-finding, and memory-like state persistence. These measurements provide the empirical grounding for claims about emergent intelligence in minimal substrates.
+This architecture enables chimeric populations where different cells follow different algorithms and sort in opposite directions.
+
+#### Metrics and Analysis
+The metrics package implements quantitative characterization methods from the Levin paper:
+- **MonotonicityError**: Disorder remaining at each step (inversion count)
+- **SortednessValue**: Progress toward sorted state
+- **DelayedGratificationCalculator**: Temporary error increases that lead to long-term gains
+- **AggregationValue**: Clustering behavior in chimeric populations
+
+The analysis package provides trajectory visualization and statistical analysis of emergent behaviors.
+
+#### Probe System
+Trajectory recording infrastructure that captures:
+- Step-by-step snapshots of array state
+- Swap counts and comparison operations
+- Convergence metrics and timing data
+- Domain-specific metadata for post-hoc analysis
+
+Enables detailed examination of emergent problem-solving behaviors without impacting execution performance.
 
 ### Key Features
 
@@ -91,6 +123,75 @@ This component implements the quantitative characterization methods from the Lev
 - **Rich Analysis**: Built-in trajectory recording, metrics, and visualization
 - **Chimeric Populations**: Mix multiple cell behaviors in single experiments
 - **Frozen Constraints**: Progressive crystallization of partial solutions
+
+## Lightweight Cell Architecture
+
+The EDE achieves true domain-agnostic sorting through a **lightweight cell** design where cells are pure `Comparable` data carriers with zero engine-specific state. All sorting metadata (algorithm type, sort direction, ideal position) is managed externally by execution engines via metadata providers.
+
+### Pure Domain Cells
+
+Cells only implement `compareTo()` - they contain no knowledge of sorting algorithms:
+
+```java
+public class MyDomainCell implements Cell<MyDomainCell> {
+    private final MyDomainValue value;
+    
+    @Override
+    public int compareTo(MyDomainCell other) {
+        return this.value.compareTo(other.value);
+    }
+}
+```
+
+### External Metadata Management
+
+All sorting metadata is provided to the engine via a metadata provider function:
+
+```java
+// Define metadata for each cell position
+IntFunction<CellMetadata> metadataProvider = index -> 
+    new CellMetadata(
+        Algotype.BUBBLE,              // sorting algorithm
+        SortDirection.ASCENDING       // sort direction
+    );
+
+// Create engine with metadata provider
+ParallelExecutionEngine<MyDomainCell> engine = 
+    new ParallelExecutionEngine<>(
+        cells, 
+        swapEngine, 
+        probe, 
+        convergenceDetector, 
+        metadataProvider  // externally managed metadata
+    );
+```
+
+### Chimeric Populations
+
+For experiments mixing different algorithms, combine an algotype provider with metadata configuration:
+
+```java
+// Create algotype provider (50% BUBBLE, 50% SELECTION)
+AlgotypeProvider algotypeProvider = new PercentageAlgotypeProvider(
+    Map.of(Algotype.BUBBLE, 0.5, Algotype.SELECTION, 0.5),
+    arraySize,
+    seed
+);
+
+// Build configuration with metadata provider factory
+ChimericExperimentConfig config = ChimericExperimentConfig.builder()
+    .arraySize(100)
+    .maxSteps(5000)
+    .algotypeMix(Map.of(Algotype.BUBBLE, 0.5, Algotype.SELECTION, 0.5))
+    .sortDirection(SortDirection.ASCENDING)
+    .build();
+
+// Create metadata provider from configuration
+IntFunction<CellMetadata> metadataProvider = 
+    config.createMetadataProvider(algotypeProvider);
+```
+
+This architecture achieves **true generality** - any `Comparable` object can be sorted without implementing engine-specific interfaces or carrying sorting metadata.
 
 ## Design Principles
 
@@ -132,7 +233,7 @@ mvn clean compile
 
 ```bash
 mvn package
-java -jar target/emergent-doom-engine-1.0.0-SNAPSHOT.jar
+java -jar target/emergent-doom-engine-0.2.1-alpha.jar
 ```
 
 ## Usage Example
@@ -191,15 +292,20 @@ public interface Topology<T extends Cell<T>> {
 
 ### Execution Engine
 
-Orchestrates the cell dynamics:
+Orchestrates the cell dynamics using metadata providers:
 
 ```java
-ExecutionEngine<T> engine = new ExecutionEngine<>(
+// Create metadata provider
+IntFunction<CellMetadata> metadataProvider = index -> 
+    new CellMetadata(Algotype.BUBBLE, SortDirection.ASCENDING);
+
+// Modern execution engines with metadata support
+SynchronousExecutionEngine<T> engine = new SynchronousExecutionEngine<>(
     cells,                  // initial cell array
-    topology,               // neighborhood strategy
     swapEngine,             // swap mechanics
     probe,                  // trajectory recorder
-    convergenceDetector     // termination criterion
+    convergenceDetector,    // termination criterion
+    metadataProvider        // external metadata
 );
 
 engine.runUntilConvergence(maxSteps);
@@ -285,6 +391,18 @@ mvn test
 ```
 
 ## Documentation
+
+### Project Documentation
+
+Comprehensive documentation is available in the `/docs` directory:
+
+- **[Documentation Index](docs/README.md)** - Complete documentation structure
+- **[Theory](docs/theory/2401.05375v1.md)** - Levin et al. paper on sorting as morphogenesis
+- **[Findings](docs/findings/README.md)** - Experimental results and analyses
+- **[Requirements](docs/requirements/REQUIREMENTS.md)** - Technical specifications
+- **[Linear Scaling Analysis](docs/findings/LINEAR_SCALING_ANALYSIS.md)** - O(n) complexity discovery
+
+### API Documentation
 
 Generate Javadoc:
 

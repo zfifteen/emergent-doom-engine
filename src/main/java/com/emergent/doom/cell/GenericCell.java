@@ -1,136 +1,149 @@
 package com.emergent.doom.cell;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
- * A flexible cell implementation that can represent any algotype and sort direction.
+ * Lightweight cell implementation wrapping an integer value.
  *
- * <p>GenericCell enables chimeric population experiments where cells of different
- * algotypes (BUBBLE, INSERTION, SELECTION) coexist in the same array. Each cell
- * carries a fixed value for comparison and an assigned algotype for behavioral policy.</p>
- *
- * <p>From Levin et al. (2024), p.11-12:
- * "At the beginning of these experiments, we randomly assigned one of the three
- * different Algotypes to each of the cells, and began the sort as previously,
- * allowing all the cells to move based on their Algotype."</p>
- *
- * <p>From Levin et al. (2024), p.14 (Cross-Purpose Sorting):
- * "we performed experiments using two mixed Algotypes, where one was made to sort in
- * *decreasing* order while the other sorted in *increasing* order."</p>
- *
- * <p>For SELECTION algotype cells, GenericCell maintains an idealPos field that tracks
- * the cell's target position, matching the behavior of SelectionCell. For ascending sort,
- * this field starts at 0 (leftBoundary) and increments when swap attempts are denied.
- * For descending sort, it should be initialized to rightBoundary via
- * {@link HasIdealPosition#updateForBoundary(int, int, boolean)}, per Levin p.9.</p>
+ * <p>GenericCell is a pure Comparable data carrier with zero engine-specific state.
+ * All sorting metadata (algotype, sort direction, ideal position) is managed externally
+ * by execution engines via CellMetadata arrays.</p>
  *
  * <p>Usage:
  * <pre>{@code
- * // Create a cell with value 42 and Bubble algotype
- * GenericCell cell = new GenericCell(42, Algotype.BUBBLE);
- *
- * // Create 50/50 Bubble/Selection mix
+ * // Create cells with domain values only
  * GenericCell[] cells = new GenericCell[100];
  * for (int i = 0; i < 100; i++) {
- *     Algotype type = (i % 2 == 0) ? Algotype.BUBBLE : Algotype.SELECTION;
- *     cells[i] = new GenericCell(randomValue(), type);
+ *     cells[i] = new GenericCell(randomValue());
  * }
  * 
- * // Create cross-purpose sorting population (ascending vs descending)
- * GenericCell[] crossPurpose = new GenericCell[100];
- * for (int i = 0; i < 100; i++) {
- *     SortDirection dir = (i % 2 == 0) ? SortDirection.ASCENDING : SortDirection.DESCENDING;
- *     crossPurpose[i] = new GenericCell(randomValue(), Algotype.BUBBLE, dir);
- * }
+ * // Metadata is provided via engine constructor
+ * IntFunction<CellMetadata> provider = index -> 
+ *     new CellMetadata(Algotype.BUBBLE, SortDirection.ASCENDING);
+ * 
+ * ParallelExecutionEngine<GenericCell> engine = 
+ *     new ParallelExecutionEngine<>(cells, swapEngine, probe, detector, provider);
  * }</pre></p>
  */
-public class GenericCell implements Cell<GenericCell>, HasAlgotype, HasSortDirection, HasIdealPosition {
+public class GenericCell implements Cell<GenericCell> {
+
     private final int value;
-    private final Algotype algotype;
-    private final SortDirection sortDirection;
 
     /**
-     * Only used for SELECTION cells. Kept thread-safe for parallel execution.
+     * Create a GenericCell wrapping the specified integer value.
+     *
+     * <p>PURPOSE: Construct a lightweight cell carrying only domain data.
+     * All execution metadata (algotype, sort direction, ideal position) is managed
+     * externally by execution engines via CellMetadata.</p>
+     *
+     * <p>INPUTS: value - The integer value to wrap (immutable)</p>
+     *
+     * <p>OUTPUTS: Fully initialized GenericCell instance</p>
+     *
+     * @param value the sort key value
      */
-    private final AtomicInteger idealPos;
-
     public GenericCell(int value) {
-        this(value, Algotype.BUBBLE, SortDirection.ASCENDING);
-    }
-
-    public GenericCell(int value, Algotype algotype) {
-        this(value, algotype, SortDirection.ASCENDING);
-    }
-
-    public GenericCell(int value, Algotype algotype, SortDirection sortDirection) {
         this.value = value;
-        this.algotype = (algotype == null) ? Algotype.BUBBLE : algotype;
-        this.sortDirection = (sortDirection == null) ? SortDirection.ASCENDING : sortDirection;
-        this.idealPos = new AtomicInteger(0);
     }
 
-    @Override
+    /**
+     * Get the wrapped integer value.
+     *
+     * <p>PURPOSE: Provide access to the domain value for metrics and logging.</p>
+     *
+     * <p>INPUTS: None</p>
+     *
+     * <p>OUTPUTS: The wrapped integer value</p>
+     *
+     * @return the cell's value
+     */
     public int getValue() {
         return value;
     }
 
-    @Override
-    public Algotype getAlgotype() {
-        return algotype;
-    }
-
-    @Override
-    public SortDirection getSortDirection() {
-        return sortDirection;
-    }
-
-    @Override
-    public int getIdealPos() {
-        return idealPos.get();
-    }
-
-    @Override
-    public void setIdealPos(int newIdealPos) {
-        idealPos.set(newIdealPos);
-    }
-
-    @Override
-    public int incrementIdealPos() {
-        return idealPos.incrementAndGet();
-    }
-
-    @Override
-    public boolean compareAndSetIdealPos(int expected, int newValue) {
-        return idealPos.compareAndSet(expected, newValue);
-    }
-
+    /**
+     * Compare this cell to another based on their values.
+     *
+     * <p>PURPOSE: Implement Comparable contract for sorting. This is the only
+     * method required by the execution engine for ordering cells.</p>
+     *
+     * <p>INPUTS: other - Another GenericCell to compare against</p>
+     *
+     * <p>PROCESS:
+     * <ol>
+     *   <li>Extract value from this cell</li>
+     *   <li>Extract value from other cell</li>
+     *   <li>Return Integer.compare(this.value, other.value)</li>
+     * </ol>
+     * </p>
+     *
+     * <p>OUTPUTS: Negative if this < other, zero if equal, positive if this > other</p>
+     *
+     * @param other the cell to compare against
+     * @return negative if this < other, zero if equal, positive if this > other
+     */
     @Override
     public int compareTo(GenericCell other) {
-        // Comparison is value-based; direction is handled in engine swap logic.
         return Integer.compare(this.value, other.value);
     }
 
+    /**
+     * Check equality based solely on value.
+     *
+     * <p>PURPOSE: Support collections and proper equality semantics.
+     * GenericCells are equal if they wrap the same value.</p>
+     *
+     * <p>INPUTS: obj - Object to compare for equality</p>
+     *
+     * <p>PROCESS:
+     * <ol>
+     *   <li>Check reference equality first</li>
+     *   <li>Check if obj is instance of GenericCell</li>
+     *   <li>Compare values for equality</li>
+     * </ol>
+     * </p>
+     *
+     * <p>OUTPUTS: true if equal, false otherwise</p>
+     *
+     * @param obj the object to compare
+     * @return true if objects are equal
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (!(obj instanceof GenericCell)) return false;
         GenericCell that = (GenericCell) obj;
         return value == that.value;
     }
 
+    /**
+     * Compute hash code based solely on value.
+     *
+     * <p>PURPOSE: Support hash-based collections (HashMap, HashSet).
+     * Consistent with equals() - equal cells have equal hash codes.</p>
+     *
+     * <p>INPUTS: None</p>
+     *
+     * <p>OUTPUTS: Hash code derived from value</p>
+     *
+     * @return hash code
+     */
     @Override
     public int hashCode() {
         return Integer.hashCode(value);
     }
 
+    /**
+     * Convert cell to string representation.
+     *
+     * <p>PURPOSE: Support debugging and logging. Shows only the wrapped value.</p>
+     *
+     * <p>INPUTS: None</p>
+     *
+     * <p>OUTPUTS: String representation of value</p>
+     *
+     * @return string representation
+     */
     @Override
     public String toString() {
-        return String.format(
-                "GenericCell{value=%d, algotype=%s, direction=%s, idealPos=%d}",
-                value,
-                algotype,
-                sortDirection,
-                idealPos.get()
-        );
+        return String.valueOf(value);
     }
 }

@@ -2,7 +2,6 @@ package com.emergent.doom.probe;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
-import com.emergent.doom.cell.HasValue;
 import com.emergent.doom.group.CellStatus;
 
 import java.util.ArrayList;
@@ -17,6 +16,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <p>Uses CopyOnWriteArrayList for concurrent snapshot adds and iterations.</p>
  *
  * <p>Overrides extraction in recordSnapshot for consistency.</p>
+ * 
+ * <p>Note: Works with lightweight cells that don't carry metadata.</p>
  */
 public class ThreadSafeProbe<T extends Cell<T>> extends Probe<T> {
 
@@ -36,12 +37,13 @@ public class ThreadSafeProbe<T extends Cell<T>> extends Probe<T> {
             List<Comparable<?>> values = new ArrayList<>();
             List<Object[]> types = new ArrayList<>();
             for (T cell : cells) {
-                Comparable<?> value = (cell instanceof HasValue) ? ((HasValue) cell).getComparableValue() : cell.hashCode();
-                values.add(value);
-                int groupId = -1;
-                int algotypeLabel = 0;
-                int isFrozen = 0;
-                types.add(new Object[]{groupId, algotypeLabel, value, isFrozen});
+                // Cell is Comparable - use it directly as value
+                values.add(cell);
+                // Metadata no longer available from cells - record minimal info
+                int groupId = -1;  // Groups not supported with lightweight cells
+                int algotypeLabel = -1;  // Algotype not available from cell (use -1 to indicate unavailable)
+                int isFrozen = 0;  // Status not available from cell
+                types.add(new Object[]{groupId, algotypeLabel, cell, isFrozen});
             }
             concurrentSnapshots.add(new StepSnapshot<>(stepNumber, values, types, localSwapCount));
         }

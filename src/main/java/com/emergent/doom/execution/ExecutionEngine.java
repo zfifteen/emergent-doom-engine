@@ -2,8 +2,7 @@ package com.emergent.doom.execution;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
-import com.emergent.doom.cell.HasIdealPosition;
-import com.emergent.doom.cell.HasSortDirection;
+import com.emergent.doom.cell.SelectionCell;
 import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.SwapEngine;
@@ -14,7 +13,6 @@ import com.emergent.doom.topology.SelectionTopology;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Main execution engine that orchestrates cell dynamics.
@@ -40,7 +38,6 @@ public class ExecutionEngine<T extends Cell<T>> {
     private final SwapEngine<T> swapEngine;
     private final Probe<T> probe;
     private final ConvergenceDetector<T> convergenceDetector;
-    private final CellMetadata[] metadata;
     private final Random random;
 
     private int currentStep;
@@ -56,36 +53,6 @@ public class ExecutionEngine<T extends Cell<T>> {
             Probe<T> probe,
             ConvergenceDetector<T> convergenceDetector) {
         this(cells, swapEngine, probe, convergenceDetector, new Random());
-    }
-
-    private void initializeMetadata(T[] cells) {
-        for (int i = 0; i < cells.length; i++) {
-            Algotype algotype = Algotype.BUBBLE;
-            SortDirection direction = SortDirection.ASCENDING;
-            int idealPos = 0;
-            int left = 0;
-            int right = cells.length - 1;
-
-            T cell = cells[i];
-            if (cell instanceof com.emergent.doom.cell.HasAlgotype) {
-                algotype = ((com.emergent.doom.cell.HasAlgotype) cell).getAlgotype();
-            }
-
-            if (cell instanceof com.emergent.doom.cell.HasSortDirection) {
-                direction = ((com.emergent.doom.cell.HasSortDirection) cell).getSortDirection();
-            }
-
-            if (cell instanceof com.emergent.doom.cell.HasIdealPosition) {
-                idealPos = ((com.emergent.doom.cell.HasIdealPosition) cell).getIdealPos();
-            }
-
-            if (cell instanceof com.emergent.doom.group.GroupAwareCell) {
-                left = ((com.emergent.doom.group.GroupAwareCell<?>) cell).getLeftBoundary();
-                right = ((com.emergent.doom.group.GroupAwareCell<?>) cell).getRightBoundary();
-            }
-
-            this.metadata[i] = new CellMetadata(algotype, direction, new AtomicInteger(idealPos), left, right);
-        }
     }
 
     /**
@@ -111,11 +78,6 @@ public class ExecutionEngine<T extends Cell<T>> {
         this.probe = probe;
         this.convergenceDetector = convergenceDetector;
         this.random = random;
-
-        // Initialize metadata from cells
-        this.metadata = new CellMetadata[cells.length];
-        initializeMetadata(cells);
-
         this.currentStep = 0;
         this.converged = false;
         this.reverseDirection = false;  // Default to ascending sort
@@ -192,8 +154,8 @@ public class ExecutionEngine<T extends Cell<T>> {
 
         // For each cell in iteration order, try swapping with neighbors based on algotype
         for (int i : iterationOrder) {
-            Algotype algotype = metadata[i].algotype();
-            SortDirection direction = metadata[i].direction();
+            Algotype algotype = getCellAlgotype(i);
+            SortDirection direction = getCellDirection(cells[i]);
 
             if (algotype == Algotype.BUBBLE) {
                 // Random 50/50 direction choice - matches cell_research Python behavior
@@ -208,12 +170,7 @@ public class ExecutionEngine<T extends Cell<T>> {
                     boolean shouldSwap = shouldSwapWithDirection(i, j, algotype, direction);
                     probe.recordCompareAndSwap(); // StatusProbe: comparison made
                     if (shouldSwap) {
-                        if (swapEngine.attemptSwap(cells, i, j)) {
-                            // Synchronize metadata
-                            CellMetadata temp = metadata[i];
-                            metadata[i] = metadata[j];
-                            metadata[j] = temp;
-                        }
+                        swapEngine.attemptSwap(cells, i, j);
                     }
                 }
             } else {
@@ -224,12 +181,7 @@ public class ExecutionEngine<T extends Cell<T>> {
                     boolean shouldSwap = shouldSwapWithDirection(i, j, algotype, direction);
                     probe.recordCompareAndSwap(); // StatusProbe: comparison made
                     if (shouldSwap) {
-                        if (swapEngine.attemptSwap(cells, i, j)) {
-                            // Synchronize metadata
-                            CellMetadata temp = metadata[i];
-                            metadata[i] = metadata[j];
-                            metadata[j] = temp;
-                        }
+                        swapEngine.attemptSwap(cells, i, j);
                     }
                 }
             }
@@ -282,7 +234,7 @@ public class ExecutionEngine<T extends Cell<T>> {
             }
 
             // Get cell value for comparison
-            int currentValue = cells[k].getValue();
+            int currentValue = getCellValue(cells[k]);
             
             // Check if out of order based on direction
             boolean outOfOrder = reverseDirection 
@@ -297,6 +249,76 @@ public class ExecutionEngine<T extends Cell<T>> {
         return true;
     }
 
+    // ========== Helper Methods for Cell Access ==========
+
+    /**
+     * Get algotype from cell (legacy mode - infers from cell type).
+     *
+     * <p>PURPOSE: Support legacy cell introspection during Phase 4 migration.
+     * ExecutionEngine doesn't support metadata providers, so this infers
+     * algotype from the cell's concrete class type.</p>
+     *
+     * <p>INPUTS: cellIndex - position of cell to query</p>
+     *
+     * <p>PROCESS: Check cell type and return corresponding algotype</p>
+     *
+     * <p>OUTPUTS: Algotype for this cell position</p>
+     *
+     * <p>DEPENDENCIES: Cell must be BubbleCell, InsertionCell, SelectionCell, or GenericCell</p>
+     */
+    private Algotype getCellAlgotype(int cellIndex) {
+        T cell = cells[cellIndex];
+        
+        // Infer algotype from cell type
+        if (cell instanceof com.emergent.doom.cell.BubbleCell) {
+            return Algotype.BUBBLE;
+        } else if (cell instanceof com.emergent.doom.cell.InsertionCell) {
+            return Algotype.INSERTION;
+        } else if (cell instanceof com.emergent.doom.cell.SelectionCell) {
+            return Algotype.SELECTION;
+        } else if (cell instanceof com.emergent.doom.cell.RemainderCell) {
+            // RemainderCell has getAlgotype() method
+            return ((com.emergent.doom.cell.RemainderCell) cell).getAlgotype();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            // GenericCell doesn't store algotype - default to BUBBLE
+            // In practice, GenericCell should be used with metadata providers, not ExecutionEngine
+            return Algotype.BUBBLE;
+        }
+
+        throw new IllegalStateException(
+            "Cell at index " + cellIndex + " is of unknown type: " + cell.getClass().getName() + ". " +
+            "ExecutionEngine does not support metadata providers.");
+    }
+
+    /**
+     * Helper: Extract comparable value from cell for isLeftSorted comparison.
+     * 
+     * <p>P1 FIX: All cell types now properly handled via getValue().
+     * Previously fell back to hashCode() for InsertionCell/BubbleCell,
+     * which broke insertion-mode runs using those types.</p>
+     * 
+     * <p>COPILOT REVIEW FIX: Throws UnsupportedOperationException instead of
+     * using hashCode() fallback, since hashCode() is unreliable for sorting
+     * comparisons (hash codes don't maintain ordering relationships).</p>
+     */
+    private int getCellValue(T cell) {
+        if (cell instanceof com.emergent.doom.cell.SelectionCell) {
+            return ((com.emergent.doom.cell.SelectionCell<?>) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+            return ((com.emergent.doom.cell.GenericCell) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.InsertionCell) {
+            return ((com.emergent.doom.cell.InsertionCell<?>) cell).getValue();
+        } else if (cell instanceof com.emergent.doom.cell.BubbleCell) {
+            return ((com.emergent.doom.cell.BubbleCell<?>) cell).getValue();
+        }
+        // Fail-fast: throw exception for unsupported cell types
+        // (hashCode is unreliable for sorting - doesn't maintain ordering relationships)
+        throw new UnsupportedOperationException(
+            "Cell type " + cell.getClass().getName() + " does not support getValue(). " +
+            "All Cell implementations must extend SelectionCell, GenericCell, InsertionCell, or BubbleCell."
+        );
+    }
+
     /**
      * Helper: Get neighbors for the given position based on algotype
      */
@@ -308,7 +330,7 @@ public class ExecutionEngine<T extends Cell<T>> {
                 return insertionTopology.getNeighbors(i, cells.length, algotype);
             case SELECTION:
                 // Get dynamic ideal target from cell state
-                int idealPos = getIdealPosition(i);
+                int idealPos = getIdealPosition(cells[i]);
                 int target = Math.min(idealPos, cells.length - 1);
                 return Arrays.asList(target);
             default:
@@ -317,17 +339,106 @@ public class ExecutionEngine<T extends Cell<T>> {
     }
 
     /**
-     * Helper: Get ideal position from a SELECTION cell (supports both SelectionCell and GenericCell)
+     * Helper: Get ideal position from metadata (SELECTION algotype only).
+     * 
+     * <p>Note: ExecutionEngine doesn't support metadata providers yet.
+     * This method cannot be implemented without metadata array support.</p>
+     * 
+     * @deprecated ExecutionEngine needs metadata provider support to track ideal positions
      */
-    private int getIdealPosition(int index) {
-        return metadata[index].idealPos().get();
+    @Deprecated
+    private int getIdealPosition(T cell) {
+        throw new UnsupportedOperationException(
+            "ExecutionEngine does not support ideal position tracking. " +
+            "Use ParallelExecutionEngine, SynchronousExecutionEngine, or LockBasedExecutionEngine " +
+            "with metadata providers instead.");
     }
 
     /**
-     * Helper: Increment ideal position for a SELECTION cell (supports both SelectionCell and GenericCell)
+     * Helper: Increment ideal position for SELECTION cells.
+     * 
+     * <p>Note: ExecutionEngine doesn't support metadata providers yet.
+     * This method cannot be implemented without metadata array support.</p>
+     * 
+     * @deprecated ExecutionEngine needs metadata provider support to track ideal positions
      */
-    private void incrementIdealPosition(int index) {
-        metadata[index].idealPos().incrementAndGet();
+    @Deprecated
+    private void incrementIdealPosition(T cell) {
+        throw new UnsupportedOperationException(
+            "ExecutionEngine does not support ideal position tracking. " +
+            "Use ParallelExecutionEngine, SynchronousExecutionEngine, or LockBasedExecutionEngine " +
+            "with metadata providers instead.");
+    }
+
+    /**
+     * Helper: Determine if swap should occur based on Levin algotype rules
+     */
+    private boolean shouldSwapForAlgotype(int i, int j, Algotype algotype) {
+        switch (algotype) {
+            case BUBBLE:
+                // Move left if value < left neighbor, right if value > right neighbor
+                if (j == i - 1 && cells[i].compareTo(cells[j]) < 0) { // left neighbor, smaller value
+                    return true;
+                } else if (j == i + 1 && cells[i].compareTo(cells[j]) > 0) { // right neighbor, bigger value
+                    return true;
+                }
+                return false;
+            case INSERTION:
+                // Move left only if left side sorted AND value < left neighbor
+                if (j == i - 1 && isLeftSorted(i, reverseDirection) && cells[i].compareTo(cells[j]) < 0) {
+                    return true;
+                }
+                // Note: neighbors include all left, but only swap with immediate left if conditions met
+                return false;
+            case SELECTION:
+                // Guard: Skip if targeting self (prevents drift of correctly placed cells)
+                if (i == j) {
+                    return false;
+                }
+
+                // Swap with target if value < target value
+                if (cells[i].compareTo(cells[j]) < 0) { // smaller than target
+                    return true;
+                } else {
+                    // Swap denied: increment ideal position if not at end
+                    int currentIdealPos = getIdealPosition(cells[i]);
+                    if (currentIdealPos < cells.length - 1) {
+                        incrementIdealPosition(cells[i]);
+                    }
+                    return false;
+                }
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Helper: Get the sort direction (deprecated - ExecutionEngine doesn't support metadata).
+     * 
+     * <p>PURPOSE: This method is deprecated. ExecutionEngine is a legacy class that
+     * doesn't support metadata providers. Use ParallelExecutionEngine or
+     * SynchronousExecutionEngine for metadata-aware sorting.</p>
+     * 
+     * <p>INPUTS: cell (T) - the cell (ignored)</p>
+     * 
+     * <p>PROCESS: Returns ASCENDING by default (metadata not supported)</p>
+     * 
+     * <p>OUTPUTS: SortDirection.ASCENDING (always)</p>
+     * 
+     * <p>DEPENDENCIES: SortDirection enum</p>
+     * 
+     * <p>ARCHITECTURE NOTE: For direction-aware sorting, use modern execution engines
+     * that accept metadata providers (ParallelExecutionEngine, SynchronousExecutionEngine).</p>
+     * 
+     * @param cell the cell (ignored)
+     * @return SortDirection.ASCENDING (always)
+     * @deprecated Use execution engines with metadata provider support
+     */
+    @Deprecated
+    private SortDirection getCellDirection(T cell) {
+        // ExecutionEngine is deprecated and doesn't support metadata providers
+        // Default to ascending for all cells
+        return SortDirection.ASCENDING;
     }
 
     /**
@@ -425,9 +536,9 @@ public class ExecutionEngine<T extends Cell<T>> {
                     return true;
                 } else {
                     // Swap denied: increment ideal position if not at end
-                    int currentIdealPos = getIdealPosition(i);
+                    int currentIdealPos = getIdealPosition(cells[i]);
                     if (currentIdealPos < cells.length - 1) {
-                        incrementIdealPosition(i);
+                        incrementIdealPosition(cells[i]);
                     }
                     return false;
                 }
@@ -528,22 +639,9 @@ public class ExecutionEngine<T extends Cell<T>> {
      *                         false for ascending (ideal = left boundary)
      */
     private void resetSelectionCellIdealPositions(boolean reverseDirection) {
-        for (int i = 0; i < cells.length; i++) {
-            if (metadata[i].algotype() == Algotype.SELECTION) {
-                int left = metadata[i].leftBoundary();
-                int right = metadata[i].rightBoundary();
-                int initialPos = reverseDirection ? right : left;
-
-                // Update engine metadata (used for neighbor selection)
-                metadata[i].idealPos().set(initialPos);
-
-                // Also update the concrete cell state when it supports HasIdealPosition.
-                // This keeps the Cell API minimal while ensuring external callers/tests
-                // that look at the cell object observe the reset behavior.
-                if (cells[i] instanceof HasIdealPosition) {
-                    ((HasIdealPosition) cells[i]).setIdealPos(initialPos);
-                }
-            }
-        }
+        // ExecutionEngine is deprecated and doesn't support metadata providers
+        // Selection cell ideal position tracking requires metadata providers
+        // This method is a no-op for ExecutionEngine
+        // Use ParallelExecutionEngine, SynchronousExecutionEngine, or LockBasedExecutionEngine instead
     }
 }

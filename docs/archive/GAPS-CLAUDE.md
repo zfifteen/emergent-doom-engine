@@ -1120,7 +1120,7 @@ public class TrajectoryPlotter {
 ```java
 // Analyze sortedness trajectory
 TrajectoryAnalyzer<GenericCell> analyzer = new TrajectoryAnalyzer<>();
-List<Double> sortednessTrajectory = analyzer.computeSortednessTrajectory(probe, SortDirection.INCREASING);
+List<Double> sortednessTrajectory = analyzer.computeSortednessTrajectory(probe, SortDirection.ASCENDING);
 
 // Generate plot data
 TrajectoryPlotter plotter = new TrajectoryPlotter();

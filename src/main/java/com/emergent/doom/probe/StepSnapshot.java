@@ -2,8 +2,11 @@ package com.emergent.doom.probe;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
-import com.emergent.doom.cell.HasAlgotype;
+import com.emergent.doom.group.CellStatus;
+import com.emergent.doom.group.CellGroup;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +19,8 @@ import java.util.Map;
  * capturing extracted values and types at each iteration, matching Python take_snapshot().</p>
  *
  * <p>Format: values = List of cell values; types = List of [groupId, algotypeLabel, value, isFrozen].</p>
+ *
+ * <p>Note: With lightweight cells, metadata fields are no longer extracted from cells.</p>
  *
  * @param <T> the type of cell (for compatibility)
  */
@@ -42,24 +47,19 @@ public class StepSnapshot<T extends Cell<T>> {
      * Deprecated compatibility constructor with full cells (shallow copy).
      */
     @Deprecated
-    public StepSnapshot(int stepNumber, T[] cellStates, int swapCount) {
+    public StepSnapshot(int stepNumber, T[] cellStates, int swapCount, Map<Algotype, Integer> cellTypeDistribution) {
         this.stepNumber = stepNumber;
         // Extract for fidelity
         List<Comparable<?>> vals = new ArrayList<>();
         List<Object[]> tys = new ArrayList<>();
         for (T cell : cellStates) {
-            Comparable<?> value = cell.getValue();
-            vals.add(value);
+            // Cell is Comparable - use it directly as value
+            vals.add(cell);
+            // Metadata no longer available from cells
             int groupId = -1;
-            int label = 0;
-            if (cell instanceof HasAlgotype) {
-                Algotype a = ((HasAlgotype) cell).getAlgotype();
-                if (a != null) {
-                    label = a.ordinal();
-                }
-            }
+            int label = -1;  // Use -1 to indicate algotype unavailable
             int frozen = 0;
-            tys.add(new Object[]{groupId, label, value, frozen});
+            tys.add(new Object[]{groupId, label, cell, frozen});
         }
         this.values = Collections.unmodifiableList(vals);
         this.types = Collections.unmodifiableList(tys);

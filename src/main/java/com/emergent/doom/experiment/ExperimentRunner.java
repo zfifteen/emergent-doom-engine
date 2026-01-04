@@ -108,6 +108,30 @@ public class ExperimentRunner<T extends Cell<T>> {
         ConvergenceDetector<T> convergenceDetector =
                 new NoSwapConvergence<>(config.getRequiredStableSteps());
 
+        // Create metadata provider from cells
+        // For cells that have algotype information, extract it; otherwise default to BUBBLE
+        java.util.function.IntFunction<com.emergent.doom.execution.CellMetadata> metadataProvider = i -> {
+            T cell = cells[i];
+            com.emergent.doom.cell.Algotype algotype = com.emergent.doom.cell.Algotype.BUBBLE;
+            com.emergent.doom.cell.SortDirection direction = com.emergent.doom.cell.SortDirection.ASCENDING;
+            
+            // Try to extract algotype from cell type
+            if (cell instanceof com.emergent.doom.cell.RemainderCell) {
+                algotype = ((com.emergent.doom.cell.RemainderCell) cell).getAlgotype();
+            } else if (cell instanceof com.emergent.doom.cell.BubbleCell) {
+                algotype = com.emergent.doom.cell.Algotype.BUBBLE;
+            } else if (cell instanceof com.emergent.doom.cell.InsertionCell) {
+                algotype = com.emergent.doom.cell.Algotype.INSERTION;
+            } else if (cell instanceof com.emergent.doom.cell.SelectionCell) {
+                algotype = com.emergent.doom.cell.Algotype.SELECTION;
+            } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
+                // GenericCell doesn't store algotype - default to BUBBLE
+                algotype = com.emergent.doom.cell.Algotype.BUBBLE;
+            }
+            
+            return new com.emergent.doom.execution.CellMetadata(algotype, direction);
+        };
+
         // Run execution based on mode
         long startTime = System.nanoTime();
         int finalStep;
@@ -116,7 +140,7 @@ public class ExperimentRunner<T extends Cell<T>> {
         if (config.isParallelExecution()) {
             // Parallel execution: barrier-based synchronization (DEPRECATED - use batch parallelism instead)
             ParallelExecutionEngine<T> parallelEngine = new ParallelExecutionEngine<>(
-                    cells, swapEngine, probe, convergenceDetector);
+                    cells, swapEngine, probe, convergenceDetector, metadataProvider);
             try {
                 parallelEngine.start();
                 finalStep = parallelEngine.runUntilConvergence(config.getMaxSteps());
@@ -127,7 +151,7 @@ public class ExperimentRunner<T extends Cell<T>> {
         } else if (config.isLockBasedExecution()) {
             // Lock-based execution: matches Python cell_research behavior
             LockBasedExecutionEngine<T> lockEngine = new LockBasedExecutionEngine<>(
-                    cells, swapEngine, probe, convergenceDetector);
+                    cells, swapEngine, probe, convergenceDetector, metadataProvider);
             try {
                 lockEngine.start();
                 finalStep = lockEngine.runUntilConvergence(config.getMaxSteps());
@@ -139,7 +163,7 @@ public class ExperimentRunner<T extends Cell<T>> {
             // REFACTORED: Use SynchronousExecutionEngine for sequential mode
             // This is the preferred execution mode for parallel trial batches
             SynchronousExecutionEngine<T> syncEngine = new SynchronousExecutionEngine<>(
-                    cells, swapEngine, probe, convergenceDetector);
+                    cells, swapEngine, probe, convergenceDetector, metadataProvider);
             // Inject topology if supported by engine (future enhancement)
             // Currently SynchronousExecutionEngine uses default iteration order
             // but we should respect the topology factory if possible.

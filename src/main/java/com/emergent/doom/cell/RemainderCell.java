@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * this cell stores N mod p. The sorting behavior naturally drives
  * better factors to the front when cells are swapped by the engine.</p>
  */
-public class RemainderCell implements Cell<RemainderCell>, GroupAwareCell<RemainderCell>, HasAlgotype, HasIdealPosition {
+public class RemainderCell implements Cell<RemainderCell>, GroupAwareCell<RemainderCell>, HasValue, HasGroup, HasStatus {
     
     private final BigInteger remainder;
     private final int position;
@@ -72,16 +72,17 @@ public class RemainderCell implements Cell<RemainderCell>, GroupAwareCell<Remain
          return remainderComparison;
     }
 
+    @Override
     public Comparable<?> getComparableValue() {
         return remainder; // Returns the full BigInteger
     }
 
+    @Deprecated
     @Override
     public int getValue() {
         return remainder.intValue();
     }
 
-    @Override
     public Algotype getAlgotype() {
         return algotype;
     }
@@ -119,22 +120,18 @@ public class RemainderCell implements Cell<RemainderCell>, GroupAwareCell<Remain
     @Override
     public void setPreviousStatus(CellStatus previousStatus) { this.previousStatus = previousStatus; }
 
-    @Override
     public int getIdealPos() {
         return idealPos.get();
     }
 
-    @Override
     public int incrementIdealPos() {
         return idealPos.incrementAndGet();
     }
 
-    @Override
     public void setIdealPos(int newIdealPos) {
         this.idealPos.set(newIdealPos);
     }
 
-    @Override
     public boolean compareAndSetIdealPos(int expected, int newValue) {
         return idealPos.compareAndSet(expected, newValue);
     }

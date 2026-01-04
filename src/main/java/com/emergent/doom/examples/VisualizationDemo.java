@@ -1,6 +1,8 @@
 package com.emergent.doom.examples;
 
-import com.emergent.doom.cell.HasAlgotype;
+import com.emergent.doom.cell.HasValue;
+import com.emergent.doom.cell.HasGroup;
+import com.emergent.doom.cell.HasStatus;
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.group.CellGroup;
 import com.emergent.doom.group.CellStatus;
@@ -46,55 +48,26 @@ import java.util.Random;
  */
 public class VisualizationDemo {
     
-    static class TestCell extends BubbleCell<TestCell> implements com.emergent.doom.group.GroupAwareCell<TestCell>, HasAlgotype {
+    static class TestCell extends BubbleCell<TestCell> {
         public TestCell(int value) {
             super(value);
         }
+        
+    @Override
+    public CellGroup<TestCell> getGroup() { return null; }
 
-        // ========== GroupAwareCell stubs ==========
-        private CellStatus status = CellStatus.ACTIVE;
-        private CellStatus previousStatus = CellStatus.ACTIVE;
+    public CellStatus getStatus() { return CellStatus.ACTIVE; }
 
-        @Override
-        public CellGroup<TestCell> getGroup() { return null; }
+    public CellStatus getPreviousStatus() { return CellStatus.ACTIVE; }
 
-        @Override
-        public void setGroup(CellGroup<TestCell> group) { /* no-op */ }
+    public void setStatus(CellStatus status) { /* no-op */ }
 
-        @Override
-        public int getLeftBoundary() { return 0; }
+    public void setPreviousStatus(CellStatus previousStatus) { /* no-op */ }
 
-        @Override
-        public void setLeftBoundary(int leftBoundary) { /* no-op */ }
+    public void setGroup(CellGroup<TestCell> group) { /* no-op */ }
 
-        @Override
-        public int getRightBoundary() { return 0; }
-
-        @Override
-        public void setRightBoundary(int rightBoundary) { /* no-op */ }
-
-        @Override
-        public CellStatus getStatus() { return status; }
-
-        @Override
-        public CellStatus getPreviousStatus() { return previousStatus; }
-
-        @Override
-        public void setStatus(CellStatus status) { this.status = status; }
-
-        @Override
-        public void setPreviousStatus(CellStatus previousStatus) { this.previousStatus = previousStatus; }
-
-        @Override
-        public void updateForGroupMerge() {
-            // Bubble policy doesn't need to update internal state on merge.
-        }
-
-        @Override
-        public Algotype getAlgotype() { return Algotype.BUBBLE; }
-
-        @Override
-        public int compareTo(TestCell other) {
+    @Override
+    public int compareTo(TestCell other) {
             return Integer.compare(this.getValue(), other.getValue());
         }
     }
@@ -236,3 +209,4 @@ public class VisualizationDemo {
         System.out.println("  - " + snapshotsFile + " (Complete execution history)");
     }
 }
+
