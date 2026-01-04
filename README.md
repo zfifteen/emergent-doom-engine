@@ -151,7 +151,7 @@ ChimericExperimentConfig config = ChimericExperimentConfig.builder()
     .arraySize(100)
     .maxSteps(5000)
     .algotypeMix(Map.of(Algotype.BUBBLE, 0.5, Algotype.SELECTION, 0.5))
-    .sortDirection(SortDirection.INCREASING)
+    .sortDirection(SortDirection.ASCENDING)
     .build();
 
 // Create metadata provider from configuration
@@ -201,7 +201,7 @@ mvn clean compile
 
 ```bash
 mvn package
-java -jar target/emergent-doom-engine-1.0.0-SNAPSHOT.jar
+java -jar target/emergent-doom-engine-0.2.1-alpha.jar
 ```
 
 ## Usage Example
