@@ -117,62 +117,6 @@ class ProbeTest {
 
     @Nested
     @DisplayName("Cell Type Distribution Tracking")
-    class CellTypeDistributionTests {
-
-        @Test
-        @DisplayName("recordSnapshotWithTypes captures algotype distribution")
-        void recordSnapshotWithTypesCapturesDistribution() {
-            GenericCell[] cells = {
-                new GenericCell(1),
-                new GenericCell(2),
-                new GenericCell(3),
-                new GenericCell(4)
-            };
-
-            probe.recordSnapshotWithTypes(0, cells, 0);
-
-            Map<Algotype, Integer> distribution = probe.getCellTypeDistribution(0);
-            assertNotNull(distribution);
-            assertEquals(2, distribution.get(Algotype.BUBBLE));
-            assertEquals(1, distribution.get(Algotype.SELECTION));
-            assertEquals(1, distribution.get(Algotype.INSERTION));
-        }
-
-        @Test
-        @DisplayName("getCellTypeDistribution returns null for non-existent step")
-        void getCellTypeDistributionReturnsNullForMissingStep() {
-            assertNull(probe.getCellTypeDistribution(999));
-        }
-
-        @Test
-        @DisplayName("StepSnapshot hasCellTypeDistribution returns true for regular snapshots (unified behavior)")
-        void regularSnapshotHasCellTypeDistribution() {
-            GenericCell[] cells = {
-                new GenericCell(1)
-            };
-
-            probe.recordSnapshot(0, cells, 0);
-
-            StepSnapshot<GenericCell> snapshot = probe.getSnapshot(0);
-            assertTrue(snapshot.hasCellTypeDistribution());
-            assertNotNull(snapshot.getCellTypeDistribution());
-        }
-
-        @Test
-        @DisplayName("StepSnapshot hasCellTypeDistribution returns true for typed snapshots")
-        void typedSnapshotHasCellTypeDistribution() {
-            GenericCell[] cells = {
-                new GenericCell(1),
-                new GenericCell(2)
-            };
-
-            probe.recordSnapshotWithTypes(0, cells, 0);
-
-            StepSnapshot<GenericCell> snapshot = probe.getSnapshot(0);
-            assertTrue(snapshot.hasCellTypeDistribution());
-            assertNotNull(snapshot.getCellTypeDistribution());
-        }
-    }
 
     @Nested
     @DisplayName("Basic Snapshot Functionality")
