@@ -38,4 +38,19 @@ public interface Cell<T extends Cell<T>> extends Comparable<T> {
     //   - Execution metadata (algotype, sort direction, ideal position) is managed
     //     externally by execution engines via CellMetadata arrays
     //   - This achieves true domain-agnostic sorting where cells are pure value carriers
+    
+    /**
+     * Get the value of this cell for metrics and logging.
+     * 
+     * <p>This method is optional and primarily used by metrics that need to extract
+     * numeric values from cells. Implementations that don't have a simple integer value
+     * should throw UnsupportedOperationException.</p>
+     * 
+     * @return the cell's value
+     * @throws UnsupportedOperationException if the cell doesn't have a simple value representation
+     */
+    default int getValue() {
+        throw new UnsupportedOperationException(
+            "This cell type does not support getValue()");
+    }
 }

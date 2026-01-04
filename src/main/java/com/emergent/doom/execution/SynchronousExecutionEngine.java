@@ -731,8 +731,8 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
             case INSERTION:
                 return insertionTopology.getNeighbors(i, cells.length, algotype);
             case SELECTION:
-                // Get dynamic ideal target from cell state
-                int idealPos = getIdealPosition(cells[i]);
+                // Get dynamic ideal target from metadata
+                int idealPos = getIdealPosition(i);
                 int target = Math.min(idealPos, cells.length - 1);
                 return Arrays.asList(target);
             default:
@@ -851,9 +851,9 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
                     return true;
                 } else {
                     // Swap denied: increment ideal position if not at end
-                    int currentIdealPos = getIdealPosition(cells[i]);
+                    int currentIdealPos = getIdealPosition(i);
                     if (currentIdealPos < cells.length - 1) {
-                        incrementIdealPosition(cells[i]);
+                        incrementIdealPosition(i);
                     }
                     return false;
                 }
@@ -969,19 +969,16 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      *
      * <p>OUTPUTS: ideal position index</p>
      *
-     * @param cell the cell
+     * @param cellIndex index of the cell
      * @return ideal position
      */
-    private int getIdealPosition(T cell) {
-        if (cell instanceof com.emergent.doom.cell.HasIdealPosition) {
-            return ((com.emergent.doom.cell.HasIdealPosition) cell).getIdealPos();
+    private int getIdealPosition(int cellIndex) {
+        if (metadata != null) {
+            return metadata[cellIndex].getIdealPos();
         }
-        if (cell instanceof SelectionCell) {
-            return ((SelectionCell<?>) cell).getIdealPos();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            return ((com.emergent.doom.cell.GenericCell) cell).getIdealPos();
-        }
-        return 0;  // Default for other cell types
+        throw new UnsupportedOperationException(
+            "Cells no longer carry ideal position metadata. " +
+            "Use constructor with metadata provider.");
     }
 
     /**
@@ -989,30 +986,28 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      *
      * <p>PURPOSE: Update target position when swap is denied.</p>
      *
-     * <p>INPUTS: cell - the cell (must be SELECTION algotype)</p>
+     * <p>INPUTS: cellIndex - index of the cell (must be SELECTION algotype)</p>
      *
      * <p>PROCESS:
      * <ol>
-     *   <li>Check if cell is SelectionCell or GenericCell</li>
-     *   <li>Cast and call incrementIdealPos()</li>
-     *   <li>If not SELECTION type: no-op</li>
+     *   <li>Use metadata array if available</li>
+     *   <li>Call incrementIdealPos() on metadata</li>
+     *   <li>If no metadata: throw exception</li>
      * </ol>
      * </p>
      *
-     * <p>OUTPUTS: None (modifies cell state)</p>
+     * <p>OUTPUTS: None (modifies metadata state)</p>
      *
-     * @param cell the cell
+     * @param cellIndex index of the cell
      */
-    private void incrementIdealPosition(T cell) {
-        if (cell instanceof com.emergent.doom.cell.HasIdealPosition) {
-            ((com.emergent.doom.cell.HasIdealPosition) cell).incrementIdealPos();
+    private void incrementIdealPosition(int cellIndex) {
+        if (metadata != null) {
+            metadata[cellIndex].incrementIdealPos();
             return;
         }
-        if (cell instanceof SelectionCell) {
-            ((SelectionCell<?>) cell).incrementIdealPos();
-        } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-            ((com.emergent.doom.cell.GenericCell) cell).incrementIdealPos();
-        }
+        throw new UnsupportedOperationException(
+            "Cells no longer carry ideal position metadata. " +
+            "Use constructor with metadata provider.");
     }
 
     /**

@@ -508,8 +508,6 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             "Cells no longer carry ideal position metadata. " +
             "Use constructor with metadata provider.");
     }
-        }
-    }
 
     /**
      * Get neighbors for a cell based on its algotype.

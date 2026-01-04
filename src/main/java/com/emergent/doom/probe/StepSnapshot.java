@@ -53,11 +53,13 @@ public class StepSnapshot<T extends Cell<T>> {
         List<Comparable<?>> vals = new ArrayList<>();
         List<Object[]> tys = new ArrayList<>();
         for (T cell : cellStates) {
-            vals.add(cell.getComparableValue());
-            int groupId = (cell.getGroup() != null) ? cell.getGroup().getGroupId() : -1;
-            int label = cell.getAlgotype().ordinal();
-            int frozen = cell.getStatus() == com.emergent.doom.group.CellStatus.FREEZE ? 1 : 0;
-            tys.add(new Object[]{groupId, label, cell.getComparableValue(), frozen});
+            // Cell is Comparable - use it directly as value
+            vals.add(cell);
+            // Metadata no longer available from cells
+            int groupId = -1;
+            int label = 0;
+            int frozen = 0;
+            tys.add(new Object[]{groupId, label, cell, frozen});
         }
         this.values = Collections.unmodifiableList(vals);
         this.types = Collections.unmodifiableList(tys);

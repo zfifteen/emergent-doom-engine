@@ -29,7 +29,6 @@ public class ThreadSafeProbe<T extends Cell<T>> extends Probe<T> {
     }
 
     @Override
-    @Override
     public void recordSnapshot(int stepNumber, T[] cells, int localSwapCount) {
         // Update convergence metrics in parent (atomic)
         updateCounters(stepNumber, localSwapCount);
