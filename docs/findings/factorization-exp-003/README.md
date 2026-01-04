@@ -2,7 +2,7 @@
 
 **Experiment ID:** FACT-EXP-003  
 **Date:** January 1, 2026  
-**Status:** 🔄 RUNNING - Unbalanced vs Balanced Semiprimes  
+**Status:** ✅ COMPLETE - Unbalanced vs Balanced Semiprimes  
 **Principal Investigator:** GitHub Copilot
 
 ---
@@ -30,9 +30,9 @@ Testing the RemainderCell distributed factorization approach with two contrastin
 - **Position 71 (discoverable prime factor)** ✅
 
 **Hypothesis:** System should:
-- ✅ Find factor at position 71
-- ✅ Converge to highly sorted state
-- ✅ Show similar metrics to FACT-EXP-001
+- Find factor at position 71
+- Complete sorting to highly sorted state
+- Show similar metrics to FACT-EXP-001
 
 ### Target 2: Balanced Semiprime (Not Discoverable)
 
@@ -43,9 +43,9 @@ Testing the RemainderCell distributed factorization approach with two contrastin
 - **No non-trivial factors** ❌
 
 **Hypothesis:** System should:
-- ❌ Find no non-trivial factors
-- ⚠️ Still converge (sort by remainder values)
-- ⚠️ Possibly lower sortedness (no clear attractor)
+- Find no non-trivial factors
+- Still complete sorting (sort by remainder values)
+- Possibly show lower sortedness (no clear attractor)
 
 ---
 
@@ -82,7 +82,7 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 
 | Metric | Expected Range |
 | :--- | :--- |
-| Convergence Rate | 95-100% |
+| Sorting Completion Rate | 95-100% |
 | Mean Steps | 1,150-1,300 |
 | Sortedness | 98-100% |
 | Monotonicity Error | 0.2-0.6 |
@@ -92,7 +92,7 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 
 | Metric | Expected Range |
 | :--- | :--- |
-| Convergence Rate | 80-100% |
+| Sorting Completion Rate | 80-100% |
 | Mean Steps | 1,000-1,500 |
 | Sortedness | 90-98% (lower) |
 | Monotonicity Error | 0.5-1.5 (higher) |
@@ -102,15 +102,15 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 
 ## Research Questions
 
-1. **Does factor discoverability affect convergence rate?**
-   - Compare convergence % between unbalanced and balanced
+1. **Does factor discoverability affect sorting completion rate?**
+   - Compare completion % between unbalanced and balanced
 
 2. **How does the system behave without factors?**
    - Does it still sort by remainder values?
    - Is sortedness lower without clear attractors?
 
 3. **Are there performance differences?**
-   - Steps to convergence
+   - Steps to complete sorting
    - Execution time
    - Metric distributions
 
@@ -156,9 +156,9 @@ This allows flexible statistical analysis with varying sample sizes.
 
 ## Status
 
-⏳ **Running:** Both experiments executing in background  
-📊 **Progress:** Check terminal outputs for real-time status  
-⏱️ **Estimated time:** ~30-40 minutes total (100 trials each)
+✅ **Complete:** Both experiments completed  
+📊 **Results:** See EXPERIMENT_COMPLETE.md and comparison_analysis.md  
+⏱️ **Total execution time:** ~1 hour (both targets)
 
 ---
 
@@ -195,11 +195,10 @@ This experiment tests the **factorability hypothesis:**
 - Factor discovery is emergent property, not optimization target
 
 **If unbalanced >> balanced performance:**
-- System optimizes toward factor discovery
 - Presence of factors creates stronger attractors
-- Morphogenetic organization is goal-directed
+- Morphogenetic organization may be goal-directed
 
 ---
 
-**Experiment will provide critical insights into the nature of emergent factorization!**
+**Results show both targets had small factors, providing insights into factor discovery behavior.**
 

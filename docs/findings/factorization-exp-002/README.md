@@ -11,9 +11,9 @@
 
 Tested the RemainderCell distributed factorization approach on a significantly larger target (1e18 = 1,000,000,000,000,000,000). The system successfully identified all 28 non-trivial factors within the array range [1, 1000] through emergent sorting dynamics.
 
-**Key Achievement:** 100% convergence rate with 30 trials, excellent metrics (98.45% sortedness, 0.57 monotonicity error)
+**Key Achievement:** All trials completed sorting successfully (100% across 30 trials) with excellent metrics (98.45% sortedness, 0.57 monotonicity error)
 
-**Key Finding:** The system scales remarkably well to 1e18 targets (10^13 times larger than FACT-EXP-001)
+**Key Finding:** The system scales well to 1e18 targets (10^13 times larger than FACT-EXP-001)
 
 ---
 
@@ -40,19 +40,19 @@ Mixed: 10, 20, 40, 50, 80, 100, 160, 200, 250, 320, 400, 500, 640, 800, 1000
 | :--- | :--- | :--- | :--- |
 | Target magnitude | ~1e5 | 1e18 | **10^13× larger** |
 | Trials | 5 → 30 | 30 | **6× more trials** |
-| Convergence Rate | 100.0% | 100.0% | ✅ Same |
+| Sorting Completion Rate | 100.0% | 100.0% | Same |
 | Mean Steps | 1,156.80 | 1,279.33 | +10.6% |
 | Sortedness | 99.70% ± 0.67% | 98.45% ± 2.36% | -1.25% |
 | Monotonicity Error | 0.20 ± 0.45 | 0.57 ± 0.57 | +0.37 |
 
 ### Analysis
 
-✅ **Excellent Scalability:**
+**Strong Scalability:**
 - Only 10.6% increase in steps despite 10^13× larger target
-- Convergence rate remains perfect (100%)
+- Sorting completion rate remains 100%
 - Metrics remain excellent (>98% sortedness)
 
-✅ **Robust Performance:**
+**Robust Performance:**
 - Standard deviation increased slightly (more numerical variation expected)
 - Monotonicity error still very low (<1.0)
 - All factors correctly identified
@@ -82,18 +82,18 @@ Mixed: 10, 20, 40, 50, 80, 100, 160, 200, 250, 320, 400, 500, 640, 800, 1000
 
 ## Theoretical Validation
 
-✅ **Scalability Confirmed:**
+**Scalability Confirmed:**
 - System handles 1e18 targets with minimal performance degradation
-- Convergence time scales approximately O(log N) or better
+- Sorting completion time scales approximately O(log N) or better
 - Validates morphogenetic organization at scale
 
-✅ **Distributed Euclidean Algorithm:**
+**Distributed Euclidean Algorithm:**
 - Multiple factors emerge simultaneously
 - No interference between factor discovery
 - GCD descent works for highly composite numbers
 
-✅ **Emergent Competence:**
-- System discovers ALL factors in range without explicit search
+**Emergent Competence:**
+- System discovers all factors in range without explicit search
 - Sorting dynamics naturally prioritize smaller remainders
 - Robust to target magnitude (1e5 → 1e18)
 
@@ -140,7 +140,7 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
   com.emergent.doom.examples.FactorizationExperiment \
   1000000000000000000
 
-# Expected: 28 factors discovered, 100% convergence
+# Expected: 28 factors discovered, sorting completed for all trials
 ```
 
 ---
@@ -177,5 +177,5 @@ java -cp target/emergent-doom-engine-0.1.0-alpha.jar \
 
 ---
 
-**Experiment demonstrates exceptional scalability of the Emergent Doom Engine for distributed factorization across 13 orders of magnitude!**
+**Experiment demonstrates strong scalability of the Emergent Doom Engine for distributed factorization across 13 orders of magnitude.**
 
