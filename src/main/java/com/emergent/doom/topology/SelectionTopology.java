@@ -58,7 +58,7 @@ public class SelectionTopology<T extends Cell<T>> implements Topology<T> {
      * @return list containing ideal target index
      */
     public List<Integer> getNeighborsForMetadata(int position, CellMetadata[] metadata, int arraySize) {
-        // PHASE THREE: Query algotype and ideal position from metadata
+        // Query algotype and ideal position from metadata
         // PURPOSE: Support metadata provider pattern where algotype and ideal position
         //   are stored in metadata array rather than cell object
         // PROCESS:

@@ -221,9 +221,6 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
         //   5. Create cell threads
         //   6. Wire probe and record initial state
 
-        // TODO PHASE TWO: Implement metadata initialization from provider
-        // For now, just store references and create empty metadata array
-
         this.cells = cells;
         this.swapEngine = swapEngine;
         this.probe = probe;
@@ -737,7 +734,7 @@ public class ParallelExecutionEngine<T extends Cell<T>> {
             if (swapEngine.attemptSwap(cells, i, j)) {
                 count++;
 
-                // PHASE THREE: Swap metadata alongside cells
+                // Swap metadata alongside cells (Phase 2 implementation)
                 // PURPOSE: Keep metadata attached to logical agent identity as cells move
                 // PROCESS:
                 //   1. Check if metadata provider mode (metadata != null)

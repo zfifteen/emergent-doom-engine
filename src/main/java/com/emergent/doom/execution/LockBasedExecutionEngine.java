@@ -425,7 +425,7 @@ public class LockBasedExecutionEngine<T extends Cell<T>> {
 
                 if (shouldSwapForAlgotype(cellIndex, neighborIndex, algotype)) {
                     if (swapEngine.attemptSwap(cells, cellIndex, neighborIndex)) {
-                        // PHASE THREE: Swap metadata alongside cells
+                        // Swap metadata alongside cells (Phase 2 implementation)
                         // PURPOSE: Keep metadata attached to logical agent identity as cells move
                         // PROCESS:
                         //   1. Check if metadata provider mode (metadata != null)
