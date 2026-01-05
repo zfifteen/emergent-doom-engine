@@ -64,6 +64,22 @@ Chimeric experiments (`AlgotypeAggregationIndex`, `AggregationValue`) work ident
 - Bubble-Insertion: ~65%
 - Selection-Insertion: ~69%
 
+### Serialized Experiment Configs
+
+If you have serialized `ExperimentConfig` objects with `ExecutionMode.PARALLEL` or
+`LOCK_BASED`, you must:
+
+1. Migrate serialized data before upgrading
+2. Replace enum values with `SEQUENTIAL` in persisted storage
+3. Re-serialize with updated schema
+
+**Example (JSON):**
+```json
+{
+  "executionMode": "SEQUENTIAL"  // Replace PARALLEL/LOCK_BASED
+}
+```
+
 ### Questions?
 
 See [Issue #92](https://github.com/zfifteen/emergent-doom-engine/issues/92) for architectural rationale.

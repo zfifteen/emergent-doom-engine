@@ -16,6 +16,7 @@ package com.emergent.doom.execution;
  * preserve architectural flexibility for potential future modes (e.g., DISTRIBUTED,
  * GPU_ACCELERATED) without breaking existing APIs.</p>
  */
+@Deprecated(since = "2.0", forRemoval = true)
 public enum ExecutionMode {
 
     /**
