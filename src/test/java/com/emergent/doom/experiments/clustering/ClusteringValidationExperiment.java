@@ -238,9 +238,86 @@ public class ClusteringValidationExperiment {
      * @return complete validation report with all experimental results
      */
     public ValidationReport runFullValidation() {
-        // IMPLEMENTATION PENDING - PHASE TWO
-        // This is the main entry point that orchestrates the entire validation workflow
-        return null;
+        // PURPOSE: This main entry point orchestrates the entire clustering validation workflow
+        // by running experiments for all algotype pairs plus a negative control, then
+        // assembling a comprehensive report with statistical analysis.
+        
+        System.out.println("=".repeat(70));
+        System.out.println("Clustering Validation Experiment - Levin Paper Baseline Check");
+        System.out.println("=".repeat(70));
+        System.out.println();
+        
+        // Step 1: Collect hardware info for reproducibility
+        String hardwareInfo = collectHardwareInfo();
+        System.out.println("Hardware Configuration:");
+        System.out.println(hardwareInfo);
+        System.out.println();
+        
+        // Step 2: Run negative control first (homogeneous Bubble-Bubble array)
+        // This establishes the random baseline that chimeric experiments should exceed
+        System.out.println("Running Negative Control (Bubble-Bubble homogeneous)...");
+        AlgotypePair controlPair = new AlgotypePair(Algotype.BUBBLE, Algotype.BUBBLE);
+        PairValidationResult controlResult = validatePair(
+            Algotype.BUBBLE, 
+            Algotype.BUBBLE,
+            new ExpectedResult(0.50, 0.50),  // Expect random baseline
+            TRIALS_PER_PAIR,
+            null  // No control comparison for the control itself
+        );
+        System.out.printf("  Control peak: %.2f%% ± %.2f%%%n%n", 
+            controlResult.meanPeakAggregation(), controlResult.stdPeakAggregation());
+        
+        // Step 3: Run all chimeric algotype pairs from Levin baselines
+        Map<AlgotypePair, PairValidationResult> pairResults = new HashMap<>();
+        int totalTrials = TRIALS_PER_PAIR;  // Already ran control trials
+        
+        for (Map.Entry<AlgotypePair, ExpectedResult> entry : LEVIN_BASELINES.entrySet()) {
+            AlgotypePair pair = entry.getKey();
+            ExpectedResult expected = entry.getValue();
+            
+            System.out.printf("Running %s (50/50 mix)...%n", pair);
+            System.out.printf("  Expected: %.0f%% peak at %.0f%% progress%n",
+                expected.peakAggregation() * 100, expected.peakTiming() * 100);
+            
+            // Run experiments for this pair, comparing to control
+            PairValidationResult result = validatePair(
+                pair.first(),
+                pair.second(),
+                expected,
+                TRIALS_PER_PAIR,
+                controlResult.allPeakValues()  // Pass control peaks for statistical comparison
+            );
+            
+            pairResults.put(pair, result);
+            totalTrials += TRIALS_PER_PAIR;
+            
+            // Print immediate results for this pair
+            System.out.printf("  Observed: %.2f%% ± %.2f%% at %.2f%% ± %.2f%% progress%n",
+                result.meanPeakAggregation(), result.stdPeakAggregation(),
+                result.meanPeakTiming() * 100, result.stdPeakTiming() * 100);
+            System.out.printf("  p-value vs paper: %.4f %s%n",
+                result.pValueVsPaper(),
+                result.pValueVsPaper() >= 0.05 ? "✓ (matches)" : "✗ (differs)");
+            System.out.printf("  p-value vs control: %.4f %s%n%n",
+                result.pValueVsControl(),
+                result.pValueVsControl() < 0.05 ? "✓ (real clustering)" : "✗ (no clustering)");
+        }
+        
+        // Step 4: Assemble complete validation report
+        ValidationReport report = new ValidationReport(
+            pairResults,
+            controlResult,
+            System.currentTimeMillis(),
+            totalTrials,
+            hardwareInfo
+        );
+        
+        System.out.println("=".repeat(70));
+        System.out.println("Validation Complete!");
+        System.out.printf("Total trials run: %d%n", totalTrials);
+        System.out.println("=".repeat(70));
+        
+        return report;
     }
 
     /**
