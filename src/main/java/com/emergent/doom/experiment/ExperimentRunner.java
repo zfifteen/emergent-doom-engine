@@ -108,7 +108,9 @@ public class ExperimentRunner<T extends Cell<T>> {
             com.emergent.doom.cell.SortDirection direction = com.emergent.doom.cell.SortDirection.ASCENDING;
             
             // Extract algotype from cell type
-            if (cell instanceof com.emergent.doom.cell.RemainderCell) {
+            if (cell instanceof com.emergent.doom.cell.HasAlgotype) {
+                algotype = ((com.emergent.doom.cell.HasAlgotype) cell).getAlgotype();
+            } else if (cell instanceof com.emergent.doom.cell.RemainderCell) {
                 algotype = ((com.emergent.doom.cell.RemainderCell) cell).getAlgotype();
             } else if (cell instanceof com.emergent.doom.cell.BubbleCell) {
                 algotype = com.emergent.doom.cell.Algotype.BUBBLE;

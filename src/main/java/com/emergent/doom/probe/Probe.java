@@ -2,6 +2,9 @@ package com.emergent.doom.probe;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.cell.HasAlgotype;
+import com.emergent.doom.cell.HasGroup;
+import com.emergent.doom.cell.HasStatus;
 import com.emergent.doom.group.CellStatus;
 import com.emergent.doom.group.CellGroup;
 
@@ -54,10 +57,26 @@ public class Probe<T extends Cell<T>> {
             for (T cell : cells) {
                 // Cell is Comparable - use it directly as value
                 values.add(cell);
-                // Metadata no longer available from cells - record minimal info
-                int groupId = -1;  // Groups not supported with lightweight cells
-                int algotypeLabel = -1;  // Algotype not available from cell (use -1 to indicate unavailable)
-                int isFrozen = 0;  // Status not available from cell
+                
+                // Metadata extraction (if available via interfaces)
+                int groupId = -1;
+                if (cell instanceof HasGroup) {
+                    CellGroup<?> group = ((HasGroup) cell).getGroup();
+                    if (group != null) {
+                        groupId = group.getGroupId();
+                    }
+                }
+                
+                int algotypeLabel = -1;
+                if (cell instanceof HasAlgotype) {
+                    algotypeLabel = ((HasAlgotype) cell).getAlgotype().ordinal();
+                }
+                
+                int isFrozen = 0;
+                if (cell instanceof HasStatus) {
+                    isFrozen = (((HasStatus) cell).getStatus() == CellStatus.FREEZE) ? 1 : 0;
+                }
+                
                 types.add(new Object[]{groupId, algotypeLabel, cell, isFrozen});
             }
             snapshots.add(new StepSnapshot<>(stepNumber, values, types, localSwapCount));
