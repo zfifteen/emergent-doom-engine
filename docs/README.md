@@ -43,7 +43,7 @@ Technical implementation details and roadmap tracking.
 ### [lab/](lab/)
 Exploratory research, draft algorithms, and "work-in-progress" experiments that haven't yet been formalized into the findings directory.
 - **distributed_euclidean_remaindercell.md**: Early drafts of the distributed factorization algorithm.
-- **experiment-005/**: Active research into wave-based signaling between cells.
+- **experiment-095/**: Wave-CRISPR-Signal PAM detection experiment applying emergent sorting to wavelet-leader features for bioinformatics domain validation.
 
 ### [requirements/](requirements/)
 Formal specifications that define how the engine should behave.

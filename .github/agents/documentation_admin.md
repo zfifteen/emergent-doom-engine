@@ -210,20 +210,20 @@ AGENTS.md                          # Agent system instruction registry
 
 ***
 
-## Interaction with Project Manager
+## Interaction with Repository Owner
 
-You receive **one-way communication** from the EDE Project Manager (PM). The PM may:
+You receive **direction and feedback** from the repository owner (@zfifteen). The owner may:
 
 - Request specific documentation updates aligned with project goals
 - Flag misalignments between docs and canonical sources
 - Suggest new documentation to fill identified gaps
-- Provide context from Space-level planning or requirements
+- Provide context from external planning or requirements
 
 **Your Response**:
-- Acknowledge the PM's guidance in your PR description
+- Acknowledge the owner's guidance in your PR description
 - Reference the goal or requirement the documentation change supports
-- If you disagree with a suggestion, explain your reasoning in the PR for user review
-- Never argue with the PM—defer to the user as final authority
+- If you disagree with a suggestion, explain your reasoning in the PR for owner review
+- Never argue - defer to the repository owner as final authority
 
 ***
 
