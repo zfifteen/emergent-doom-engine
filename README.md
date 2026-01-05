@@ -3,6 +3,147 @@
 
 The Emergent Doom Engine (EDE) is a general-purpose, domain-agnostic API for simulating emergent phenomena. It provides a clean, extensible framework that is not tied to any specific application domain, including prime factorization or game development. The engine is designed around sortable Cell primitives and configurable sorting dynamics to enable modular composition of complex emergent systems. [1]
 
+## Why Emergence?
+
+### The Honest Trade-off
+
+If you just need to sort an array of integers, **use `Arrays.sort()`**. It's faster, simpler, and battle-tested.
+
+The Emergent Doom Engine trades runtime efficiency for unique capabilities that traditional algorithms cannot provide:
+
+### What Emergence Enables
+
+#### 1. Robustness on Unreliable Substrates
+
+Traditional sorting fails when parts of the array are locked or corrupted. EDE continues working:
+
+```java
+// Freeze 30% of array positions (simulate hardware defects)
+FrozenCellStatus frozenStatus = new FrozenCellStatus();
+frozenStatus.setFrozen(10, FrozenType.IMMOVABLE);
+frozenStatus.setFrozen(25, FrozenType.IMMOVABLE);
+
+// Sorting still converges around frozen cells!
+SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
+engine.runUntilConvergence(5000);
+```
+
+**Real-world applications:**
+- Fault-tolerant distributed systems
+- Self-repairing data structures
+- Computation on degraded hardware
+
+#### 2. Emergent Organization Patterns
+
+Mix multiple sorting strategies in one array and watch spontaneous segregation emerge:
+
+```java
+// 50% bubble sort cells, 50% insertion sort cells (chimeric population)
+Map<Algotype, Double> distribution = Map.of(
+    Algotype.BUBBLE, 0.5,
+    Algotype.INSERTION, 0.5
+);
+
+AlgotypeProvider algotypeProvider = 
+    new PercentageAlgotypeProvider(distribution, arraySize, 42L);
+
+IntFunction<CellMetadata> chimeric = index -> {
+    Algotype algotype = Algotype.valueOf(algotypeProvider.getAlgotype(index, arraySize));
+    return new CellMetadata(algotype, SortDirection.ASCENDING);
+};
+
+engine.runUntilConvergence(10000);
+
+// Result: Cells cluster by algotype WITHOUT explicit clustering code!
+// Bubble cells migrate to one region, insertion cells to another.
+```
+
+**Real-world applications:**
+- Agent-based modeling
+- Swarm intelligence research
+- Self-organizing systems
+
+#### 3. Observable Delayed Gratification
+
+Some problems require temporary setbacks for long-term progress. EDE makes this visible:
+
+```java
+// Track disorder over time
+Probe<GenericCell> probe = new Probe<>();
+MonotonicityError<GenericCell> monotonicity = new MonotonicityError<>();
+
+for (int step = 0; step < 100; step++) {
+    engine.step();
+    double disorder = monotonicity.compute(cells);
+    System.out.println("Step " + step + ": " + disorder);
+}
+
+// Output shows disorder INCREASES before final convergence!
+// Step 20: 45.0 inversions
+// Step 40: 52.0 inversions (worse!)
+// Step 80: 12.0 inversions (rapid improvement)
+```
+
+**Real-world applications:**
+- Understanding biological development
+- Multi-objective optimization
+- Strategy evolution research
+
+#### 4. Domain-Agnostic Framework
+
+Implement `Comparable<T>` and EDE works for ANY problem:
+
+```java
+// Integer factorization (beyond sorting!)
+public class FactorCell implements Cell<FactorCell> {
+    private final int candidate;
+    private final int remainder;
+    
+    @Override
+    public int compareTo(FactorCell other) {
+        return Integer.compare(this.remainder, other.remainder);
+    }
+}
+
+// Same engine, different problem domain!
+```
+
+**Real-world applications:**
+- Prototyping emergent algorithms for new domains
+- Cross-domain research (biology ↔ computation)
+- Educational tool for emergence concepts
+
+### The Biological Inspiration
+
+EDE models how biological systems achieve goals through **decentralized coordination**:
+
+- Embryonic cells organize into organs without blueprints
+- Ant colonies solve complex problems through simple local rules
+- Slime molds navigate mazes via chemical signaling
+
+These systems are **robust, adaptive, and emergent**. EDE brings these properties to computational problems.
+
+### When to Use EDE
+
+✅ **Use EDE when you need:**
+- Fault tolerance (unreliable substrates)
+- Emergent pattern detection (clustering, segregation)
+- Observable dynamics (delayed gratification, trajectories)
+- Cross-domain algorithm research
+- Educational demonstrations of emergence
+
+❌ **Don't use EDE when you need:**
+- Maximum runtime performance (`Arrays.sort()` wins)
+- Simple, one-off sorting tasks
+- Guaranteed O(n log n) complexity
+- Production-critical code without experimental tolerance
+
+### Learn More
+
+- **[Quickstart Tutorial](#quickstart-your-first-emergent-sort)** - See emergence in action (5 minutes)
+- **[Test Suite Documentation](src/test/java/com/emergent/doom/README.md)** - Deep dive into capabilities
+- **[Levin et al. (2024)](docs/theory/2401.05375v1.md)** - Theoretical foundations
+
 ## Quickstart: Your First Emergent Sort
 
 See emergent sorting in action with a simple 6-integer example. Copy and run this code to watch local cell interactions produce global order:
