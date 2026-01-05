@@ -345,11 +345,11 @@ The EDE translates the theoretical concepts from the Levin et al. research into 
 The foundation of the EDE is the Cell interface, which extends `java.lang.Comparable<Cell>`. Cells are pure data carriers that implement only `compareTo()` for domain-specific comparison logic. All sorting metadata (algotype, sort direction, ideal position) is managed externally via `CellMetadata`, achieving true domain-agnostic sorting where cells contain zero engine-specific state.
 
 #### Execution Engines
-The execution package provides the core engine implementation and batch-level parallelism:
+Single-trial execution uses `SynchronousExecutionEngine`; batch-level parallelism is provided by the `ExperimentRunner` in the experiment package:
 - **SynchronousExecutionEngine**: Sequential cell evaluation for deterministic, step-by-step execution
 - **ExperimentRunner (batch parallelism)**: Use `runBatchExperiments()` to parallelize across trials; this replaces the removed per-cell `ParallelExecutionEngine` and `LockBasedExecutionEngine` threading modes in v2.0.
 
-The engine coordinates cell swap decisions, applies convergence detection, and records execution trajectories via the Probe interface.
+The execution engine coordinates cell swap decisions, applies convergence detection, and records execution trajectories via the Probe interface.
 
 #### CellMetadata
 External metadata provider system that associates sorting metadata with cell positions without modifying cell implementations. Each metadata entry specifies:
