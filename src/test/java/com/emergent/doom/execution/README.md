@@ -344,7 +344,38 @@ engine.runUntilConvergence(5000);
 
 ### Metadata Swapping Preserves Identity
 
-When cells swap positions, their metadata swaps too:
+When cells swap positions, their metadata swaps too, preserving agent identity throughout execution:
+
+#### Concrete Example: Metadata Follows Cells During Swaps
+
+```
+Execution Step: Swap cells at positions 2 and 5
+
+Before:
+  Position:  0    1    2    3    4    5
+  Cells:    [10] [25] [30] [15] [20] [5]
+  Metadata: [B]  [B]  [I]  [B]  [S]  [I]
+            ↑                         ↑
+         BUBBLE                   INSERTION
+
+After swap(2, 5):
+  Position:  0    1    2    3    4    5  
+  Cells:    [10] [25] [5]  [15] [20] [30]
+  Metadata: [B]  [B]  [I]  [B]  [S]  [I]
+                      ↑                ↑
+                   INSERTION      INSERTION
+
+❗ Metadata swaps WITH cells - agent identity preserved!
+   Cell value 5 was INSERTION before, still INSERTION after.
+   Cell value 30 was INSERTION before, still INSERTION after.
+
+Legend:
+  B = BUBBLE algotype (bidirectional movement)
+  I = INSERTION algotype (left-only movement)  
+  S = SELECTION algotype (targets ideal position)
+```
+
+#### Simple Example
 
 ```
 Before swap:
@@ -360,6 +391,7 @@ After swap at (0, 1):
 - Metadata represents agent identity, not position
 - BUBBLE cell at position 0 becomes BUBBLE cell at position 1
 - Enables chimeric populations with persistent agent types
+- Cell value 5 maintains its INSERTION identity throughout execution
 
 ### Doom as Architectural Principle
 

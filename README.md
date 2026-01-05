@@ -243,6 +243,34 @@ Enables detailed examination of emergent problem-solving behaviors without impac
 
 The EDE achieves true domain-agnostic sorting through a **lightweight cell** design where cells are pure `Comparable` data carriers with zero engine-specific state. All sorting metadata (algorithm type, sort direction, ideal position) is managed externally by execution engines via metadata providers.
 
+### Visual Overview: Separation of Concerns
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    EDE Architecture                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  ┌────────────────┐              ┌──────────────────────┐   │
+│  │ Your Domain    │              │ Execution Engine     │   │
+│  │                │              │                      │   │
+│  │  Cell          │              │  Metadata Provider   │   │
+│  │  ✅ compareTo() │ ◄────────►  │  ✅ Algotype         │   │
+│  │  ✅ getValue()  │              │  ✅ SortDirection    │   │
+│  │                │              │  ✅ IdealPosition    │   │
+│  │  [Pure domain] │              │  [Engine concerns]   │   │
+│  └────────────────┘              └──────────────────────┘   │
+│         │                                    │               │
+│         │                                    │               │
+│         ▼                                    ▼               │
+│  Domain-specific                    IntFunction<CellMetadata>│
+│  comparison logic                   index → metadata         │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+
+Key Benefit: Any Comparable type can be sorted emergently without
+             coupling to the EDE framework!
+```
+
 ### Pure Domain Cells
 
 Cells only implement `compareTo()` - they contain no knowledge of sorting algorithms:
