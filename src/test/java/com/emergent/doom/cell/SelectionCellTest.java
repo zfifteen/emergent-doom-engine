@@ -4,6 +4,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.emergent.doom.cell.SelectionCell;
+
+import java.lang.reflect.Field;
+
 /**
  * Test suite for SelectionCell - lightweight base class for Selection Sort cells.
  *
@@ -49,7 +53,8 @@ class SelectionCellTest {
     @DisplayName("Constructor creates cell with value")
     void testConstructor() {
         // Test will verify: new TestSelectionCell(42) creates cell with getValue() == 42
-        // TODO: Implement after scaffold phase
+        TestSelectionCell cell = new TestSelectionCell(42);
+        assertEquals(42, cell.getValue());
     }
 
     /**
@@ -64,7 +69,8 @@ class SelectionCellTest {
     @DisplayName("getValue returns wrapped value")
     void testGetValue() {
         // Test will verify: cell.getValue() returns original constructor value
-        // TODO: Implement after scaffold phase
+        TestSelectionCell cell = new TestSelectionCell(42);
+        assertEquals(42, cell.getValue());
     }
 
     /**
@@ -80,7 +86,9 @@ class SelectionCellTest {
     @DisplayName("compareTo returns negative when this < other")
     void testCompareToLessThan() {
         // Test will verify: domain subclass implements compareTo() correctly
-        // TODO: Implement after scaffold phase
+        TestSelectionCell cell1 = new TestSelectionCell(42);
+        TestSelectionCell cell2 = new TestSelectionCell(100);
+        assertTrue(cell1.compareTo(cell2) < 0);
     }
 
     /**
@@ -96,7 +104,9 @@ class SelectionCellTest {
     @DisplayName("compareTo returns zero when values equal")
     void testCompareToEqual() {
         // Test will verify: compareTo() for equal values
-        // TODO: Implement after scaffold phase
+        TestSelectionCell cell1 = new TestSelectionCell(42);
+        TestSelectionCell cell2 = new TestSelectionCell(42);
+        assertEquals(0, cell1.compareTo(cell2));
     }
 
     /**
@@ -112,6 +122,11 @@ class SelectionCellTest {
     @DisplayName("Cell has no metadata fields (lightweight verification)")
     void testNoMetadataFields() {
         // Test will verify: SelectionCell has only 'value' field via reflection
-        // TODO: Implement after scaffold phase
+        Field[] fields = SelectionCell.class.getDeclaredFields();
+
+        // Should have exactly one field: 'value'
+        assertEquals(1, fields.length);
+        assertEquals("value", fields[0].getName());
+        assertEquals(int.class, fields[0].getType());
     }
 }

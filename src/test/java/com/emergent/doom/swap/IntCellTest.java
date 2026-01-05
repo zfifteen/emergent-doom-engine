@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.lang.reflect.Field;
+
 /**
  * Test suite for IntCell - simple test cell implementation.
  *
@@ -30,7 +32,8 @@ class IntCellTest {
     @DisplayName("Constructor creates cell with value")
     void testConstructor() {
         // Test will verify: new IntCell(42) creates cell with getValue() == 42
-        // TODO: Implement after scaffold phase
+        IntCell cell = new IntCell(42);
+        assertEquals(42, cell.getValue());
     }
 
     /**
@@ -45,7 +48,8 @@ class IntCellTest {
     @DisplayName("getValue returns wrapped value")
     void testGetValue() {
         // Test will verify: cell.getValue() returns original constructor value
-        // TODO: Implement after scaffold phase
+        IntCell cell = new IntCell(42);
+        assertEquals(42, cell.getValue());
     }
 
     /**
@@ -61,7 +65,9 @@ class IntCellTest {
     @DisplayName("compareTo returns negative when this < other")
     void testCompareToLessThan() {
         // Test will verify: new IntCell(42).compareTo(new IntCell(100)) < 0
-        // TODO: Implement after scaffold phase
+        IntCell cell1 = new IntCell(42);
+        IntCell cell2 = new IntCell(100);
+        assertTrue(cell1.compareTo(cell2) < 0);
     }
 
     /**
@@ -77,7 +83,9 @@ class IntCellTest {
     @DisplayName("compareTo returns zero when values equal")
     void testCompareToEqual() {
         // Test will verify: new IntCell(42).compareTo(new IntCell(42)) == 0
-        // TODO: Implement after scaffold phase
+        IntCell cell1 = new IntCell(42);
+        IntCell cell2 = new IntCell(42);
+        assertEquals(0, cell1.compareTo(cell2));
     }
 
     /**
@@ -93,7 +101,8 @@ class IntCellTest {
     @DisplayName("toString returns readable representation")
     void testToString() {
         // Test will verify: toString() format matches "IntCell(value)"
-        // TODO: Implement after scaffold phase
+        IntCell cell = new IntCell(42);
+        assertEquals("IntCell(42)", cell.toString());
     }
 
     /**
@@ -109,6 +118,11 @@ class IntCellTest {
     @DisplayName("Cell has no metadata fields (lightweight verification)")
     void testNoMetadataFields() {
         // Test will verify: IntCell has only 'value' field via reflection
-        // TODO: Implement after scaffold phase
+        Field[] fields = IntCell.class.getDeclaredFields();
+
+        // Should have exactly one field: 'value'
+        assertEquals(1, fields.length);
+        assertEquals("value", fields[0].getName());
+        assertEquals(int.class, fields[0].getType());
     }
 }
