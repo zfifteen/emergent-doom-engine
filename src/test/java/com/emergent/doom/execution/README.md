@@ -364,7 +364,7 @@ After swap(2, 5):
   Metadata: [B]  [B]  [I]  [B]  [S]  [I]
                       ↑                ↑
                    INSERTION      INSERTION
-                      
+
 ❗ Metadata swaps WITH cells - agent identity preserved!
    Cell value 5 was INSERTION before, still INSERTION after.
    Cell value 30 was INSERTION before, still INSERTION after.
