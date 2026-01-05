@@ -46,7 +46,7 @@ Validates the Cell interface contract itself (not implementations).
 
 **Why it matters:** Prevents interface bloat and maintains domain-agnostic purity.
 
-**Link to source:** [Cell.java](../../../../../../main/java/com/emergent/doom/cell/Cell.java)
+**Link to source:** [Cell.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/cell/Cell.java)
 
 ### GenericCellTest.java **[Beginner]**
 
@@ -60,7 +60,7 @@ Tests the `GenericCell<T>` implementation, a general-purpose cell wrapper.
 
 **Why it matters:** Demonstrates how to wrap existing `Comparable` types as cells.
 
-**Link to source:** [GenericCell.java](../../../../../../main/java/com/emergent/doom/cell/GenericCell.java)
+**Link to source:** [GenericCell.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/cell/GenericCell.java)
 
 ### SelectionCellTest.java **[Intermediate]**
 
@@ -73,7 +73,7 @@ Tests selection sort-specific cell behavior.
 
 **Why it matters:** Shows how cells can encode algorithm-specific behavior while maintaining the common interface.
 
-**Link to source:** [SelectionCell.java](../../../../../../main/java/com/emergent/doom/cell/SelectionCell.java)
+**Link to source:** [SelectionCell.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/cell/SelectionCell.java)
 
 ## Usage Examples
 
@@ -328,7 +328,7 @@ Now that you understand cells as pure data carriers, proceed to:
 
 **Also see:**
 - [Chapter 3: Execution Engines](../execution/README.md) - How metadata providers work with lightweight cells
-- [Production Cell Examples](../../../../../../main/java/com/emergent/doom/examples/) - Real-world cell implementations
+- [Production Cell Examples](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/examples/) - Real-world cell implementations
 
 ---
 

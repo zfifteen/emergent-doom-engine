@@ -101,7 +101,7 @@ Comprehensive tests for single-threaded execution.
    - Metadata swaps with cells during execution
    - Sorting works with external metadata (no cell.getAlgotype())
 
-**Link to source:** [SynchronousExecutionEngine.java](../../../../../../main/java/com/emergent/doom/execution/SynchronousExecutionEngine.java)
+**Link to source:** [SynchronousExecutionEngine.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/execution/SynchronousExecutionEngine.java)
 
 ### ParallelExecutionEngineTest.java **[Advanced]**
 
@@ -119,7 +119,7 @@ Tests multi-threaded execution with thread pool.
 - Determinism with seeded `Random`
 - Performance characteristics vs synchronous
 
-**Link to source:** [ParallelExecutionEngine.java](../../../../../../main/java/com/emergent/doom/execution/ParallelExecutionEngine.java)
+**Link to source:** [ParallelExecutionEngine.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/execution/ParallelExecutionEngine.java)
 
 ### LockBasedExecutionEngineTest.java **[Advanced]**
 
@@ -130,7 +130,7 @@ Tests experimental lock-based parallel execution.
 - Reduced contention compared to coarse-grained locking
 - Experimental - may be deprecated
 
-**Link to source:** [LockBasedExecutionEngine.java](../../../../../../main/java/com/emergent/doom/execution/LockBasedExecutionEngine.java)
+**Link to source:** [LockBasedExecutionEngine.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/execution/LockBasedExecutionEngine.java)
 
 ### CellMetadataTest.java **[Intermediate]**
 
@@ -145,7 +145,7 @@ Tests external metadata management system.
 
 **Why it matters:** Validates the lightweight cell architecture's metadata separation.
 
-**Link to source:** [CellMetadata.java](../../../../../../main/java/com/emergent/doom/execution/CellMetadata.java)
+**Link to source:** [CellMetadata.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/execution/CellMetadata.java)
 
 ## Usage Examples
 
