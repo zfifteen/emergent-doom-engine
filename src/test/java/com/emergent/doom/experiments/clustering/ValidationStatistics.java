@@ -171,10 +171,19 @@ public class ValidationStatistics {
         double pValue = tTest.tTest(expectedPeak, values);
         
         // Compute 95% confidence interval
-        org.apache.commons.math3.distribution.TDistribution tDist =
-            new org.apache.commons.math3.distribution.TDistribution(n - 1);
-        double tCritical = tDist.inverseCumulativeProbability(0.975);  // 95% CI, two-tailed
-        double marginOfError = tCritical * (sampleStdDev / Math.sqrt(n));
+        double tCritical;
+        double marginOfError;
+        try {
+            org.apache.commons.math3.distribution.TDistribution tDist =
+                new org.apache.commons.math3.distribution.TDistribution(n - 1);
+            tCritical = tDist.inverseCumulativeProbability(0.975);  // 95% CI, two-tailed
+            marginOfError = tCritical * (sampleStdDev / Math.sqrt(n));
+        } catch (Exception e) {
+            // Fallback to approximate z-score for problematic cases
+            tCritical = 1.96;
+            marginOfError = tCritical * (sampleStdDev / Math.sqrt(n));
+        }
+        
         double ciLower = sampleMean - marginOfError;
         double ciUpper = sampleMean + marginOfError;
         
@@ -261,16 +270,40 @@ public class ValidationStatistics {
         double se = Math.sqrt((expStdDev * expStdDev / expN) + (ctrlStdDev * ctrlStdDev / ctrlN));
         
         // Degrees of freedom using Welch-Satterthwaite equation
-        double df = Math.pow(se, 4) /
-            ((Math.pow(expStdDev, 4) / (expN * expN * (expN - 1))) +
-             (Math.pow(ctrlStdDev, 4) / (ctrlN * ctrlN * (ctrlN - 1))));
+        // Add safeguards for division by zero and invalid values
+        double expVar = expStdDev * expStdDev;
+        double ctrlVar = ctrlStdDev * ctrlStdDev;
         
-        org.apache.commons.math3.distribution.TDistribution tDist =
-            new org.apache.commons.math3.distribution.TDistribution(df);
-        double tCritical = tDist.inverseCumulativeProbability(0.975);  // 95% CI, two-tailed
+        double numerator = Math.pow(expVar / expN + ctrlVar / ctrlN, 2);
+        double denominator = (Math.pow(expVar / expN, 2) / (expN - 1)) +
+                            (Math.pow(ctrlVar / ctrlN, 2) / (ctrlN - 1));
+        
+        double df;
+        if (denominator > 0) {
+            df = numerator / denominator;
+            // Ensure df is at least 1 and not NaN/Inf
+            if (Double.isNaN(df) || Double.isInfinite(df) || df < 1) {
+                df = Math.min(expN - 1, ctrlN - 1);  // Conservative fallback
+            }
+        } else {
+            // If variances are zero, use simple df
+            df = Math.min(expN - 1, ctrlN - 1);
+        }
+        
+        double tCritical;
+        double marginOfError;
+        try {
+            org.apache.commons.math3.distribution.TDistribution tDist =
+                new org.apache.commons.math3.distribution.TDistribution(df);
+            tCritical = tDist.inverseCumulativeProbability(0.975);  // 95% CI, two-tailed
+            marginOfError = tCritical * se;
+        } catch (Exception e) {
+            // Fallback to approximate z-score for large samples
+            tCritical = 1.96;
+            marginOfError = tCritical * se;
+        }
         
         double difference = expMean - ctrlMean;
-        double marginOfError = tCritical * se;
         double ciLower = difference - marginOfError;
         double ciUpper = difference + marginOfError;
         

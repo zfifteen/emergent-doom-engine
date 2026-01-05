@@ -380,12 +380,20 @@ public class ClusteringValidationExperiment {
         List<Double> controlPeaks
     ) {
         // Step 1: Build experiment configuration with 50/50 algotype mix
+        // For homogeneous control (a == b), use 100% of single algotype
+        Map<Algotype, Double> algotypeMix;
+        if (a == b) {
+            algotypeMix = Map.of(a, 1.0);
+        } else {
+            algotypeMix = Map.of(a, 0.5, b, 0.5);
+        }
+        
         ChimericExperimentConfig config = ChimericExperimentConfig.builder()
             .arraySize(ARRAY_SIZE)
             .maxSteps(MAX_STEPS)
             .requiredStableSteps(3)
             .recordTrajectory(true)
-            .algotypeMix(Map.of(a, 0.5, b, 0.5))
+            .algotypeMix(algotypeMix)
             .seed(BASE_SEED)
             .build();
         
@@ -395,13 +403,10 @@ public class ClusteringValidationExperiment {
             ChimericTopology::new
         );
         
-        // Step 3: Add aggregation metric
-        runner.addMetric("Aggregation", new AlgotypeAggregationIndex<>());
-        
-        // Step 4: Run trials
+        // Step 3: Run trials (we'll extract aggregation from trajectory snapshots)
         ExperimentResults<GenericCell> results = runner.runExperiment(config, trials);
         
-        // Step 5: Extract peak values and timings from all trials
+        // Step 4: Extract peak values and timings from all trials
         List<Double> peakValues = new ArrayList<>();
         List<Double> peakTimings = new ArrayList<>();
         AlgotypeAggregationIndex<GenericCell> metric = new AlgotypeAggregationIndex<>();
@@ -418,13 +423,13 @@ public class ClusteringValidationExperiment {
             peakTimings.add(peak.timing());
         }
         
-        // Step 6: Compute statistics
+        // Step 5: Compute statistics
         double meanPeak = mean(peakValues);
         double stdPeak = stdDev(peakValues);
         double meanTiming = mean(peakTimings);
         double stdTiming = stdDev(peakTimings);
         
-        // Step 7: Perform statistical tests
+        // Step 6: Perform statistical tests
         ValidationStatistics.TTestResult paperComparison = 
             ValidationStatistics.compareToPaper(peakValues, expected.peakAggregation());
         double pValueVsPaper = paperComparison.pValue();
@@ -436,7 +441,7 @@ public class ClusteringValidationExperiment {
             pValueVsControl = controlComparison.pValue();
         }
         
-        // Step 8: Return complete validation result
+        // Step 7: Return complete validation result
         return new PairValidationResult(
             new AlgotypePair(a, b),
             meanPeak,
