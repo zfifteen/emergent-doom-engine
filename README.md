@@ -40,11 +40,12 @@ This demonstrates that basal forms of intelligence can exist in minimal computat
 
 The EDE is implemented in Java and built around the standard java.lang.Comparable interface. Users define domain-specific Cells that implement Comparable, allowing the engine to order and process them using well-understood Java sorting contracts.
 
-The engine provides three built-in sorting algorithm implementations, corresponding to the three algotypes studied in the Levin et al. (2024) research:
+The engine provides four built-in sorting algorithm implementations:
 
 - Selection Sort (SELECTION algotype)
 - Bubble Sort (BUBBLE algotype)
 - Insertion Sort (INSERTION algotype)
+- Fibonacci Jump Sort (FIBONACCI algotype) - Novel algotype using Fibonacci-distance viewing for logarithmic neighbor coverage
 
 The Engine API allows users to configure which sorting algorithm is applied to their Cells, making the sorting strategy a tunable parameter of the emergent system.
 

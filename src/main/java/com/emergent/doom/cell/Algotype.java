@@ -14,7 +14,8 @@ package com.emergent.doom.cell;
 public enum Algotype {
     BUBBLE("Local adjacent bidirectional value-based sorting"),
     INSERTION("Prefix left view with conservative left-only swaps"),
-    SELECTION("Ideal target position chasing with incremental convergence");
+    SELECTION("Ideal target position chasing with incremental convergence"),
+    FIBONACCI("Fibonacci-distance viewing with logarithmic neighbor coverage");
 
     private final String description;
 

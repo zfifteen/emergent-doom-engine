@@ -8,6 +8,7 @@ import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.swap.SwapProposal;
 import com.emergent.doom.topology.BubbleTopology;
+import com.emergent.doom.topology.FibonacciTopology;
 import com.emergent.doom.topology.InsertionTopology;
 import com.emergent.doom.topology.SelectionTopology;
 
@@ -107,6 +108,14 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
      * Selection cells maintain internal state for target tracking.</p>
      */
     private final SelectionTopology<T> selectionTopology;
+
+    /**
+     * PURPOSE: Topology helper for FIBONACCI algotype neighbor evaluation.
+     *
+     * <p>ARCHITECTURE: Provides neighbor indices at Fibonacci distances.
+     * Used during cell evaluation phase for logarithmic viewing.</p>
+     */
+    private final FibonacciTopology<T> fibonacciTopology;
 
     /**
      * PURPOSE: Metadata array storing execution behavior for each cell position.
@@ -253,6 +262,7 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         this.bubbleTopology = new BubbleTopology<>();
         this.insertionTopology = new InsertionTopology<>();
         this.selectionTopology = new SelectionTopology<>();
+        this.fibonacciTopology = new FibonacciTopology<>();
         
         // Initialize metadata from provider
         this.metadata = new CellMetadata[cells.length];
@@ -372,6 +382,12 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
                     if (shouldSwap) {
                         proposedSwaps.add(new SwapProposal(i, j));
                     }
+                }
+            } else if (algotype == Algotype.FIBONACCI) {
+                // Fibonacci: evaluate move to propose one beneficial swap
+                SwapProposal proposal = evaluateFibMove(i, direction);
+                if (proposal != null) {
+                    proposedSwaps.add(proposal);
                 }
             } else {
                 // Other algotypes: iterate all neighbors
@@ -522,6 +538,61 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
         return resolved;
     }
 
+    /**
+     * Evaluate Fibonacci move for a cell at given position.
+     *
+     * <p>PURPOSE: Determine if cell should propose a swap based on Fibonacci viewing
+     * and greedy local improvement policy (ascending sort).</p>
+     *
+     * <p>PROCESS: Check Fibonacci distances for beneficial swaps, prioritizing
+     * left larger values, then right smaller values.</p>
+     *
+     * @param position cell position
+     * @param direction sort direction (currently assumes ASCENDING)
+     * @return SwapProposal if beneficial swap found, null otherwise
+     */
+    private SwapProposal evaluateFibMove(int position, SortDirection direction) {
+        if (direction != SortDirection.ASCENDING) {
+            // FIBONACCI currently only supports ascending sort
+            return null;
+        }
+
+        // Check if initiating cell is frozen
+        if (swapEngine.isFrozen(position)) {
+            return null;
+        }
+
+        List<Integer> fibDistances = fibonacciTopology.generateFibonacciUpTo(cells.length);
+
+        // Check left for larger values
+        for (int dist : fibDistances) {
+            int leftPos = position - dist;
+            if (leftPos < 0) continue;
+            if (swapEngine.isFrozen(leftPos)) continue;
+            if (cells[leftPos].compareTo(cells[position]) > 0) {
+                // Found larger value to left - propose swap
+                probe.recordCompareAndSwap(); // Record comparison
+                return new SwapProposal(position, leftPos);
+            }
+            probe.recordCompareAndSwap(); // Record comparison even if no swap
+        }
+
+        // Check right for smaller values
+        for (int dist : fibDistances) {
+            int rightPos = position + dist;
+            if (rightPos >= cells.length) continue;
+            if (swapEngine.isFrozen(rightPos)) continue;
+            if (cells[rightPos].compareTo(cells[position]) < 0) {
+                // Found smaller value to right - propose swap
+                probe.recordCompareAndSwap(); // Record comparison
+                return new SwapProposal(position, rightPos);
+            }
+            probe.recordCompareAndSwap(); // Record comparison even if no swap
+        }
+
+        return null; // No beneficial swap found
+    }
+
     // ========== Helper Methods for Metadata/Cell Access ==========
 
     /**
@@ -578,6 +649,8 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
                 int idealPos = getIdealPosition(i);
                 int target = Math.min(idealPos, cells.length - 1);
                 return Arrays.asList(target);
+            case FIBONACCI:
+                return fibonacciTopology.getNeighbors(i, cells.length, algotype);
             default:
                 throw new IllegalStateException("Unknown algotype: " + algotype);
         }
