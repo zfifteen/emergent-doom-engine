@@ -347,7 +347,7 @@ The foundation of the EDE is the Cell interface, which extends `java.lang.Compar
 #### Execution Engines
 Single-trial execution uses `SynchronousExecutionEngine`. Batch-level parallelism is provided by the `ExperimentRunner` in the experiment package:
 - **SynchronousExecutionEngine**: Sequential cell evaluation for deterministic, step-by-step execution
-- **ExperimentRunner (batch parallelism)**: Use `runBatchExperiments()` to parallelize across trials; this replaces the removed per-cell `ParallelExecutionEngine` and `LockBasedExecutionEngine` threading modes in v2.0.
+- **ExperimentRunner (batch parallelism)**: Coordinates batch execution across trials via `runBatchExperiments()`, replacing the removed per-cell `ParallelExecutionEngine` and `LockBasedExecutionEngine` threading modes in v2.0.
 
 The execution engine coordinates cell swap decisions, applies convergence detection, and records execution trajectories via the Probe interface.
 
