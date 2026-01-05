@@ -75,7 +75,7 @@ Tests for batch experiment execution (currently disabled - requires refactor for
 
 **Note:** Tests disabled pending migration to lightweight cell architecture with metadata providers.
 
-**Link to source:** [ExperimentRunner.java](../../../../../../main/java/com/emergent/doom/experiment/ExperimentRunner.java)
+**Link to source:** [ExperimentRunner.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/experiment/ExperimentRunner.java)
 
 ### ExperimentConfig **[Intermediate]**
 
@@ -89,7 +89,7 @@ Configuration object for experiment parameters:
 - `executionMode`: SEQUENTIAL or PARALLEL
 - `numTrials`: Total trials to run
 
-**Link to source:** [ExperimentConfig.java](../../../../../../main/java/com/emergent/doom/experiment/ExperimentConfig.java)
+**Link to source:** [ExperimentConfig.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/experiment/ExperimentConfig.java)
 
 ### ExperimentResults **[Intermediate]**
 
@@ -102,7 +102,7 @@ Container for multi-trial results:
 - `getStdDevSteps()`: Standard deviation
 - `getConvergenceRate()`: Percentage of successful trials
 
-**Link to source:** [ExperimentResults.java](../../../../../../main/java/com/emergent/doom/experiment/ExperimentResults.java)
+**Link to source:** [ExperimentResults.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/experiment/ExperimentResults.java)
 
 ### TrialResult **[Intermediate]**
 
@@ -115,7 +115,7 @@ Single trial outcome:
 - `executionTimeMs`: Wall-clock time
 - `trajectory`: Optional snapshot history
 
-**Link to source:** [TrialResult.java](../../../../../../main/java/com/emergent/doom/experiment/TrialResult.java)
+**Link to source:** [TrialResult.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/experiment/TrialResult.java)
 
 ## Usage Examples
 

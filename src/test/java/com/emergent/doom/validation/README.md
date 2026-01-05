@@ -78,7 +78,7 @@ Tests the experimental infrastructure for validating scaling hypothesis.
 - Harder stages allow more convergence steps
 - Prime generation produces valid primes
 
-**Link to source:** [LinearScalingValidator.java](../../../../../../main/java/com/emergent/doom/validation/LinearScalingValidator.java)
+**Link to source:** [LinearScalingValidator.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/validation/LinearScalingValidator.java)
 
 ## Usage Examples
 

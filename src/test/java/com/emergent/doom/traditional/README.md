@@ -81,7 +81,7 @@ Comprehensive tests for traditional (non-emergent) sorting implementations.
 - Swap counts match theoretical expectations
 - Metrics reset between runs
 
-**Link to source:** [TraditionalSortEngine.java](../../../../../../main/java/com/emergent/doom/traditional/TraditionalSortEngine.java)
+**Link to source:** [TraditionalSortEngine.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/traditional/TraditionalSortEngine.java)
 
 ## Usage Examples
 

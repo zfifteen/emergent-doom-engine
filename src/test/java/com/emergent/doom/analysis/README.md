@@ -70,7 +70,7 @@ Tests for trajectory-level analysis utilities.
    - Heatmap data formatting
    - Clustering visualization data
 
-**Link to source:** [TrajectoryAnalyzer.java](../../../../../../main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java)
+**Link to source:** [TrajectoryAnalyzer.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/analysis/TrajectoryAnalyzer.java)
 
 ## Usage Examples
 

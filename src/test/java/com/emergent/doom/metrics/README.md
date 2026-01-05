@@ -60,7 +60,7 @@ Tests the Monotonicity metric: percentage of correctly ordered adjacent pairs.
 - Partially monotonic [1,3,2,4,5] → 80%
 - Reference implementation parity with Python `get_monotonicity()`
 
-**Link to source:** [Monotonicity.java](../../../../../../main/java/com/emergent/doom/metrics/Monotonicity.java)
+**Link to source:** [Monotonicity.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/metrics/Monotonicity.java)
 
 ### SortednessValueTest.java **[Beginner]**
 
@@ -75,7 +75,7 @@ Tests the Sortedness metric: percentage of elements in ideal positions.
 - Partially sorted states
 - Reference implementation parity with Python `get_sortedness()`
 
-**Link to source:** [SortednessValue.java](../../../../../../main/java/com/emergent/doom/metrics/SortednessValue.java)
+**Link to source:** [SortednessValue.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/metrics/SortednessValue.java)
 
 ### DelayedGratificationCalculatorTest.java **[Advanced]**
 
@@ -97,7 +97,7 @@ Where:
 
 **Why it matters:** Reveals adaptive navigation - system accepts temporary disorder to reach better states.
 
-**Link to source:** [DelayedGratificationCalculator.java](../../../../../../main/java/com/emergent/doom/metrics/DelayedGratificationCalculator.java)
+**Link to source:** [DelayedGratificationCalculator.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/metrics/DelayedGratificationCalculator.java)
 
 ### SpearmanDistanceTest.java **[Intermediate]**
 
@@ -114,7 +114,7 @@ Tests Spearman Distance: rank correlation between current and ideal ordering.
 
 **Why it matters:** Domain-agnostic measure that doesn't require `getValue()` - works with any `Comparable`.
 
-**Link to source:** [SpearmanDistance.java](../../../../../../main/java/com/emergent/doom/metrics/SpearmanDistance.java)
+**Link to source:** [SpearmanDistance.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/metrics/SpearmanDistance.java)
 
 ## Usage Examples
 

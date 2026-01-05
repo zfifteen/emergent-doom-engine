@@ -81,7 +81,7 @@ Integration tests for complete visualization workflow.
 - Exported files are valid and readable
 - Sortedness improves over time (validation)
 
-**Link to source:** [TrajectoryDataExporter.java](../../../../../../main/java/com/emergent/doom/export/TrajectoryDataExporter.java)
+**Link to source:** [TrajectoryDataExporter.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/export/TrajectoryDataExporter.java)
 
 ## Usage Examples
 

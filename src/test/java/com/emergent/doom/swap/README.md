@@ -73,7 +73,7 @@ Comprehensive test suite covering all swap scenarios based on `SwapEngineTestSpe
    - Counter increments only on successful swaps
    - Resets with engine lifecycle
 
-**Link to source:** [SwapEngine.java](../../../../../../main/java/com/emergent/doom/swap/SwapEngine.java)
+**Link to source:** [SwapEngine.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/swap/SwapEngine.java)
 
 ### IntCellTest.java **[Beginner]**
 
@@ -98,7 +98,7 @@ Tests interaction between `SwapEngine` and `FrozenCellStatus`:
 - Persistence across swaps
 - Thread safety (via `ThreadSafeFrozenCellStatus`)
 
-**Link to source:** [FrozenCellStatus.java](../../../../../../main/java/com/emergent/doom/swap/FrozenCellStatus.java)
+**Link to source:** [FrozenCellStatus.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/swap/FrozenCellStatus.java)
 
 ## Usage Examples
 

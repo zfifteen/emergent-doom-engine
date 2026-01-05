@@ -72,7 +72,7 @@ Comprehensive test suite for probe functionality.
 - `setRecordingEnabled(false)` prevents snapshot capture
 - Thread safety under concurrent access
 
-**Link to source:** [Probe.java](../../../../../../main/java/com/emergent/doom/probe/Probe.java)
+**Link to source:** [Probe.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/probe/Probe.java)
 
 ### StepSnapshot Structure **[Beginner]**
 
@@ -84,7 +84,7 @@ Tests the immutable snapshot representation:
 - Swap count at that step
 - Metadata preservation
 
-**Link to source:** [StepSnapshot.java](../../../../../../main/java/com/emergent/doom/probe/StepSnapshot.java)
+**Link to source:** [StepSnapshot.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/probe/StepSnapshot.java)
 
 ### ThreadSafeProbe **[Intermediate]**
 
@@ -95,7 +95,7 @@ Tests thread-safe variant for parallel execution:
 - Atomic counter updates
 - Snapshot ordering guarantees
 
-**Link to source:** [ThreadSafeProbe.java](../../../../../../main/java/com/emergent/doom/probe/ThreadSafeProbe.java)
+**Link to source:** [ThreadSafeProbe.java](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/probe/ThreadSafeProbe.java)
 
 ## Usage Examples
 
