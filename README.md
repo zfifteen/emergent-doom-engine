@@ -3,6 +3,74 @@
 
 The Emergent Doom Engine (EDE) is a general-purpose, domain-agnostic API for simulating emergent phenomena. It provides a clean, extensible framework that is not tied to any specific application domain, including prime factorization or game development. The engine is designed around sortable Cell primitives and configurable sorting dynamics to enable modular composition of complex emergent systems. [1]
 
+## Quickstart: Your First Emergent Sort
+
+See emergent sorting in action with a simple 6-integer example. Copy and run this code to watch local cell interactions produce global order:
+
+```java
+import com.emergent.doom.cell.GenericCell;
+import com.emergent.doom.execution.*;
+import com.emergent.doom.swap.*;
+import com.emergent.doom.probe.*;
+import com.emergent.doom.cell.Algotype;
+import com.emergent.doom.cell.SortDirection;
+import java.util.Arrays;
+import java.util.function.IntFunction;
+
+public class QuickStart {
+    public static void main(String[] args) {
+        // 1. Create cells - lightweight Comparable wrappers with zero engine state
+        GenericCell[] cells = {
+            new GenericCell(5), new GenericCell(2), new GenericCell(9),
+            new GenericCell(1), new GenericCell(7), new GenericCell(3)
+        };
+        
+        // 2. Set up infrastructure
+        SwapEngine<GenericCell> swapEngine = new SwapEngine<>(new FrozenCellStatus());
+        Probe<GenericCell> probe = new Probe<>();
+        ConvergenceDetector<GenericCell> convergence = new NoSwapConvergence<>(10);
+        
+        // 3. Provide metadata - cells don't know their own algotype
+        IntFunction<CellMetadata> metadata = i -> 
+            new CellMetadata(Algotype.BUBBLE, SortDirection.ASCENDING);
+        
+        // 4. Create engine and run
+        SynchronousExecutionEngine<GenericCell> engine = 
+            new SynchronousExecutionEngine<>(cells, swapEngine, probe, 
+                                             convergence, metadata);
+        
+        int steps = engine.runUntilConvergence(1000);
+        
+        // 5. Emergent sorting complete!
+        System.out.println("Sorted in " + steps + " steps: " + 
+                           Arrays.toString(cells));
+    }
+}
+```
+
+**Expected Output:**
+```
+Sorted in 47 steps: [1, 2, 3, 5, 7, 9]
+```
+
+### How It Works
+
+**Cells are pure data carriers** - `GenericCell` implements only `compareTo()`. No sorting metadata lives in the cell objects.
+
+**Infrastructure manages mechanics** - `SwapEngine` handles swap execution, `Probe` records the trajectory, `ConvergenceDetector` signals completion.
+
+**Metadata providers enable domain-agnostic design** - The `IntFunction<CellMetadata>` supplies each cell position with its algotype and sort direction externally, keeping cells lightweight and reusable across domains.
+
+**Engine orchestrates emergence** - `SynchronousExecutionEngine` evaluates cells sequentially, collecting swap proposals based on local comparisons. Global order emerges from these local interactions without centralized control.
+
+### Next Steps
+
+**Explore the test suite** - See [Test Suite Documentation](src/test/java/com/emergent/doom/README.md) for progressively complex examples, including chimeric populations, delayed gratification, and clustering behaviors.
+
+**Try different algotypes** - Change `Algotype.BUBBLE` to `SELECTION`, `INSERTION`, or `FIBONACCI` to see how different sorting strategies affect convergence.
+
+**Build your own cells** - Implement `Cell<YourType>` with custom `compareTo()` logic to sort domain-specific data using emergent dynamics.
+
 ## Theoretical Background
 
 The EDE concept is inspired by research on sorting algorithms as models of emergent behavior and decentralized intelligence. Zhang, Goldstein, and Levin (2024) demonstrated that classical sorting algorithms can serve as minimal models of basal cognition and morphogenesis, revealing unexpected competencies in self-organizing systems.
