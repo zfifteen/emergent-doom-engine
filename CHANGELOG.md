@@ -1,4 +1,4 @@
-## [2.0.0] - 2026-01-XX
+## [2.0.0] - 2026-01-05
 
 ### BREAKING CHANGES
 - **Removed per-cell threading execution models** ([#92](https://github.com/zfifteen/emergent-doom-engine/issues/92))
