@@ -3,6 +3,14 @@
 
 The Emergent Doom Engine (EDE) is a general-purpose, domain-agnostic API for simulating emergent phenomena. It provides a clean, extensible framework that is not tied to any specific application domain, including prime factorization or game development. The engine is designed around sortable Cell primitives and configurable sorting dynamics to enable modular composition of complex emergent systems. [1]
 
+## 🚨 Breaking Changes in v2.0
+
+**Per-cell threading modes removed** in favor of per-trial parallelism:
+- `ExecutionMode.PARALLEL` and `LOCK_BASED` deleted
+- Use `ExecutionMode.SEQUENTIAL` + `runBatchExperiments()` instead
+- **Performance**: Expect 5-10× speedup due to eliminated synchronization overhead
+- **Migration guide**: See [`docs/MIGRATION_v2.0.md`](docs/MIGRATION_v2.0.md)
+
 ## Why Emergence?
 
 ### The Honest Trade-off
