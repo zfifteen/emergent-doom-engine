@@ -379,9 +379,75 @@ public class ClusteringValidationExperiment {
         int trials,
         List<Double> controlPeaks
     ) {
-        // IMPLEMENTATION PENDING - PHASE THREE
-        // This method runs the actual experiments for one algotype pair
-        return null;
+        // Step 1: Build experiment configuration with 50/50 algotype mix
+        ChimericExperimentConfig config = ChimericExperimentConfig.builder()
+            .arraySize(ARRAY_SIZE)
+            .maxSteps(MAX_STEPS)
+            .requiredStableSteps(3)
+            .recordTrajectory(true)
+            .algotypeMix(Map.of(a, 0.5, b, 0.5))
+            .seed(BASE_SEED)
+            .build();
+        
+        // Step 2: Create experiment runner
+        ExperimentRunner<GenericCell> runner = new ExperimentRunner<>(
+            () -> createChimericArray(config),
+            ChimericTopology::new
+        );
+        
+        // Step 3: Add aggregation metric
+        runner.addMetric("Aggregation", new AlgotypeAggregationIndex<>());
+        
+        // Step 4: Run trials
+        ExperimentResults<GenericCell> results = runner.runExperiment(config, trials);
+        
+        // Step 5: Extract peak values and timings from all trials
+        List<Double> peakValues = new ArrayList<>();
+        List<Double> peakTimings = new ArrayList<>();
+        AlgotypeAggregationIndex<GenericCell> metric = new AlgotypeAggregationIndex<>();
+        
+        for (TrialResult<GenericCell> trial : results.getTrials()) {
+            // Extract aggregation trajectory
+            List<Double> trajectory = extractAggregationTrajectory(trial, metric);
+            
+            // Find peak in this trial
+            int totalSteps = trial.getFinalStep();
+            PeakInfo peak = findPeak(trajectory, totalSteps);
+            
+            peakValues.add(peak.peakValue());
+            peakTimings.add(peak.timing());
+        }
+        
+        // Step 6: Compute statistics
+        double meanPeak = mean(peakValues);
+        double stdPeak = stdDev(peakValues);
+        double meanTiming = mean(peakTimings);
+        double stdTiming = stdDev(peakTimings);
+        
+        // Step 7: Perform statistical tests
+        ValidationStatistics.TTestResult paperComparison = 
+            ValidationStatistics.compareToPaper(peakValues, expected.peakAggregation());
+        double pValueVsPaper = paperComparison.pValue();
+        
+        double pValueVsControl = 0.0;
+        if (controlPeaks != null && !controlPeaks.isEmpty()) {
+            ValidationStatistics.TTestResult controlComparison =
+                ValidationStatistics.compareToControl(peakValues, controlPeaks);
+            pValueVsControl = controlComparison.pValue();
+        }
+        
+        // Step 8: Return complete validation result
+        return new PairValidationResult(
+            new AlgotypePair(a, b),
+            meanPeak,
+            stdPeak,
+            meanTiming,
+            stdTiming,
+            pValueVsPaper,
+            pValueVsControl,
+            peakValues,
+            peakTimings
+        );
     }
 
     /**
@@ -424,9 +490,18 @@ public class ClusteringValidationExperiment {
         TrialResult<GenericCell> trial,
         AlgotypeAggregationIndex<GenericCell> metric
     ) {
-        // IMPLEMENTATION PENDING - PHASE THREE
-        // Extracts the aggregation values at each recorded step
-        return null;
+        List<StepSnapshot<GenericCell>> trajectory = trial.getTrajectory();
+        if (trajectory == null || trajectory.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        List<Double> aggregationValues = new ArrayList<>();
+        for (StepSnapshot<GenericCell> snapshot : trajectory) {
+            double aggregation = metric.compute(snapshot);
+            aggregationValues.add(aggregation);
+        }
+        
+        return aggregationValues;
     }
 
     /**
@@ -465,9 +540,25 @@ public class ClusteringValidationExperiment {
      * @return peak information (value and timing)
      */
     private PeakInfo findPeak(List<Double> trajectory, int totalSteps) {
-        // IMPLEMENTATION PENDING - PHASE THREE
-        // Identifies when peak clustering occurred during sorting
-        return null;
+        if (trajectory == null || trajectory.isEmpty()) {
+            return new PeakInfo(0.0, 0.0);
+        }
+        
+        double peak = 0.0;
+        int peakStep = 0;
+        
+        for (int i = 0; i < trajectory.size(); i++) {
+            double current = trajectory.get(i);
+            if (current > peak) {
+                peak = current;
+                peakStep = i;
+            }
+        }
+        
+        // Normalize timing as fraction of total sorting progress
+        double timing = totalSteps > 0 ? (double) peakStep / totalSteps : 0.0;
+        
+        return new PeakInfo(peak, timing);
     }
 
     // PURPOSE: Store peak aggregation value and its timing
@@ -514,9 +605,15 @@ public class ClusteringValidationExperiment {
      * @return chimeric cell array
      */
     private static GenericCell[] createChimericArray(ChimericExperimentConfig config) {
-        // IMPLEMENTATION PENDING - PHASE THREE
-        // Creates the initial cell array for each trial
-        return null;
+        Map<Algotype, Double> mix = config.getChimericMix();
+        long seed = config.getSeed();
+        int size = config.getArraySize();
+        
+        PercentageAlgotypeProvider provider = new PercentageAlgotypeProvider(mix, size, seed);
+        GenericCellFactory factory = GenericCellFactory.shuffled(size, seed + 1);
+        ChimericPopulation<GenericCell> population = new ChimericPopulation<>(factory, provider);
+        
+        return population.createPopulation(size, GenericCell.class);
     }
 
     /**
@@ -542,9 +639,17 @@ public class ClusteringValidationExperiment {
      * @return hardware information string
      */
     private static String collectHardwareInfo() {
-        // IMPLEMENTATION PENDING - PHASE THREE
-        // Records execution environment for reproducibility
-        return null;
+        Runtime runtime = Runtime.getRuntime();
+        long maxMemoryMB = runtime.maxMemory() / (1024 * 1024);
+        
+        return String.format(
+            "Java %s, %s %s, %d processors, %d MB max memory",
+            System.getProperty("java.version"),
+            System.getProperty("os.name"),
+            System.getProperty("os.version"),
+            runtime.availableProcessors(),
+            maxMemoryMB
+        );
     }
 
     /**
@@ -564,8 +669,10 @@ public class ClusteringValidationExperiment {
      * @return mean (average) value
      */
     private static double mean(List<Double> values) {
-        // IMPLEMENTATION PENDING - PHASE THREE
-        return 0.0;
+        if (values == null || values.isEmpty()) {
+            return 0.0;
+        }
+        return values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
     }
 
     /**
@@ -588,7 +695,13 @@ public class ClusteringValidationExperiment {
      * @return sample standard deviation
      */
     private static double stdDev(List<Double> values) {
-        // IMPLEMENTATION PENDING - PHASE THREE
-        return 0.0;
+        if (values == null || values.size() < 2) {
+            return 0.0;
+        }
+        double meanVal = mean(values);
+        double sumSquaredDiff = values.stream()
+            .mapToDouble(v -> (v - meanVal) * (v - meanVal))
+            .sum();
+        return Math.sqrt(sumSquaredDiff / (values.size() - 1));
     }
 }

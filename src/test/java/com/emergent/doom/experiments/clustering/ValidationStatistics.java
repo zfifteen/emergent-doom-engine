@@ -81,8 +81,7 @@ public class ValidationStatistics {
          * @return true if p-value < 0.05
          */
         public boolean isSignificant() {
-            // IMPLEMENTATION PENDING - PHASE THREE
-            return false;
+            return pValue < 0.05;
         }
 
         /**
@@ -99,8 +98,8 @@ public class ValidationStatistics {
          */
         @Override
         public String toString() {
-            // IMPLEMENTATION PENDING - PHASE THREE
-            return null;
+            return String.format("Mean: %.2f ± %.2f, p = %.4f, 95%% CI: [%.2f, %.2f], n = %d",
+                mean, stdDev, pValue, confidenceIntervalLower, confidenceIntervalUpper, sampleSize);
         }
     }
 
@@ -156,9 +155,30 @@ public class ValidationStatistics {
         List<Double> observedPeaks,
         double expectedPeak
     ) {
-        // IMPLEMENTATION PENDING - PHASE THREE
-        // Tests if observed values match paper expectations
-        return null;
+        if (observedPeaks == null || observedPeaks.isEmpty()) {
+            return new TTestResult(0, 0, 1.0, 0, 0, 0);
+        }
+        
+        double[] values = toArray(observedPeaks);
+        TTest tTest = new TTest();
+        
+        // Compute mean and standard deviation
+        double sampleMean = mean(values);
+        double sampleStdDev = stdDev(values);
+        int n = values.length;
+        
+        // Perform one-sample t-test
+        double pValue = tTest.tTest(expectedPeak, values);
+        
+        // Compute 95% confidence interval
+        org.apache.commons.math3.distribution.TDistribution tDist =
+            new org.apache.commons.math3.distribution.TDistribution(n - 1);
+        double tCritical = tDist.inverseCumulativeProbability(0.975);  // 95% CI, two-tailed
+        double marginOfError = tCritical * (sampleStdDev / Math.sqrt(n));
+        double ciLower = sampleMean - marginOfError;
+        double ciUpper = sampleMean + marginOfError;
+        
+        return new TTestResult(sampleMean, sampleStdDev, pValue, ciLower, ciUpper, n);
     }
 
     /**
@@ -215,9 +235,48 @@ public class ValidationStatistics {
         List<Double> experimentalPeaks,
         List<Double> controlPeaks
     ) {
-        // IMPLEMENTATION PENDING - PHASE THREE
-        // Tests if experimental values differ from control baseline
-        return null;
+        if (experimentalPeaks == null || experimentalPeaks.isEmpty() ||
+            controlPeaks == null || controlPeaks.isEmpty()) {
+            return new TTestResult(0, 0, 1.0, 0, 0, 0);
+        }
+        
+        double[] expValues = toArray(experimentalPeaks);
+        double[] ctrlValues = toArray(controlPeaks);
+        TTest tTest = new TTest();
+        
+        // Compute means and standard deviations
+        double expMean = mean(expValues);
+        double expStdDev = stdDev(expValues);
+        int expN = expValues.length;
+        
+        double ctrlMean = mean(ctrlValues);
+        double ctrlStdDev = stdDev(ctrlValues);
+        int ctrlN = ctrlValues.length;
+        
+        // Perform two-sample t-test
+        double pValue = tTest.tTest(expValues, ctrlValues);
+        
+        // Compute 95% CI for difference in means
+        // Using pooled standard error for independent samples
+        double se = Math.sqrt((expStdDev * expStdDev / expN) + (ctrlStdDev * ctrlStdDev / ctrlN));
+        
+        // Degrees of freedom using Welch-Satterthwaite equation
+        double df = Math.pow(se, 4) /
+            ((Math.pow(expStdDev, 4) / (expN * expN * (expN - 1))) +
+             (Math.pow(ctrlStdDev, 4) / (ctrlN * ctrlN * (ctrlN - 1))));
+        
+        org.apache.commons.math3.distribution.TDistribution tDist =
+            new org.apache.commons.math3.distribution.TDistribution(df);
+        double tCritical = tDist.inverseCumulativeProbability(0.975);  // 95% CI, two-tailed
+        
+        double difference = expMean - ctrlMean;
+        double marginOfError = tCritical * se;
+        double ciLower = difference - marginOfError;
+        double ciUpper = difference + marginOfError;
+        
+        // Return result for experimental group (with difference CI bounds)
+        return new TTestResult(expMean, expStdDev, pValue, 
+                              expMean + ciLower, expMean + ciUpper, expN);
     }
 
     /**
@@ -237,8 +296,14 @@ public class ValidationStatistics {
      * @return primitive double array
      */
     private static double[] toArray(List<Double> values) {
-        // IMPLEMENTATION PENDING - PHASE THREE
-        return null;
+        if (values == null || values.isEmpty()) {
+            return new double[0];
+        }
+        double[] array = new double[values.size()];
+        for (int i = 0; i < values.size(); i++) {
+            array[i] = values.get(i);
+        }
+        return array;
     }
 
     /**
@@ -258,8 +323,14 @@ public class ValidationStatistics {
      * @return mean
      */
     private static double mean(double[] values) {
-        // IMPLEMENTATION PENDING - PHASE THREE
-        return 0.0;
+        if (values == null || values.length == 0) {
+            return 0.0;
+        }
+        double sum = 0.0;
+        for (double v : values) {
+            sum += v;
+        }
+        return sum / values.length;
     }
 
     /**
@@ -282,7 +353,14 @@ public class ValidationStatistics {
      * @return sample standard deviation
      */
     private static double stdDev(double[] values) {
-        // IMPLEMENTATION PENDING - PHASE THREE
-        return 0.0;
+        if (values == null || values.length < 2) {
+            return 0.0;
+        }
+        double meanVal = mean(values);
+        double sumSquaredDiff = 0.0;
+        for (double v : values) {
+            sumSquaredDiff += (v - meanVal) * (v - meanVal);
+        }
+        return Math.sqrt(sumSquaredDiff / (values.length - 1));
     }
 }
