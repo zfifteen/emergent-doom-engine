@@ -539,7 +539,7 @@ class SynchronousExecutionEngineTest {
         void metadataSwapsWithCells() {
 
             // 1. Create cells and metadata with identifiable markers
-            GenericCell[] cells = {new GenericCell(30), new GenericCell(10), new GenericCell(20)};
+            GenericCell[] cells = {new GenericCell(30), new GenericCell(10), new GenericCell(20), new GenericCell(40)};
 
             // Create metadata with different algotypes to make them identifiable
             IntFunction<CellMetadata> metadataProvider = index -> {
@@ -547,6 +547,7 @@ class SynchronousExecutionEngineTest {
                     case 0: return new CellMetadata(Algotype.BUBBLE, SortDirection.ASCENDING);
                     case 1: return new CellMetadata(Algotype.SELECTION, SortDirection.ASCENDING);
                     case 2: return new CellMetadata(Algotype.INSERTION, SortDirection.ASCENDING);
+                    case 3: return new CellMetadata(Algotype.FIBONACCI, SortDirection.ASCENDING);
                     default: throw new IllegalArgumentException();
                 }
             };

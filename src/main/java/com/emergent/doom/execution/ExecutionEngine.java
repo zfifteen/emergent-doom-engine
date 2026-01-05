@@ -7,6 +7,7 @@ import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.topology.BubbleTopology;
+import com.emergent.doom.topology.FibonacciTopology;
 import com.emergent.doom.topology.InsertionTopology;
 import com.emergent.doom.topology.SelectionTopology;
 
@@ -35,6 +36,7 @@ public class ExecutionEngine<T extends Cell<T>> {
     private final BubbleTopology<T> bubbleTopology;
     private final InsertionTopology<T> insertionTopology;
     private final SelectionTopology<T> selectionTopology;
+    private final FibonacciTopology<T> fibonacciTopology;
     private final SwapEngine<T> swapEngine;
     private final Probe<T> probe;
     private final ConvergenceDetector<T> convergenceDetector;
@@ -74,6 +76,7 @@ public class ExecutionEngine<T extends Cell<T>> {
         this.bubbleTopology = new BubbleTopology<>();
         this.insertionTopology = new InsertionTopology<>();
         this.selectionTopology = new SelectionTopology<>();
+        this.fibonacciTopology = new FibonacciTopology<>();
         this.swapEngine = swapEngine;
         this.probe = probe;
         this.convergenceDetector = convergenceDetector;
@@ -295,6 +298,8 @@ public class ExecutionEngine<T extends Cell<T>> {
                 int idealPos = getIdealPosition(cells[i]);
                 int target = Math.min(idealPos, cells.length - 1);
                 return Arrays.asList(target);
+            case FIBONACCI:
+                return fibonacciTopology.getNeighbors(i, cells.length, algotype);
             default:
                 throw new IllegalStateException("Unknown algotype: " + algotype);
         }
