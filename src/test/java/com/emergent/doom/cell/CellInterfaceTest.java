@@ -4,6 +4,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+
 /**
  * Test suite for Cell interface contract.
  *
@@ -48,7 +52,9 @@ class CellInterfaceTest {
     void testInterfaceExtendsOnlyComparable() {
         // Verify Cell interface does not carry engine-specific metadata
         // All metadata is managed externally via CellMetadata
-        // TODO: Implement after scaffold phase
+        Class<?>[] interfaces = Cell.class.getInterfaces();
+        assertEquals(1, interfaces.length);
+        assertEquals(Comparable.class, interfaces[0]);
     }
 
     /**
@@ -64,7 +70,9 @@ class CellInterfaceTest {
     @DisplayName("Cell implementation requires only compareTo()")
     void testMinimalImplementation() {
         // Test will verify: Can create Cell implementation with just compareTo()
-        // TODO: Implement after scaffold phase
+        TestCell cell = new TestCell(42);
+        assertEquals(42, cell.value); // Can instantiate
+        assertEquals(0, cell.compareTo(new TestCell(42))); // compareTo works
     }
 
     /**
@@ -80,7 +88,13 @@ class CellInterfaceTest {
     @DisplayName("Cell instances are comparable")
     void testComparableContract() {
         // Test will verify: Cell extends Comparable and compareTo() is available
-        // TODO: Implement after scaffold phase
+        TestCell cell1 = new TestCell(42);
+        TestCell cell2 = new TestCell(100);
+
+        assertTrue(cell1 instanceof Comparable);
+        assertTrue(cell1.compareTo(cell2) < 0); // 42 < 100
+        assertTrue(cell2.compareTo(cell1) > 0); // 100 > 42
+        assertEquals(0, cell1.compareTo(new TestCell(42))); // equal values
     }
 
     /**
@@ -96,6 +110,21 @@ class CellInterfaceTest {
     @DisplayName("Cell interface declares no additional abstract methods")
     void testNoAdditionalMethods() {
         // Test will verify: Cell interface has no methods beyond inherited compareTo()
-        // TODO: Implement after scaffold phase
+        Method[] declaredMethods = Cell.class.getDeclaredMethods();
+
+        // Cell interface declares getValue() as default method
+        assertEquals(1, declaredMethods.length, "Cell interface should declare getValue() as default method");
+
+        Method getValueMethod = declaredMethods[0];
+        assertEquals("getValue", getValueMethod.getName());
+
+        // Verify getValue is not abstract (it's default)
+        assertFalse(Modifier.isAbstract(getValueMethod.getModifiers()), "getValue should not be abstract");
+
+        // Verify no abstract methods are declared on Cell interface
+        // (compareTo is inherited from Comparable, not declared here)
+        boolean hasAbstractMethod = java.util.Arrays.stream(declaredMethods)
+            .anyMatch(method -> Modifier.isAbstract(method.getModifiers()));
+        assertFalse(hasAbstractMethod, "Cell interface should declare no abstract methods");
     }
 }

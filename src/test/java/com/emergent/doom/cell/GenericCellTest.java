@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.lang.reflect.Field;
+
 /**
  * Test suite for GenericCell - lightweight cell implementation.
  *
@@ -30,7 +32,8 @@ class GenericCellTest {
     @DisplayName("Constructor creates cell with value")
     void testConstructor() {
         // Test will verify: new GenericCell(42) creates cell with getValue() == 42
-        // TODO: Implement after scaffold phase
+        GenericCell cell = new GenericCell(42);
+        assertEquals(42, cell.getValue());
     }
 
     /**
@@ -45,7 +48,8 @@ class GenericCellTest {
     @DisplayName("getValue returns wrapped value")
     void testGetValue() {
         // Test will verify: cell.getValue() returns original constructor value
-        // TODO: Implement after scaffold phase
+        GenericCell cell = new GenericCell(42);
+        assertEquals(42, cell.getValue());
     }
 
     /**
@@ -61,7 +65,9 @@ class GenericCellTest {
     @DisplayName("compareTo returns negative when this < other")
     void testCompareToLessThan() {
         // Test will verify: new GenericCell(42).compareTo(new GenericCell(100)) < 0
-        // TODO: Implement after scaffold phase
+        GenericCell cell1 = new GenericCell(42);
+        GenericCell cell2 = new GenericCell(100);
+        assertTrue(cell1.compareTo(cell2) < 0);
     }
 
     /**
@@ -77,7 +83,9 @@ class GenericCellTest {
     @DisplayName("compareTo returns zero when values equal")
     void testCompareToEqual() {
         // Test will verify: new GenericCell(42).compareTo(new GenericCell(42)) == 0
-        // TODO: Implement after scaffold phase
+        GenericCell cell1 = new GenericCell(42);
+        GenericCell cell2 = new GenericCell(42);
+        assertEquals(0, cell1.compareTo(cell2));
     }
 
     /**
@@ -93,7 +101,9 @@ class GenericCellTest {
     @DisplayName("compareTo returns positive when this > other")
     void testCompareToGreaterThan() {
         // Test will verify: new GenericCell(100).compareTo(new GenericCell(42)) > 0
-        // TODO: Implement after scaffold phase
+        GenericCell cell1 = new GenericCell(100);
+        GenericCell cell2 = new GenericCell(42);
+        assertTrue(cell1.compareTo(cell2) > 0);
     }
 
     /**
@@ -109,7 +119,10 @@ class GenericCellTest {
     @DisplayName("equals returns true for same value")
     void testEqualsTrue() {
         // Test will verify: equals() based only on value, not metadata
-        // TODO: Implement after scaffold phase
+        GenericCell cell1 = new GenericCell(42);
+        GenericCell cell2 = new GenericCell(42);
+        assertTrue(cell1.equals(cell2));
+        assertTrue(cell2.equals(cell1)); // symmetric
     }
 
     /**
@@ -125,7 +138,10 @@ class GenericCellTest {
     @DisplayName("equals returns false for different values")
     void testEqualsFalse() {
         // Test will verify: equals() returns false when values differ
-        // TODO: Implement after scaffold phase
+        GenericCell cell1 = new GenericCell(42);
+        GenericCell cell2 = new GenericCell(100);
+        assertFalse(cell1.equals(cell2));
+        assertFalse(cell2.equals(cell1)); // symmetric
     }
 
     /**
@@ -141,7 +157,12 @@ class GenericCellTest {
     @DisplayName("hashCode is consistent with equals")
     void testHashCodeConsistency() {
         // Test will verify: equal cells have equal hash codes
-        // TODO: Implement after scaffold phase
+        GenericCell cell1 = new GenericCell(42);
+        GenericCell cell2 = new GenericCell(42);
+        GenericCell cell3 = new GenericCell(100);
+
+        assertEquals(cell1.hashCode(), cell2.hashCode()); // equal objects have equal hash codes
+        assertNotEquals(cell1.hashCode(), cell3.hashCode()); // unequal objects have unequal hash codes
     }
 
     /**
@@ -157,7 +178,8 @@ class GenericCellTest {
     @DisplayName("toString returns string representation of value")
     void testToString() {
         // Test will verify: toString() returns String.valueOf(value)
-        // TODO: Implement after scaffold phase
+        GenericCell cell = new GenericCell(42);
+        assertEquals("42", cell.toString());
     }
 
     /**
@@ -173,6 +195,11 @@ class GenericCellTest {
     @DisplayName("Cell has no metadata fields (lightweight verification)")
     void testNoMetadataFields() {
         // Test will verify: GenericCell has only 'value' field via reflection
-        // TODO: Implement after scaffold phase
+        Field[] fields = GenericCell.class.getDeclaredFields();
+
+        // Should have exactly one field: 'value'
+        assertEquals(1, fields.length);
+        assertEquals("value", fields[0].getName());
+        assertEquals(int.class, fields[0].getType());
     }
 }
