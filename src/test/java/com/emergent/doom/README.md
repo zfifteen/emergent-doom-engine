@@ -1,5 +1,10 @@
 # Emergent Doom Engine Test Suite
 
+---
+**Documentation Version:** Commit [7e77864](https://github.com/zfifteen/emergent-doom-engine/commit/7e77864a5553f144acb55bff7115b22c3d2919cb)  
+**Last Updated:** 2026-01-05
+---
+
 The EDE test suite is an **executable instruction manual** that teaches the framework through progressively complex, well-documented test cases. Tests are organized into five chapters that build from foundational concepts to advanced features, providing a complete learning path for understanding emergent computation.
 
 ## How to Navigate This Test Suite
@@ -151,10 +156,10 @@ Every test in this suite illustrates one or more EDE core principles:
 
 ## Reference Materials
 
-- **[Production Code](../../../../../../src/main/java/com/emergent/doom/)** - Implementations being tested
-- **[Main README](../../../../../../README.md)** - Project overview and quick start
-- **[Levin et al. (2024)](https://github.com/zfifteen/emergent-doom-engine/blob/main/docs/theory/)** - Theoretical foundation
-- **[REQUIREMENTS.md](../../../../../../docs/requirements/REQUIREMENTS.md)** - Technical specifications
+- **[Production Code](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/src/main/java/com/emergent/doom/)** - Implementations being tested
+- **[Main README](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/README.md)** - Project overview and quick start
+- **[Levin et al. (2024)](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/docs/theory/)** - Theoretical foundation
+- **[REQUIREMENTS.md](https://github.com/zfifteen/emergent-doom-engine/blob/7e77864a5553f144acb55bff7115b22c3d2919cb/docs/requirements/REQUIREMENTS.md)** - Technical specifications
 
 ## Quick Start: Running Tests
 
@@ -184,3 +189,17 @@ When adding new tests:
 ---
 
 **Ready to start?** Begin your journey with [Chapter 1: Cell Foundations](cell/README.md).
+
+## Maintaining Documentation Links
+
+This test suite uses GitHub permalinks for all production code references to ensure version stability. When making significant code changes:
+
+```bash
+# Update all permalinks to a new commit SHA
+./scripts/update_permalink_base.sh <new_commit_sha>
+
+# Verify all links are accessible
+./scripts/verify_permalinks.sh
+```
+
+**Cross-documentation links** (between test suite READMEs) remain as relative paths for easier local browsing.
