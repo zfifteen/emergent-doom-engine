@@ -68,6 +68,6 @@ class RefactorSmokeTest {
 
         ExperimentResults<GenericCell> results = runner.runBatchExperiments(config);
 
-        assertTrue(results.getTrials().stream().filter(t -> t.isConverged()).count() > 0, "Single trial should converge");
+        assertEquals(1, results.getTrials().stream().filter(t -> t.isConverged()).count(), "Single trial should converge");
     }
 }
