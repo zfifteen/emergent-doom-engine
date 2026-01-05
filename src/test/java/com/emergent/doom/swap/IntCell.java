@@ -45,6 +45,7 @@ public class IntCell implements Cell<IntCell> {
      * 
      * @return the cell's value
      */
+    @Override
     public int getValue() {
         return value;
     }
