@@ -54,7 +54,7 @@ Tools support multiple formats for flexibility:
 
 ## Test Files
 
-### VisualizationIntegrationTest.java
+### VisualizationIntegrationTest.java **[Intermediate]**
 
 Integration tests for complete visualization workflow.
 

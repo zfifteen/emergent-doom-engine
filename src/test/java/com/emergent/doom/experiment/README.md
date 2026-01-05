@@ -57,7 +57,7 @@ Each trial captures:
 
 ## Test Files
 
-### ExperimentRunnerBatchTest.java
+### ExperimentRunnerBatchTest.java **[Advanced]**
 
 Tests for batch experiment execution (currently disabled - requires refactor for metadata providers).
 
@@ -77,7 +77,7 @@ Tests for batch experiment execution (currently disabled - requires refactor for
 
 **Link to source:** [ExperimentRunner.java](../../../../../../main/java/com/emergent/doom/experiment/ExperimentRunner.java)
 
-### ExperimentConfig
+### ExperimentConfig **[Intermediate]**
 
 Configuration object for experiment parameters:
 
@@ -91,7 +91,7 @@ Configuration object for experiment parameters:
 
 **Link to source:** [ExperimentConfig.java](../../../../../../main/java/com/emergent/doom/experiment/ExperimentConfig.java)
 
-### ExperimentResults
+### ExperimentResults **[Intermediate]**
 
 Container for multi-trial results:
 
@@ -104,7 +104,7 @@ Container for multi-trial results:
 
 **Link to source:** [ExperimentResults.java](../../../../../../main/java/com/emergent/doom/experiment/ExperimentResults.java)
 
-### TrialResult
+### TrialResult **[Intermediate]**
 
 Single trial outcome:
 

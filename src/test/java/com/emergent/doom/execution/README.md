@@ -62,7 +62,7 @@ Engines use **stable-step heuristics** to detect when sorting completes:
 
 ## Test Files
 
-### SynchronousExecutionEngineTest.java
+### SynchronousExecutionEngineTest.java **[Intermediate]**
 
 Comprehensive tests for single-threaded execution.
 
@@ -103,7 +103,7 @@ Comprehensive tests for single-threaded execution.
 
 **Link to source:** [SynchronousExecutionEngine.java](../../../../../../main/java/com/emergent/doom/execution/SynchronousExecutionEngine.java)
 
-### ParallelExecutionEngineTest.java
+### ParallelExecutionEngineTest.java **[Advanced]**
 
 Tests multi-threaded execution with thread pool.
 
@@ -121,7 +121,7 @@ Tests multi-threaded execution with thread pool.
 
 **Link to source:** [ParallelExecutionEngine.java](../../../../../../main/java/com/emergent/doom/execution/ParallelExecutionEngine.java)
 
-### LockBasedExecutionEngineTest.java
+### LockBasedExecutionEngineTest.java **[Advanced]**
 
 Tests experimental lock-based parallel execution.
 
@@ -132,7 +132,7 @@ Tests experimental lock-based parallel execution.
 
 **Link to source:** [LockBasedExecutionEngine.java](../../../../../../main/java/com/emergent/doom/execution/LockBasedExecutionEngine.java)
 
-### CellMetadataTest.java
+### CellMetadataTest.java **[Intermediate]**
 
 Tests external metadata management system.
 

@@ -49,7 +49,7 @@ Used to validate EDE overhead and identify optimizations.
 
 ## Test Files
 
-### TraditionalSortEngineTest.java
+### TraditionalSortEngineTest.java **[Intermediate]**
 
 Comprehensive tests for traditional (non-emergent) sorting implementations.
 

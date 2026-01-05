@@ -46,7 +46,7 @@ Tests in this package validate that the `Probe` correctly:
 
 ## Test Files
 
-### ProbeTest.java
+### ProbeTest.java **[Beginner]**
 
 Comprehensive test suite for probe functionality.
 
@@ -74,7 +74,7 @@ Comprehensive test suite for probe functionality.
 
 **Link to source:** [Probe.java](../../../../../../main/java/com/emergent/doom/probe/Probe.java)
 
-### StepSnapshot Structure
+### StepSnapshot Structure **[Beginner]**
 
 Tests the immutable snapshot representation:
 
@@ -86,7 +86,7 @@ Tests the immutable snapshot representation:
 
 **Link to source:** [StepSnapshot.java](../../../../../../main/java/com/emergent/doom/probe/StepSnapshot.java)
 
-### ThreadSafeProbe
+### ThreadSafeProbe **[Intermediate]**
 
 Tests thread-safe variant for parallel execution:
 
