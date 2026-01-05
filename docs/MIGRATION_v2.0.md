@@ -80,6 +80,10 @@ If you have serialized `ExperimentConfig` objects with `ExecutionMode.PARALLEL` 
 }
 ```
 
+### ExecutionMode status
+
+`ExecutionMode` remains temporarily for backward compatibility. It is marked `@Deprecated` (since 2.0) and only `SEQUENTIAL` is supported. Configure batch-level parallelism through `ExperimentRunner#runBatchExperiments()` rather than selecting execution modes. The enum will be removed entirely in a future release once migrations are complete.
+
 ### Questions?
 
 See [Issue #92](https://github.com/zfifteen/emergent-doom-engine/issues/92) for architectural rationale.

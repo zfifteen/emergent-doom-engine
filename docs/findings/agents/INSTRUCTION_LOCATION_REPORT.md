@@ -186,7 +186,7 @@ Each test package includes a README with instructions:
 
 **Additional JavaDoc locations** (sampled):
 - Metrics classes: MonotonicityError, SortednessValue, DelayedGratificationCalculator
-- Execution engines: SynchronousExecutionEngine, ParallelExecutionEngine
+- Execution engines: SynchronousExecutionEngine (per-cell parallel modes removed; batch parallelism handled by ExperimentRunner)
 - All follow standard JavaDoc convention
 
 **Alignment Status:** ✅ Consistent with REQUIREMENTS.md and test suite docs
