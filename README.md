@@ -457,7 +457,7 @@ SynchronousExecutionEngine<MyDomainCell> engine =
     );
 
 // For parallel execution, run multiple trials concurrently:
-// ExperimentRunner#runBatchExperiments(config)
+// new ExperimentRunner<>(cellFactory, topologyFactory).runBatchExperiments(config);
 ```
 
 ### Chimeric Populations

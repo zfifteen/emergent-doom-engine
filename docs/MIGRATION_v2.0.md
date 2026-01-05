@@ -82,7 +82,7 @@ If you have serialized `ExperimentConfig` objects with `ExecutionMode.PARALLEL` 
 
 ### ExecutionMode status
 
-`ExecutionMode` remains temporarily for backward compatibility. It is `@Deprecated(since = "2.0", forRemoval = true)` and only `SEQUENTIAL` is supported. Configure batch-level parallelism through `ExperimentRunner#runBatchExperiments()` rather than selecting execution modes. The enum will be removed entirely in a future release once migrations are complete.
+`ExecutionMode` remains temporarily for backward compatibility. It is marked `@Deprecated` (since 2.0) and only `SEQUENTIAL` is supported. Configure batch-level parallelism through `ExperimentRunner#runBatchExperiments()` rather than selecting execution modes. The enum will be removed entirely in a future release once migrations are complete.
 
 ### Questions?
 
