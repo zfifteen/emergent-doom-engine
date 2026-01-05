@@ -5,7 +5,7 @@ Chimeric populations mix multiple algotypes (sorting strategies) in a single arr
 ## Purpose
 
 Tests in this package validate that chimeric populations:
-- Support arbitrary mixes of algotypes (BUBBLE, INSERTION, SELECTION)
+- Support arbitrary mixes of algotypes (BUBBLE, INSERTION, SELECTION, FIBONACCI)
 - Enable percentage-based algotype distribution
 - Integrate with lightweight cell architecture via metadata providers
 - Facilitate clustering and segregation research
@@ -144,7 +144,7 @@ engine.runUntilConvergence(10000);
 
 ### Three-Way Chimeric Mix
 
-Combine all three algotypes:
+Combine the three Levin paper algotypes:
 
 ```java
 Map<Algotype, Double> threeWayMix = Map.of(

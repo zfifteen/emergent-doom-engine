@@ -17,9 +17,12 @@ import java.util.Map;
  * <ul>
  *   <li>50/50 Bubble/Selection mix</li>
  *   <li>50/50 Bubble/Insertion mix</li>
- *   <li>33/33/34 three-way mix</li>
+ *   <li>33/33/34 three-algotype mix (Bubble/Insertion/Selection)</li>
  *   <li>0-3 frozen cells for robustness testing</li>
  * </ul></p>
+ * 
+ * <p>This implementation also supports the novel FIBONACCI algotype,
+ * enabling four-way mixes and additional research on logarithmic viewing patterns.</p>
  *
  * <p>Usage:
  * <pre>{@code

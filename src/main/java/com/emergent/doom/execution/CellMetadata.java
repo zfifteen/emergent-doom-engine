@@ -30,7 +30,7 @@ public class CellMetadata {
     // PURPOSE: Sorting algorithm policy for this cell position
     // INPUTS: Set during construction or via setAlgotype()
     // PROCESS: Determines neighbor visibility and swap rules
-    // OUTPUTS: BUBBLE, INSERTION, or SELECTION
+    // OUTPUTS: BUBBLE, INSERTION, SELECTION, or FIBONACCI
     // DEPENDENCIES: Must be non-null
     private final Algotype algotype;
     
@@ -56,7 +56,7 @@ public class CellMetadata {
      *
      * <p>INPUTS:
      * <ul>
-     *   <li>algotype - Behavioral policy (BUBBLE, INSERTION, or SELECTION)</li>
+     *   <li>algotype - Behavioral policy (BUBBLE, INSERTION, SELECTION, or FIBONACCI)</li>
      *   <li>sortDirection - Direction preference (ASCENDING or DESCENDING)</li>
      * </ul>
      * </p>
@@ -113,7 +113,7 @@ public class CellMetadata {
      * </ol>
      * </p>
      *
-     * <p>OUTPUTS: Algotype - BUBBLE, INSERTION, or SELECTION</p>
+     * <p>OUTPUTS: Algotype - BUBBLE, INSERTION, SELECTION, or FIBONACCI</p>
      *
      * @return the algotype (never null)
      */

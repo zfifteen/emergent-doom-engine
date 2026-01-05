@@ -54,7 +54,7 @@ The Engine API allows users to configure which sorting algorithm is applied to t
 The EDE exposes two major user-facing components:
 
 ### Engine API
-The Engine API allows implementors to customize engine parameters and behavior, including selection of the sorting algorithm (Selection Sort, Bubble Sort, or Insertion Sort) to be applied during Cell processing. This provides flexibility to adapt the engine to specific emergent phenomena and experimental setups.
+The Engine API allows implementors to customize engine parameters and behavior, including selection of the sorting algorithm (SELECTION, BUBBLE, INSERTION, or FIBONACCI algotypes) to be applied during Cell processing. This provides flexibility to adapt the engine to specific emergent phenomena and experimental setups.
 
 ### Implementation API
 The Implementation API facilitates the creation of domain-specific Cells that implement the java.lang.Comparable interface. This ensures modularity, interoperability, and the ability to compose complex systems from well-defined, sortable components.
