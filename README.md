@@ -345,10 +345,9 @@ The EDE translates the theoretical concepts from the Levin et al. research into 
 The foundation of the EDE is the Cell interface, which extends `java.lang.Comparable<Cell>`. Cells are pure data carriers that implement only `compareTo()` for domain-specific comparison logic. All sorting metadata (algotype, sort direction, ideal position) is managed externally via `CellMetadata`, achieving true domain-agnostic sorting where cells contain zero engine-specific state.
 
 #### Execution Engines
-The execution package provides three engine implementations:
+The execution package provides the core engine implementation and batch-level parallelism:
 - **SynchronousExecutionEngine**: Sequential cell evaluation for deterministic, step-by-step execution
-- **ParallelExecutionEngine**: One-thread-per-cell model matching the Levin paper specification
-- **LockBasedExecutionEngine**: Optimized parallel execution with reduced overhead
+- **ExperimentRunner batch parallelism**: Use `runBatchExperiments()` to parallelize across trials; this replaces the removed per-cell `ParallelExecutionEngine` and `LockBasedExecutionEngine` threading modes in v2.0.
 
 Each engine coordinates cell swap decisions, applies convergence detection, and records execution trajectories via the Probe interface.
 
@@ -448,14 +447,17 @@ IntFunction<CellMetadata> metadataProvider = index ->
     );
 
 // Create engine with metadata provider
-ParallelExecutionEngine<MyDomainCell> engine = 
-    new ParallelExecutionEngine<>(
+SynchronousExecutionEngine<MyDomainCell> engine = 
+    new SynchronousExecutionEngine<>(
         cells, 
         swapEngine, 
         probe, 
         convergenceDetector, 
         metadataProvider  // externally managed metadata
     );
+
+// For parallel execution, run multiple trials concurrently:
+// ExperimentRunner#runBatchExperiments(config)
 ```
 
 ### Chimeric Populations
@@ -707,7 +709,7 @@ Documentation will be in `target/site/apidocs/`.
 
 Potential areas for expansion:
 
-- **Parallel Execution**: Multi-threaded or distributed execution [IMPLEMENTED]
+- **Batch Parallel Execution**: Parallelize across trials via `runBatchExperiments()` [IMPLEMENTED]
 - **Adaptive Topologies**: Dynamic neighborhood restructuring
 - **Hybrid Algotypes**: Automatic mixing of cell strategies
 - **Visualization Tools**: Real-time trajectory visualization

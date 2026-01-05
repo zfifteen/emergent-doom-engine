@@ -11,3 +11,6 @@
 - Per-trial parallelism (`runBatchExperiments()`) provides **5-10× speedup** over removed per-cell threading
 - Eliminated barrier synchronization overhead (~250,000 barriers per 100-trial batch)
 - Eliminated lock contention on shared swap collectors
+
+### Deprecations
+- `ExecutionMode` enum is retained only with `SEQUENTIAL`, marked for removal in a future release. Use `ExperimentRunner#runBatchExperiments()` for parallel execution.

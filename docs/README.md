@@ -23,6 +23,7 @@ The following documents provide high-level context for the current state of the 
 - **[CLUSTERING_PRIMITIVE_SPEC.md](requirements/CLUSTERING_PRIMITIVE_SPEC.md)**: Specification for using clustering as a computational primitive in non-sorting applications.
 - **[METRIC_DASHBOARD_BASELINE.md](findings/METRIC_DASHBOARD_BASELINE.md)**: Baseline definitions for performance and emergence metrics.
 - **[factorization_ui_requirements.md](requirements/factorization_ui_requirements.md)**: Requirements for the experimental factorization visualization interface.
+- **[MIGRATION_v2.0.md](MIGRATION_v2.0.md)**: Guidance for upgrading from per-cell threading to batch-level parallelism.
 
 ## Directory Overview
 
@@ -56,4 +57,4 @@ The academic and theoretical foundation for the project.
 - **2401.05375v1.pdf**: The original research paper by Zhang, Goldstein, and Levin.
 
 ---
-*Last updated: January 2, 2026*
+*Last updated: January 5, 2026*
