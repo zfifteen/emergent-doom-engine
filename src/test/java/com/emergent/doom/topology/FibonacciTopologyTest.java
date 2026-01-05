@@ -19,12 +19,13 @@ class FibonacciTopologyTest {
     @DisplayName("generateFibonacciUpTo")
     class GenerateFibonacciUpToTests {
 
-        @Test
-        @DisplayName("returns empty list for maxValue < 1")
-        void returnsEmptyListForMaxValueLessThanOne() {
-            assertTrue(topology.generateFibonacciUpTo(0).isEmpty());
-            assertTrue(topology.generateFibonacciUpTo(-1).isEmpty());
-        }
+    @Test
+    @DisplayName("returns empty list for maxValue <= 1")
+    void returnsEmptyListForMaxValueLessThanOrEqualToOne() {
+        assertTrue(topology.generateFibonacciUpTo(0).isEmpty());
+        assertTrue(topology.generateFibonacciUpTo(1).isEmpty());
+        assertTrue(topology.generateFibonacciUpTo(-1).isEmpty());
+    }
 
         @Test
         @DisplayName("generates correct Fibonacci sequence")

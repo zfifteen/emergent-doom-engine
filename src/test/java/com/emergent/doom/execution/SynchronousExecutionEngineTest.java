@@ -672,4 +672,70 @@ class SynchronousExecutionEngineTest {
             return "TestBubbleCell(" + value + ")";
         }
     }
+
+    @Nested
+    @DisplayName("Fibonacci Algotype Tests")
+    class FibonacciAlgotypeTests {
+
+        @Test
+        @DisplayName("FIBONACCI algotype sorts array correctly with ascending direction")
+        void fibonacciAlgotypeSortsCorrectly() {
+            // Create test cells
+            GenericCell[] cells = {new GenericCell(5), new GenericCell(1), new GenericCell(3), new GenericCell(2), new GenericCell(4)};
+            int[] expected = {1, 2, 3, 4, 5};
+
+            // Create metadata provider with FIBONACCI algotype
+            IntFunction<CellMetadata> metadataProvider = index -> new CellMetadata(Algotype.FIBONACCI, SortDirection.ASCENDING);
+
+            // Create required dependencies
+            FrozenCellStatus frozenStatus = new FrozenCellStatus();
+            SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
+            Probe<GenericCell> probe = new Probe<>();
+            ConvergenceDetector<GenericCell> convergenceDetector = new NoSwapConvergence<>(50);
+
+            // Create and run engine
+            SynchronousExecutionEngine<GenericCell> engine =
+                new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, metadataProvider);
+
+            // Run until convergence
+            for (int i = 0; i < 100 && !engine.hasConverged(); i++) {
+                engine.step();
+            }
+
+            // Verify sorted
+            int[] actual = Arrays.stream(cells).mapToInt(GenericCell::getValue).toArray();
+            Arrays.sort(expected); // Ensure expected is sorted
+            assertArrayEquals(expected, actual, "FIBONACCI algotype should sort the array");
+        }
+
+        @Test
+        @DisplayName("FIBONACCI algotype does not support descending direction")
+        void fibonacciDoesNotSupportDescendingDirection() {
+            // Create test cells
+            GenericCell[] cells = {new GenericCell(1), new GenericCell(5), new GenericCell(3)};
+
+            // Create metadata provider with FIBONACCI algotype and DESCENDING direction
+            IntFunction<CellMetadata> metadataProvider = index -> new CellMetadata(Algotype.FIBONACCI, SortDirection.DESCENDING);
+
+            // Create required dependencies
+            FrozenCellStatus frozenStatus = new FrozenCellStatus();
+            SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
+            Probe<GenericCell> probe = new Probe<>();
+            ConvergenceDetector<GenericCell> convergenceDetector = new NoSwapConvergence<>(10);
+
+            // Create and run engine
+            SynchronousExecutionEngine<GenericCell> engine =
+                new SynchronousExecutionEngine<>(cells, swapEngine, probe, convergenceDetector, metadataProvider);
+
+            // Run a few steps
+            for (int i = 0; i < 5; i++) {
+                engine.step();
+            }
+
+            // Verify no swaps occurred (since descending not supported)
+            int[] actual = Arrays.stream(cells).mapToInt(GenericCell::getValue).toArray();
+            int[] original = {1, 5, 3};
+            assertArrayEquals(original, actual, "FIBONACCI should not perform swaps for descending direction");
+        }
+    }
 }

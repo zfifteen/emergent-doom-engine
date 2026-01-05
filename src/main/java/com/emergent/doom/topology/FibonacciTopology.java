@@ -15,24 +15,29 @@ import java.util.stream.IntStream;
 public class FibonacciTopology<T extends Cell<T>> implements Topology<T> {
 
     /**
-     * Generate Fibonacci numbers up to max_value.
+     * Generate Fibonacci numbers up to maxValue.
      *
      * @param maxValue the maximum value (exclusive)
      * @return list of Fibonacci numbers in ascending order
      */
     public List<Integer> generateFibonacciUpTo(int maxValue) {
-        if (maxValue < 1) {
-            return new ArrayList<>();
-        }
         List<Integer> fib = new ArrayList<>();
-        fib.add(1);
-        fib.add(2);
+        int prev = 1;
+        int curr = 2;
+        if (prev < maxValue) {
+            fib.add(prev);
+        }
+        if (curr < maxValue) {
+            fib.add(curr);
+        }
         while (true) {
-            int nextFib = fib.get(fib.size() - 1) + fib.get(fib.size() - 2);
+            int nextFib = prev + curr;
             if (nextFib >= maxValue) {
                 break;
             }
             fib.add(nextFib);
+            prev = curr;
+            curr = nextFib;
         }
         return fib;
     }

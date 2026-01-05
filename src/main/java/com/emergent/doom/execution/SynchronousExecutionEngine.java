@@ -557,6 +557,11 @@ public class SynchronousExecutionEngine<T extends Cell<T>> {
             return null;
         }
 
+        // Check if initiating cell is frozen
+        if (swapEngine.isFrozen(position)) {
+            return null;
+        }
+
         List<Integer> fibDistances = fibonacciTopology.generateFibonacciUpTo(cells.length);
 
         // Check left for larger values
