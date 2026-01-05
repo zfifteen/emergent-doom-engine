@@ -166,6 +166,39 @@ System.out.println(cellA.compareTo(cellB)); // -1 ("apple" < "banana")
 
 The Cell interface deliberately **excludes** engine-specific metadata. This was a key architectural decision to achieve true domain-agnostic design.
 
+#### Visual Comparison: Traditional vs EDE Architecture
+
+```
+Traditional Approach (Heavyweight Cells)
+┌───────────────────────────────┐
+│ Cell                           │
+│                                │
+│  ✅ compareTo() [domain]       │
+│  ❌ getAlgotype() [engine]      │
+│  ❌ getDirection() [engine]     │
+│  ❌ getIdealPosition() [engine] │
+│                                │
+│  Problem: Domain + Engine       │
+│  concerns mixed!                │
+└───────────────────────────────┘
+
+EDE Approach (Separated Concerns)
+
+┌────────────────┐       ┌──────────────────────┐
+│ Cell           │       │ Metadata Provider    │
+│                │       │                      │
+│ ✅ compareTo()  │ <──── │ ✅ Algotype          │
+│ ✅ getValue()   │       │ ✅ SortDirection     │
+│                │       │ ✅ IdealPosition     │
+│ [Domain logic] │       │ [Engine logic]       │
+└────────────────┘       └──────────────────────┘
+                                   │
+                            IntFunction<CellMetadata>
+                            index → metadata
+
+Benefit: Cells reusable across engines, domains don't depend on EDE!
+```
+
 **Before (heavyweight cells):**
 ```java
 interface Cell<T> {
