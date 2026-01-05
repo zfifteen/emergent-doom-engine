@@ -504,11 +504,6 @@ class SynchronousExecutionEngineTest {
         @Test
         @DisplayName("Engine accepts metadata provider constructor")
         void engineAcceptsMetadataProvider() {
-            // TODO PHASE TWO: Implement test
-            // 1. Create minimal cells with only values (no algotype)
-            // 2. Create metadata provider: index -> new CellMetadata(BUBBLE, ASCENDING)
-            // 3. Construct engine with metadata provider
-            // 4. Verify engine initializes without error
 
             // 1. Create minimal cells with only values (no algotype)
             GenericCell[] cells = {new GenericCell(1), new GenericCell(2), new GenericCell(3)};
@@ -542,10 +537,6 @@ class SynchronousExecutionEngineTest {
         @Test
         @DisplayName("Metadata swaps with cells during execution")
         void metadataSwapsWithCells() {
-            // TODO PHASE THREE: Implement test
-            // 1. Create cells and metadata with identifiable markers
-            // 2. Run engine for a few steps
-            // 3. Verify metadata stayed attached to correct logical cell after swaps
 
             // 1. Create cells and metadata with identifiable markers
             GenericCell[] cells = {new GenericCell(30), new GenericCell(10), new GenericCell(20)};
@@ -601,11 +592,6 @@ class SynchronousExecutionEngineTest {
         @Test
         @DisplayName("Engine sorts using metadata provider instead of cell interfaces")
         void engineUsesMetadataProvider() {
-            // TODO PHASE THREE: Implement test
-            // 1. Create minimal cells (just Comparable, no embedded metadata)
-            // 2. Provide metadata externally via IntFunction<CellMetadata>
-            // 3. Run engine to convergence
-            // 4. Verify array is sorted (proving metadata provider was used)
 
             // 1. Create minimal cells (just Comparable, no embedded metadata)
             GenericCell[] cells = {new GenericCell(3), new GenericCell(1), new GenericCell(4), new GenericCell(2)};
