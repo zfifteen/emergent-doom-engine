@@ -11,9 +11,10 @@ import java.util.Map;
  * <p>Encapsulates all parameters needed to execute a trial, including
  * domain-specific settings, execution limits, and analysis options.</p>
  *
- * <p><strong>Execution Mode:</strong> Supports both sequential (default) and
- * parallel execution modes. Parallel mode matches the Levin paper's specification
- * of one thread per cell with barrier synchronization.</p>
+ * <p><strong>Execution Architecture (v2.0):</strong> Uses sequential cell evaluation
+ * within each trial ({@link com.emergent.doom.execution.ExecutionMode#SEQUENTIAL}).
+ * For parallel execution, run multiple trials concurrently via
+ * {@link ExperimentRunner#runBatchExperiments(ExperimentConfig)}.</p>
  *
  * <p><strong>REFACTORED:</strong> Added numRepetitions field to support batch
  * trial execution via runBatchExperiments().</p>
@@ -60,7 +61,7 @@ public class ExperimentConfig {
      *   <li>maxSteps - maximum steps before timeout</li>
      *   <li>requiredStableSteps - steps with no swaps for convergence</li>
      *   <li>recordTrajectory - whether to record full trajectory</li>
-     *   <li>executionMode - SEQUENTIAL, PARALLEL, or LOCK_BASED</li>
+     *   <li>executionMode - Must be SEQUENTIAL (only mode as of v2.0)</li>
      *   <li>numRepetitions - number of trials to run in batch</li>
      * </ul>
      * </p>
@@ -149,23 +150,7 @@ public class ExperimentConfig {
         return executionMode;
     }
 
-    /**
-     * Check if parallel execution mode is enabled.
-     *
-     * @return true if execution mode is PARALLEL
-     */
-    public boolean isParallelExecution() {
-        return executionMode == ExecutionMode.PARALLEL;
-    }
 
-    /**
-     * Check if lock-based execution mode is enabled.
-     *
-     * @return true if execution mode is LOCK_BASED
-     */
-    public boolean isLockBasedExecution() {
-        return executionMode == ExecutionMode.LOCK_BASED;
-    }
 
     public Map<String, Object> getCustomParameters() {
         return new HashMap<>(customParameters); // Defensive copy

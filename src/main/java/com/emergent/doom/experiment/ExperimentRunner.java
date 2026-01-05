@@ -2,17 +2,13 @@ package com.emergent.doom.experiment;
 
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.execution.ConvergenceDetector;
-import com.emergent.doom.execution.LockBasedExecutionEngine;
 import com.emergent.doom.execution.NoSwapConvergence;
-import com.emergent.doom.execution.ParallelExecutionEngine;
 import com.emergent.doom.execution.SynchronousExecutionEngine;
 import com.emergent.doom.metrics.Metric;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.probe.StepSnapshot;
-import com.emergent.doom.probe.ThreadSafeProbe;
 import com.emergent.doom.swap.FrozenCellStatus;
 import com.emergent.doom.swap.SwapEngine;
-import com.emergent.doom.swap.ThreadSafeFrozenCellStatus;
 import com.emergent.doom.topology.Topology;
 
 import java.util.ArrayList;
@@ -97,25 +93,21 @@ public class ExperimentRunner<T extends Cell<T>> {
         T[] cells = cellArrayFactory.apply(trialNumber);
         Topology<T> topology = topologyFactory.get();
 
-        // Use thread-safe components for parallel/lock-based execution
-        boolean needsThreadSafe = config.isParallelExecution() || config.isLockBasedExecution();
-        FrozenCellStatus frozenStatus = needsThreadSafe
-                ? new ThreadSafeFrozenCellStatus()
-                : new FrozenCellStatus();
+        // Per-trial parallelism has isolated state - no thread-safety wrappers needed
+        FrozenCellStatus frozenStatus = new FrozenCellStatus();
         SwapEngine<T> swapEngine = new SwapEngine<>(frozenStatus);
-        Probe<T> probe = needsThreadSafe ? new ThreadSafeProbe<>() : new Probe<>();
+        Probe<T> probe = new Probe<>();
         probe.setRecordingEnabled(config.isRecordTrajectory());
         ConvergenceDetector<T> convergenceDetector =
                 new NoSwapConvergence<>(config.getRequiredStableSteps());
 
-        // Create metadata provider from cells
-        // For cells that have algotype information, extract it; otherwise default to BUBBLE
+        // Create metadata provider from cells (inline lambda - matches existing pattern)
         java.util.function.IntFunction<com.emergent.doom.execution.CellMetadata> metadataProvider = i -> {
             T cell = cells[i];
             com.emergent.doom.cell.Algotype algotype = com.emergent.doom.cell.Algotype.BUBBLE;
             com.emergent.doom.cell.SortDirection direction = com.emergent.doom.cell.SortDirection.ASCENDING;
             
-            // Try to extract algotype from cell type
+            // Extract algotype from cell type
             if (cell instanceof com.emergent.doom.cell.RemainderCell) {
                 algotype = ((com.emergent.doom.cell.RemainderCell) cell).getAlgotype();
             } else if (cell instanceof com.emergent.doom.cell.BubbleCell) {
@@ -125,54 +117,19 @@ public class ExperimentRunner<T extends Cell<T>> {
             } else if (cell instanceof com.emergent.doom.cell.SelectionCell) {
                 algotype = com.emergent.doom.cell.Algotype.SELECTION;
             } else if (cell instanceof com.emergent.doom.cell.GenericCell) {
-                // GenericCell doesn't store algotype - default to BUBBLE
                 algotype = com.emergent.doom.cell.Algotype.BUBBLE;
             }
             
             return new com.emergent.doom.execution.CellMetadata(algotype, direction);
         };
 
-        // Run execution based on mode
+        // Execute trial using SynchronousExecutionEngine (only mode as of v2.0)
         long startTime = System.nanoTime();
-        int finalStep;
-        boolean converged;
+        SynchronousExecutionEngine<T> syncEngine = new SynchronousExecutionEngine<>(
+                cells, swapEngine, probe, convergenceDetector, metadataProvider);
 
-        if (config.isParallelExecution()) {
-            // Parallel execution: barrier-based synchronization (DEPRECATED - use batch parallelism instead)
-            ParallelExecutionEngine<T> parallelEngine = new ParallelExecutionEngine<>(
-                    cells, swapEngine, probe, convergenceDetector, metadataProvider);
-            try {
-                parallelEngine.start();
-                finalStep = parallelEngine.runUntilConvergence(config.getMaxSteps());
-                converged = parallelEngine.hasConverged();
-            } finally {
-                parallelEngine.shutdown();
-            }
-        } else if (config.isLockBasedExecution()) {
-            // Lock-based execution: matches Python cell_research behavior
-            LockBasedExecutionEngine<T> lockEngine = new LockBasedExecutionEngine<>(
-                    cells, swapEngine, probe, convergenceDetector, metadataProvider);
-            try {
-                lockEngine.start();
-                finalStep = lockEngine.runUntilConvergence(config.getMaxSteps());
-                converged = lockEngine.hasConverged();
-            } finally {
-                lockEngine.shutdown();
-            }
-        } else {
-            // REFACTORED: Use SynchronousExecutionEngine for sequential mode
-            // This is the preferred execution mode for parallel trial batches
-            SynchronousExecutionEngine<T> syncEngine = new SynchronousExecutionEngine<>(
-                    cells, swapEngine, probe, convergenceDetector, metadataProvider);
-            // Inject topology if supported by engine (future enhancement)
-            // Currently SynchronousExecutionEngine uses default iteration order
-            // but we should respect the topology factory if possible.
-            // For now, we just ensure topology is instantiated to respect the factory contract.
-
-            finalStep = syncEngine.runUntilConvergence(config.getMaxSteps());
-            converged = syncEngine.hasConverged();
-        }
-
+        int finalStep = syncEngine.runUntilConvergence(config.getMaxSteps());
+        boolean converged = syncEngine.hasConverged();
         long endTime = System.nanoTime();
 
         // Compute metrics

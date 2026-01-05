@@ -1,61 +1,33 @@
 package com.emergent.doom.execution;
 
 /**
- * Execution mode for the sorting engine.
+ * Execution mode for single-trial execution.
  *
- * <p>Determines whether cells are evaluated sequentially (original behavior),
- * in parallel with barriers (Levin paper specification), or with lock-based
- * synchronization (cell_research Python behavior).</p>
+ * <p>As of v2.0, only SEQUENTIAL mode is supported. Per-cell threading modes
+ * (PARALLEL, LOCK_BASED) were removed because per-trial parallelism via
+ * {@link com.emergent.doom.experiment.ExperimentRunner#runBatchExperiments(com.emergent.doom.experiment.ExperimentConfig)}
+ * provides 5-10× better performance by eliminating barrier synchronization overhead.</p>
+ *
+ * <p><strong>Historical Note:</strong> Pre-v2.0 versions supported PARALLEL and LOCK_BASED
+ * modes for parallelizing cell evaluation within a single trial. These were deprecated
+ * in favor of batch-level parallelism (multiple independent trials running concurrently).</p>
+ *
+ * <p><strong>Future Extensibility:</strong> This enum remains as a single-value type to
+ * preserve architectural flexibility for potential future modes (e.g., DISTRIBUTED,
+ * GPU_ACCELERATED) without breaking existing APIs.</p>
  */
+@Deprecated(since = "2.0", forRemoval = true)
 public enum ExecutionMode {
 
     /**
-     * Sequential execution mode (original behavior).
+     * Sequential execution mode.
      *
-     * <p>Cells are evaluated one at a time in iteration order.
-     * Simpler and deterministic, but does not match the paper's
-     * specification of parallel cell evaluation.</p>
+     * <p>Cells are evaluated one at a time in iteration order using
+     * {@link SynchronousExecutionEngine}. This is the only supported mode as of v2.0.</p>
+     *
+     * <p><strong>For Parallel Execution:</strong> Run multiple trials concurrently via
+     * {@link com.emergent.doom.experiment.ExperimentRunner#runBatchExperiments(com.emergent.doom.experiment.ExperimentConfig)}
+     * rather than threading individual cells within a trial.</p>
      */
-    SEQUENTIAL,
-
-    /**
-     * Parallel execution mode (paper-faithful).
-     *
-     * <p>Each cell runs in its own thread, with barrier synchronization
-     * between evaluation and swap resolution phases. Matches the Levin
-     * paper specification: "each cell represented by a single thread".</p>
-     *
-     * <p><strong>Thread Model:</strong></p>
-     * <ul>
-     *   <li>One thread per cell</li>
-     *   <li>CyclicBarrier for phase synchronization</li>
-     *   <li>Main thread coordinates and resolves conflicts</li>
-     * </ul>
-     */
-    PARALLEL,
-
-    /**
-     * Lock-based execution mode (cell_research Python behavior).
-     *
-     * <p>Each cell runs in its own thread with a single global lock.
-     * Cells acquire the lock, evaluate, swap (if appropriate), and release.
-     * This matches the Python cell_research implementation exactly.</p>
-     *
-     * <p><strong>Thread Model:</strong></p>
-     * <ul>
-     *   <li>One thread per cell</li>
-     *   <li>Single ReentrantLock for mutual exclusion</li>
-     *   <li>No phase synchronization - cells swap asynchronously</li>
-     *   <li>Non-deterministic execution order</li>
-     * </ul>
-     *
-     * <p><strong>Python Reference:</strong> (BubbleSortCell.py:58-74)</p>
-     * <pre>
-     * def move(self):
-     *     self.lock.acquire()    # Single global lock
-     *     # ... evaluation and swap ...
-     *     self.lock.release()
-     * </pre>
-     */
-    LOCK_BASED
+    SEQUENTIAL
 }
