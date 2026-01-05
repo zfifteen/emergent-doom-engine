@@ -51,7 +51,7 @@ Tests verify integration across:
 
 ## Test Files
 
-### LinearScalingValidatorTest.java
+### LinearScalingValidatorTest.java **[Advanced]**
 
 Tests the experimental infrastructure for validating scaling hypothesis.
 

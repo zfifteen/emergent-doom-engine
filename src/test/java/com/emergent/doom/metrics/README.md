@@ -47,7 +47,7 @@ Metrics reveal cognitive-like behaviors in minimal substrates:
 
 ## Test Files
 
-### MonotonicityTest.java
+### MonotonicityTest.java **[Intermediate]**
 
 Tests the Monotonicity metric: percentage of correctly ordered adjacent pairs.
 
@@ -62,7 +62,7 @@ Tests the Monotonicity metric: percentage of correctly ordered adjacent pairs.
 
 **Link to source:** [Monotonicity.java](../../../../../../main/java/com/emergent/doom/metrics/Monotonicity.java)
 
-### SortednessValueTest.java
+### SortednessValueTest.java **[Beginner]**
 
 Tests the Sortedness metric: percentage of elements in ideal positions.
 
@@ -77,7 +77,7 @@ Tests the Sortedness metric: percentage of elements in ideal positions.
 
 **Link to source:** [SortednessValue.java](../../../../../../main/java/com/emergent/doom/metrics/SortednessValue.java)
 
-### DelayedGratificationCalculatorTest.java
+### DelayedGratificationCalculatorTest.java **[Advanced]**
 
 Tests the Delayed Gratification (DG) metric: ratio of progress after temporary setbacks.
 
@@ -99,7 +99,7 @@ Where:
 
 **Link to source:** [DelayedGratificationCalculator.java](../../../../../../main/java/com/emergent/doom/metrics/DelayedGratificationCalculator.java)
 
-### SpearmanDistanceTest.java
+### SpearmanDistanceTest.java **[Intermediate]**
 
 Tests Spearman Distance: rank correlation between current and ideal ordering.
 

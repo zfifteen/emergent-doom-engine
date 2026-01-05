@@ -50,7 +50,7 @@ Chimeric populations enable experiments on:
 
 ## Test Files
 
-### ChimericPopulationTest.java
+### ChimericPopulationTest.java **[Advanced]**
 
 Tests for the chimeric population builder and utilities.
 
@@ -73,7 +73,7 @@ Tests for the chimeric population builder and utilities.
 
 **Link to source:** [ChimericPopulation.java](../../../../../../main/java/com/emergent/doom/chimeric/ChimericPopulation.java)
 
-### AlgotypeProvider Interface
+### AlgotypeProvider Interface **[Advanced]**
 
 Tests for algotype assignment strategies:
 
@@ -83,7 +83,7 @@ Tests for algotype assignment strategies:
 
 **Link to source:** [AlgotypeProvider.java](../../../../../../main/java/com/emergent/doom/chimeric/AlgotypeProvider.java)
 
-### CellFactory Interface
+### CellFactory Interface **[Advanced]**
 
 Tests for flexible cell construction:
 

@@ -43,7 +43,7 @@ Tests in this package validate that the `SwapEngine` correctly implements:
 
 ## Test Files
 
-### SwapEngineTest.java
+### SwapEngineTest.java **[Beginner]**
 
 Comprehensive test suite covering all swap scenarios based on `SwapEngineTestSpec.md`.
 
@@ -75,7 +75,7 @@ Comprehensive test suite covering all swap scenarios based on `SwapEngineTestSpe
 
 **Link to source:** [SwapEngine.java](../../../../../../main/java/com/emergent/doom/swap/SwapEngine.java)
 
-### IntCellTest.java
+### IntCellTest.java **[Beginner]**
 
 Tests the `IntCell` test helper implementation.
 
@@ -89,7 +89,7 @@ Tests the `IntCell` test helper implementation.
 
 **Link to source:** [IntCell.java](IntCell.java) (test utility, not production code)
 
-### FrozenCellStatus Integration
+### FrozenCellStatus Integration **[Intermediate]**
 
 Tests interaction between `SwapEngine` and `FrozenCellStatus`:
 

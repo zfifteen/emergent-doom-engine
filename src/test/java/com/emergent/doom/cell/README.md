@@ -34,7 +34,7 @@ Recommended background:
 
 ## Test Files
 
-### CellInterfaceTest.java
+### CellInterfaceTest.java **[Beginner]**
 
 Validates the Cell interface contract itself (not implementations).
 
@@ -48,7 +48,7 @@ Validates the Cell interface contract itself (not implementations).
 
 **Link to source:** [Cell.java](../../../../../../main/java/com/emergent/doom/cell/Cell.java)
 
-### GenericCellTest.java
+### GenericCellTest.java **[Beginner]**
 
 Tests the `GenericCell<T>` implementation, a general-purpose cell wrapper.
 
@@ -62,7 +62,7 @@ Tests the `GenericCell<T>` implementation, a general-purpose cell wrapper.
 
 **Link to source:** [GenericCell.java](../../../../../../main/java/com/emergent/doom/cell/GenericCell.java)
 
-### SelectionCellTest.java
+### SelectionCellTest.java **[Intermediate]**
 
 Tests selection sort-specific cell behavior.
 
