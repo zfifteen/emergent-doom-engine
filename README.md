@@ -347,9 +347,9 @@ The foundation of the EDE is the Cell interface, which extends `java.lang.Compar
 #### Execution Engines
 The execution package provides the core engine implementation and batch-level parallelism:
 - **SynchronousExecutionEngine**: Sequential cell evaluation for deterministic, step-by-step execution
-- **ExperimentRunner batch parallelism**: Use `runBatchExperiments()` to parallelize across trials; this replaces the removed per-cell `ParallelExecutionEngine` and `LockBasedExecutionEngine` threading modes in v2.0.
+- **ExperimentRunner (batch parallelism)**: Use `runBatchExperiments()` to parallelize across trials; this replaces the removed per-cell `ParallelExecutionEngine` and `LockBasedExecutionEngine` threading modes in v2.0.
 
-Each engine coordinates cell swap decisions, applies convergence detection, and records execution trajectories via the Probe interface.
+The engine coordinates cell swap decisions, applies convergence detection, and records execution trajectories via the Probe interface.
 
 #### CellMetadata
 External metadata provider system that associates sorting metadata with cell positions without modifying cell implementations. Each metadata entry specifies:
