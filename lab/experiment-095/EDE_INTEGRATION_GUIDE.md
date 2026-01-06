@@ -54,7 +54,14 @@ public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
     @Override
     public int getValue() {
         // For metrics: return quantized distance as integer
-        return (int) Math.round(distanceToMean * 1000);
+        double scaled = distanceToMean * 1000.0;
+        if (scaled > Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        }
+        if (scaled < Integer.MIN_VALUE) {
+            return Integer.MIN_VALUE;
+        }
+        return (int) Math.round(scaled);
     }
     
     // Domain-specific accessors
@@ -86,22 +93,23 @@ public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
 
 ### Step 2: Choose Execution Approach
 
-Before refactoring, decide which execution pattern to use:
+Before refactoring, decide which execution pattern to use. **Both approaches have trade-offs:**
 
-**Recommended: Option B** - Create `GenericCellExecutionEngine` adapter (requires implementation)
+**Recommended: Option B** - Create `GenericCellExecutionEngine` adapter
 - Works with any `Cell` implementation
-- No need for `AbstractCell` inheritance
+- No need to modify `WaveletFeatureCell` to extend a base class
 - No algotype definitions required
-- Simplest integration path
-- **Note**: This adapter does not yet exist in EDE and must be created
+- Simplest integration in terms of cell design
+- **Trade-off**: Requires implementing new execution engine from scratch
+- **Status**: This adapter does not yet exist in EDE and must be created
 
-**Alternative: Option A** - Extend `WaveletFeatureCell` from `AbstractCell` (requires custom execution engine)
-- Provides full EDE features (neighborhoods, behavioral policies)
-- Requires defining `WaveletAlgotype` enum
-- Cannot use existing `CellBasedExecutionEngine` (which expects `AbstractSortingCell` with Integer values)
-- More complex but leverages existing framework patterns
+**Alternative: Option A** - Adapt `WaveletFeatureCell` to extend `AbstractSortingCell`
+- Reuses existing `CellBasedExecutionEngine`
+- No new implementations needed
+- **Trade-off**: Must convert Double distance values to Integer for sorting
+- **Limitation**: Loses precision; not ideal for all domain applications
 
-The examples below show **Option B** (requires creating the adapter) for clarity of the integration pattern.
+Both are valid. Choose based on your constraints and timeline.
 
 ### Step 3: Refactor EmergentSorter to Use EDE
 
@@ -118,25 +126,25 @@ public class EmergentSorter {
 }
 ```
 
-**After** (EDE client):
+**After** (EDE client - Option B):
 ```java
 package lab.experiment095.sorting;
 
 import lab.experiment095.cell.WaveletFeatureCell;
-import com.emergent.doom.execution.CellBasedExecutionEngine;
 import java.util.List;
 import java.util.ArrayList;
 
 /**
  * EDE-based emergent sorting adapter for PAM tiering.
  * 
- * Wraps EDE's CellBasedExecutionEngine to provide experiment-specific
+ * Wraps EDE's execution engine to provide experiment-specific
  * tier assignment functionality.
  */
 public class EmergentSorter {
     
     private final int iterations;
     private final double[] tierThresholds;
+    
     public EmergentSorter(int iterations, String distanceMetric,
                           double[] tierThresholds, long randomSeed) {
         this.iterations = iterations;
@@ -165,8 +173,7 @@ public class EmergentSorter {
         }
         
         // Step 3: Execute emergent sorting via EDE
-        // Using GenericCellExecutionEngine (must be created - see Step 4 of this guide below)
-        // This adapter allows any Cell implementation to work with EDE patterns
+        // Option B: Use GenericCellExecutionEngine (must be created - see Step 4)
         GenericCellExecutionEngine<WaveletFeatureCell> engine = 
             new GenericCellExecutionEngine<>();
         
@@ -220,21 +227,16 @@ public class EmergentSorter {
 
 ### Step 4: Implementation Details for Each Approach
 
-**Option A (Requires Custom Engine)**: Extend `WaveletFeatureCell` from `AbstractCell`
+**Option A: Extend AbstractSortingCell**
 
-**Note**: This approach requires defining a `WaveletAlgotype` enum and implementing a custom execution engine. The existing `CellBasedExecutionEngine` only works with `AbstractSortingCell` (Integer values, SortingAlgotype).
+This approach adapts `WaveletFeatureCell` to work with the existing `CellBasedExecutionEngine`. Key constraint: `AbstractSortingCell` is defined as `AbstractCell<Integer, SortingAlgotype>`, so you must map Double distances to Integer values:
 
 ```java
 package lab.experiment095.cell;
 
-import com.emergent.doom.cell.AbstractCell;
+import com.emergent.doom.cell.AbstractSortingCell;
 
-// Define algotype for wavelet features
-enum WaveletAlgotype {
-    DISTANCE_BASED  // Single algotype: sort by distance to mean
-}
-
-public class WaveletFeatureCell extends AbstractCell<Double, WaveletAlgotype> {
+public class WaveletFeatureCell extends AbstractSortingCell {
     private final double[] features;      // 28D signature
     private final String sourceId;
     private final double distanceToMean;
@@ -246,27 +248,38 @@ public class WaveletFeatureCell extends AbstractCell<Double, WaveletAlgotype> {
     }
     
     @Override
-    public WaveletAlgotype readAlgotype() {
-        return WaveletAlgotype.DISTANCE_BASED;
+    public Integer readValue() {
+        // Map Double distance to Integer (with bounds checking)
+        double scaled = distanceToMean * 1000.0;
+        if (scaled > Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        }
+        if (scaled < Integer.MIN_VALUE) {
+            return Integer.MIN_VALUE;
+        }
+        return (int) Math.round(scaled);
     }
     
     @Override
-    public Double readValue() {
-        return distanceToMean;
+    public int compareTo(AbstractSortingCell other) {
+        return Integer.compare(this.readValue(), other.readValue());
     }
     
-    @Override
-    public int compareTo(AbstractCell<Double, WaveletAlgotype> other) {
-        return Double.compare(this.distanceToMean, other.readValue());
-    }
-    
-    // Implement other AbstractCell methods...
+    public double[] getFeatures() { return features.clone(); }
+    public String getSourceId() { return sourceId; }
 }
 ```
 
-**Option B (Requires New Implementation)**: Create generic execution engine adapter
+Then use with existing `CellBasedExecutionEngine`:
 
-**Important**: This adapter does not currently exist in the EDE framework. It must be created as part of the integration effort. This is a proposed implementation that extends EDE patterns to work with the minimal `Cell` interface.
+```java
+CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
+int steps = engine.executeSorting(cells, 2000);
+```
+
+**Option B: Create Generic Execution Engine Adapter**
+
+**Important Note**: This is a simplified implementation that provides basic sorting functionality. It does NOT implement full EDE patterns like neighborhood views and algotype-based behaviors. It serves as a bridge to allow any `Cell` implementation to work with emergent sorting.
 
 ```java
 package lab.experiment095.execution;
@@ -277,9 +290,18 @@ import java.util.List;
 /**
  * Generic cell execution engine for any Cell implementation.
  * 
- * This is a simplified sorting implementation that works with the minimal
- * Cell interface. It does not implement full EDE patterns (neighborhoods,
- * algotype-based behaviors) but provides basic emergent sorting functionality.
+ * This is a simplified sorting implementation that provides basic emergent
+ * sorting functionality for the Cell interface. While it performs effective
+ * sorting, it does not implement the full EDE architecture patterns
+ * (neighborhood views, algotype-driven behaviors, trajectory recording).
+ * 
+ * Use this when:
+ * - You want to work with minimal Cell interface (no AbstractCell)
+ * - You don't need full EDE feature set
+ * - Speed of integration is more important than leveraging advanced patterns
+ * 
+ * For production systems requiring neighborhoods and advanced behaviors,
+ * consider implementing a more complete EDE-aligned engine.
  */
 public class GenericCellExecutionEngine<T extends Cell<T>> {
     
@@ -291,7 +313,7 @@ public class GenericCellExecutionEngine<T extends Cell<T>> {
             totalSwaps += swaps;
             
             if (swaps == 0) {
-                break;  // Converged
+                break;  // Converged - no swaps needed
             }
         }
         
@@ -301,11 +323,12 @@ public class GenericCellExecutionEngine<T extends Cell<T>> {
     private int executeStep(List<T> cells) {
         int swapCount = 0;
         
-        // Simple bubble-like swapping based on compareTo
+        // Single pass of comparisons and swaps
         for (int i = 0; i < cells.size() - 1; i++) {
             T current = cells.get(i);
             T next = cells.get(i + 1);
             
+            // If current > next, they're out of order
             if (current.compareTo(next) > 0) {
                 // Swap
                 cells.set(i, next);
@@ -330,7 +353,9 @@ package lab.experiment095.metadata;
  * External metadata for experiment tracking (EDE pattern).
  * 
  * Keeps experimental metadata separate from cell intrinsic properties,
- * following EDE's external metadata provider pattern.
+ * following EDE's external metadata provider pattern. This allows cells
+ * to remain immutable and focused on sorting, while metadata is managed
+ * in external data structures.
  */
 public class ExperimentMetadata {
     
@@ -352,24 +377,25 @@ public class ExperimentMetadata {
 }
 ```
 
-Use with cells:
+Use with cells via external maps:
 
 ```java
-// Create metadata provider
+// Create metadata map keyed by sourceId
 Map<String, ExperimentMetadata> metadataMap = new HashMap<>();
 for (WaveletFeatureCell cell : cells) {
     metadataMap.put(cell.getSourceId(), new ExperimentMetadata(
-        groundTruth.get(cell.getSourceId()),
-        getDatasetSource(cell.getSourceId()),
-        getQualityScore(cell.getSourceId())
+        groundTruth.get(cell.getSourceId()),     // External map
+        datasetSource.get(cell.getSourceId()),   // External map
+        qualityScore.get(cell.getSourceId())     // External map
     ));
 }
 
-// Access during validation
+// Access during validation without modifying cells
 for (WaveletFeatureCell cell : cells) {
     ExperimentMetadata metadata = metadataMap.get(cell.getSourceId());
-    if (metadata.getGroundTruthLabel()) {
+    if (metadata.getGroundTruthLabel() != null && metadata.getGroundTruthLabel()) {
         // Validate against ground truth
+        validateAgainstGroundTruth(cell, metadata);
     }
 }
 ```
@@ -407,13 +433,13 @@ private ExperimentResults executeExperiment(ExperimentConfig config) {
 ## Migration Checklist
 
 - [ ] Create `lab/experiment-095/cell/WaveletFeatureCell.java`
-- [ ] Decide: Extend `AbstractCell` or use `Cell` interface directly
-- [ ] If using `Cell`: Create `GenericCellExecutionEngine`
-- [ ] If using `AbstractCell`: Define `WaveletAlgotype` enum
+- [ ] Decide: Extend `AbstractSortingCell` (Option A) or use `Cell` interface (Option B)
+- [ ] If Option A: Adapt cell to map Double distances to Integer values
+- [ ] If Option B: Create `GenericCellExecutionEngine` in `lab/experiment-095/execution/`
 - [ ] Refactor `EmergentSorter` to use EDE execution
-- [ ] Create `ExperimentMetadata` for external metadata tracking
+- [ ] Create `ExperimentMetadata` and external metadata maps
 - [ ] Update `WaveCrisprSignalExperiment.executeExperiment()`
-- [ ] Add integration tests
+- [ ] Add integration tests (see Testing Integration below)
 - [ ] Update documentation to reflect completed integration
 
 ## Testing Integration
@@ -443,18 +469,18 @@ private static boolean isSorted(List<WaveletFeatureCell> cells) {
 
 ## Benefits of EDE Integration
 
-1. **Leverage proven execution engine** - No need to debug custom sorting logic
-2. **Frozen cell support** - Handle corrupted signals automatically
-3. **Trajectory recording** - Analyze convergence dynamics
-4. **Metrics integration** - Use EDE's probe system
+1. **Leverage proven execution patterns** - No need to debug custom sorting logic
+2. **Frozen cell support** - Handle corrupted signals automatically (full EDE only)
+3. **Trajectory recording** - Analyze convergence dynamics (full EDE only)
+4. **Metrics integration** - Use EDE's probe system (full EDE only)
 5. **Domain-agnostic patterns** - Follow established Cell architecture
-6. **Future extensions** - Easy to add chimeric populations, clustering analysis
+6. **Future extensions** - Easy to add clustering analysis, advanced features
 
 ## Next Steps
 
 After completing integration:
 1. Validate that tier assignments match standalone implementation
-2. Add trajectory recording to analyze convergence behavior
+2. Add trajectory recording (if using Option A with full EDE)
 3. Implement frozen cell handling for corrupted signals
 4. Add EDE metrics probes for disorder tracking
 5. Update documentation with actual code examples
