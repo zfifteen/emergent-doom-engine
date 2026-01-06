@@ -2,8 +2,10 @@
 
 ---
 **Documentation Version:** Commit [7e77864](https://github.com/zfifteen/emergent-doom-engine/commit/7e77864a5553f144acb55bff7115b22c3d2919cb)  
-**Last Updated:** 2026-01-05
+**Last Updated:** 2026-01-06
 ---
+
+> **📖 Note on Structure:** This README intentionally uses a custom book-like structure instead of the standard package template. The narrative organization (chapters, progressive learning path, table of contents) better serves the test suite's role as an executable instruction manual for learning the EDE framework.
 
 The EDE test suite is an **executable instruction manual** that teaches the framework through progressively complex, well-documented test cases. Tests are organized into five chapters that build from foundational concepts to advanced features, providing a complete learning path for understanding emergent computation.
 
