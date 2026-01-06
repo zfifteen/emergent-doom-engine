@@ -1,29 +1,86 @@
 [![Java CI with Maven](https://github.com/zfifteen/emergent-doom-engine/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/zfifteen/emergent-doom-engine/actions/workflows/maven.yml)  [![Documentation Link Validation](https://github.com/zfifteen/emergent-doom-engine/actions/workflows/validate-docs-links.yml/badge.svg)](https://github.com/zfifteen/emergent-doom-engine/actions/workflows/validate-docs-links.yml)
+
 # Emergent Doom Engine (EDE)
 
-The Emergent Doom Engine (EDE) is a general-purpose, domain-agnostic API for simulating emergent phenomena. It provides a clean, extensible framework that is not tied to any specific application domain, including prime factorization or game development. The engine is designed around sortable Cell primitives and configurable sorting dynamics to enable modular composition of complex emergent systems. [1]
+A general-purpose computational framework for emergent phenomena inspired by biological morphogenesis. The engine demonstrates how complex, goal-directed behaviors arise from simple local interactions without centralized control.
 
-## 🚨 Breaking Changes in v2.0
+## Abstract
 
-**Per-cell threading modes removed** in favor of per-trial parallelism:
-- `ExecutionMode.PARALLEL` and `LOCK_BASED` deleted
-- Use `ExecutionMode.SEQUENTIAL` + `runBatchExperiments()` instead
-- **Performance**: Expect 5-10× speedup due to eliminated synchronization overhead
-- **Migration guide**: See [`docs/MIGRATION_v2.0.md`](docs/MIGRATION_v2.0.md)
+The Emergent Doom Engine implements principles from recent research on sorting algorithms as models of basal intelligence and morphogenesis [1]. Traditional sorting algorithms, when reconceptualized with decentralized autonomous elements operating on unreliable substrates, reveal unexpected competencies including error tolerance, delayed gratification, and emergent clustering. EDE extends these discoveries into a domain-agnostic Java framework where any `Comparable` type can exhibit emergent problem-solving behaviors through local pairwise interactions.
 
-## Why Emergence?
+## Theoretical Foundation
 
-### The Honest Trade-off
+### Morphogenesis and Basal Intelligence
 
-If you just need to sort an array of integers, **use `Arrays.sort()`**. It's faster, simpler, and battle-tested.
+Biological development demonstrates remarkable problem-solving capacities through decentralized coordination. Embryonic cells organize into organs without blueprints. Damaged tissues regenerate correct anatomical structures despite starting from scrambled configurations. These systems exhibit **basal cognition**—minimal forms of goal-directed behavior, memory, and adaptive responses—without explicit programming or centralized control.
 
-The Emergent Doom Engine trades runtime efficiency for unique capabilities that traditional algorithms cannot provide:
+Zhang, Goldstein, and Levin (2024) demonstrated that classical sorting algorithms, when viewed through the lens of autonomous elements navigating problem spaces, reveal these same cognitive-like competencies [1]. The research breaks two fundamental assumptions:
 
-### What Emergence Enables
+**Top-down control** → **Bottom-up agency**: Each array element becomes an autonomous agent implementing sorting policies through local interactions rather than following centralized commands.
 
-#### 1. Robustness on Unreliable Substrates
+**Reliable substrate** → **Unreliable substrate**: Elements may be "damaged" and fail to execute moves, simulating biological constraints and testing robustness.
 
-Traditional sorting fails when parts of the array are locked or corrupted. EDE continues working:
+### Key Findings from Levin et al.
+
+The research by Zhang, Goldstein, and Levin quantitatively characterizes sorting as traversal through problem space, revealing unexpected emergent properties:
+
+**Robustness through autonomy**: Arrays of autonomous elements sort themselves more reliably than traditional implementations in the presence of errors. Distributed agency provides unexpected resilience.
+
+**Delayed gratification**: Autonomous sorting systems temporarily increase disorder to navigate around defects, then resume progress toward goals. Elements accept short-term setbacks for long-term gains without explicit programming of this strategy.
+
+**Emergent clustering**: When arrays contain elements following different sorting algorithms ("chimeric arrays"), spontaneous organization by algorithm type emerges. Elements sort not only by value but also cluster by behavioral strategy.
+
+**Basal cognition without encoding**: Problem-solving capacities—memory-like persistence, decision-making at interaction points, adaptive responses to perturbations—emerge in simple algorithms without being explicitly encoded in their mechanics.
+
+### From Biology to Computation
+
+Morphogenesis provides a template for robust, adaptive computation. The Emergent Doom Engine translates these biological principles into software:
+
+- **Cells as autonomous agents**: Minimal `Comparable` data carriers with local decision-making
+- **Unreliable substrates**: Frozen cells and stochastic failures simulate biological constraints  
+- **Emergent goal-seeking**: Global order arises from local pairwise comparisons without centralized planning
+- **Observable dynamics**: Complete trajectory recording reveals problem-solving strategies as they emerge
+
+The term **"doom"** emphasizes inevitability—the system inexorably converges toward target states through repeated local interactions. This is the engine's purpose, not a failure mode.
+
+## Emergent Computation Model
+
+### Decentralized Intelligence
+
+The engine implements computation through autonomous cell interactions rather than centralized algorithms. Each cell:
+
+- Implements only `compareTo()` for domain-specific comparison logic
+- Makes local swap decisions based on comparisons with neighbors  
+- Operates without knowledge of global array state
+- Follows simple behavioral policies (algotypes) externally assigned
+
+Global order emerges from collective local dynamics. No centralized controller orchestrates the solution—cells discover it through repeated pairwise interactions.
+
+### Computational Primitives
+
+Four fundamental algotypes implement sorting policies from the Levin research:
+
+**BUBBLE**: Bidirectional movement based on immediate neighbors (i±1). Cells swap with adjacent positions when locally disordered.
+
+**INSERTION**: Left-only swaps requiring sorted left side. Cells migrate leftward until finding correct position relative to all left neighbors.
+
+**SELECTION**: Target ideal position with incremental convergence. Cells identify and gradually approach their final destination in the sorted array.
+
+**FIBONACCI**: Logarithmic neighbor coverage via Fibonacci-distance viewing. Novel algotype extending traditional algorithms with non-local awareness.
+
+These policies combine local topology (which neighbors are visible) with swap logic (when to propose exchanges). Emergent behaviors arise from algotype interactions in heterogeneous populations.
+
+### Why Use Emergence?
+
+**Trading efficiency for capabilities**: If you just need to sort an array of integers, use `Arrays.sort()`. It's faster, simpler, and battle-tested. The Emergent Doom Engine trades runtime efficiency for unique properties that traditional algorithms cannot provide.
+
+### Emergent Properties
+
+The engine enables four key capabilities discovered in the Levin research:
+
+**1. Robustness on Unreliable Substrates**
+
+Traditional sorting fails when array positions are locked or corrupted. EDE continues working around defects:
 
 ```java
 // Freeze 30% of array positions (simulate hardware defects)
@@ -36,12 +93,9 @@ SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
 engine.runUntilConvergence(5000);
 ```
 
-**Real-world applications:**
-- Fault-tolerant distributed systems
-- Self-repairing data structures
-- Computation on degraded hardware
+**Applications**: Fault-tolerant distributed systems, self-repairing data structures, computation on degraded hardware.
 
-#### 2. Emergent Organization Patterns
+**2. Emergent Clustering and Organization**
 
 Mix multiple sorting strategies in one array and watch spontaneous segregation emerge:
 
@@ -66,12 +120,9 @@ engine.runUntilConvergence(10000);
 // Bubble cells migrate to one region, insertion cells to another.
 ```
 
-**Real-world applications:**
-- Agent-based modeling
-- Swarm intelligence research
-- Self-organizing systems
+**Applications**: Agent-based modeling, swarm intelligence research, self-organizing systems.
 
-#### 3. Observable Delayed Gratification
+**3. Observable Delayed Gratification**
 
 Some problems require temporary setbacks for long-term progress. EDE makes this visible:
 
@@ -92,12 +143,9 @@ for (int step = 0; step < 100; step++) {
 // Step 80: 12.0 inversions (rapid improvement)
 ```
 
-**Real-world applications:**
-- Understanding biological development
-- Multi-objective optimization
-- Strategy evolution research
+**Applications**: Understanding biological development, multi-objective optimization, strategy evolution research.
 
-#### 4. Domain-Agnostic Framework
+**4. Domain-Agnostic Framework**
 
 Implement `Comparable<T>` and EDE works for ANY problem:
 
@@ -116,45 +164,139 @@ public class FactorCell implements Cell<FactorCell> {
 // Same engine, different problem domain!
 ```
 
-**Real-world applications:**
-- Prototyping emergent algorithms for new domains
-- Cross-domain research (biology ↔ computation)
-- Educational tool for emergence concepts
+**Applications**: Prototyping emergent algorithms for new domains, cross-domain research (biology ↔ computation), educational tool for emergence concepts.
 
-### The Biological Inspiration
+## Implementation Architecture
 
-EDE models how biological systems achieve goals through **decentralized coordination**:
+The EDE translates theoretical principles into a practical Java framework built around three foundational concepts: lightweight cells, external metadata, and emergent execution.
 
-- Embryonic cells organize into organs without blueprints
-- Ant colonies solve complex problems through simple local rules
-- Slime molds navigate mazes via chemical signaling
+### Foundation: The Cell Interface
 
-These systems are **robust, adaptive, and emergent**. EDE brings these properties to computational problems.
+Cells are pure `Comparable` data carriers with zero engine-specific state. The minimal contract requires only domain-specific comparison logic:
 
-### When to Use EDE
+```java
+public interface Cell<T extends Cell<T>> extends Comparable<T> {
+    // Only compareTo() required - inherited from Comparable
+}
+```
 
-✅ **Use EDE when you need:**
-- Fault tolerance (unreliable substrates)
-- Emergent pattern detection (clustering, segregation)
-- Observable dynamics (delayed gratification, trajectories)
-- Cross-domain algorithm research
-- Educational demonstrations of emergence
+Domain implementations encapsulate their own ordering semantics:
 
-❌ **Don't use EDE when you need:**
-- Maximum runtime performance (`Arrays.sort()` wins)
-- Simple, one-off sorting tasks
-- Guaranteed O(n log n) complexity
-- Production-critical code without experimental tolerance
+```java
+// Generic integer cells for basic sorting
+public class GenericCell implements Cell<GenericCell> {
+    private final int value;
+    
+    @Override
+    public int compareTo(GenericCell other) {
+        return Integer.compare(this.value, other.value);
+    }
+}
 
-### Learn More
+// Domain-specific cells for factorization
+public class FactorCell implements Cell<FactorCell> {
+    private final int remainder;  // N mod position
+    
+    @Override
+    public int compareTo(FactorCell other) {
+        return Integer.compare(this.remainder, other.remainder);
+    }
+}
+```
 
-- **[Quickstart Tutorial](#quickstart-your-first-emergent-sort)** - See emergence in action (5 minutes)
-- **[Test Suite Documentation](src/test/java/com/emergent/doom/README.md)** - Deep dive into capabilities
-- **[Levin et al. (2024)](docs/theory/2401.05375v1.md)** - Theoretical foundations
+Cells contain no algotype, no sort direction, no ideal position—only domain data and comparison logic. This separation enables true domain-agnostic sorting.
+
+### External Metadata Management
+
+All sorting metadata lives outside cells, provided by external metadata functions. This architecture achieves complete decoupling between domain logic and engine mechanics:
+
+```java
+// Metadata specifies: algotype, sort direction, ideal position (optional)
+IntFunction<CellMetadata> metadataProvider = index -> 
+    new CellMetadata(
+        Algotype.BUBBLE,              // behavioral policy
+        SortDirection.ASCENDING       // ordering preference
+    );
+```
+
+For chimeric populations mixing multiple algotypes:
+
+```java
+// 50% BUBBLE, 50% INSERTION cells
+AlgotypeProvider algotypeProvider = new PercentageAlgotypeProvider(
+    Map.of(Algotype.BUBBLE, 0.5, Algotype.INSERTION, 0.5),
+    arraySize,
+    seed
+);
+
+IntFunction<CellMetadata> chimericMetadata = index -> {
+    Algotype algotype = Algotype.valueOf(
+        algotypeProvider.getAlgotype(index, arraySize)
+    );
+    return new CellMetadata(algotype, SortDirection.ASCENDING);
+};
+```
+
+This external metadata pattern enables:
+- Same cells usable in different sorting contexts
+- Runtime algotype assignment without cell modification  
+- Chimeric experiments mixing behavioral strategies
+- Complete independence of domain logic from engine infrastructure
+
+### Execution Engine: Orchestrating Emergence
+
+The `SynchronousExecutionEngine` coordinates cell dynamics through a simple evaluation loop:
+
+1. **Evaluate**: Each cell compares itself with neighbors visible from its algotype's topology
+2. **Propose**: Cells following their behavioral policy suggest beneficial swaps
+3. **Execute**: `SwapEngine` applies proposed swaps, respecting frozen cell constraints
+4. **Record**: `Probe` captures array state, swap counts, and metrics at each step
+5. **Converge**: `ConvergenceDetector` signals termination when stable state reached
+
+```java
+// Create execution engine with external metadata
+SynchronousExecutionEngine<GenericCell> engine = 
+    new SynchronousExecutionEngine<>(
+        cells,                  // cell array
+        swapEngine,             // swap mechanics
+        probe,                  // trajectory recorder
+        convergenceDetector,    // termination criterion
+        metadataProvider        // external metadata
+    );
+
+// Run until convergence or max steps
+int steps = engine.runUntilConvergence(maxSteps);
+```
+
+No cell knows the global state. No centralized controller directs the solution. Order emerges from repeated local pairwise comparisons.
+
+### Observability: The Probe System
+
+Complete trajectory recording enables post-hoc analysis of emergent dynamics:
+
+```java
+Probe<GenericCell> probe = new Probe<>();
+
+// ... run experiment with probe ...
+
+// Access recorded trajectory
+List<GenericCell[]> snapshots = probe.getSnapshots();
+long swapCount = probe.getSwapCount();
+long comparisonCount = probe.getComparisonCount();
+
+// Analyze delayed gratification
+MonotonicityError<GenericCell> metric = new MonotonicityError<>();
+for (GenericCell[] snapshot : snapshots) {
+    double disorder = metric.compute(snapshot);
+    // Track disorder over time - may increase temporarily!
+}
+```
+
+Probes capture execution without affecting runtime performance. Analysis happens after convergence, revealing emergent problem-solving strategies as they unfold.
 
 ## Quickstart: Your First Emergent Sort
 
-See emergent sorting in action with a simple 6-integer example. Copy and run this code to watch local cell interactions produce global order:
+This minimal example demonstrates emergent sorting through local cell interactions:
 
 ```java
 import com.emergent.doom.cell.GenericCell;
@@ -202,315 +344,81 @@ public class QuickStart {
 Sorted in 47 steps: [1, 2, 3, 5, 7, 9]
 ```
 
-### How It Works
+Cells discovered the sorted order through 47 steps of local pairwise comparisons. No centralized algorithm directed the solution—global order emerged from bottom-up dynamics.
 
-**Cells are pure data carriers** - `GenericCell` implements only `compareTo()`. No sorting metadata lives in the cell objects.
+### Exploring Further
 
-**Infrastructure manages mechanics** - `SwapEngine` handles swap execution, `Probe` records the trajectory, `ConvergenceDetector` signals completion.
+**Test suite**: [Test Suite Documentation](src/test/java/com/emergent/doom/README.md) demonstrates chimeric populations, delayed gratification, clustering, and frozen cell robustness.
 
-**Metadata providers enable domain-agnostic design** - The `IntFunction<CellMetadata>` supplies each cell position with its algotype and sort direction externally, keeping cells lightweight and reusable across domains.
+**Different algotypes**: Replace `Algotype.BUBBLE` with `SELECTION`, `INSERTION`, or `FIBONACCI` to observe different convergence behaviors.
 
-**Engine orchestrates emergence** - `SynchronousExecutionEngine` evaluates cells sequentially, collecting swap proposals based on local comparisons. Global order emerges from these local interactions without centralized control.
-
-### Next Steps
-
-**Explore the test suite** - See [Test Suite Documentation](src/test/java/com/emergent/doom/README.md) for progressively complex examples, including chimeric populations, delayed gratification, and clustering behaviors.
-
-**Try different algotypes** - Change `Algotype.BUBBLE` to `SELECTION`, `INSERTION`, or `FIBONACCI` to see how different sorting strategies affect convergence.
-
-**Build your own cells** - Implement `Cell<YourType>` with custom `compareTo()` logic to sort domain-specific data using emergent dynamics.
+**Custom domains**: Implement `Cell<YourType>` with domain-specific `compareTo()` logic. Same engine, different problem space.
 
 ## Glossary
 
-<details>
-<summary><strong>Core Concepts</strong></summary>
+### Core Concepts
 
-**Doom**  
-Inevitable convergence toward a target state. In EDE, "doom" means the system inexorably progresses toward a solution through repeated local interactions. This is the engine's *purpose*, not a failure mode. The term emphasizes inevitability rather than catastrophe. See: [`SynchronousExecutionEngine`](src/main/java/com/emergent/doom/execution/SynchronousExecutionEngine.java)
+**Doom**: Inevitable convergence toward a target state through repeated local interactions. The term emphasizes inexorable progress, not catastrophe.
 
-**Emergent Computation**  
-Solutions arise from collective dynamics of simple local agents, not from centralized algorithms. Order emerges from repeated pairwise comparisons without global planning or coordination. Each cell makes local swap decisions based only on comparisons with neighbors, yet global sorting emerges from these interactions.
+**Cell**: Lightweight `Comparable<T>` data carrier implementing only domain-specific comparison logic. Contains zero engine-specific metadata.
 
-**Cell**  
-A lightweight `Comparable<T>` data carrier representing a single agent. Cells encapsulate domain-specific comparison logic but carry zero engine-specific metadata. The only required method is `compareTo()` - all domain logic is self-contained. See: [`Cell<T>`](src/main/java/com/emergent/doom/cell/Cell.java) interface.
+**Algotype**: Behavioral policy determining swap decisions—BUBBLE (bidirectional adjacent), INSERTION (left-migrating), SELECTION (ideal-position seeking), FIBONACCI (logarithmic viewing). Assigned externally via metadata providers.
 
-**Algotype**  
-The behavioral policy a cell follows when deciding swaps. Available algotypes: **BUBBLE** (bidirectional movement based on immediate neighbors), **INSERTION** (left-only swaps, requires sorted left side), **SELECTION** (targets ideal position with incremental convergence), and **FIBONACCI** (logarithmic neighbor coverage via Fibonacci-distance viewing). Algotypes are stored externally via metadata providers, not inside cells. See: [`Algotype`](src/main/java/com/emergent/doom/cell/Algotype.java) enum.
+**Metadata Provider**: Function (`IntFunction<CellMetadata>`) supplying algotype, sort direction, and ideal position for each cell position. Enables domain-agnostic cell design.
 
-**Metadata Provider**  
-A function (`IntFunction<CellMetadata>`) that supplies engine-specific metadata (algotype, sort direction, ideal position) for each cell position. Enables lightweight, domain-agnostic cell design by externalizing engine concerns. Cells remain pure `Comparable` objects without any sorting state. See: [`CellMetadata`](src/main/java/com/emergent/doom/execution/CellMetadata.java)
+**Probe**: Trajectory recording infrastructure capturing snapshots, swap counts, and metrics at each step for post-hoc analysis.
 
-**Probe**  
-Observability infrastructure that records execution trajectories. Captures snapshots of cell state at each step, plus counters for comparisons, swaps, and frozen attempts. Enables post-hoc analysis without affecting execution performance. See: [`Probe`](src/main/java/com/emergent/doom/probe/Probe.java)
+**Convergence**: Equilibrium state where no beneficial swaps remain. Detected via heuristics (consecutive zero-swap steps or sortedness thresholds).
 
-**Convergence**  
-The state where no beneficial swaps remain and the system has reached equilibrium. Detected via heuristics like "N consecutive steps with zero swaps" or "sortedness metric exceeds threshold." The engine terminates when convergence is achieved. See: [`ConvergenceDetector`](src/main/java/com/emergent/doom/execution/ConvergenceDetector.java)
+**Frozen Cell**: Constrained cell simulating substrate unreliability. IMMOVABLE (cannot move), MOVABLE (passive only), NONE (fully mobile).
 
-**Frozen Cell**  
-A cell constrained from moving (simulates unreliable substrate). **IMMOVABLE** cells reject all swaps and cannot participate in any movement. **MOVABLE** cells cannot initiate swaps but can be displaced by other cells. **NONE** cells are fully mobile. Simulates biological defects and tests robustness. See: [`FrozenCellStatus`](src/main/java/com/emergent/doom/swap/FrozenCellStatus.java)
+### Advanced Concepts
 
-</details>
+**Chimeric Population**: Mixed-algotype array enabling emergent clustering studies. Cells spontaneously segregate by behavioral strategy.
 
-<details>
-<summary><strong>Advanced Concepts</strong></summary>
+**Delayed Gratification**: Temporary disorder increases enabling long-term progress. Emerges from sorting dynamics without explicit encoding.
 
-**Chimeric Population**  
-An array mixing multiple algotypes (e.g., 50% BUBBLE, 50% INSERTION). Enables study of emergent clustering, where cells spontaneously segregate by strategy type without explicit clustering logic. Reveals how sorting dynamics encode both value ordering and algorithmic identity. See: [Test Suite - Chimeric Package](src/test/java/com/emergent/doom/chimeric/README.md)
+**Substrate**: Computational environment with potential unreliability (frozen cells, stochastic failures) modeling biological constraints.
 
-**Delayed Gratification**  
-Temporary increases in disorder (monotonicity) that enable long-term progress. Insertion and selection cells may make situations temporarily worse to achieve better final outcomes. For example, a SELECTION cell might swap with a worse neighbor to reach its ideal position, temporarily increasing disorder but moving closer to the solution. Measured via monotonicity metric over time.
+**Topology**: Neighborhood structure defining cell interactions. Shapes emergent behavior through visibility constraints.
 
-**Substrate**  
-The computational environment cells operate on. EDE explores "unreliable substrates" with frozen cells and stochastic ordering to model biological constraints. Unlike traditional algorithms that assume perfect execution, EDE tests how sorting dynamics adapt to defects and failures in the underlying system.
+**Monotonicity Error**: Inversion count measuring disorder. Tracks problem-space navigation including temporary setbacks.
 
-**Spearman Distance**  
-Metric measuring rank correlation between current and target orderings. Reaches 0 when fully sorted, 1 when reverse sorted. Tracks progress independent of cell values - two arrays with different numbers but identical relative ordering have the same Spearman distance. See: [Metrics Package](src/test/java/com/emergent/doom/metrics/README.md)
+## Technical Details
 
-**Topology**  
-The neighborhood structure defining which cells can interact. **BUBBLE** uses immediate neighbors (i±1), **INSERTION** views all left cells, **SELECTION** uses dynamic ideal position, **FIBONACCI** uses Fibonacci-sequence distances for logarithmic coverage. Topology shapes emergent behavior without changing cell logic.
-
-**Monotonicity Error**  
-The number of inversions (disorder) remaining in the array. An inversion is a pair of cells (i, j) where i < j but cell[i] > cell[j]. Monotonicity error decreases as sorting progresses, though delayed gratification strategies may temporarily increase it. Reaches zero when fully sorted.
-
-**Sort Direction**  
-Whether cells prefer ascending (smaller values toward left) or descending (larger values toward left) order. Part of external metadata - the same cell can sort ascending or descending based on configuration. Chimeric populations can mix both directions in a single array. See: [`SortDirection`](src/main/java/com/emergent/doom/cell/SortDirection.java)
-
-</details>
-
-## Theoretical Background
-
-The EDE concept is inspired by research on sorting algorithms as models of emergent behavior and decentralized intelligence. Zhang, Goldstein, and Levin (2024) demonstrated that classical sorting algorithms can serve as minimal models of basal cognition and morphogenesis, revealing unexpected competencies in self-organizing systems.
-
-This work extends those ideas into a general-purpose engine framework, where sorting dynamics become the fundamental computational primitive for simulating emergent phenomena across diverse application domains.
-
-## Key Concepts from the Levin et al. Research
-
-### Decentralized Intelligence and Bottom-Up Control
-The Levin paper breaks the traditional assumption of top-down control in sorting algorithms. Instead of treating sorting as a centralized process controlled by an external executor, the research reconceptualizes each array element as an autonomous agent with minimal agency.
-
-Each element implements sorting policies from the bottom up through local interactions with neighbors. This demonstrates that complex collective behaviors can emerge from simple, decentralized rules without centralized coordination.
-
-### Robustness Through Autonomous Element Agency
-A key finding is that arrays of autonomous elements sort themselves more reliably and robustly than traditional implementations, particularly in the presence of errors or "damaged" elements. This robustness emerges from the distributed nature of the sorting process.
-
-When individual elements possess agency, the system can adapt to failures without catastrophic breakdown. This demonstrates that basal forms of intelligence can provide unexpected resilience in computational systems.
-
-### Delayed Gratification and Problem-Space Navigation
-The research quantitatively characterizes sorting activity as traversal through a problem space, revealing that autonomous sorting systems exhibit delayed gratification behavior. Elements can temporarily increase disorder (reduce progress toward sorted state) to navigate around defects or obstacles, then resume progress toward the goal.
-
-This capacity to accept temporary setbacks for long-term gain represents a form of minimal goal-directed behavior. The behavior emerges from the sorting dynamics themselves without explicit programming.
-
-### Emergent Clustering in Chimeric Systems
-When arrays contain elements following different sorting algorithms ("chimeric arrays"), unexpected clustering behavior emerges. Elements sort themselves not only by value but also spontaneously organize by algorithm type.
-
-This reveals that the sorting process encodes information about both the target state and the method being used. The emergent pattern formation demonstrates that simple systems can exhibit multiple simultaneous organizational principles.
-
-### Basal Cognition Without Explicit Encoding
-The most significant insight is that problem-solving capacities emerge in simple, familiar algorithms without being explicitly encoded in their underlying mechanics. The sorting algorithms, when viewed through the lens of autonomous elements navigating problem spaces, reveal memory-like persistence, decision-making at interaction points, and adaptive responses to perturbations.
-
-This demonstrates that basal forms of intelligence can exist in minimal computational substrates. The finding provides a new perspective on the field of Diverse Intelligence, suggesting that cognitive-like competencies may be far more widespread in simple systems than previously recognized.
-
-## Design Concept
-
-The EDE is implemented in Java and built around the standard java.lang.Comparable interface. Users define domain-specific Cells that implement Comparable, allowing the engine to order and process them using well-understood Java sorting contracts.
-
-The engine provides four built-in sorting algorithm implementations:
-
-- Selection Sort (SELECTION algotype)
-- Bubble Sort (BUBBLE algotype)
-- Insertion Sort (INSERTION algotype)
-- Fibonacci Jump Sort (FIBONACCI algotype) - Novel algotype using Fibonacci-distance viewing for logarithmic neighbor coverage
-
-The Engine API allows users to configure which sorting algorithm is applied to their Cells, making the sorting strategy a tunable parameter of the emergent system.
-
-## User-Facing Components
-
-The EDE exposes two major user-facing components:
-
-### Engine API
-The Engine API allows implementors to customize engine parameters and behavior, including selection of the sorting algorithm (SELECTION, BUBBLE, INSERTION, or FIBONACCI algotypes) to be applied during Cell processing. This provides flexibility to adapt the engine to specific emergent phenomena and experimental setups.
-
-### Implementation API
-The Implementation API facilitates the creation of domain-specific Cells that implement the java.lang.Comparable interface. This ensures modularity, interoperability, and the ability to compose complex systems from well-defined, sortable components.
-
-For more information and to contribute, visit the project repository at https://github.com/zfifteen/emergent-doom-engine.
-
-## Java Architecture
-
-The EDE translates the theoretical concepts from the Levin et al. research into a practical Java implementation built around autonomous, sortable Cells and configurable sorting dynamics. The architecture is designed to enable emergent behaviors through decentralized bottom-up interactions while providing clean APIs for extensibility.
-
-### Core Components
-
-#### Cell Interface
-The foundation of the EDE is the Cell interface, which extends `java.lang.Comparable<Cell>`. Cells are pure data carriers that implement only `compareTo()` for domain-specific comparison logic. All sorting metadata (algotype, sort direction, ideal position) is managed externally via `CellMetadata`, achieving true domain-agnostic sorting where cells contain zero engine-specific state.
-
-#### Execution Engines
-Single-trial execution uses `SynchronousExecutionEngine`. Batch-level parallelism is provided by the `ExperimentRunner` in the experiment package:
-- **SynchronousExecutionEngine**: Sequential cell evaluation for deterministic, step-by-step execution
-- **ExperimentRunner (batch parallelism)**: Coordinates batch execution across trials via `runBatchExperiments()`, replacing the removed per-cell `ParallelExecutionEngine` and `LockBasedExecutionEngine` threading modes in v2.0.
-
-The execution engine coordinates cell swap decisions, applies convergence detection, and records execution trajectories via the Probe interface.
-
-#### CellMetadata
-External metadata provider system that associates sorting metadata with cell positions without modifying cell implementations. Each metadata entry specifies:
-- **Algotype**: Sorting algorithm (BUBBLE, SELECTION, or INSERTION)
-- **SortDirection**: Ordering preference (ASCENDING or DESCENDING)
-- **Ideal Position**: Target position for convergence detection
-
-This architecture enables chimeric populations where different cells follow different algorithms and sort in opposite directions.
-
-#### Metrics and Analysis
-The metrics package implements quantitative characterization methods from the Levin paper:
-- **MonotonicityError**: Disorder remaining at each step (inversion count)
-- **SortednessValue**: Progress toward sorted state
-- **DelayedGratificationCalculator**: Temporary error increases that lead to long-term gains
-- **AggregationValue**: Clustering behavior in chimeric populations
-
-The analysis package provides trajectory visualization and statistical analysis of emergent behaviors.
-
-#### Probe System
-Trajectory recording infrastructure that captures:
-- Step-by-step snapshots of array state
-- Swap counts and comparison operations
-- Convergence metrics and timing data
-- Domain-specific metadata for post-hoc analysis
-
-Enables detailed examination of emergent problem-solving behaviors without impacting execution performance.
-
-### Key Features
-
-- **Domain Agnostic**: Minimal cell interface requires only `compareTo()` - all domain logic is encapsulated
-- **Pure Comparison**: Cells interact only through ordering relationships
-- **Emergent Behavior**: Solutions arise from collective dynamics, not programmed algorithms
-- **Flexible Topology**: Configurable neighborhood structures and iteration strategies
-- **Rich Analysis**: Built-in trajectory recording, metrics, and visualization
-- **Chimeric Populations**: Mix multiple cell behaviors in single experiments
-- **Frozen Constraints**: Progressive crystallization of partial solutions
-
-## Lightweight Cell Architecture
-
-The EDE achieves true domain-agnostic sorting through a **lightweight cell** design where cells are pure `Comparable` data carriers with zero engine-specific state. All sorting metadata (algorithm type, sort direction, ideal position) is managed externally by execution engines via metadata providers.
-
-### Visual Overview: Separation of Concerns
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    EDE Architecture                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌────────────────┐              ┌──────────────────────┐   │
-│  │ Your Domain    │              │ Execution Engine     │   │
-│  │                │              │                      │   │
-│  │  Cell          │              │  Metadata Provider   │   │
-│  │  ✅ compareTo() │ ◄────────►  │  ✅ Algotype         │   │
-│  │  ✅ getValue()  │              │  ✅ SortDirection    │   │
-│  │                │              │  ✅ IdealPosition    │   │
-│  │  [Pure domain] │              │  [Engine concerns]   │   │
-│  └────────────────┘              └──────────────────────┘   │
-│         │                                    │               │
-│         │                                    │               │
-│         ▼                                    ▼               │
-│  Domain-specific                    IntFunction<CellMetadata>│
-│  comparison logic                   index → metadata         │
-│                                                               │
-└─────────────────────────────────────────────────────────────┘
-
-Key Benefit: Any Comparable type can be sorted emergently without
-             coupling to the EDE framework!
-```
-
-### Pure Domain Cells
-
-Cells only implement `compareTo()` - they contain no knowledge of sorting algorithms:
-
-```java
-public class MyDomainCell implements Cell<MyDomainCell> {
-    private final MyDomainValue value;
-    
-    @Override
-    public int compareTo(MyDomainCell other) {
-        return this.value.compareTo(other.value);
-    }
-}
-```
-
-### External Metadata Management
-
-All sorting metadata is provided to the engine via a metadata provider function:
-
-```java
-// Define metadata for each cell position
-IntFunction<CellMetadata> metadataProvider = index -> 
-    new CellMetadata(
-        Algotype.BUBBLE,              // sorting algorithm
-        SortDirection.ASCENDING       // sort direction
-    );
-
-// Create engine with metadata provider
-SynchronousExecutionEngine<MyDomainCell> engine = 
-    new SynchronousExecutionEngine<>(
-        cells, 
-        swapEngine, 
-        probe, 
-        convergenceDetector, 
-        metadataProvider  // externally managed metadata
-    );
-
-// For parallel execution, run multiple trials concurrently:
-// new ExperimentRunner<>(cellFactory, topologyFactory).runBatchExperiments(config);
-```
-
-### Chimeric Populations
-
-For experiments mixing different algorithms, combine an algotype provider with metadata configuration:
-
-```java
-// Create algotype provider (50% BUBBLE, 50% SELECTION)
-AlgotypeProvider algotypeProvider = new PercentageAlgotypeProvider(
-    Map.of(Algotype.BUBBLE, 0.5, Algotype.SELECTION, 0.5),
-    arraySize,
-    seed
-);
-
-// Build configuration with metadata provider factory
-ChimericExperimentConfig config = ChimericExperimentConfig.builder()
-    .arraySize(100)
-    .maxSteps(5000)
-    .algotypeMix(Map.of(Algotype.BUBBLE, 0.5, Algotype.SELECTION, 0.5))
-    .sortDirection(SortDirection.ASCENDING)
-    .build();
-
-// Create metadata provider from configuration
-IntFunction<CellMetadata> metadataProvider = 
-    config.createMetadataProvider(algotypeProvider);
-```
-
-This architecture achieves **true generality** - any `Comparable` object can be sorted without implementing engine-specific interfaces or carrying sorting metadata.
-
-## Design Principles
-
-1. **Minimal Cell Contract**: Cells only need to be comparable - the engine remains blind to domain semantics
-2. **Local Interactions**: Cells swap based on local comparisons, enabling emergence
-3. **Topology-Driven**: Neighborhood structure shapes the emergent behavior
-4. **Observable Dynamics**: Complete trajectory recording for post-hoc analysis
-
-## Architecture
+### Package Architecture
 
 ```
 com.emergent.doom
 ├── cell/               # Cell interface and implementations
-├── topology/           # Neighborhood and iteration strategies
+├── topology/           # Neighborhood and iteration strategies  
 ├── swap/               # Swap mechanics and frozen cell management
 ├── probe/              # Execution trajectory recording
 ├── execution/          # Main engine and convergence detection
 ├── metrics/            # Quality measures and analysis
 ├── experiment/         # Multi-trial experiment framework
 ├── chimeric/           # Mixed-algotype populations
-├── analysis/           # Trajectory visualization and analysis
-└── examples/           # Example implementations
+└── analysis/           # Trajectory visualization and analysis
 ```
 
-## Quick Start
+### Execution Modes
+
+**SynchronousExecutionEngine**: Sequential cell evaluation for deterministic, step-by-step execution with complete trajectory visibility.
+
+**ExperimentRunner**: Batch-level parallelism coordinating multiple trials concurrently via `runBatchExperiments()`. Replaces removed per-cell threading modes for 5-10× speedup through eliminated synchronization overhead.
+
+### Metrics and Analysis
+
+Quantitative characterization methods from the Levin paper:
+
+- **MonotonicityError**: Inversion count tracking disorder at each step
+- **SortednessValue**: Progress toward sorted state measurement
+- **DelayedGratificationCalculator**: Identifies temporary error increases enabling long-term gains
+- **AggregationValue**: Clustering behavior analysis in chimeric populations
+
+Analysis package provides trajectory visualization and statistical summaries of emergent behaviors.
+
+## Build and Run
 
 ### Prerequisites
 
@@ -523,116 +431,52 @@ com.emergent.doom
 mvn clean compile
 ```
 
-### Run Example
+### Run Tests
+
+```bash
+mvn test
+```
+
+### Package
 
 ```bash
 mvn package
 java -jar target/emergent-doom-engine-0.3.0-alpha.jar
 ```
 
-## Usage Example
+## Example Application: Integer Factorization
+
+The included factorization domain demonstrates emergent problem-solving beyond sorting:
 
 ```java
-// Define target number to factor
+// FactorCell: Remainder-based comparison for integer factorization
+public class RemainderCell implements Cell<RemainderCell> {
+    private final int remainder;  // N mod position
+    
+    @Override
+    public int compareTo(RemainderCell other) {
+        return Integer.compare(this.remainder, other.remainder);
+    }
+}
+
+// Configure factorization experiment
 BigInteger target = new BigInteger("143"); // 11 × 13
-int arraySize = 20;
-
-// Configure experiment
-ExperimentConfig config = new ExperimentConfig(
-    arraySize,      // number of cells
-    1000,           // max steps
-    3,              // stable steps for convergence
-    true            // record trajectory
-);
-
-// Create experiment runner
 ExperimentRunner<RemainderCell> runner = new ExperimentRunner<>(
-    () -> createCellArray(target, arraySize),    // cell factory
-    () -> new LinearNeighborhood<>(1)             // topology factory
+    () -> createCellArray(target, arraySize),
+    () -> new LinearNeighborhood<>(1)
 );
 
-// Add metrics
-runner.addMetric("Monotonicity", new MonotonicityError<>());
+// Run experiment
+ExperimentResults<RemainderCell> results = runner.runExperiment(config, trials);
 
-// Run multiple trials
-ExperimentResults<RemainderCell> results = runner.runExperiment(config, 5);
-
-// Analyze results
-System.out.println(results.getSummaryReport());
+// Perfect factors (remainder = 0) emerge at array front through local comparisons
 ```
 
-## Core Components
-
-### Cell Interface
-
-The minimal contract that all cells must implement:
-
-```java
-public interface Cell<T extends Cell<T>> extends Comparable<T> {
-    // Only compareTo() required - inherited from Comparable
-}
-```
-
-### Topology
-
-Defines neighborhood relationships and iteration order:
-
-```java
-public interface Topology<T extends Cell<T>> {
-    List<Integer> getNeighbors(int position, int arraySize);
-    List<Integer> getIterationOrder(int arraySize);
-}
-```
-
-### Execution Engine
-
-Orchestrates the cell dynamics using metadata providers:
-
-```java
-// Create metadata provider
-IntFunction<CellMetadata> metadataProvider = index -> 
-    new CellMetadata(Algotype.BUBBLE, SortDirection.ASCENDING);
-
-// Modern execution engines with metadata support
-SynchronousExecutionEngine<T> engine = new SynchronousExecutionEngine<>(
-    cells,                  // initial cell array
-    swapEngine,             // swap mechanics
-    probe,                  // trajectory recorder
-    convergenceDetector,    // termination criterion
-    metadataProvider        // external metadata
-);
-
-engine.runUntilConvergence(maxSteps);
-```
-
-## Factorization Domain Integration
-
-The included factorization example demonstrates how to apply EDE to number theory:
-
-- **Cell Implementation**: `RemainderCell` stores N mod position
-- **Sorting Behavior**: Cells with smaller remainders are "better"
-- **Emergent Factorization**: Perfect factors (remainder = 0) naturally migrate to front
-- **No Explicit Search**: Factors emerge from comparison-driven swapping
-
-## Metrics
-
-Built-in metrics for analysis:
-
-- **MonotonicityError**: Counts inversions (disorder) in the array
-- **DelayedGratificationIndex**: Measures position-weighted quality distribution
-- **AggregationValue**: Custom aggregation over cell values
-
-## Frozen Cell Mechanics
-
-Cells can be frozen to stabilize partial solutions:
-
-- **NONE**: Fully mobile
-- **MOVABLE**: Can move but cannot be displaced
-- **IMMOVABLE**: Completely frozen
+Factors emerge from comparison-driven swapping without explicit search. Same engine, different problem domain.
 
 ## Extending EDE
 
-### Create a Custom Cell Type
+### Custom Cell Types
 
 ```java
 public class MyCell implements Cell<MyCell> {
@@ -646,7 +490,7 @@ public class MyCell implements Cell<MyCell> {
 }
 ```
 
-### Create a Custom Topology
+### Custom Topologies
 
 ```java
 public class MyTopology<T extends Cell<T>> implements Topology<T> {
@@ -662,7 +506,7 @@ public class MyTopology<T extends Cell<T>> implements Topology<T> {
 }
 ```
 
-### Create a Custom Metric
+### Custom Metrics
 
 ```java
 public class MyMetric<T extends Cell<T>> implements Metric<T> {
@@ -678,46 +522,41 @@ public class MyMetric<T extends Cell<T>> implements Metric<T> {
 }
 ```
 
-## Testing
-
-```bash
-mvn test
-```
-
 ## Documentation
 
-### Project Documentation
+Comprehensive documentation available in `/docs`:
 
-Comprehensive documentation is available in the `/docs` directory:
-
-- **[Documentation Index](docs/README.md)** - Complete documentation structure
-- **[Theory](docs/theory/2401.05375v1.md)** - Levin et al. paper on sorting as morphogenesis
-- **[Findings](docs/findings/README.md)** - Experimental results and analyses
+- **[Documentation Index](docs/README.md)** - Complete structure
+- **[Theory](docs/theory/2401.05375v1.md)** - Levin et al. paper summary
+- **[Findings](docs/findings/README.md)** - Experimental results
 - **[Requirements](docs/requirements/REQUIREMENTS.md)** - Technical specifications
+- **[Test Suite](src/test/java/com/emergent/doom/README.md)** - Detailed examples
 
-### API Documentation
-
-Generate Javadoc:
+Generate API documentation:
 
 ```bash
-mvn javadoc:javadoc
+mvn javadoc:javadoc  # Output: target/site/apidocs/
 ```
 
-Documentation will be in `target/site/apidocs/`.
+## When to Use EDE
 
-## Future Extensions
+**Use EDE for:**
+- Fault tolerance on unreliable substrates
+- Emergent pattern detection (clustering, segregation)
+- Observable dynamics (delayed gratification, trajectories)
+- Cross-domain algorithm research
+- Educational demonstrations of emergence
 
-Potential areas for expansion:
+**Use traditional algorithms for:**
+- Maximum runtime performance
+- Simple, one-off sorting tasks
+- Guaranteed O(n log n) complexity
+- Production-critical code without experimental tolerance
 
-- **Batch Parallel Execution**: Parallelize across trials via `runBatchExperiments()` [IMPLEMENTED]
-- **Adaptive Topologies**: Dynamic neighborhood restructuring
-- **Hybrid Algotypes**: Automatic mixing of cell strategies
-- **Visualization Tools**: Real-time trajectory visualization
-- **Domain Libraries**: Pre-built cells for common problems
+## Contributing
 
+Visit the project repository: [https://github.com/zfifteen/emergent-doom-engine](https://github.com/zfifteen/emergent-doom-engine)
 
 ## References
 
-[1] Zhang, T., Goldstein, A., Levin, M. (2024). "Classical Sorting Algorithms as a Model of Morphogenesis: self-sorting arrays reveal unexpected competencies in a minimal model of basal intelligence." Available at: https://github.com/zfifteen/emergent-doom-engine/blob/main/docs/theory/2401.05375v1.pdf
-
-[2] Emergent Doom Engine - Implementation Repository. https://github.com/zfifteen/emergent-doom-engine
+[1] Zhang, T., Goldstein, A., Levin, M. (2024). "Classical Sorting Algorithms as a Model of Morphogenesis: self-sorting arrays reveal unexpected competencies in a minimal model of basal intelligence." [PDF](https://github.com/zfifteen/emergent-doom-engine/blob/main/docs/theory/2401.05375v1.pdf)
