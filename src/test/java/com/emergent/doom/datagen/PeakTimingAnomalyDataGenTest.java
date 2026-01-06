@@ -268,14 +268,8 @@ class PeakTimingAnomalyDataGenTest {
         NoSwapConvergence<GenericCell> convergenceDetector = new NoSwapConvergence<>(3);
         
         // Create metadata provider
-        java.util.function.IntFunction<com.emergent.doom.execution.CellMetadata> metadataProvider = i -> {
-            String algotypeName = provider.getAlgotype(i, ARRAY_SIZE);
-            Algotype cellAlgotype = Algotype.valueOf(algotypeName.toUpperCase());
-            return new com.emergent.doom.execution.CellMetadata(
-                cellAlgotype, 
-                com.emergent.doom.cell.SortDirection.ASCENDING
-            );
-        };
+        java.util.function.IntFunction<com.emergent.doom.execution.CellMetadata> metadataProvider = 
+            createMetadataProvider(provider);
         
         // Create and run execution engine
         SynchronousExecutionEngine<GenericCell> engine = new SynchronousExecutionEngine<>(
@@ -582,35 +576,85 @@ class PeakTimingAnomalyDataGenTest {
     }
 
     /**
-     * Calculates theoretical aggregation for random 50/50 algotype mix.
+     * Calculates theoretical aggregation for random algotype mix.
      *
-     * <p>For a randomly shuffled array with fraction p of type A and (1-p) of type B,
-     * the expected percentage of cells with at least one same-type neighbor is
-     * approximately: 1 - 2*p*(1-p) for interior cells.</p>
-     *
-     * <p>For p=0.5: 1 - 2*0.5*0.5 = 1 - 0.5 = 0.5 or 50%... but this is simplified.
-     * A more accurate calculation considers all positions including boundaries.</p>
+     * <p><strong>MATHEMATICAL DERIVATION:</strong>
+     * 
+     * <p>For a random shuffle with fraction p of type A and (1-p) of type B:
+     * 
+     * <p><strong>For type A cells:</strong>
+     * <ul>
+     *   <li>Probability that a neighbor is type A: p</li>
+     *   <li>Probability that a neighbor is type B: (1-p)</li>
+     *   <li>For interior cells with 2 neighbors:
+     *       <ul>
+     *         <li>P(both neighbors different type) = (1-p)²</li>
+     *         <li>P(at least one same-type neighbor) = 1 - (1-p)²</li>
+     *       </ul>
+     *   </li>
+     * </ul>
+     * 
+     * <p><strong>For type B cells:</strong>
+     * <ul>
+     *   <li>Probability that a neighbor is type B: (1-p)</li>
+     *   <li>P(at least one same-type neighbor) = 1 - p²</li>
+     * </ul>
+     * 
+     * <p><strong>Expected aggregation (weighted average):</strong>
+     * <pre>
+     * E[aggregation] = p × [1 - (1-p)²] + (1-p) × [1 - p²]
+     *                = p × [1 - (1-2p+p²)] + (1-p) × (1 - p²)
+     *                = p × [2p - p²] + (1-p) × (1 - p²)
+     * </pre>
+     * 
+     * <p><strong>For p = 0.5 (50/50 mix):</strong>
+     * <pre>
+     * E[aggregation] = 0.5 × [1 - 0.25] + 0.5 × [1 - 0.25]
+     *                = 0.5 × 0.75 + 0.5 × 0.75
+     *                = 0.75 = 75%
+     * </pre>
+     * 
+     * <p><strong>NOTE:</strong> This is for interior cells with 2 neighbors. 
+     * Boundary cells have only 1 neighbor, which slightly reduces aggregation.
+     * For array size 100, boundary effects are ~2%, so expected ≈ 73-75%.
      *
      * @param fractionA fraction of type A cells (0.0 to 1.0)
      * @param fractionB fraction of type B cells (0.0 to 1.0)
      * @return expected aggregation percentage for random shuffle
      */
     private double calculateTheoreticalRandomAggregation(double fractionA, double fractionB) {
-        // Probability that a neighbor is the same type
-        // For type A cell: probability neighbor is also A = fractionA
-        // For type B cell: probability neighbor is also B = fractionB
+        // P(at least one same-type neighbor) = 1 - P(both neighbors different type)
+        // For type A cell: P(both different) = (1 - fractionA)²
+        double probSameForA = 1.0 - Math.pow(1.0 - fractionA, 2);
         
-        // Expected fraction with at least one same-type neighbor:
-        // For interior cells with 2 neighbors:
-        // P(at least one same) = 1 - P(both different)
+        // For type B cell: P(both different) = fractionA²
+        double probSameForB = 1.0 - Math.pow(fractionA, 2);
         
         // Weighted average across cell types
-        double probSameForA = 1.0 - Math.pow(1.0 - fractionA, 2);  // At least one A neighbor
-        double probSameForB = 1.0 - Math.pow(1.0 - fractionB, 2);  // At least one B neighbor
-        
         double expectedAggregation = (fractionA * probSameForA + fractionB * probSameForB) * 100.0;
         
         return expectedAggregation;
+    }
+
+    /**
+     * Creates metadata provider function for execution engine.
+     *
+     * <p>Converts position indices to CellMetadata containing algotype and sort direction.
+     * Used by SynchronousExecutionEngine to access cell type information during execution.</p>
+     *
+     * @param provider algotype provider that maps positions to algotypes
+     * @return function that maps position index to CellMetadata
+     */
+    private java.util.function.IntFunction<com.emergent.doom.execution.CellMetadata> 
+            createMetadataProvider(PercentageAlgotypeProvider provider) {
+        return i -> {
+            String algotypeName = provider.getAlgotype(i, ARRAY_SIZE);
+            Algotype cellAlgotype = Algotype.valueOf(algotypeName.toUpperCase());
+            return new com.emergent.doom.execution.CellMetadata(
+                cellAlgotype, 
+                com.emergent.doom.cell.SortDirection.ASCENDING
+            );
+        };
     }
 
     /**
