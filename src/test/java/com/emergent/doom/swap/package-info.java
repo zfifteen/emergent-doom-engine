@@ -9,7 +9,7 @@
  * <ul>
  *   <li><b>Local Agent Interactions</b> - Pairwise swaps with no global orchestration</li>
  *   <li><b>Unreliable Substrate Simulation</b> - Frozen cells model damaged agents</li>
- *   <li><b>Frozen Cell States</b> - NONE (active), MOVABLE (passive), IMMUTABLE (frozen)</li>
+ *   <li><b>Frozen Cell States</b> - NONE (active), MOVABLE (passive), IMMOVABLE (frozen)</li>
  *   <li><b>Swap Count Tracking</b> - Metrics for convergence detection</li>
  * </ul>
  *
@@ -24,7 +24,7 @@
  * <ul>
  *   <li><b>NONE</b> - Fully active, can initiate and participate in swaps</li>
  *   <li><b>MOVABLE</b> - Passive, can be moved by others but cannot initiate</li>
- *   <li><b>IMMUTABLE</b> - Completely frozen, cannot move or be moved</li>
+ *   <li><b>IMMOVABLE</b> - Completely frozen, cannot move or be moved</li>
  * </ul>
  *
  * <h2>Prerequisites</h2>
