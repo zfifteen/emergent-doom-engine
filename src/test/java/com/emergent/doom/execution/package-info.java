@@ -38,7 +38,6 @@
  * <p>After mastering execution engines, proceed to {@link com.emergent.doom.experiment} to learn
  * about experimental validation and statistical analysis.</p>
  *
- * @see <a href="README.md">Execution Package README</a>
  * @see com.emergent.doom.execution.CellBasedExecutionEngine
  * @see com.emergent.doom.execution.ConvergenceDetector
  */

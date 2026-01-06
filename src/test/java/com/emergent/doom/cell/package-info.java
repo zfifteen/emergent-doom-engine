@@ -31,7 +31,6 @@
  * <p>After mastering cell fundamentals, proceed to {@link com.emergent.doom.swap} to learn
  * about swap mechanics and frozen cell constraints.</p>
  *
- * @see <a href="README.md">Cell Package README</a>
  * @see com.emergent.doom.cell.Cell
  */
 package com.emergent.doom.cell;

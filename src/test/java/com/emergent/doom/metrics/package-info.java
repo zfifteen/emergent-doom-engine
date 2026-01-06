@@ -38,7 +38,6 @@
  * <p>After mastering metrics, proceed to {@link com.emergent.doom.execution} to learn
  * about execution engines and convergence detection.</p>
  *
- * @see <a href="README.md">Metrics Package README</a>
  * @see com.emergent.doom.metrics.Monotonicity
  * @see com.emergent.doom.metrics.DelayedGratificationCalculator
  */

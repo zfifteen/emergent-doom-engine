@@ -35,7 +35,6 @@
  * <p>After understanding traditional comparisons, explore {@link com.emergent.doom.experiment}
  * for experimental validation and statistical analysis of emergent behavior.</p>
  *
- * @see <a href="README.md">Traditional Package README</a>
  * @see com.emergent.doom.traditional.TraditionalSortEngine
  * @see com.emergent.doom.traditional.TraditionalSortMetrics
  */

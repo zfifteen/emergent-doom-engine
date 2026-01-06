@@ -34,7 +34,6 @@
  * <p>After mastering swap mechanics, proceed to {@link com.emergent.doom.probe} to learn
  * about execution trajectory recording and observability.</p>
  *
- * @see <a href="README.md">Swap Package README</a>
  * @see com.emergent.doom.swap.SwapEngine
  * @see com.emergent.doom.swap.FrozenCellStatus
  */

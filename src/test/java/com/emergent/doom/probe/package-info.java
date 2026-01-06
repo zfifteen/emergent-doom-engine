@@ -36,7 +36,6 @@
  * <p>After mastering probe recording, proceed to {@link com.emergent.doom.metrics} to learn
  * about quality measures and convergence detection.</p>
  *
- * @see <a href="README.md">Probe Package README</a>
  * @see com.emergent.doom.probe.Probe
  * @see com.emergent.doom.probe.ThreadSafeProbe
  */
