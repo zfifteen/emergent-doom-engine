@@ -466,6 +466,16 @@ GenericCellExecutionEngine<WaveletFeatureCell> engine = new GenericCellExecution
 int steps = engine.executeSorting(cells, 2000);
 assertTrue(isSorted(cells));  // Verify sorted order
 
+// Helper method for verifying sort order in tests
+private static boolean isSorted(List<WaveletFeatureCell> cells) {
+    for (int i = 0; i < cells.size() - 1; i++) {
+        if (cells.get(i).compareTo(cells.get(i + 1)) > 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
 /**
  * Helper method for verifying sort order in tests.
  * 
