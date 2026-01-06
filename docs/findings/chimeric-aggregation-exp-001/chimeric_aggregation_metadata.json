@@ -1,0 +1,43 @@
+{
+  "experiment_name": "Chimeric Aggregation Experiment 001",
+  "description": "Time-series analysis of emergent clustering in mixed-algotype populations",
+  "generated_at": "2026-01-06T03:05:24Z",
+  "total_configurations": 81,
+  "total_data_points": 6636,
+  "parameters": {
+    "array_sizes": [30, 50, 100],
+    "algotype_mixes": [
+      "100%_Bubble",
+      "50/50_Bubble/Selection",
+      "33/33/33_Bubble/Selection/Insertion"
+    ],
+    "frozen_cells": [0, 1, 3],
+    "seeds": [42, 123, 789],
+    "max_steps": 5000
+  },
+  "metrics": {
+    "aggregation_pct": {
+      "definition": "Percentage of cells with at least one same-algotype neighbor",
+      "unit": "percent",
+      "range": [0, 100]
+    },
+    "sortedness_pct": {
+      "definition": "Percentage of cells in correct final sorted position",
+      "unit": "percent",
+      "range": [0, 100]
+    },
+    "monotonicity_pct": {
+      "definition": "Percentage of cells >= their predecessor",
+      "unit": "percent",
+      "range": [0, 100]
+    },
+    "swap_count": {
+      "definition": "Cumulative swaps executed",
+      "unit": "count",
+      "range": [0, "infinity"]
+    }
+  },
+  "csv_file": "chimeric_aggregation_timeseries.csv",
+  "repository": "https://github.com/zfifteen/emergent-doom-engine",
+  "framework_version": "0.3.0-alpha"
+}
