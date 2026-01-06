@@ -39,6 +39,7 @@ public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
     
     public double[] getFeatures() { return features.clone(); }
     public String getSourceId() { return sourceId; }
+    public double getDistanceToMean() { return distanceToMean; }
     
     private static double euclidean(double[] a, double[] b) {
         double sum = 0.0;
@@ -51,7 +52,46 @@ public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
 }
 ```
 
-### Using the Cell
+### Using the Cell - Two Execution Options
+
+#### Option A: Using CellBasedExecutionEngine (Existing EDE Framework)
+
+**Note**: This requires `WaveletFeatureCell` to extend `AbstractSortingCell` (Integer-based values). If using the `Cell` interface directly with Double values, this approach will NOT compile.
+
+If you adapt `WaveletFeatureCell` to extend `AbstractSortingCell`:
+
+```java
+// 1. Extract features
+List<FeatureVector> rawFeatures = extractor.extractWaveletLeaders(fast5Data);
+
+// 2. Compute mean pattern
+double[] meanPattern = computeMeanPattern(rawFeatures);
+
+// 3. Create cells (as AbstractSortingCell subclass)
+List<WaveletFeatureCell> cells = rawFeatures.stream()
+    .map(fv -> new WaveletFeatureCell(fv.getData(), fv.getId(), meanPattern))
+    .collect(Collectors.toList());
+
+// 4. Execute using existing CellBasedExecutionEngine
+import com.emergent.doom.execution.CellBasedExecutionEngine;
+
+CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
+int steps = engine.executeSorting(cells, 2000);
+
+// 5. Extract tiers from sorted order
+int n = cells.size();
+int tier1Cutoff = (int) (n * 0.05);
+int tier2Cutoff = (int) (n * 0.30);
+
+for (int i = 0; i < cells.size(); i++) {
+    int tier = (i < tier1Cutoff) ? 1 : (i < tier2Cutoff) ? 2 : 3;
+    tierMap.put(cells.get(i).getSourceId(), tier);
+}
+```
+
+#### Option B: Using GenericCellExecutionEngine (Must Be Implemented First)
+
+⚠️ **CRITICAL**: `GenericCellExecutionEngine` does NOT currently exist in the EDE framework. This code will NOT compile until you implement it (see EDE_INTEGRATION_GUIDE.md Step 4).
 
 ```java
 // 1. Extract features
@@ -65,11 +105,10 @@ List<WaveletFeatureCell> cells = rawFeatures.stream()
     .map(fv -> new WaveletFeatureCell(fv.getData(), fv.getId(), meanPattern))
     .collect(Collectors.toList());
 
-// 4. Execute emergent sorting (EDE)
-// ⚠️ WARNING: GenericCellExecutionEngine does not yet exist in the EDE framework
-// It must be implemented as part of the integration effort (see EDE_INTEGRATION_GUIDE.md Step 4)
-// Alternatively, adapt WaveletFeatureCell to extend AbstractSortingCell to use existing CellBasedExecutionEngine
-GenericCellExecutionEngine<WaveletFeatureCell> engine = new GenericCellExecutionEngine<>();
+// 4. Execute emergent sorting
+// ⚠️ GenericCellExecutionEngine must be implemented first (see EDE_INTEGRATION_GUIDE.md Step 4)
+GenericCellExecutionEngine<WaveletFeatureCell> engine = 
+    new GenericCellExecutionEngine<>();
 int steps = engine.executeSorting(cells, 2000);
 
 // 5. Extract tiers from sorted order
@@ -86,9 +125,13 @@ for (int i = 0; i < cells.size(); i++) {
 ### Key Files to Modify
 
 1. **Create**: `lab/experiment-095/cell/WaveletFeatureCell.java`
+   - Implement as shown above (implements `Cell<WaveletFeatureCell>`)
+   - For Option A, extend `AbstractSortingCell` instead
+
 2. **Modify**: `lab/experiment-095/sorting/EmergentSorter.java`
-   - Import `CellBasedExecutionEngine`
+   - Import `CellBasedExecutionEngine` (Option A) or `GenericCellExecutionEngine` (Option B)
    - Replace custom iteration with `engine.executeSorting()`
+
 3. **Keep unchanged**: 
    - `features/WaveletLeaderExtractor.java`
    - `data/DatasetManager.java`
@@ -121,8 +164,8 @@ public void testCellComparison() {
 
 @Test
 public void testSortingConvergence() {
+    // Option B - requires GenericCellExecutionEngine implementation
     List<WaveletFeatureCell> cells = createRandomCells(100);
-    // Note: GenericCellExecutionEngine must be implemented first
     GenericCellExecutionEngine<WaveletFeatureCell> engine = 
         new GenericCellExecutionEngine<>();
     
@@ -157,14 +200,19 @@ private boolean isSortedByDistance(List<WaveletFeatureCell> cells) {
    - Single-cell arrays
    - All-identical features
 
+4. **Type mismatch with CellBasedExecutionEngine**
+   - `CellBasedExecutionEngine` expects `List<AbstractSortingCell>` (Integer values)
+   - If using `Cell<WaveletFeatureCell>` directly with Double values, won't compile
+   - Choose Option A (extend AbstractSortingCell) or Option B (implement GenericCellExecutionEngine)
+
 ### Build and Run
 
 ```bash
 # Build EDE core
 mvn clean install
 
-# Compile experiment (using find for cross-platform compatibility)
-javac -cp target/classes -d build $(find lab/experiment-095 -name "*.java")
+# Compile experiment using find (works on all platforms)
+find lab/experiment-095 -name "*.java" -exec javac -cp target/classes -d build {} +
 
 # Run experiment
 java -cp build:target/classes lab.experiment095.WaveCrisprSignalExperiment
@@ -186,7 +234,7 @@ Validating emergent PAM detection via wavelet-leader tiering
   [3.1] Loading datasets...
   [3.2] Extracting wavelet-leader features...
   [3.3] Running emergent sorting via EDE...
-    → Sorting 4000 cells with CellBasedExecutionEngine
+    → Sorting 4000 cells with execution engine
     → Converged in 1247 steps
   [3.4] Training MLP classifier...
   ✓ Experiment completed successfully
@@ -200,9 +248,20 @@ Tier assignments:
   Tier 3: 2800 PAMs
 ```
 
+### Decision Guide: Which Option?
+
+| Factor | Option A (AbstractSortingCell) | Option B (GenericCellExecutionEngine) |
+|--------|-------------------------------|----------------------------------------|
+| **Uses existing framework** | ✓ Yes | ✗ No (must implement) |
+| **Implementation effort** | Medium (adapt cell type) | High (implement new engine) |
+| **Type compatibility** | Integer values only | Any Cell implementation |
+| **Full EDE features** | ✗ Limited | ✓ Can use neighborhoods |
+| **Recommended for quick integration** | ✓ Yes | ✗ No |
+| **Recommended for full EDE features** | ✗ No | ✓ Yes |
+
 ### Questions?
 
 See:
-- [README.md](README.md) - Full documentation
-- [EDE_INTEGRATION_GUIDE.md](EDE_INTEGRATION_GUIDE.md) - Detailed integration steps
+- [README.md](README.md) - Full documentation with integration options
+- [EDE_INTEGRATION_GUIDE.md](EDE_INTEGRATION_GUIDE.md) - Detailed step-by-step implementation
 - [Main EDE README](../../README.md) - Framework overview
