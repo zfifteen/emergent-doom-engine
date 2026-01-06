@@ -18,59 +18,57 @@ This experiment demonstrates **how to use the Emergent Doom Engine** for a domai
 
 **1. Cell Implementation** - Domain-specific cell carrying wavelet features
 
-**IMPORTANT - Type Compatibility Note**: EDE provides two different cell hierarchies:
-- **Minimal `Cell<T>` interface**: For simple comparable types, no algotype required
-- **`AbstractCell` and `AbstractSortingCell` hierarchy**: For full EDE features with algotypes and neighborhoods
+**IMPORTANT - Type Compatibility**: EDE's `CellBasedExecutionEngine` requires `AbstractSortingCell` (Integer values). You have two integration paths:
 
+**Path A: Extend AbstractSortingCell** (✅ Works with existing EDE framework)
 ```java
-// Option A: Implements minimal Cell interface (Double-based distance)
+public class WaveletFeatureCell extends AbstractSortingCell {
+    private final double[] features;  // 28D wavelet-leader signature
+    private final double distanceToMean;  // Computed similarity metric
+    
+    public WaveletFeatureCell(double[] features, double distanceToMean, int position) {
+        super((int) Math.round(distanceToMean * 1000),  // Map to Integer
+              SortingAlgotype.BUBBLE,  // Use existing algotype
+              position);
+        this.features = features.clone();
+        this.distanceToMean = distanceToMean;
+    }
+    
+    // Inherits compareTo() from AbstractSortingCell
+    public double[] getFeatures() { return features.clone(); }
+    public double getDistanceToMean() { return distanceToMean; }
+}
+```
+
+**Path B: Implement Cell Interface** (⚠️ Requires creating GenericCellExecutionEngine adapter)
+```java
 public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
     private final double[] features;  // 28D wavelet-leader signature
     private final double distanceToMean;  // Computed similarity metric
     
     @Override
     public int compareTo(WaveletFeatureCell other) {
-        // Compare based on distance to mean PAM pattern
         return Double.compare(this.distanceToMean, other.distanceToMean);
     }
 }
-
-// Option B: Extends AbstractSortingCell (Integer-based values)
-// public class WaveletFeatureCell extends AbstractSortingCell {
-//     // Must map Double distances to Integer values for sorting
-//     @Override
-//     public Integer readValue() {
-//         return (int) Math.round(distanceToMean * 1000);
-//     }
-// }
+// Note: Cannot use CellBasedExecutionEngine with this approach
+// Must implement GenericCellExecutionEngine (see EDE_INTEGRATION_GUIDE.md Step 4)
 ```
 
-**Key Constraint**: `CellBasedExecutionEngine` works ONLY with `AbstractSortingCell` (which uses `Integer` values). If you implement the minimal `Cell<T>` interface with `Double` values, you CANNOT use `CellBasedExecutionEngine` directly.
+**Recommendation**: Start with **Path A** to use existing EDE framework. Consider Path B only if you need Double precision or custom value types.
 
-**2. Execution Framework** - Choose based on cell type
-
-The execution engine you use depends on which cell interface you implement:
-
-- **If cell extends `AbstractSortingCell`** → Use existing `CellBasedExecutionEngine` 
-  - No new implementation needed
-  - Works with Integer value types
-  - Full EDE features available (neighborhoods, algotypes)
-
-- **If cell implements `Cell<T>` interface** → Must create adapter (e.g., `GenericCellExecutionEngine`)
-  - Requires implementing a custom execution engine
-  - Can work with any comparable type (Double, custom objects, etc.)
-  - Simpler cell design but more implementation work
-
-**Currently Shown in Examples: Option B** (requires implementing `GenericCellExecutionEngine` - not yet in EDE framework):
+**2. Using CellBasedExecutionEngine** - Working example with Path A
 
 ```java
-// Create cells implementing Cell<WaveletFeatureCell> with Double values
-List<WaveletFeatureCell> cells = createCellsFromFeatures(waveletFeatures);
+// Create cells extending AbstractSortingCell
+List<AbstractSortingCell> cells = new ArrayList<>();
+for (FeatureVector fv : waveletFeatures) {
+    double distance = computeDistance(fv, meanPattern);
+    cells.add(new WaveletFeatureCell(fv.getData(), distance, cells.size()));
+}
 
-// Use custom adapter for Cell interface
-// ⚠️ GenericCellExecutionEngine must be implemented first (see EDE_INTEGRATION_GUIDE.md Step 4)
-GenericCellExecutionEngine<WaveletFeatureCell> engine = 
-    new GenericCellExecutionEngine<>();
+// Use existing EDE execution engine
+CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
 int steps = engine.executeSorting(cells, maxIterations);
 
 // Extract tier assignments from sorted order
