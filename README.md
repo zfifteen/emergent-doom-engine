@@ -169,7 +169,7 @@ The EDE translates theoretical principles into a practical Java framework built 
 
 ### Foundation: Cell-Based Architecture
 
-**Key Principle:** Algotypes are bound to cell objects, NOT to array positions. When cells swap, entire objects relocate (value + algotype together), enabling genuine morphogenetic clustering.
+**Key Principle:** Algotypes are bound to cell objects, not to array positions. When cells swap, entire objects relocate (value + algotype together), enabling genuine morphogenetic clustering.
 
 #### Core Abstractions
 

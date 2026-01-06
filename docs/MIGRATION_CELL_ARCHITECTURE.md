@@ -342,9 +342,9 @@ public abstract class AbstractFactorizationCell
 }
 
 public enum FactorizationAlgotype {
-    TRIAL_DIVISION,
-    WHEEL_FACTORIZATION,
-    POLLARD_RHO
+    TRIAL,      // Trial division method
+    WHEEL,      // Wheel factorization
+    POLLARD     // Pollard's rho algorithm
 }
 ```
 
