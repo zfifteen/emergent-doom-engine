@@ -5,12 +5,16 @@ import com.emergent.doom.cell.GenericCell;
 import com.emergent.doom.chimeric.ChimericPopulation;
 import com.emergent.doom.chimeric.GenericCellFactory;
 import com.emergent.doom.chimeric.PercentageAlgotypeProvider;
+import com.emergent.doom.execution.NoSwapConvergence;
+import com.emergent.doom.execution.SynchronousExecutionEngine;
 import com.emergent.doom.experiment.ChimericExperimentConfig;
 import com.emergent.doom.experiment.ExperimentResults;
 import com.emergent.doom.experiment.ExperimentRunner;
 import com.emergent.doom.experiment.TrialResult;
 import com.emergent.doom.metrics.AlgotypeAggregationIndex;
 import com.emergent.doom.probe.StepSnapshot;
+import com.emergent.doom.swap.FrozenCellStatus;
+import com.emergent.doom.swap.SwapEngine;
 import com.emergent.doom.topology.ChimericTopology;
 
 import java.util.ArrayList;
@@ -391,33 +395,61 @@ public class ClusteringValidationExperiment {
             algotypeMix = Map.of(a, 0.5, b, 0.5);
         }
         
-        // Step 1b: Run each trial with a distinct seed and collect all trial results
+        // Step 1b: Run each trial with distinct seed and custom ChimericProbe
         List<TrialResult<GenericCell>> allTrials = new ArrayList<>();
+        AlgotypeAggregationIndex<GenericCell> metric = new AlgotypeAggregationIndex<>();
+        
         for (int trialIndex = 0; trialIndex < trials; trialIndex++) {
-            ChimericExperimentConfig config = ChimericExperimentConfig.builder()
-                .arraySize(ARRAY_SIZE)
-                .maxSteps(MAX_STEPS)
-                .requiredStableSteps(3)
-                .recordTrajectory(true)
-                .algotypeMix(algotypeMix)
-                .seed(BASE_SEED + trialIndex)
-                .build();
-
-            // Create experiment runner for this configuration
-            ExperimentRunner<GenericCell> runner = new ExperimentRunner<>(
-                () -> createChimericArray(config),
-                ChimericTopology::new
+            long seed = BASE_SEED + trialIndex;
+            
+            // Create algotype provider
+            PercentageAlgotypeProvider provider = new PercentageAlgotypeProvider(algotypeMix, ARRAY_SIZE, seed);
+            
+            // Create chimeric array
+            GenericCellFactory factory = GenericCellFactory.shuffled(ARRAY_SIZE, seed + 1);
+            ChimericPopulation<GenericCell> population = new ChimericPopulation<>(factory, provider);
+            GenericCell[] cells = population.createPopulation(ARRAY_SIZE, GenericCell.class);
+            
+            // Create custom probe with algotype tracking
+            ChimericProbe<GenericCell> probe = new ChimericProbe<>(provider, ARRAY_SIZE);
+            probe.setRecordingEnabled(true);
+            
+            // Set up execution components
+            FrozenCellStatus frozenStatus = new FrozenCellStatus();
+            SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
+            NoSwapConvergence<GenericCell> convergenceDetector = new NoSwapConvergence<>(3);
+            
+            // Create metadata provider (use provider to get algotypes)
+            java.util.function.IntFunction<com.emergent.doom.execution.CellMetadata> metadataProvider = i -> {
+                String algotypeName = provider.getAlgotype(i, ARRAY_SIZE);
+                Algotype cellAlgotype = Algotype.valueOf(algotypeName.toUpperCase());
+                return new com.emergent.doom.execution.CellMetadata(cellAlgotype, com.emergent.doom.cell.SortDirection.ASCENDING);
+            };
+            
+            // Create and run execution engine
+            SynchronousExecutionEngine<GenericCell> engine = new SynchronousExecutionEngine<>(
+                cells, swapEngine, probe, convergenceDetector, metadataProvider);
+            
+            int finalStep = engine.runUntilConvergence(MAX_STEPS);
+            boolean converged = engine.hasConverged();
+            
+            // Create trial result with trajectory
+            List<StepSnapshot<GenericCell>> trajectory = probe.getSnapshots();
+            TrialResult<GenericCell> trial = new TrialResult<>(
+                trialIndex,
+                finalStep,
+                converged,
+                trajectory,
+                new HashMap<>(),  // Empty metrics map
+                0L  // Execution time (not tracked here)
             );
-
-            // Run a single trial and collect its result
-            ExperimentResults<GenericCell> trialResults = runner.runExperiment(config, 1);
-            allTrials.addAll(trialResults.getTrials());
+            
+            allTrials.add(trial);
         }
         
         // Step 4: Extract peak values and timings from all trials
         List<Double> peakValues = new ArrayList<>();
         List<Double> peakTimings = new ArrayList<>();
-        AlgotypeAggregationIndex<GenericCell> metric = new AlgotypeAggregationIndex<>();
         
         for (TrialResult<GenericCell> trial : allTrials) {
             // Extract aggregation trajectory

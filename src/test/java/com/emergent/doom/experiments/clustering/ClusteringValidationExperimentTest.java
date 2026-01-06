@@ -294,7 +294,6 @@ class ClusteringValidationExperimentTest {
      * by default to avoid slow test runs. Enable when ready to validate.
      */
     @Test
-    @org.junit.jupiter.api.Disabled("Long-running validation test - enable manually")
     @DisplayName("Bubble-Selection results match paper expectations")
     void testBubbleSelectionMatchesPaper() {
         // IMPLEMENTATION PENDING - PHASE THREE
@@ -343,7 +342,6 @@ class ClusteringValidationExperimentTest {
      * by default to avoid slow test runs. Enable when ready to validate.
      */
     @Test
-    @org.junit.jupiter.api.Disabled("Long-running validation test - enable manually")
     @DisplayName("Control (homogeneous) results stay below random baseline")
     void testControlBelowBaseline() {
         // IMPLEMENTATION PENDING - PHASE THREE
