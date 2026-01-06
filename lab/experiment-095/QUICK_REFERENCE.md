@@ -59,7 +59,9 @@ List<WaveletFeatureCell> cells = rawFeatures.stream()
     .collect(Collectors.toList());
 
 // 4. Execute emergent sorting (EDE)
-CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
+// Note: GenericCellExecutionEngine must be created (see EDE_INTEGRATION_GUIDE.md)
+// Alternatively, extend WaveletFeatureCell from AbstractCell to use CellBasedExecutionEngine
+GenericCellExecutionEngine<WaveletFeatureCell> engine = new GenericCellExecutionEngine<>();
 int steps = engine.executeSorting(cells, 2000);
 
 // 5. Extract tiers from sorted order

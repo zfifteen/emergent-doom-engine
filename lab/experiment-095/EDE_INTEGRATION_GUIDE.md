@@ -88,18 +88,20 @@ public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
 
 Before refactoring, decide which execution pattern to use:
 
-**Recommended: Option B** - Use `GenericCellExecutionEngine` (defined in Step 3)
+**Recommended: Option B** - Create `GenericCellExecutionEngine` adapter (requires implementation)
 - Works with any `Cell` implementation
 - No need for `AbstractCell` inheritance
 - No algotype definitions required
 - Simplest integration path
+- **Note**: This adapter does not yet exist in EDE and must be created
 
-**Alternative: Option A** - Extend `WaveletFeatureCell` from `AbstractCell`
+**Alternative: Option A** - Extend `WaveletFeatureCell` from `AbstractCell` (uses existing EDE)
 - Provides full EDE features (neighborhoods, behavioral policies)
 - Requires defining `WaveletAlgotype` enum
-- More complex but more powerful
+- Works with existing `CellBasedExecutionEngine`
+- More complex but leverages existing framework
 
-The examples below use **Option B** for simplicity.
+The examples below show **Option B** (requires creating the adapter) for clarity of the integration pattern.
 
 ### Step 3: Refactor EmergentSorter to Use EDE
 
@@ -166,7 +168,7 @@ public class EmergentSorter {
         }
         
         // Step 3: Execute emergent sorting via EDE
-        // Using GenericCellExecutionEngine (see Step 2 choice above)
+        // Using GenericCellExecutionEngine (must be created - see Step 4)
         // This adapter allows any Cell implementation to work with EDE patterns
         GenericCellExecutionEngine<WaveletFeatureCell> engine = 
             new GenericCellExecutionEngine<>();
@@ -221,16 +223,53 @@ public class EmergentSorter {
 
 ### Step 4: Implementation Details for Each Approach
 
-**For Option B (Recommended)**: Create generic execution engine adapter
+**Option A (Uses Existing EDE)**: Extend `WaveletFeatureCell` from `AbstractCell`
+
+**Note**: This approach requires defining a `WaveletAlgotype` enum but works directly with existing `CellBasedExecutionEngine`.
 
 ```java
+package lab.experiment095.cell;
+
+import com.emergent.doom.cell.AbstractCell;
+
+// Define algotype for wavelet features
+enum WaveletAlgotype {
+    DISTANCE_BASED  // Single algotype: sort by distance to mean
+}
+
 public class WaveletFeatureCell extends AbstractCell<Double, WaveletAlgotype> {
-    // Implement AbstractCell methods
-    // This allows direct use with CellBasedExecutionEngine
+    private final double[] features;      // 28D signature
+    private final String sourceId;
+    private final double distanceToMean;
+    
+    public WaveletFeatureCell(double[] features, String sourceId, double[] meanPattern) {
+        this.features = features.clone();
+        this.sourceId = sourceId;
+        this.distanceToMean = euclidean(features, meanPattern);
+    }
+    
+    @Override
+    public WaveletAlgotype readAlgotype() {
+        return WaveletAlgotype.DISTANCE_BASED;
+    }
+    
+    @Override
+    public Double readValue() {
+        return distanceToMean;
+    }
+    
+    @Override
+    public int compareTo(AbstractCell<Double, WaveletAlgotype> other) {
+        return Double.compare(this.distanceToMean, other.readValue());
+    }
+    
+    // Implement other AbstractCell methods...
 }
 ```
 
-**Option B**: Create generic execution engine adapter
+**Option B (Requires New Implementation)**: Create generic execution engine adapter
+
+**Important**: This adapter does not currently exist in the EDE framework. It must be created as part of the integration effort. This is a proposed implementation that extends EDE patterns to work with the minimal `Cell` interface.
 
 ```java
 package lab.experiment095.execution;

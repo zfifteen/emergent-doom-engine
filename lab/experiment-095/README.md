@@ -31,13 +31,20 @@ public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
 }
 ```
 
-**2. Using CellBasedExecutionEngine** - EDE's execution framework
+**2. Using CellBasedExecutionEngine** - EDE's execution framework (requires extension)
+
+**Note**: The current `CellBasedExecutionEngine` works with `AbstractSortingCell`. To use it with `WaveletFeatureCell`, you need to either:
+- **Option A**: Extend `WaveletFeatureCell` from `AbstractCell` (see EDE_INTEGRATION_GUIDE.md Step 4)
+- **Option B**: Create a generic adapter (see EDE_INTEGRATION_GUIDE.md Step 4)
+
+Example using Option B approach:
 ```java
 // Create cells with embedded features
 List<WaveletFeatureCell> cells = createCellsFromFeatures(waveletFeatures);
 
-// Use EDE's execution engine
-CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
+// Use generic adapter for Cell interface (to be implemented)
+GenericCellExecutionEngine<WaveletFeatureCell> engine = 
+    new GenericCellExecutionEngine<>();
 int steps = engine.executeSorting(cells, maxIterations);
 
 // Extract tier assignments from sorted order
@@ -344,14 +351,15 @@ IntFunction<ExperimentMetadata> metadataProvider = i -> {
    - Classification (`MLPClassifier`)
 
 2. **Replace with EDE equivalents**:
-   - `EmergentSorter` → `CellBasedExecutionEngine`
+   - `EmergentSorter` → EDE execution (see integration approaches below)
    - `FeatureVector` → `WaveletFeatureCell implements Cell`
-   - Custom iteration logic → EDE's `executeStep()` / `executeSorting()`
+   - Custom iteration logic → EDE's execution patterns
 
-3. **Add EDE integrations**:
-   - Frozen cell handling for corrupted signals
-   - Trajectory recording for analysis
-   - Metrics probes for disorder tracking
+3. **Choose integration approach**:
+   - **Option A**: Extend from `AbstractCell` + define `WaveletAlgotype` → use existing `CellBasedExecutionEngine`
+   - **Option B**: Implement `Cell` interface + create `GenericCellExecutionEngine` adapter
+
+See [EDE_INTEGRATION_GUIDE.md](EDE_INTEGRATION_GUIDE.md) for detailed implementation of both approaches.
 
 ## Requirements and Documentation
 
