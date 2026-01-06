@@ -126,12 +126,12 @@ public class NeighborhoodView<V extends Comparable<V>, A extends Enum<A>> {
         if (neighborPositions == null) {
             throw new NullPointerException("neighborPositions cannot be null");
         }
+        if (arraySize <= 0) {
+            throw new IllegalArgumentException("arraySize must be positive, got: " + arraySize);
+        }
         if (currentPosition < 0 || currentPosition >= arraySize) {
             throw new IllegalArgumentException(
                 "currentPosition " + currentPosition + " out of bounds [0, " + arraySize + ")");
-        }
-        if (arraySize <= 0) {
-            throw new IllegalArgumentException("arraySize must be positive, got: " + arraySize);
         }
         if (visibleNeighbors.size() != neighborPositions.size()) {
             throw new IllegalArgumentException(
