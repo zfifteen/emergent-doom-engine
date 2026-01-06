@@ -60,7 +60,6 @@ class ExperimentRunnerBatchTest {
     // ========================================================================
 
     @Nested
-    @Disabled("ExperimentRunner uses legacy ExecutionEngine without metadata provider")
     @DisplayName("Basic batch execution")
     class BasicBatchTests {
 
@@ -162,7 +161,6 @@ class ExperimentRunnerBatchTest {
     // ========================================================================
 
     @Nested
-    @Disabled("ExperimentRunner uses legacy ExecutionEngine without metadata provider")
     @DisplayName("Thread pool behavior")
     class ThreadPoolTests {
 
@@ -284,7 +282,6 @@ class ExperimentRunnerBatchTest {
     // ========================================================================
 
     @Nested
-    @Disabled("ExperimentRunner uses legacy ExecutionEngine without metadata provider")
     @DisplayName("Result integrity")
     class ResultIntegrityTests {
 
