@@ -458,13 +458,23 @@ private ExperimentResults executeExperiment(ExperimentConfig config) {
 // Test cell comparison
 WaveletFeatureCell cell1 = new WaveletFeatureCell(features1, "trace1", meanPattern);
 WaveletFeatureCell cell2 = new WaveletFeatureCell(features2, "trace2", meanPattern);
-true(cell1.compareTo(cell2) < 0);  // cell1 more PAM-like
+assertTrue(cell1.compareTo(cell2) < 0);  // cell1 more PAM-like
 
 // Test sorting convergence
 List<WaveletFeatureCell> cells = createCells(...);
 GenericCellExecutionEngine<WaveletFeatureCell> engine = new GenericCellExecutionEngine<>();
 int steps = engine.executeSorting(cells, 2000);
-true(isSorted(cells));  // Verify sorted order
+assertTrue(isSorted(cells));  // Verify sorted order
+
+// Helper method for verifying sort order in tests
+private static boolean isSorted(List<WaveletFeatureCell> cells) {
+    for (int i = 0; i < cells.size() - 1; i++) {
+        if (cells.get(i).compareTo(cells.get(i + 1)) > 0) {
+            return false;
+        }
+    }
+    return true;
+}
 
 /**
  * Helper method for verifying sort order in tests.
