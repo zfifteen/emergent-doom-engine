@@ -1,10 +1,77 @@
 # Clustering Validation Experiments
 
+> **⚠️ Status:** This directory contains archived experimental code (*.old files). Active clustering tests have not yet been implemented. The README documents the experimental design for future implementation.
+
 This directory contains experiments to validate that the Emergent Doom Engine reproduces the clustering baselines from the Levin et al. (2024) paper.
 
 ## Purpose
 
 Before extracting `ClusteringPrimitive<T>` as a reusable computational primitive, we must empirically verify that chimeric clustering behaves as expected. This validation establishes the scientific foundation for treating clustering as a computational primitive.
+
+## Concepts Covered
+
+The clustering experiments validate these key EDE framework concepts:
+
+- **Morphogenetic Clustering** - Emergent spatial aggregation of same-type algotypes
+- **Chimeric Populations** - Mixed algotype populations (50/50 Bubble/Selection, etc.)
+- **Aggregation Dynamics** - Temporal progression of clustering from random to organized
+- **Statistical Validation** - Comparing experimental results to theoretical baselines with t-tests
+- **Levin Framework Alignment** - Reproducing clustering signatures from Levin et al. (2024)
+
+## Prerequisites
+
+**Required Understanding:**
+- [Chapter 1: Cell Foundations](../../cell/README.md) - Cell interface and algotypes
+- [Chapter 2: Swap Mechanics](../../swap/README.md) - How cells interact via swaps
+- [Chapter 2: Metrics](../../metrics/README.md) - AlgotypeAggregationIndex metric
+- [Chapter 4: Experiments](../../experiment/README.md) - Experimental framework
+
+**Mathematical Background:**
+- Basic statistics (mean, standard deviation, confidence intervals)
+- T-tests for hypothesis testing (one-sample and two-sample)
+
+## Test Files
+
+**Current Status:** All test files are archived (*.old extension). Implementation pending.
+
+**Archived Components:**
+- `ClusteringValidationExperiment.java.old` - Main experiment class
+- `ClusteringValidationExperimentTest.java.old` - Test suite
+- `ValidationStatistics.java.old` - Statistical analysis utilities
+- `ClusteringValidationRunner.java.old` - Command-line runner
+- `ChimericProbe.java.old` - Custom probe for chimeric experiments
+
+**Planned Test Structure:**
+When re-implemented, tests will cover:
+1. Aggregation peak detection (72%, 65%, 69% for different pairs)
+2. Peak timing verification (fraction of sorting progress)
+3. Negative control validation (Bubble-Bubble < 60%)
+4. Statistical significance testing (p-values)
+
+## Usage Examples
+
+**Note:** Examples refer to archived code structure. Update when re-implementing.
+
+### Quick Structural Test
+```bash
+mvn test -Dtest="ClusteringValidationExperimentTest#testExpectedResultRecord"
+```
+
+### Full Validation Suite
+```bash
+mvn test-compile exec:java \
+  -Dexec.mainClass="com.emergent.doom.experiments.clustering.ClusteringValidationRunner" \
+  -Dexec.classpathScope=test
+```
+
+### Expected Output Pattern
+```
+Hardware: [CPU info for reproducibility]
+Running: Bubble-Selection (100 trials)...
+  Peak: 72.3% ± 4.1% at 42.1% ± 3.8% progress
+  vs Control: p < 0.001 ✓
+  vs Paper: p = 0.23 ✓
+```
 
 ## Experiments
 
