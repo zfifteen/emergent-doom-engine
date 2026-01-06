@@ -103,7 +103,7 @@ public void testCellComparison() {
     double[] close = {1.1, 2.1, ...};        // Similar to mean
     double[] far = {5.0, 8.0, ...};          // Different from mean
     
-    WaveletFeatureCell closelCell = new WaveletFeatureCell(close, "id1", meanPattern);
+    WaveletFeatureCell closeCell = new WaveletFeatureCell(close, "id1", meanPattern);
     WaveletFeatureCell farCell = new WaveletFeatureCell(far, "id2", meanPattern);
     
     assertTrue(closeCell.compareTo(farCell) < 0);  // Closer comes first

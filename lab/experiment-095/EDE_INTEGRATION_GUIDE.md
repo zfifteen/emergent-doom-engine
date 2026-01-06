@@ -149,10 +149,10 @@ public class EmergentSorter {
         }
         
         // Step 3: Execute emergent sorting via EDE
-        // Note: CellBasedExecutionEngine expects AbstractSortingCell
-        // For now, we need to adapt or extend the engine
-        // TODO: Either extend CellBasedExecutionEngine to work with Cell interface
-        // OR implement WaveletFeatureCell extending AbstractCell
+        // Use GenericCellExecutionEngine (see Step 3: Option B below)
+        // This adapter allows any Cell implementation to work with EDE patterns
+        GenericCellExecutionEngine<WaveletFeatureCell> engine = 
+            new GenericCellExecutionEngine<>();
         
         int stepsTaken = engine.executeSorting(cells, iterations);
         
@@ -202,7 +202,9 @@ public class EmergentSorter {
 }
 ```
 
-### Step 3: Extend CellBasedExecutionEngine (Alternative)
+### Step 3: Choose Execution Approach
+
+**Recommended**: Use **Option B** (GenericCellExecutionEngine) for simplicity. This works with any `Cell` implementation without requiring `AbstractCell` inheritance or algotype definitions.
 
 **Option A**: Extend `WaveletFeatureCell` from `AbstractCell` instead of just `Cell`
 
