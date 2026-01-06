@@ -22,7 +22,7 @@ Zhang, Goldstein, and Levin (2024) demonstrated that classical sorting algorithm
 
 ### Key Findings from Levin et al.
 
-The Levin research quantitatively characterizes sorting as traversal through problem space, revealing unexpected emergent properties:
+The research by Zhang, Goldstein, and Levin quantitatively characterizes sorting as traversal through problem space, revealing unexpected emergent properties:
 
 **Robustness through autonomy**: Arrays of autonomous elements sort themselves more reliably than traditional implementations in the presence of errors. Distributed agency provides unexpected resilience.
 
