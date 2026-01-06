@@ -93,7 +93,7 @@ for (int i = 0; i < cells.size(); i++) {
 
 ⚠️ **CRITICAL**: `GenericCellExecutionEngine` does NOT currently exist in the EDE framework. This code will NOT compile until you implement it (see EDE_INTEGRATION_GUIDE.md Step 4).
 
-Additionally, note that `GenericCellExecutionEngine` is a **simplified sorting algorithm** (NOT a full EDE adapter). It provides basic sorting but does not implement EDE's architectural patterns like neighborhood views and algotype-based cell behaviors.
+⚠️ **NOTE**: `GenericCellExecutionEngine` is a **simplified sorting algorithm**, NOT a full EDE adapter. It provides basic sorting but does not implement EDE's architectural patterns like neighborhood views and algotype-based cell behaviors.
 
 ```java
 // 1. Extract features

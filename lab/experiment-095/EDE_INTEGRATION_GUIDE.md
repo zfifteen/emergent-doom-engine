@@ -173,7 +173,7 @@ public class EmergentSorter {
         }
         
         // Step 3: Execute emergent sorting via EDE
-        // Option B: Use GenericCellExecutionEngine (must be created - see Step 4)
+        // Option B: Use GenericCellExecutionEngine (must be created - see Step 4 below)
         GenericCellExecutionEngine<WaveletFeatureCell> engine = 
             new GenericCellExecutionEngine<>();
         
@@ -392,10 +392,11 @@ Use with cells via external maps (EDE pattern) - metadata is NOT stored on cells
 Map<String, ExperimentMetadata> metadataMap = new HashMap<>();
 for (WaveletFeatureCell cell : cells) {
     // Lookup metadata from external maps using cell's sourceId
-    metadataMap.put(cell.getSourceId(), new ExperimentMetadata(
-        groundTruth.get(cell.getSourceId()),           // External map
-        datasetSource.get(cell.getSourceId()),         // External map
-        qualityScore.get(cell.getSourceId())           // External map
+    String sourceId = cell.getSourceId();
+    metadataMap.put(sourceId, new ExperimentMetadata(
+        groundTruth.get(sourceId),           // External map
+        datasetSource.get(sourceId),         // External map
+        qualityScore.get(sourceId)           // External map
     ));
 }
 
@@ -465,7 +466,15 @@ GenericCellExecutionEngine<WaveletFeatureCell> engine = new GenericCellExecution
 int steps = engine.executeSorting(cells, 2000);
 assertTrue(isSorted(cells));  // Verify sorted order
 
-// Helper method for verifying sort order in tests
+/**
+ * Helper method for verifying sort order in tests.
+ * 
+ * Iterates through the sorted list and confirms each cell is
+ * in correct order relative to the next cell (ascending by distance to mean).
+ * 
+ * @param cells Sorted list of WaveletFeatureCells
+ * @return true if cells are in ascending order by compareTo(), false otherwise
+ */
 private static boolean isSorted(List<WaveletFeatureCell> cells) {
     for (int i = 0; i < cells.size() - 1; i++) {
         if (cells.get(i).compareTo(cells.get(i + 1)) > 0) {
