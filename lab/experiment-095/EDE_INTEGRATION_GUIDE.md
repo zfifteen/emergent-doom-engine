@@ -388,48 +388,25 @@ public class ExperimentMetadata {
 Use with cells via external maps (EDE pattern) - metadata is NOT stored on cells:
 
 ```java
-// Step 1: Prepare external metadata maps keyed by sourceId
-// (These are managed separately from cells, per EDE external metadata pattern)
-Map<String, Boolean> groundTruthLabelBySourceId = new HashMap<>();
-Map<String, String> datasetSourceBySourceId = new HashMap<>();
-Map<String, Double> qualityScoreBySourceId = new HashMap<>();
-
-// Populate from external sources (databases, files, etc.)
-for (ExperimentRecord record : experimentRecords) {
-    groundTruthLabelBySourceId.put(record.getSourceId(), record.isValidPAM());
-    datasetSourceBySourceId.put(record.getSourceId(), record.getDatasetName());
-    qualityScoreBySourceId.put(record.getSourceId(), record.getSignalQuality());
-}
-
-// Step 2: Build metadata map via lookups (cells remain data-light)
-Map<String, ExperimentMetadata> metadataBySourceId = new HashMap<>();
+// Create metadata map keyed by sourceId (external to cells)
+Map<String, ExperimentMetadata> metadataMap = new HashMap<>();
 for (WaveletFeatureCell cell : cells) {
     // Lookup metadata from external maps using cell's sourceId
     String sourceId = cell.getSourceId();
-    metadataBySourceId.put(sourceId, new ExperimentMetadata(
-        groundTruthLabelBySourceId.get(sourceId),   // Null if not labeled
-        datasetSourceBySourceId.get(sourceId),
-        qualityScoreBySourceId.get(sourceId)
+    metadataMap.put(sourceId, new ExperimentMetadata(
+        groundTruth.get(sourceId),           // External map
+        datasetSource.get(sourceId),         // External map
+        qualityScore.get(sourceId)           // External map
     ));
 }
 
-// Step 3: Access metadata for validation WITHOUT storing in cell (EDE pattern)
-for (WaveletFeatureCell cell : sortedCells) {
-    String sourceId = cell.getSourceId();
-    ExperimentMetadata metadata = metadataBySourceId.get(sourceId);
-    
-    // Access metadata from external map, not from cell
+// Access during validation WITHOUT storing in cell (EDE pattern)
+for (WaveletFeatureCell cell : cells) {
+    ExperimentMetadata metadata = metadataMap.get(cell.getSourceId());
     if (metadata.getGroundTruthLabel() != null && metadata.getGroundTruthLabel()) {
         // Validate using external metadata, not cell-stored data
         validateAgainstGroundTruth(cell, metadata);
     }
-    
-    // Log with external metadata for analysis
-    logger.info("Cell {} from {} (quality={}) assigned tier {}",
-        sourceId,
-        metadata.getDatasetSource(),
-        metadata.getQualityScore(),
-        tierAssignment.getTierFor(sourceId));
 }
 ```
 
