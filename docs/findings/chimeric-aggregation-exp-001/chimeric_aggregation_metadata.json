@@ -1,9 +1,9 @@
 {
   "experiment_name": "Chimeric Aggregation Experiment 001",
   "description": "Time-series analysis of emergent clustering in mixed-algotype populations",
-  "generated_at": "2026-01-06T03:05:24Z",
+  "generated_at": "2026-01-06T06:40:14Z",
   "total_configurations": 81,
-  "total_data_points": 6636,
+  "total_data_points": 6618,
   "parameters": {
     "array_sizes": [30, 50, 100],
     "algotype_mixes": [

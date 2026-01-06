@@ -1,7 +1,7 @@
 {
   "experiment_name": "EDE vs. Levin Architecture Comparison",
   "description": "Side-by-side comparison of position-based (EDE) vs. cell-based (Levin) algotype binding",
-  "generated_at": "2026-01-06T04:52:35Z",
+  "generated_at": "2026-01-06T06:40:14Z",
   "hypothesis": {
     "ede": "Algotypes tied to positions → constant aggregation during sorting",
     "levin": "Algotypes bound to cells → dynamic aggregation during sorting"
