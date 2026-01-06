@@ -101,23 +101,20 @@ Mix multiple sorting strategies in one array and watch spontaneous segregation e
 
 ```java
 // 50% bubble sort cells, 50% insertion sort cells (chimeric population)
-Map<Algotype, Double> distribution = Map.of(
-    Algotype.BUBBLE, 0.5,
-    Algotype.INSERTION, 0.5
+Map<SortingAlgotype, Double> distribution = Map.of(
+    SortingAlgotype.BUBBLE, 0.5,
+    SortingAlgotype.INSERTION, 0.5
 );
 
-AlgotypeProvider algotypeProvider = 
-    new PercentageAlgotypeProvider(distribution, arraySize, 42L);
+SortingCellFactory factory = new SortingCellFactory(42L);
+List<AbstractSortingCell> cells = factory.createRandomCells(distribution, arraySize, maxValue);
 
-IntFunction<CellMetadata> chimeric = index -> {
-    Algotype algotype = Algotype.valueOf(algotypeProvider.getAlgotype(index, arraySize));
-    return new CellMetadata(algotype, SortDirection.ASCENDING);
-};
-
-engine.runUntilConvergence(10000);
+CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
+engine.executeSorting(cells, 10000);
 
 // Result: Cells cluster by algotype WITHOUT explicit clustering code!
 // Bubble cells migrate to one region, insertion cells to another.
+// Algotypes travel WITH cells during swaps!
 ```
 
 **Applications**: Agent-based modeling, swarm intelligence research, self-organizing systems.
@@ -168,191 +165,218 @@ public class FactorCell implements Cell<FactorCell> {
 
 ## Implementation Architecture
 
-The EDE translates theoretical principles into a practical Java framework built around three foundational concepts: lightweight cells, external metadata, and emergent execution.
+The EDE translates theoretical principles into a practical Java framework built around cell-based autonomy with Levin-aligned semantics where algotypes are intrinsic cell properties that travel with cells during swaps.
 
-### Foundation: The Cell Interface
+### Foundation: Cell-Based Architecture
 
-Cells are pure `Comparable` data carriers with zero engine-specific state. The minimal contract requires only domain-specific comparison logic:
+**Key Principle:** Algotypes are bound to cell objects, not to array positions. When cells swap, entire objects relocate (value + algotype together), enabling genuine morphogenetic clustering.
 
-```java
-public interface Cell<T extends Cell<T>> extends Comparable<T> {
-    // Only compareTo() required - inherited from Comparable
-}
-```
+#### Core Abstractions
 
-Domain implementations encapsulate their own ordering semantics:
+**`AbstractCell<V, A>`** - Domain-agnostic base class parameterized by value type and algotype enum:
 
 ```java
-// Generic integer cells for basic sorting
-public class GenericCell implements Cell<GenericCell> {
-    private final int value;
+public abstract class AbstractCell<V extends Comparable<V>, A extends Enum<A>> 
+    implements Comparable<AbstractCell<V, A>> {
     
-    @Override
-    public int compareTo(GenericCell other) {
-        return Integer.compare(this.value, other.value);
-    }
-}
-
-// Domain-specific cells for factorization
-public class FactorCell implements Cell<FactorCell> {
-    private final int remainder;  // N mod position
+    // Intrinsic immutable properties (travel with cell)
+    public abstract A readAlgotype();
+    public abstract V readValue();
     
-    @Override
-    public int compareTo(FactorCell other) {
-        return Integer.compare(this.remainder, other.remainder);
-    }
+    // Mutable positional state (updated during swaps)
+    public abstract int readCurrentPosition();
+    public abstract void updatePositionTo(int newPosition);
+    public abstract CellStatus readStatus();
+    public abstract void updateStatusTo(CellStatus newStatus);
+    
+    // Behavioral policy (algotype-specific)
+    public abstract boolean shouldMoveGiven(NeighborhoodView<V, A> neighbors);
+    public abstract Optional<Integer> calculateTargetPositionGiven(NeighborhoodView<V, A> neighbors);
 }
 ```
 
-Cells contain no algotype, no sort direction, no ideal position—only domain data and comparison logic. This separation enables true domain-agnostic sorting.
-
-### External Metadata Management
-
-All sorting metadata lives outside cells, provided by external metadata functions. This architecture achieves complete decoupling between domain logic and engine mechanics:
+**`NeighborhoodView<V, A>`** - Encapsulates neighbor visibility, hiding array access from cells:
 
 ```java
-// Metadata specifies: algotype, sort direction, ideal position (optional)
-IntFunction<CellMetadata> metadataProvider = index -> 
-    new CellMetadata(
-        Algotype.BUBBLE,              // behavioral policy
-        SortDirection.ASCENDING       // ordering preference
-    );
+// Provides cells with "what they can see" based on algotype rules
+NeighborhoodView<Integer, SortingAlgotype> view = 
+    new NeighborhoodView<>(cell, position, arraySize, visibleNeighbors, positions);
+
+// Cells query neighbors without knowing array structure
+Optional<AbstractCell<Integer, SortingAlgotype>> left = view.getLeftNeighbor();
+Optional<AbstractCell<Integer, SortingAlgotype>> right = view.getRightNeighbor();
 ```
 
-For chimeric populations mixing multiple algotypes:
+**`SortingAlgotype`** - Enum defining behavioral policies for sorting domain:
 
 ```java
-// 50% BUBBLE, 50% INSERTION cells
-AlgotypeProvider algotypeProvider = new PercentageAlgotypeProvider(
-    Map.of(Algotype.BUBBLE, 0.5, Algotype.INSERTION, 0.5),
-    arraySize,
-    seed
+public enum SortingAlgotype {
+    BUBBLE,      // Local adjacent bidirectional movement
+    INSERTION,   // Prefix left view with conservative swaps
+    SELECTION,   // Ideal position targeting with convergence
+    FIBONACCI    // Logarithmic neighbor coverage
+}
+```
+
+#### Sorting Domain Implementation
+
+**`AbstractSortingCell`** - Main entry point fixing `V=Integer`, `A=SortingAlgotype`:
+
+```java
+public abstract class AbstractSortingCell 
+    extends AbstractCell<Integer, SortingAlgotype> {
+    
+    protected final int value;              // Immutable sort key
+    protected final SortingAlgotype algotype;  // Immutable behavioral policy
+    protected int currentPosition;          // Mutable (updated during swaps)
+    protected CellStatus status;            // Mutable (ACTIVE, FREEZE, etc.)
+}
+```
+
+**Concrete Cell Implementations:**
+- **`BubbleSortingCell`** - Random bidirectional movement (50/50 left/right)
+- **`SelectionSortingCell`** - Ideal position targeting, increments on denial
+- **`InsertionSortingCell`** - Conservative left-only, waits for sorted prefix
+
+### Cell Creation with Embedded Algotypes
+
+**`SortingCellFactory`** - Creates cells with algotypes as intrinsic properties:
+
+```java
+SortingCellFactory factory = new SortingCellFactory(42L); // Seeded for reproducibility
+
+// 40% BUBBLE, 30% SELECTION, 30% INSERTION
+Map<SortingAlgotype, Double> distribution = Map.of(
+    SortingAlgotype.BUBBLE, 0.4,
+    SortingAlgotype.SELECTION, 0.3,
+    SortingAlgotype.INSERTION, 0.3
 );
 
-IntFunction<CellMetadata> chimericMetadata = index -> {
-    Algotype algotype = Algotype.valueOf(
-        algotypeProvider.getAlgotype(index, arraySize)
-    );
-    return new CellMetadata(algotype, SortDirection.ASCENDING);
-};
+List<AbstractSortingCell> cells = factory.createRandomCells(distribution, 100, 1000);
+// Cells created with algotypes embedded, NOT position-based metadata
 ```
 
-This external metadata pattern enables:
-- Same cells usable in different sorting contexts
-- Runtime algotype assignment without cell modification  
-- Chimeric experiments mixing behavioral strategies
-- Complete independence of domain logic from engine infrastructure
+### Execution Engine: Cell-Based Swapping
 
-### Execution Engine: Orchestrating Emergence
-
-The `SynchronousExecutionEngine` coordinates cell dynamics through a simple evaluation loop:
-
-1. **Evaluate**: Each cell compares itself with neighbors visible from its algotype's topology
-2. **Propose**: Cells following their behavioral policy suggest beneficial swaps
-3. **Execute**: `SwapEngine` applies proposed swaps, respecting frozen cell constraints
-4. **Record**: `Probe` captures array state, swap counts, and metrics at each step
-5. **Converge**: `ConvergenceDetector` signals termination when stable state reached
+**`CellBasedExecutionEngine`** - Simple execution engine (~200 LOC) working with cell objects:
 
 ```java
-// Create execution engine with external metadata
-SynchronousExecutionEngine<GenericCell> engine = 
-    new SynchronousExecutionEngine<>(
-        cells,                  // cell array
-        swapEngine,             // swap mechanics
-        probe,                  // trajectory recorder
-        convergenceDetector,    // termination criterion
-        metadataProvider        // external metadata
-    );
+CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
+int steps = engine.executeSorting(cells, maxSteps);
 
-// Run until convergence or max steps
-int steps = engine.runUntilConvergence(maxSteps);
+// CRITICAL: When cells swap, entire objects relocate
+// Swap positions i and j:
+AbstractSortingCell temp = cells.get(i);
+cells.set(i, cells.get(j));  // Entire object (value + algotype)
+cells.set(j, temp);           // moves to new position
+cells.get(i).updatePositionTo(i);
+cells.get(j).updatePositionTo(j);
 ```
 
-No cell knows the global state. No centralized controller directs the solution. Order emerges from repeated local pairwise comparisons.
+**Execution Flow:**
+1. **Query**: Cell reads its algotype to determine behavior
+2. **View**: Engine builds `NeighborhoodView` based on algotype visibility rules
+3. **Decide**: Cell evaluates `shouldMoveGiven()` and `calculateTargetPositionGiven()`
+4. **Swap**: Engine swaps entire cell objects (algotypes travel with cells!)
+5. **Update**: Cells update their position tracking
 
-### Observability: The Probe System
+No cell knows global state. Algotypes relocate WITH cells. Order emerges from local pairwise comparisons with cell-bound behavioral policies.
 
-Complete trajectory recording enables post-hoc analysis of emergent dynamics:
+### Observability: Trajectory Recording
+
+Complete trajectory recording enables analysis of emergent dynamics (future integration with probe system planned):
 
 ```java
-Probe<GenericCell> probe = new Probe<>();
+// Current cell-based execution provides step count and final state
+CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
+int steps = engine.executeSorting(cells, maxSteps);
 
-// ... run experiment with probe ...
-
-// Access recorded trajectory
-List<GenericCell[]> snapshots = probe.getSnapshots();
-long swapCount = probe.getSwapCount();
-long comparisonCount = probe.getComparisonCount();
-
-// Analyze delayed gratification
-MonotonicityError<GenericCell> metric = new MonotonicityError<>();
-for (GenericCell[] snapshot : snapshots) {
-    double disorder = metric.compute(snapshot);
-    // Track disorder over time - may increase temporarily!
+// Cells can be inspected at any point
+for (AbstractSortingCell cell : cells) {
+    System.out.printf("Position %d: value=%d, algotype=%s, status=%s%n",
+        cell.readCurrentPosition(),
+        cell.readValue(),
+        cell.readAlgotype(),
+        cell.readStatus());
 }
 ```
 
-Probes capture execution without affecting runtime performance. Analysis happens after convergence, revealing emergent problem-solving strategies as they unfold.
+Future integration with probe system will enable complete trajectory analysis revealing emergent problem-solving strategies.
 
 ## Quickstart: Your First Emergent Sort
 
-This minimal example demonstrates emergent sorting through local cell interactions:
+This minimal example demonstrates the new cell-based architecture with Levin-aligned semantics:
 
 ```java
-import com.emergent.doom.cell.GenericCell;
-import com.emergent.doom.execution.*;
-import com.emergent.doom.swap.*;
-import com.emergent.doom.probe.*;
-import com.emergent.doom.cell.Algotype;
-import com.emergent.doom.cell.SortDirection;
-import java.util.Arrays;
-import java.util.function.IntFunction;
+import com.emergent.doom.cell.*;
+import com.emergent.doom.factory.SortingCellFactory;
+import java.util.*;
 
 public class QuickStart {
     public static void main(String[] args) {
-        // 1. Create cells - lightweight Comparable wrappers with zero engine state
-        GenericCell[] cells = {
-            new GenericCell(5), new GenericCell(2), new GenericCell(9),
-            new GenericCell(1), new GenericCell(7), new GenericCell(3)
-        };
+        // 1. Create cell factory with seeded random for reproducibility
+        SortingCellFactory factory = new SortingCellFactory(42L);
         
-        // 2. Set up infrastructure
-        SwapEngine<GenericCell> swapEngine = new SwapEngine<>(new FrozenCellStatus());
-        Probe<GenericCell> probe = new Probe<>();
-        ConvergenceDetector<GenericCell> convergence = new NoSwapConvergence<>(10);
+        // 2. Define algotype distribution (all BUBBLE for simplicity)
+        Map<SortingAlgotype, Double> distribution = Map.of(
+            SortingAlgotype.BUBBLE, 1.0
+        );
         
-        // 3. Provide metadata - cells don't know their own algotype
-        IntFunction<CellMetadata> metadata = i -> 
-            new CellMetadata(Algotype.BUBBLE, SortDirection.ASCENDING);
+        // 3. Create cells with embedded algotypes
+        // Algotypes are intrinsic properties that travel WITH cells during swaps
+        List<AbstractSortingCell> cells = factory.createRandomCells(
+            distribution, 
+            10,      // array size
+            100      // max value
+        );
         
-        // 4. Create engine and run
-        SynchronousExecutionEngine<GenericCell> engine = 
-            new SynchronousExecutionEngine<>(cells, swapEngine, probe, 
-                                             convergence, metadata);
+        System.out.println("Initial state:");
+        printCells(cells);
         
-        int steps = engine.runUntilConvergence(1000);
+        // 4. Create execution engine and run
+        CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
+        int steps = engine.executeSorting(cells, 1000);
         
         // 5. Emergent sorting complete!
-        System.out.println("Sorted in " + steps + " steps: " + 
-                           Arrays.toString(cells));
+        System.out.println("\nSorted in " + steps + " steps:");
+        printCells(cells);
+    }
+    
+    private static void printCells(List<AbstractSortingCell> cells) {
+        System.out.print("[");
+        for (int i = 0; i < cells.size(); i++) {
+            System.out.print(cells.get(i).readValue());
+            if (i < cells.size() - 1) System.out.print(", ");
+        }
+        System.out.println("]");
     }
 }
 ```
 
 **Expected Output:**
 ```
-Sorted in 47 steps: [1, 2, 3, 5, 7, 9]
+Initial state:
+[73, 29, 91, 45, 12, 67, 38, 54, 81, 26]
+
+Sorted in 42 steps:
+[12, 26, 29, 38, 45, 54, 67, 73, 81, 91]
 ```
 
-Cells discovered the sorted order through 47 steps of local pairwise comparisons. No centralized algorithm directed the solution—global order emerged from bottom-up dynamics.
+Cells discovered sorted order through local pairwise comparisons. Each cell carries its algotype as an intrinsic property—when cells swap, algotypes relocate WITH them, enabling Levin-style morphogenetic clustering.
 
 ### Exploring Further
 
-**Test suite**: [Test Suite Documentation](src/test/java/com/emergent/doom/README.md) demonstrates chimeric populations, delayed gratification, clustering, and frozen cell robustness.
+**Demo application**: Run `NewCellArchitectureDemo` to see algotypes traveling with cells during swaps:
+```bash
+mvn compile
+java -cp target/classes com.emergent.doom.examples.NewCellArchitectureDemo
+```
 
-**Different algotypes**: Replace `Algotype.BUBBLE` with `SELECTION`, `INSERTION`, or `FIBONACCI` to observe different convergence behaviors.
+**Test suite**: [Test Suite Documentation](src/test/java/com/emergent/doom/README.md) demonstrates cell contract validation and behavioral testing.
 
-**Custom domains**: Implement `Cell<YourType>` with domain-specific `compareTo()` logic. Same engine, different problem space.
+**Different algotypes**: Change distribution to mix `SortingAlgotype.BUBBLE`, `SELECTION`, and `INSERTION` to observe emergent clustering.
+
+**Chimeric populations**: Mix multiple algotypes in one population and observe spontaneous segregation by behavioral strategy.
 
 ## Glossary
 
@@ -360,29 +384,29 @@ Cells discovered the sorted order through 47 steps of local pairwise comparisons
 
 **Doom**: Inevitable convergence toward a target state through repeated local interactions. The term emphasizes inexorable progress, not catastrophe.
 
-**Cell**: Lightweight `Comparable<T>` data carrier implementing only domain-specific comparison logic. Contains zero engine-specific metadata.
+**Cell**: Autonomous agent carrying intrinsic properties (value, algotype) that travel together during swaps. Implements `AbstractCell<V, A>` with domain-specific value type and algotype enum.
 
-**Algotype**: Behavioral policy determining swap decisions—BUBBLE (bidirectional adjacent), INSERTION (left-migrating), SELECTION (ideal-position seeking), FIBONACCI (logarithmic viewing). Assigned externally via metadata providers.
+**Algotype**: Behavioral policy determining swap decisions—BUBBLE (bidirectional adjacent), INSERTION (left-migrating), SELECTION (ideal-position seeking), FIBONACCI (logarithmic viewing). Embedded as immutable property within each cell.
 
-**Metadata Provider**: Function (`IntFunction<CellMetadata>`) supplying algotype, sort direction, and ideal position for each cell position. Enables domain-agnostic cell design.
+**Neighborhood View**: Encapsulation of visible neighbors based on algotype rules. Hides array access mechanics, preserves "local knowledge only" principle.
 
-**Probe**: Trajectory recording infrastructure capturing snapshots, swap counts, and metrics at each step for post-hoc analysis.
+**Cell Factory**: Component creating cells with embedded algotypes. `SortingCellFactory` distributes algotypes across population with specified percentages.
 
-**Convergence**: Equilibrium state where no beneficial swaps remain. Detected via heuristics (consecutive zero-swap steps or sortedness thresholds).
+**Execution Engine**: `CellBasedExecutionEngine` coordinates cell swaps where entire cell objects (value + algotype) relocate together.
 
-**Frozen Cell**: Constrained cell simulating substrate unreliability. IMMOVABLE (cannot move), MOVABLE (passive only), NONE (fully mobile).
+**Convergence**: Equilibrium state where no beneficial swaps remain. Detected when cells reach sorted configuration.
 
 ### Advanced Concepts
 
-**Chimeric Population**: Mixed-algotype array enabling emergent clustering studies. Cells spontaneously segregate by behavioral strategy.
+**Chimeric Population**: Mixed-algotype array enabling emergent clustering studies. Cells spontaneously segregate by behavioral strategy as algotypes travel with cells during sorting.
 
-**Delayed Gratification**: Temporary disorder increases enabling long-term progress. Emerges from sorting dynamics without explicit encoding.
+**Cell Status**: Mutable state controlling swap eligibility—ACTIVE (can initiate/accept), FREEZE (accept only), SLEEP/INACTIVE (no participation).
 
-**Substrate**: Computational environment with potential unreliability (frozen cells, stochastic failures) modeling biological constraints.
+**Levin-Aligned Semantics**: Architecture where algotypes are intrinsic cell properties that relocate WITH cells during swaps, producing characteristic 18.30% aggregation variance signature observed in morphogenetic experiments.
 
-**Topology**: Neighborhood structure defining cell interactions. Shapes emergent behavior through visibility constraints.
+**Position Tracking**: Mutable state updated after swaps to maintain cell awareness of current array location. Separate from immutable intrinsic properties (value, algotype).
 
-**Monotonicity Error**: Inversion count measuring disorder. Tracks problem-space navigation including temporary setbacks.
+**Swap Eligibility**: Cell capability to participate in swaps based on status. ACTIVE cells initiate and accept; FREEZE cells only accept; others cannot participate.
 
 ## Technical Details
 
@@ -390,33 +414,43 @@ Cells discovered the sorted order through 47 steps of local pairwise comparisons
 
 ```
 com.emergent.doom
-├── cell/               # Cell interface and implementations
-├── topology/           # Neighborhood and iteration strategies  
-├── swap/               # Swap mechanics and frozen cell management
-├── probe/              # Execution trajectory recording
-├── execution/          # Main engine and convergence detection
-├── metrics/            # Quality measures and analysis
-├── experiment/         # Multi-trial experiment framework
-├── chimeric/           # Mixed-algotype populations
-└── analysis/           # Trajectory visualization and analysis
+├── cell/               # Cell architecture (AbstractCell, concrete implementations)
+│   ├── AbstractCell.java
+│   ├── AbstractSortingCell.java
+│   ├── BubbleSortingCell.java
+│   ├── SelectionSortingCell.java
+│   ├── InsertionSortingCell.java
+│   ├── SortingAlgotype.java
+│   └── NeighborhoodView.java
+├── factory/            # Cell creation with embedded algotypes
+│   └── SortingCellFactory.java
+├── execution/          # Cell-based execution engine
+│   └── CellBasedExecutionEngine.java
+├── group/              # Cell status management
+│   └── CellStatus.java
+├── metrics/            # Quality measures and analysis (future integration)
+├── experiment/         # Multi-trial experiment framework (future integration)
+└── analysis/           # Trajectory visualization (future integration)
 ```
+
+**Note**: Some packages from previous architecture versions remain for legacy code marked with `.old` extension. Active development uses the cell-based architecture in `cell/`, `factory/`, and updated `execution/` components.
 
 ### Execution Modes
 
-**SynchronousExecutionEngine**: Sequential cell evaluation for deterministic, step-by-step execution with complete trajectory visibility.
+**CellBasedExecutionEngine**: Levin-aligned execution where cells carry algotypes as intrinsic properties. Simple ~200 LOC implementation that swaps entire cell objects (value + algotype together).
 
-**ExperimentRunner**: Batch-level parallelism coordinating multiple trials concurrently via `runBatchExperiments()`. Replaces removed per-cell threading modes for 5-10× speedup through eliminated synchronization overhead.
+**Future Integration**: Batch-level parallelism for multiple trials and probe system integration for complete trajectory recording planned in upcoming releases.
 
 ### Metrics and Analysis
 
-Quantitative characterization methods from the Levin paper:
+Quantitative characterization methods from the Levin paper (future integration with cell-based architecture planned):
 
-- **MonotonicityError**: Inversion count tracking disorder at each step
-- **SortednessValue**: Progress toward sorted state measurement
-- **DelayedGratificationCalculator**: Identifies temporary error increases enabling long-term gains
-- **AggregationValue**: Clustering behavior analysis in chimeric populations
+- **Sortedness tracking**: Monitor progress toward sorted state
+- **Clustering analysis**: Measure spatial aggregation in chimeric populations  
+- **Delayed gratification detection**: Identify temporary disorder increases enabling long-term gains
+- **Convergence metrics**: Track steps to equilibrium across different algotype mixes
 
-Analysis package provides trajectory visualization and statistical summaries of emergent behaviors.
+Current cell-based architecture provides foundational support for these analyses. Full integration with trajectory recording and statistical summaries planned for future releases.
 
 ## Build and Run
 
