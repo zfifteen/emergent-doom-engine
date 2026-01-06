@@ -3,9 +3,11 @@ package com.emergent.doom.datagen;
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.AlgotypedCell;
 import com.emergent.doom.cell.GenericCell;
+import com.emergent.doom.cell.SortDirection;
 import com.emergent.doom.chimeric.AlgotypedCellFactory;
 import com.emergent.doom.chimeric.GenericCellFactory;
 import com.emergent.doom.chimeric.PercentageAlgotypeProvider;
+import com.emergent.doom.execution.CellMetadata;
 import com.emergent.doom.execution.NoSwapConvergence;
 import com.emergent.doom.execution.SynchronousExecutionEngine;
 import com.emergent.doom.experiments.clustering.ChimericProbe;
@@ -24,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.IntFunction;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -197,10 +200,10 @@ class EDEvsLevinComparisonDataGenTest {
         SwapEngine<GenericCell> swapEngine = new SwapEngine<>(frozenStatus);
         NoSwapConvergence<GenericCell> convergenceDetector = new NoSwapConvergence<>(3);
 
-        java.util.function.IntFunction<com.emergent.doom.execution.CellMetadata> metadataProvider =
-            index -> new com.emergent.doom.execution.CellMetadata(
+        java.util.function.IntFunction<CellMetadata> metadataProvider =
+            index -> new CellMetadata(
                 Algotype.valueOf(algotypeProvider.getAlgotype(index, ARRAY_SIZE)),
-                com.emergent.doom.cell.SortDirection.ASCENDING
+                SortDirection.ASCENDING
             );
 
         SynchronousExecutionEngine<GenericCell> engine =
@@ -231,10 +234,10 @@ class EDEvsLevinComparisonDataGenTest {
         SwapEngine<AlgotypedCell> swapEngine = new SwapEngine<>(frozenStatus);
         NoSwapConvergence<AlgotypedCell> convergenceDetector = new NoSwapConvergence<>(3);
 
-        java.util.function.IntFunction<com.emergent.doom.execution.CellMetadata> metadataProvider =
-            index -> new com.emergent.doom.execution.CellMetadata(
+        IntFunction<CellMetadata> metadataProvider =
+            index -> new CellMetadata(
                 cells[index].getAlgotype(),
-                com.emergent.doom.cell.SortDirection.ASCENDING
+                SortDirection.ASCENDING
             );
 
         SynchronousExecutionEngine<AlgotypedCell> engine =

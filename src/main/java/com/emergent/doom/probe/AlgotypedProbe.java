@@ -141,13 +141,11 @@ public class AlgotypedProbe extends Probe<AlgotypedCell> {
      *   <li>BUBBLE → 0</li>
      *   <li>SELECTION → 1</li>
      *   <li>INSERTION → 2</li>
-     *   <li>QUICK → 3</li>
-     *   <li>MERGE → 4</li>
-     *   <li>HEAP → 5</li>
      * </ul>
      *
      * @param algotype the algotype enum value
-     * @return numeric label (0-5)
+     * @return numeric label (0-2)
+     * @throws IllegalArgumentException if algotype is not supported
      */
     private int algotypeToLabel(Algotype algotype) {
         switch (algotype) {
