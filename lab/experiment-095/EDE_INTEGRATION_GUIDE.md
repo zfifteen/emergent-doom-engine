@@ -95,11 +95,11 @@ Before refactoring, decide which execution pattern to use:
 - Simplest integration path
 - **Note**: This adapter does not yet exist in EDE and must be created
 
-**Alternative: Option A** - Extend `WaveletFeatureCell` from `AbstractCell` (uses existing EDE)
+**Alternative: Option A** - Extend `WaveletFeatureCell` from `AbstractCell` (requires custom execution engine)
 - Provides full EDE features (neighborhoods, behavioral policies)
 - Requires defining `WaveletAlgotype` enum
-- Works with existing `CellBasedExecutionEngine`
-- More complex but leverages existing framework
+- Cannot use existing `CellBasedExecutionEngine` (which expects `AbstractSortingCell` with Integer values)
+- More complex but leverages existing framework patterns
 
 The examples below show **Option B** (requires creating the adapter) for clarity of the integration pattern.
 
@@ -137,13 +137,10 @@ public class EmergentSorter {
     
     private final int iterations;
     private final double[] tierThresholds;
-    private final CellBasedExecutionEngine engine;
-    
     public EmergentSorter(int iterations, String distanceMetric,
                           double[] tierThresholds, long randomSeed) {
         this.iterations = iterations;
         this.tierThresholds = tierThresholds;
-        this.engine = new CellBasedExecutionEngine();
     }
     
     /**
@@ -168,7 +165,7 @@ public class EmergentSorter {
         }
         
         // Step 3: Execute emergent sorting via EDE
-        // Using GenericCellExecutionEngine (must be created - see Step 4)
+        // Using GenericCellExecutionEngine (must be created - see Step 4 of this guide below)
         // This adapter allows any Cell implementation to work with EDE patterns
         GenericCellExecutionEngine<WaveletFeatureCell> engine = 
             new GenericCellExecutionEngine<>();
@@ -223,9 +220,9 @@ public class EmergentSorter {
 
 ### Step 4: Implementation Details for Each Approach
 
-**Option A (Uses Existing EDE)**: Extend `WaveletFeatureCell` from `AbstractCell`
+**Option A (Requires Custom Engine)**: Extend `WaveletFeatureCell` from `AbstractCell`
 
-**Note**: This approach requires defining a `WaveletAlgotype` enum but works directly with existing `CellBasedExecutionEngine`.
+**Note**: This approach requires defining a `WaveletAlgotype` enum and implementing a custom execution engine. The existing `CellBasedExecutionEngine` only works with `AbstractSortingCell` (Integer values, SortingAlgotype).
 
 ```java
 package lab.experiment095.cell;
@@ -279,7 +276,10 @@ import java.util.List;
 
 /**
  * Generic cell execution engine for any Cell implementation.
- * Adapts EDE execution pattern to work with Cell interface.
+ * 
+ * This is a simplified sorting implementation that works with the minimal
+ * Cell interface. It does not implement full EDE patterns (neighborhoods,
+ * algotype-based behaviors) but provides basic emergent sorting functionality.
  */
 public class GenericCellExecutionEngine<T extends Cell<T>> {
     
@@ -429,6 +429,16 @@ List<WaveletFeatureCell> cells = createCells(...);
 GenericCellExecutionEngine<WaveletFeatureCell> engine = new GenericCellExecutionEngine<>();
 int steps = engine.executeSorting(cells, 2000);
 assertTrue(isSorted(cells));  // Verify sorted order
+
+// Helper method for verifying sort order in tests
+private static boolean isSorted(List<WaveletFeatureCell> cells) {
+    for (int i = 0; i < cells.size() - 1; i++) {
+        if (cells.get(i).compareTo(cells.get(i + 1)) > 0) {
+            return false;
+        }
+    }
+    return true;
+}
 ```
 
 ## Benefits of EDE Integration

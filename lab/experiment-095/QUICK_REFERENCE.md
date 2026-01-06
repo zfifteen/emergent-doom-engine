@@ -27,7 +27,14 @@ public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
     
     @Override
     public int getValue() {
-        return (int) Math.round(distanceToMean * 1000);
+        double scaled = distanceToMean * 1000.0;
+        if (scaled > Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        }
+        if (scaled < Integer.MIN_VALUE) {
+            return Integer.MIN_VALUE;
+        }
+        return (int) Math.round(scaled);
     }
     
     public double[] getFeatures() { return features.clone(); }
@@ -59,8 +66,9 @@ List<WaveletFeatureCell> cells = rawFeatures.stream()
     .collect(Collectors.toList());
 
 // 4. Execute emergent sorting (EDE)
-// Note: GenericCellExecutionEngine must be created (see EDE_INTEGRATION_GUIDE.md)
-// Alternatively, extend WaveletFeatureCell from AbstractCell to use CellBasedExecutionEngine
+// ⚠️ WARNING: GenericCellExecutionEngine does not yet exist in the EDE framework
+// It must be implemented as part of the integration effort (see EDE_INTEGRATION_GUIDE.md Step 4)
+// Alternatively, adapt WaveletFeatureCell to extend AbstractSortingCell to use existing CellBasedExecutionEngine
 GenericCellExecutionEngine<WaveletFeatureCell> engine = new GenericCellExecutionEngine<>();
 int steps = engine.executeSorting(cells, 2000);
 
@@ -114,12 +122,23 @@ public void testCellComparison() {
 @Test
 public void testSortingConvergence() {
     List<WaveletFeatureCell> cells = createRandomCells(100);
-    CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
+    // Note: GenericCellExecutionEngine must be implemented first
+    GenericCellExecutionEngine<WaveletFeatureCell> engine = 
+        new GenericCellExecutionEngine<>();
     
     int steps = engine.executeSorting(cells, 2000);
     
     assertTrue(isSortedByDistance(cells));
     assertTrue(steps < 2000);  // Should converge early
+}
+
+private boolean isSortedByDistance(List<WaveletFeatureCell> cells) {
+    for (int i = 0; i < cells.size() - 1; i++) {
+        if (cells.get(i).compareTo(cells.get(i + 1)) > 0) {
+            return false;
+        }
+    }
+    return true;
 }
 ```
 
@@ -144,8 +163,8 @@ public void testSortingConvergence() {
 # Build EDE core
 mvn clean install
 
-# Compile experiment
-javac -cp target/classes -d build lab/experiment-095/**/*.java
+# Compile experiment (using find for cross-platform compatibility)
+javac -cp target/classes -d build $(find lab/experiment-095 -name "*.java")
 
 # Run experiment
 java -cp build:target/classes lab.experiment095.WaveCrisprSignalExperiment
