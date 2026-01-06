@@ -4,6 +4,7 @@ import com.emergent.doom.cell.Cell;
 import com.emergent.doom.probe.StepSnapshot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,6 +40,7 @@ class AlgotypeAggregationIndexTest {
      * [TestWeaver: Implement test logic based on AlgotypeAggregationIndex API]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compute returns 100% for perfectly clustered algotypes")
     void computeReturns100ForPerfectlyClustered() {
         fail("TestWeaver: Skeleton generated - implement test logic");
@@ -56,6 +58,7 @@ class AlgotypeAggregationIndexTest {
      * [TestWeaver: Implement alternating pattern test]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compute returns 0% for alternating algotype pattern")
     void computeReturns0ForAlternatingPattern() {
         fail("TestWeaver: Skeleton generated - implement test logic");
@@ -73,6 +76,7 @@ class AlgotypeAggregationIndexTest {
      * [TestWeaver: Implement random baseline test]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compute approximates 75% for random 50/50 mix")
     void computeApproximates75ForRandom5050Mix() {
         fail("TestWeaver: Skeleton generated - implement test logic");

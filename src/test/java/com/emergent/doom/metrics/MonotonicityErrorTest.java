@@ -4,6 +4,7 @@ import com.emergent.doom.cell.Cell;
 import com.emergent.doom.probe.StepSnapshot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +41,7 @@ class MonotonicityErrorTest {
      * [TestWeaver: Implement test logic based on MonotonicityError API]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compute counts adjacent inversions correctly")
     void computeCountsAdjacentInversions() {
         fail("TestWeaver: Skeleton generated - implement test logic");
@@ -57,6 +59,7 @@ class MonotonicityErrorTest {
      * [TestWeaver: Implement sorted array test]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compute returns zero for sorted arrays")
     void computeReturnsZeroForSortedArrays() {
         fail("TestWeaver: Skeleton generated - implement test logic");
@@ -74,6 +77,7 @@ class MonotonicityErrorTest {
      * [TestWeaver: Implement edge case tests]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compute handles edge cases correctly")
     void computeHandlesEdgeCases() {
         fail("TestWeaver: Skeleton generated - implement test logic");

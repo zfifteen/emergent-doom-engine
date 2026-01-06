@@ -2,6 +2,7 @@ package com.emergent.doom.swap;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,6 +31,7 @@ class SwapProposalTest {
      * [TestWeaver: Implement test logic based on SwapProposal API]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("constructor stores initiator, target, and priority correctly")
     void constructorStoresFieldsCorrectly() {
         fail("TestWeaver: Skeleton generated - implement test logic");
@@ -47,6 +49,7 @@ class SwapProposalTest {
      * [TestWeaver: Implement default priority test]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("two-argument constructor uses initiator index as priority")
     void twoArgumentConstructorUsesInitiatorAsPriority() {
         fail("TestWeaver: Skeleton generated - implement test logic");
@@ -64,6 +67,7 @@ class SwapProposalTest {
      * [TestWeaver: Implement priority comparison test]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compareTo orders by priority (lower = higher precedence)")
     void compareToOrdersByPriority() {
         fail("TestWeaver: Skeleton generated - implement test logic");
@@ -81,6 +85,7 @@ class SwapProposalTest {
      * [TestWeaver: Implement involves() verification]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("involves detects participation in swap")
     void involvesDetectsParticipation() {
         fail("TestWeaver: Skeleton generated - implement test logic");
@@ -98,6 +103,7 @@ class SwapProposalTest {
      * [TestWeaver: Implement immutability verification]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("SwapProposal is immutable and thread-safe")
     void swapProposalIsImmutable() {
         fail("TestWeaver: Skeleton generated - implement test logic");

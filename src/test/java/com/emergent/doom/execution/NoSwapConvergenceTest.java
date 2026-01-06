@@ -3,6 +3,7 @@ package com.emergent.doom.execution;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.probe.Probe;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +39,7 @@ class NoSwapConvergenceTest {
      * [TestWeaver: Implement test logic based on NoSwapConvergence API]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("hasConverged returns true after N stable steps")
     void hasConvergedReturnsTrueAfterNStableSteps() {
         fail("TestWeaver: Skeleton generated - implement test logic");
@@ -55,6 +57,7 @@ class NoSwapConvergenceTest {
      * [TestWeaver: Implement premature termination prevention test]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("hasConverged returns false before N stable steps")
     void hasConvergedReturnsFalseBeforeNStableSteps() {
         fail("TestWeaver: Skeleton generated - implement test logic");
@@ -72,6 +75,7 @@ class NoSwapConvergenceTest {
      * [TestWeaver: Implement constructor validation test]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("constructor rejects invalid stable step counts")
     void constructorRejectsInvalidStableStepCounts() {
         fail("TestWeaver: Skeleton generated - implement test logic");

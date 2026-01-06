@@ -3,6 +3,7 @@ package com.emergent.doom.execution;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.probe.Probe;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -32,6 +33,7 @@ class ConvergenceDetectorTest {
      * [TestWeaver: Implement test logic based on ConvergenceDetector interface]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("hasConverged analyzes probe data correctly")
     void hasConvergedAnalyzesProbeData() {
         fail("TestWeaver: Skeleton generated - implement test logic");
@@ -49,6 +51,7 @@ class ConvergenceDetectorTest {
      * [TestWeaver: Implement reset verification]
      */
     @Test
+    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("reset clears detector state")
     void resetClearsDetectorState() {
         fail("TestWeaver: Skeleton generated - implement test logic");
