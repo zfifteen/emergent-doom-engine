@@ -22,6 +22,14 @@ class SpearmanDistanceTest {
         metric = new SpearmanDistance<>();
     }
 
+    /**
+     * Creates an IntCell array from a varargs sequence of primitive integers.
+     * This helper simplifies test data construction for Spearman distance metric tests,
+     * allowing concise specification of cell sequences for correlation calculations.
+     *
+     * @param values Variable number of int values to wrap in IntCell instances
+     * @return IntCell array containing cells with the specified values in order
+     */
     private IntCell[] createCells(int... values) {
         IntCell[] cells = new IntCell[values.length];
         for (int i = 0; i < values.length; i++) {
