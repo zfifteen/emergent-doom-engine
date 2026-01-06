@@ -1,0 +1,27 @@
+{
+  "experiment_name": "EDE vs. Levin Architecture Comparison",
+  "description": "Side-by-side comparison of position-based (EDE) vs. cell-based (Levin) algotype binding",
+  "generated_at": "2026-01-06T04:52:35Z",
+  "hypothesis": {
+    "ede": "Algotypes tied to positions → constant aggregation during sorting",
+    "levin": "Algotypes bound to cells → dynamic aggregation during sorting"
+  },
+  "parameters": {
+    "array_size": 100,
+    "max_steps": 10000,
+    "trials": 10,
+    "base_seed": 42,
+    "distribution": "50/50 Bubble/Selection"
+  },
+  "outputs": {
+    "comparison_csv": "ede_vs_levin_comparison.csv",
+    "summary_csv": "ede_vs_levin_summary.csv"
+  },
+  "metrics": {
+    "aggregation_pct": "Percentage of cells with ≥1 same-algotype neighbor",
+    "sortedness_pct": "Percentage of cells in correct final position",
+    "aggregation_delta": "Absolute difference between EDE and Levin aggregation"
+  },
+  "reference": "Levin et al. (2024), arXiv:2401.05375v1",
+  "repository": "https://github.com/zfifteen/emergent-doom-engine"
+}
