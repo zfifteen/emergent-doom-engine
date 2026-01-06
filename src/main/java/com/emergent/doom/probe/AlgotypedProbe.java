@@ -157,12 +157,6 @@ public class AlgotypedProbe extends Probe<AlgotypedCell> {
                 return 1;
             case INSERTION:
                 return 2;
-            case QUICK:
-                return 3;
-            case MERGE:
-                return 4;
-            case HEAP:
-                return 5;
             default:
                 throw new IllegalArgumentException("Unknown algotype: " + algotype);
         }
@@ -176,6 +170,9 @@ public class AlgotypedProbe extends Probe<AlgotypedCell> {
      */
     public void clearSnapshots() {
         algotypedSnapshots.clear();
-        reset();
+        // Reset counters
+        swapCount.set(0);
+        stepsSinceLastSwap.set(0);
+        totalSteps.set(0);
     }
 }
