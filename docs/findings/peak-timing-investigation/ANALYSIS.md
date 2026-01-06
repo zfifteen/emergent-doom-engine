@@ -248,6 +248,14 @@ The framework can be used to study **value-based sorting dynamics** with algotyp
 2. Clarify the aggregation metric definition
 3. Potentially implement adaptive algotype dynamics
 
+**UPDATE (2026-01-06):** Further investigation revealed the root cause is a **fundamental architectural difference**. See `ARCHITECTURAL_DIFFERENCE.md` and `DEFINITIVE_FINDINGS.md` for complete analysis.
+
+**Key Discovery:** The Levin reference implementation binds algotypes to **cell objects** (which move during swaps), while EDE binds algotypes to **position indices** (which stay fixed). This explains why:
+- **EDE:** Constant aggregation (0% variance) - algotypes frozen at positions
+- **Levin:** Dynamic aggregation (18.3% variance, peaks at 90.5%) - algotypes move with cells
+
+**Experimental Proof:** Side-by-side comparison (`EDEvsLevinComparisonDataGenTest`) demonstrates both approaches on identical sorting problems, confirming the architectural difference with hard data (see `ede_vs_levin_*.csv`).
+
 ### Tertiary Conclusion
 
 **The current investigation has produced scientifically valuable data:**
@@ -256,12 +264,14 @@ The framework can be used to study **value-based sorting dynamics** with algotyp
 - ~20,000 timestep measurements
 - Definitive proof of value/algotype space decoupling
 - Baseline measurements for future experiments
+- **NEW:** Comparative data showing both architectural approaches (2,037 trajectory points)
 
 This dataset can be used for:
 - Studying convergence rates by algotype mix
 - Analyzing sorting efficiency patterns
 - Validating alternative clustering metrics
 - Training visualization tools
+- **Reproducing Levin paper results with Levin-style architecture**
 
 ---
 
