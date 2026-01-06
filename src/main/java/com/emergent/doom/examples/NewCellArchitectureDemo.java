@@ -1,6 +1,7 @@
 package com.emergent.doom.examples;
 
 import com.emergent.doom.cell.*;
+import com.emergent.doom.factory.SortingCellFactory;
 
 import java.util.*;
 
@@ -76,28 +77,16 @@ public class NewCellArchitectureDemo {
      * @return list of cells with mixed algotypes and random values
      */
     private static List<AbstractSortingCell> createMixedAlgotypeCells(int size) {
-        List<AbstractSortingCell> cells = new ArrayList<>();
-        Random random = new Random(42); // Seeded for reproducibility
+        // Use the new SortingCellFactory with Levin-aligned semantics
+        SortingCellFactory factory = new SortingCellFactory(42); // Seeded for reproducibility
         
-        for (int i = 0; i < size; i++) {
-            int value = random.nextInt(100);
-            
-            // Distribute algotypes: 40% BUBBLE, 30% SELECTION, 30% INSERTION
-            double rand = random.nextDouble();
-            AbstractSortingCell cell;
-            
-            if (rand < 0.4) {
-                cell = new BubbleSortingCell(value, i, random);
-            } else if (rand < 0.7) {
-                cell = new SelectionSortingCell(value, i, 0);
-            } else {
-                cell = new InsertionSortingCell(value, i);
-            }
-            
-            cells.add(cell);
-        }
+        // Distribute algotypes: 40% BUBBLE, 30% SELECTION, 30% INSERTION
+        Map<SortingAlgotype, Double> distribution = new HashMap<>();
+        distribution.put(SortingAlgotype.BUBBLE, 0.4);
+        distribution.put(SortingAlgotype.SELECTION, 0.3);
+        distribution.put(SortingAlgotype.INSERTION, 0.3);
         
-        return cells;
+        return factory.createRandomCells(distribution, size, 100);
     }
     
     /**
