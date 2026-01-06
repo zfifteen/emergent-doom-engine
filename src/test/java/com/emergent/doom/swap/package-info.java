@@ -1,5 +1,5 @@
 /**
- * Chapter 2: Swap Mechanics - Tests for conditional swap logic and frozen cell constraints.
+ * Core Components: Swap Mechanics - Tests for conditional swap logic and frozen cell constraints.
  *
  * <p>Swaps are the fundamental local interaction mechanism in the EDE. Tests in this package
  * validate that the {@code SwapEngine} correctly implements conditional swapping, frozen cell

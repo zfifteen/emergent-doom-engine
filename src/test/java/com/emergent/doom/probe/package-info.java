@@ -1,5 +1,5 @@
 /**
- * Chapter 2: Probe Recording - Tests for execution trajectory observability.
+ * Core Components: Probe Recording - Tests for execution trajectory observability.
  *
  * <p>Probes provide observability into emergent computation by capturing execution trajectories.
  * Tests in this package validate that probes correctly record cell state snapshots, track swap

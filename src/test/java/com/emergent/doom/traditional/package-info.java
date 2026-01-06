@@ -1,5 +1,5 @@
 /**
- * Chapter 5: Traditional Algorithm Comparison - Tests validating EDE against classical implementations.
+ * Advanced Features: Traditional Algorithm Comparison - Tests validating EDE against classical implementations.
  *
  * <p>Traditional algorithm comparison provides validation that EDE sorting produces functionally
  * equivalent results to classical implementations while revealing differences in execution dynamics

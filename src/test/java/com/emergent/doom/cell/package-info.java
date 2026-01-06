@@ -1,5 +1,5 @@
 /**
- * Chapter 1: Cell Foundations - Tests for the lightweight Cell interface.
+ * Foundations: Cell Interface - Tests for the lightweight Cell interface.
  *
  * <p>The Cell interface is the foundation of the Emergent Doom Engine, defining the minimal
  * contract for domain-agnostic sorting. Tests in this package validate that cells remain

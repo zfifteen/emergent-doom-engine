@@ -1,5 +1,5 @@
 /**
- * Chapter 2: Metrics - Tests for problem-space navigation measures.
+ * Core Components: Metrics - Tests for problem-space navigation measures.
  *
  * <p>Metrics quantify emergent computation by measuring problem-space traversal. Tests in this
  * package validate correct computation of monotonicity, sortedness, delayed gratification, and

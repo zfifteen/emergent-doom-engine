@@ -1,5 +1,5 @@
 /**
- * Chapter 3: Execution Engines - Tests for emergent computation orchestration.
+ * Execution Engines - Tests for emergent computation orchestration.
  *
  * <p>Execution engines orchestrate emergent computation by coordinating cell swaps, managing
  * metadata, and detecting convergence. Tests in this package validate that engines correctly
