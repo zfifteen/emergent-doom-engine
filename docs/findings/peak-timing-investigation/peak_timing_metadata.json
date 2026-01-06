@@ -1,7 +1,7 @@
 {
   "experiment_name": "Peak Timing Anomaly Investigation",
   "description": "Complete step-by-step trajectories to investigate why clustering peaks occur at step 0 instead of mid-sorting",
-  "generated_at": "2026-01-06T04:01:53Z",
+  "generated_at": "2026-01-06T06:30:10Z",
   "anomaly": {
     "observed": "All chimeric pairs show peak aggregation (~74%) at step 0",
     "expected": "Peaks should occur mid-sorting (19-42% of progress) with values 65-72%",
@@ -39,7 +39,7 @@
   "outputs": {
     "trajectories_csv": "peak_timing_trajectories.csv",
     "summary_csv": "peak_timing_summary.csv",
-    "total_trajectory_points": 22040,
+    "total_trajectory_points": 20086,
     "total_trials": 40
   },
   "reference": "Levin et al. (2024) - Classical Sorting Algorithms as a Model of Morphogenesis, arXiv:2401.05375v1",
