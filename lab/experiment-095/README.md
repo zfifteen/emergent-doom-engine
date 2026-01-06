@@ -31,20 +31,21 @@ public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
 }
 ```
 
-**2. Using CellBasedExecutionEngine** - EDE's execution framework (requires adapter)
+**2. Using CellBasedExecutionEngine** - EDE's execution framework
 
-**Note**: The current `CellBasedExecutionEngine` works only with `AbstractSortingCell` (Integer values, `SortingAlgotype`). To integrate `WaveletFeatureCell`, you need to either:
-- **Option A**: Adapt `WaveletFeatureCell` to work with `AbstractSortingCell` constraints (Integer values) and use existing `CellBasedExecutionEngine`
-- **Option B**: Create a generic adapter like `GenericCellExecutionEngine` that works with any `Cell` implementation (see EDE_INTEGRATION_GUIDE.md Step 4)
+**Important Limitation**: The current `CellBasedExecutionEngine` works exclusively with `AbstractSortingCell` (which is defined as `AbstractCell<Integer, SortingAlgotype>`). Since `WaveletFeatureCell` implements the minimal `Cell<WaveletFeatureCell>` interface directly, you have two integration paths:
 
-**Important**: The following example uses `GenericCellExecutionEngine`, which does not currently exist in the EDE framework and must be implemented. See EDE_INTEGRATION_GUIDE.md for implementation details.
+- **Option A**: Adapt `WaveletFeatureCell` to extend `AbstractSortingCell`, mapping 28D features to Integer-based sorting (see EDE_INTEGRATION_GUIDE.md)
+- **Option B**: Create a generic adapter (e.g., `GenericCellExecutionEngine`) that works with any `Cell` implementation (see EDE_INTEGRATION_GUIDE.md Step 4 for proposed implementation)
 
-Example using Option B approach (requires implementing GenericCellExecutionEngine):
+**Currently Shown: Option B** (requires implementing `GenericCellExecutionEngine` first - not yet in EDE framework):
+
 ```java
 // Create cells with embedded features
 List<WaveletFeatureCell> cells = createCellsFromFeatures(waveletFeatures);
 
-// Use generic adapter for Cell interface (to be implemented)
+// Use generic adapter for Cell interface
+// ⚠️ GenericCellExecutionEngine must be implemented first (see EDE_INTEGRATION_GUIDE.md Step 4)
 GenericCellExecutionEngine<WaveletFeatureCell> engine = 
     new GenericCellExecutionEngine<>();
 int steps = engine.executeSorting(cells, maxIterations);
@@ -89,8 +90,9 @@ IntFunction<CellMetadata> metadataProvider = i -> {
                               │
                               ▼
                     ┌──────────────────┐
-                    │  CellBasedExec   │ ◄── EDE Framework
-                    │  utionEngine     │
+                    │ Execution Engine │ ◄── EDE Framework
+                    │ (GenericCell or  │     (see options)
+                    │ AbstractSort)    │
                     └──────────────────┘
                               │
                               ▼
@@ -106,7 +108,8 @@ IntFunction<CellMetadata> metadataProvider = i -> {
                     └──────────────────┘
 
 Legend:
-Components are annotated in the diagram above with their role in the architecture.
+Components with "EDE Framework" annotation are from the Emergent Doom Engine.
+All other components in this diagram are experiment-specific (keep/modify as needed).
 ```
 
 ### Component Organization
@@ -115,7 +118,7 @@ The implementation scaffolds components for the full experimental pipeline:
 - `WaveCrisprSignalExperiment.java` - Main experiment runner coordinating EDE usage
 - `data/` - Dataset management (CHANGE-seq, nanopore FAST5, synthetic)
 - `features/` - Wavelet-leader feature extraction (28D features)
-- `sorting/` - **EDE integration layer** (wraps CellBasedExecutionEngine)
+- `sorting/` - **EDE integration layer** (wraps execution engine)
 - `classification/` - MLP classifier for supervised refinement post-sorting
 - `validation/` - Statistical and biological validation
 
@@ -126,7 +129,7 @@ The implementation scaffolds components for the full experimental pipeline:
 **Phase Two (Complete)**: Main experimental workflow coordination
 
 **Phase Three (In Progress - Refactoring to EDE)**: 
-- Replace standalone `EmergentSorter` with EDE's `CellBasedExecutionEngine`
+- Replace standalone `EmergentSorter` with EDE's execution engine
 - Implement `WaveletFeatureCell` extending EDE's `Cell` interface
 - Use EDE's execution pattern for emergent tiering
 - Maintain experiment-specific components (feature extraction, validation)
@@ -143,6 +146,7 @@ This experiment requires the **Emergent Doom Engine** core framework. Ensure you
 
 ```bash
 # From the repository root
+# Using find for cross-platform compatibility (works on macOS, Linux, Windows with bash)
 find lab/experiment-095 -name "*.java" -exec javac -cp target/classes -d build {} +
 ```
 
@@ -176,7 +180,7 @@ This experiment demonstrates **domain-agnostic emergence** applied to bioinforma
 
 **4. Domain-Agnostic Framework**
 - EDE's `Cell` interface extends from integer sorting to bioinformatics
-- Same execution engine (`CellBasedExecutionEngine`) works across domains
+- Same execution patterns work across domains
 - Demonstrates framework generality beyond factorization examples
 
 ### Connection to Levin Research
@@ -206,10 +210,10 @@ The implementation follows the protocol defined in `wave-crispr-signal.md` which
   - Hölder exponents (min, max): 2 features
 
 ### Section 3: Emergent Sorter (via EDE)
-- 2,000 iterations (using `CellBasedExecutionEngine`)
+- 2,000 iterations (using appropriate execution engine)
 - Euclidean distance metric (in `WaveletFeatureCell.compareTo()`)
 - Tier thresholds: 5% (Tier 1), 25% (Tier 2), 70% (Tier 3)
-- **Integration**: Replaces custom sorter with EDE's proven execution framework
+- **Integration**: Uses EDE's execution framework (see Option A or B in Architecture section)
 
 ### Section 4: Supervised Classification
 - Tiny MLP architecture: [16, 8] hidden neurons
@@ -307,7 +311,7 @@ public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
 }
 ```
 
-**2. Use CellBasedExecutionEngine**
+**2. Use Execution Engine**
 ```java
 // Replace EmergentSorter with EDE execution
 import com.emergent.doom.execution.CellBasedExecutionEngine;
@@ -325,10 +329,10 @@ for (FeatureVector fv : rawFeatures) {
 }
 
 // Execute emergent sorting via EDE
-// Note: GenericCellExecutionEngine must be implemented first (see EDE_INTEGRATION_GUIDE.md)
+// Choose Option A or B from Integration Architecture section above
 GenericCellExecutionEngine<WaveletFeatureCell> engine = 
     new GenericCellExecutionEngine<>();
-int steps = engine.executeSorting(cells, 2000);  // 2000 iterations from protocol
+int steps = engine.executeSorting(cells, 2000);
 
 // Extract tier assignments from sorted order
 TierAssignment tiers = assignTiers(cells, new double[]{0.05, 0.25, 0.70});
@@ -361,7 +365,7 @@ IntFunction<ExperimentMetadata> metadataProvider = i -> {
    - Classification (`MLPClassifier`)
 
 2. **Replace with EDE equivalents**:
-   - `EmergentSorter` → EDE execution (see integration approaches below)
+   - `EmergentSorter` → EDE execution (see integration approaches in Architecture section)
    - `FeatureVector` → `WaveletFeatureCell implements Cell`
    - Custom iteration logic → EDE's execution patterns
 
@@ -382,7 +386,7 @@ This implementation addresses the requirement to:
 
 **Updated Positioning**: Originally positioned as a standalone framework, this documentation now correctly describes the experiment as an **EDE client implementation** that:
 - Provides a concrete `Cell` implementation for wavelet features
-- Uses EDE's `CellBasedExecutionEngine` for emergent sorting
+- Uses EDE's execution framework for emergent sorting
 - Demonstrates domain-agnostic framework extension to bioinformatics
 - Maintains experiment-specific components (feature extraction, validation)
 
