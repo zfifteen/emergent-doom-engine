@@ -31,13 +31,15 @@ public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
 }
 ```
 
-**2. Using CellBasedExecutionEngine** - EDE's execution framework (requires extension)
+**2. Using CellBasedExecutionEngine** - EDE's execution framework (requires adapter)
 
-**Note**: The current `CellBasedExecutionEngine` works with `AbstractSortingCell`. To use it with `WaveletFeatureCell`, you need to either:
-- **Option A**: Extend `WaveletFeatureCell` from `AbstractCell` (see EDE_INTEGRATION_GUIDE.md Step 4)
-- **Option B**: Create a generic adapter (see EDE_INTEGRATION_GUIDE.md Step 4)
+**Note**: The current `CellBasedExecutionEngine` works only with `AbstractSortingCell` (Integer values, `SortingAlgotype`). To integrate `WaveletFeatureCell`, you need to either:
+- **Option A**: Adapt `WaveletFeatureCell` to work with `AbstractSortingCell` constraints (Integer values) and use existing `CellBasedExecutionEngine`
+- **Option B**: Create a generic adapter like `GenericCellExecutionEngine` that works with any `Cell` implementation (see EDE_INTEGRATION_GUIDE.md Step 4)
 
-Example using Option B approach:
+**Important**: The following example uses `GenericCellExecutionEngine`, which does not currently exist in the EDE framework and must be implemented. See EDE_INTEGRATION_GUIDE.md for implementation details.
+
+Example using Option B approach (requires implementing GenericCellExecutionEngine):
 ```java
 // Create cells with embedded features
 List<WaveletFeatureCell> cells = createCellsFromFeatures(waveletFeatures);
@@ -54,10 +56,14 @@ TierAssignment tiers = extractTiers(cells, tierThresholds);
 **3. Metadata Management** - External metadata for experiment tracking
 ```java
 // Track experimental metadata externally (EDE pattern)
-IntFunction<CellMetadata> metadataProvider = i -> new CellMetadata(
-    cells.get(i).getSourceDataset(),
-    cells.get(i).getGroundTruthLabel()
-);
+// Assume sourceDatasetBySourceId and groundTruthLabelBySourceId are external maps
+IntFunction<CellMetadata> metadataProvider = i -> {
+    String sourceId = cells.get(i).getSourceId();
+    return new CellMetadata(
+        sourceDatasetBySourceId.get(sourceId),
+        groundTruthLabelBySourceId.get(sourceId)
+    );
+};
 ```
 
 ### Integration Architecture
@@ -100,8 +106,7 @@ IntFunction<CellMetadata> metadataProvider = i -> new CellMetadata(
                     └──────────────────┘
 
 Legend:
-─────  Experiment-specific components (keep)
-═════  EDE framework components (integrate)
+Components are annotated in the diagram above with their role in the architecture.
 ```
 
 ### Component Organization
@@ -138,7 +143,7 @@ This experiment requires the **Emergent Doom Engine** core framework. Ensure you
 
 ```bash
 # From the repository root
-javac -cp target/classes -d build lab/experiment-095/*.java lab/experiment-095/*/*.java
+find lab/experiment-095 -name "*.java" -exec javac -cp target/classes -d build {} +
 ```
 
 ### Execution
@@ -320,7 +325,9 @@ for (FeatureVector fv : rawFeatures) {
 }
 
 // Execute emergent sorting via EDE
-CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
+// Note: GenericCellExecutionEngine must be implemented first (see EDE_INTEGRATION_GUIDE.md)
+GenericCellExecutionEngine<WaveletFeatureCell> engine = 
+    new GenericCellExecutionEngine<>();
 int steps = engine.executeSorting(cells, 2000);  // 2000 iterations from protocol
 
 // Extract tier assignments from sorted order
@@ -331,13 +338,16 @@ TierAssignment tiers = assignTiers(cells, new double[]{0.05, 0.25, 0.70});
 ```java
 // Track ground truth labels externally (EDE pattern)
 Map<String, Boolean> groundTruth = loadChangeSeqLabels();
+Map<String, String> datasetSource = loadDatasetSources();
+Map<String, Double> qualityScore = loadQualityScores();
 
 IntFunction<ExperimentMetadata> metadataProvider = i -> {
     WaveletFeatureCell cell = cells.get(i);
+    String sourceId = cell.getSourceId();
     return new ExperimentMetadata(
-        groundTruth.get(cell.getSourceId()),
-        cell.getDatasetSource(),
-        cell.getQualityScore()
+        groundTruth.get(sourceId),
+        datasetSource.get(sourceId),
+        qualityScore.get(sourceId)
     );
 };
 ```
@@ -356,8 +366,8 @@ IntFunction<ExperimentMetadata> metadataProvider = i -> {
    - Custom iteration logic → EDE's execution patterns
 
 3. **Choose integration approach**:
-   - **Option A**: Extend from `AbstractCell` + define `WaveletAlgotype` → use existing `CellBasedExecutionEngine`
-   - **Option B**: Implement `Cell` interface + create `GenericCellExecutionEngine` adapter
+   - **Option A**: Adapt WaveletFeatureCell to AbstractSortingCell constraints (Integer values) for use with existing `CellBasedExecutionEngine`
+   - **Option B**: Implement `Cell` interface + create `GenericCellExecutionEngine` adapter (does not yet exist in EDE)
 
 See [EDE_INTEGRATION_GUIDE.md](EDE_INTEGRATION_GUIDE.md) for detailed implementation of both approaches.
 
