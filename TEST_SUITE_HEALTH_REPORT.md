@@ -40,12 +40,12 @@
 
 - ✅ **Disabled Tests:** 0 disabled tests found
 - ⚠️  **Magic Numbers:** Present in test data (acceptable for test values)
-- ⚠️  **Helper JavaDoc:** 4/6 helper methods documented (66.7%)
+- ❌ **Helper JavaDoc:** 0/6 helper methods documented (0%)
 - ✅ **Deprecated API:** No deprecated API usage detected
 
 **Helper Method Documentation Status:**
-| File | Undocumented Helpers |
-|------|---------------------|
+| File | Undocumented/Total Helpers |
+|------|---------------------------|
 | TraditionalSortEngineTest.java | 3/3 |
 | SwapEngineTest.java | 1/1 |
 | SpearmanDistanceTest.java | 1/1 |
@@ -54,7 +54,7 @@
 **Breakdown:**
 - Disabled tests: 10/10 ✅
 - Magic numbers: 5/10 ⚠️  (contextual test data)
-- Helper JavaDoc: 5/5 ⚠️
+- Helper JavaDoc: 0/10 ❌ (all 6 helpers lack documentation)
 - Deprecated usage: 5/5 ✅
 
 ### 3. Documentation Sync (18/20)
@@ -132,7 +132,7 @@ void testMethodName() { ... }
 
 #### 2. Helper Methods Missing JavaDoc
 
-**Count:** 4 files with 6 total undocumented helper methods
+**Count:** 4 files with 6 total helper methods, all undocumented
 
 **Files:**
 1. **TraditionalSortEngineTest.java**
@@ -182,7 +182,7 @@ private TypeName helperMethod(params) { ... }
 
 #### 4. Test Coverage Gaps
 
-**Missing Coverage:** 49/59 production classes (83.1%) lack dedicated test files
+**Missing Coverage:** 27/42 production classes (64.3%) lack dedicated test files
 
 **High-Value Candidates for Test Skeletons:**
 
@@ -200,7 +200,7 @@ private TypeName helperMethod(params) { ... }
 - `SwapProposal` - Swap decision record
 - `ThreadSafeFrozenCellStatus` - Concurrent frozen state
 
-**Note:** Many missing classes are interfaces (Cell, Algotype), value objects (ScalingReport), or demos (NewCellArchitectureDemo) which may not need direct tests.
+**Note:** The original analysis included interfaces and abstract classes, inflating the untested count. The corrected analysis counts only concrete production classes (42 total, 15 tested, 27 untested).
 
 **Recommendation:** Create test skeletons for the 8 high-value classes listed above.
 
@@ -238,12 +238,18 @@ private TypeName helperMethod(params) { ... }
 
 ## 📋 Recommendations
 
-### Immediate Actions (This PR)
+### Completed in This PR
 
-1. ✅ **Generate this health report** - Document current state
-2. ⚠️  **Add user-story JavaDoc to TraditionalSortEngineTest.java** - 29 methods
-3. ⚠️  **Document 6 helper methods** - Add JavaDoc to test helper utilities
-4. ℹ️  **Update main README note** - Acknowledge custom structure is intentional
+1. ✅ **Generate this health report** - Document current state for baseline tracking
+
+### Recommended Follow-Up PRs (By Priority)
+
+**HIGH Priority:**
+1. Add user-story JavaDoc to TraditionalSortEngineTest.java (29 methods)
+2. Document 6 helper methods across 4 test files
+
+**MEDIUM Priority:**
+3. Update main README note - Acknowledge custom structure is intentional
 
 ### Follow-Up PRs
 
@@ -266,9 +272,9 @@ private TypeName helperMethod(params) { ... }
 | Metric | Current | Target | Gap |
 |--------|---------|--------|-----|
 | User-Story JavaDoc | 88.7% | 95%+ | +6.3% |
-| Helper JavaDoc | 66.7% | 100% | +33.3% |
+| Helper JavaDoc | 0% | 100% | +100% |
 | Package JavaDoc | 0% | 100% | +100% |
-| Test Coverage | 16.9% | 40%+ | +23.1% |
+| Test Coverage | 35.7% | 50%+ | +14.3% |
 | Overall Score | 73/100 | 90/100 | +17 |
 
 ---
@@ -280,10 +286,10 @@ private TypeName helperMethod(params) { ... }
 - **Test Files:** 15
 - **Test Methods:** 168 (@Test annotations)
 - **Nested Classes:** 43 (organized test suites)
-- **Helper Methods:** 6
+- **Helper Methods:** 6 (0 documented, 6 undocumented)
 - **README Files:** 11
-- **Production Classes:** 59
-- **Tested Classes:** 15 (25.4%)
+- **Production Classes (concrete):** 42
+- **Tested Classes:** 15 (35.7%)
 
 ### Test Distribution
 
