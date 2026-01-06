@@ -19,11 +19,12 @@ This directory contains the comprehensive documentation for the Emergent Doom En
 
 The following documents provide high-level context for the current state of the project:
 
+- **[MIGRATION_CELL_ARCHITECTURE.md](MIGRATION_CELL_ARCHITECTURE.md)**: **NEW** - Comprehensive guide for migrating from position-based to cell-based algotype architecture (PR #113). Essential reading for understanding the current codebase.
+- **[MIGRATION_v2.0.md](MIGRATION_v2.0.md)**: Guidance for upgrading from per-cell threading to batch-level parallelism.
 - **[REQUIREMENTS_GAP_ANALYSIS.md](requirements/REQUIREMENTS_GAP_ANALYSIS.md)**: An audit of the current Java implementation against the core requirements, identifying blockers for upcoming features.
 - **[CLUSTERING_PRIMITIVE_SPEC.md](requirements/CLUSTERING_PRIMITIVE_SPEC.md)**: Specification for using clustering as a computational primitive in non-sorting applications.
 - **[METRIC_DASHBOARD_BASELINE.md](findings/METRIC_DASHBOARD_BASELINE.md)**: Baseline definitions for performance and emergence metrics.
 - **[factorization_ui_requirements.md](requirements/factorization_ui_requirements.md)**: Requirements for the experimental factorization visualization interface.
-- **[MIGRATION_v2.0.md](MIGRATION_v2.0.md)**: Guidance for upgrading from per-cell threading to batch-level parallelism.
 
 ## Directory Overview
 
@@ -56,5 +57,17 @@ The academic and theoretical foundation for the project.
 - **[2401.05375v1.md](theory/2401.05375v1.md)**: Markdown summary of the core research paper "Sorting as a Model of Morphogenesis".
 - **2401.05375v1.pdf**: The original research paper by Zhang, Goldstein, and Levin.
 
+## Recent Changes
+
+### Cell Architecture Refactor (January 2026)
+PR [#113](https://github.com/zfifteen/emergent-doom-engine/pull/113) implemented a clean break refactoring from position-based to cell-based algotype binding. This fundamental architectural change achieves Levin-aligned morphogenetic clustering semantics. See [MIGRATION_CELL_ARCHITECTURE.md](MIGRATION_CELL_ARCHITECTURE.md) for migration guidance.
+
+**Key Changes:**
+- Algotypes are now intrinsic cell properties that travel WITH cells during swaps
+- New cell hierarchy: `AbstractCell` → `AbstractSortingCell` → concrete implementations
+- Replaced `PercentageAlgotypeProvider` with `SortingCellFactory`
+- Replaced `SynchronousExecutionEngine` with `CellBasedExecutionEngine`
+- Produces characteristic 18.30% aggregation variance signature matching Levin research
+
 ---
-*Last updated: January 5, 2026*
+*Last updated: January 6, 2026*
