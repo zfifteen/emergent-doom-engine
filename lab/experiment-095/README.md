@@ -17,8 +17,13 @@ This experiment demonstrates **how to use the Emergent Doom Engine** for a domai
 ### EDE Integration Points
 
 **1. Cell Implementation** - Domain-specific cell carrying wavelet features
+
+**IMPORTANT - Type Compatibility Note**: EDE provides two different cell hierarchies:
+- **Minimal `Cell<T>` interface**: For simple comparable types, no algotype required
+- **`AbstractCell` and `AbstractSortingCell` hierarchy**: For full EDE features with algotypes and neighborhoods
+
 ```java
-// WaveletFeatureCell implements Cell<WaveletFeatureCell>
+// Option A: Implements minimal Cell interface (Double-based distance)
 public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
     private final double[] features;  // 28D wavelet-leader signature
     private final double distanceToMean;  // Computed similarity metric
@@ -29,22 +34,40 @@ public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
         return Double.compare(this.distanceToMean, other.distanceToMean);
     }
 }
+
+// Option B: Extends AbstractSortingCell (Integer-based values)
+// public class WaveletFeatureCell extends AbstractSortingCell {
+//     // Must map Double distances to Integer values for sorting
+//     @Override
+//     public Integer readValue() {
+//         return (int) Math.round(distanceToMean * 1000);
+//     }
+// }
 ```
 
-**2. Using CellBasedExecutionEngine** - EDE's execution framework
+**Key Constraint**: `CellBasedExecutionEngine` works ONLY with `AbstractSortingCell` (which uses `Integer` values). If you implement the minimal `Cell<T>` interface with `Double` values, you CANNOT use `CellBasedExecutionEngine` directly.
 
-**Important Limitation**: The current `CellBasedExecutionEngine` works exclusively with `AbstractSortingCell` (which is defined as `AbstractCell<Integer, SortingAlgotype>`). Since `WaveletFeatureCell` implements the minimal `Cell<WaveletFeatureCell>` interface directly, you have two integration paths:
+**2. Execution Framework** - Choose based on cell type
 
-- **Option A**: Adapt `WaveletFeatureCell` to extend `AbstractSortingCell`, mapping 28D features to Integer-based sorting (see EDE_INTEGRATION_GUIDE.md)
-- **Option B**: Create a generic adapter (e.g., `GenericCellExecutionEngine`) that works with any `Cell` implementation (see EDE_INTEGRATION_GUIDE.md Step 4 for proposed implementation)
+The execution engine you use depends on which cell interface you implement:
 
-**Currently Shown: Option B** (requires implementing `GenericCellExecutionEngine` first - not yet in EDE framework):
+- **If cell extends `AbstractSortingCell`** → Use existing `CellBasedExecutionEngine` 
+  - No new implementation needed
+  - Works with Integer value types
+  - Full EDE features available (neighborhoods, algotypes)
+
+- **If cell implements `Cell<T>` interface** → Must create adapter (e.g., `GenericCellExecutionEngine`)
+  - Requires implementing a custom execution engine
+  - Can work with any comparable type (Double, custom objects, etc.)
+  - Simpler cell design but more implementation work
+
+**Currently Shown in Examples: Option B** (requires implementing `GenericCellExecutionEngine` - not yet in EDE framework):
 
 ```java
-// Create cells with embedded features
+// Create cells implementing Cell<WaveletFeatureCell> with Double values
 List<WaveletFeatureCell> cells = createCellsFromFeatures(waveletFeatures);
 
-// Use generic adapter for Cell interface
+// Use custom adapter for Cell interface
 // ⚠️ GenericCellExecutionEngine must be implemented first (see EDE_INTEGRATION_GUIDE.md Step 4)
 GenericCellExecutionEngine<WaveletFeatureCell> engine = 
     new GenericCellExecutionEngine<>();
@@ -108,7 +131,7 @@ IntFunction<CellMetadata> metadataProvider = i -> {
                     └──────────────────┘
 
 Legend:
-Components with "EDE Framework" annotation are from the Emergent Doom Engine.
+Components annotated with "EDE Framework" are from the Emergent Doom Engine.
 All other components in this diagram are experiment-specific (keep/modify as needed).
 ```
 
