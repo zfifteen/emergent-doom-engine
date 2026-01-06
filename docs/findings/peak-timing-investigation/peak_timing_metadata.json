@@ -1,0 +1,48 @@
+{
+  "experiment_name": "Peak Timing Anomaly Investigation",
+  "description": "Complete step-by-step trajectories to investigate why clustering peaks occur at step 0 instead of mid-sorting",
+  "generated_at": "2026-01-06T04:01:53Z",
+  "anomaly": {
+    "observed": "All chimeric pairs show peak aggregation (~74%) at step 0",
+    "expected": "Peaks should occur mid-sorting (19-42% of progress) with values 65-72%",
+    "hypothesis": "May be measuring initial random distribution rather than emergent clustering"
+  },
+  "parameters": {
+    "array_size": 100,
+    "max_steps": 10000,
+    "trials_per_pair": 10,
+    "base_seed": 42,
+    "algotype_pairs": [
+      {"pair": "Bubble-Selection", "expected_peak": 72.0, "expected_timing": 42.0},
+      {"pair": "Bubble-Insertion", "expected_peak": 65.0, "expected_timing": 21.0},
+      {"pair": "Selection-Insertion", "expected_peak": 69.0, "expected_timing": 19.0},
+      {"pair": "Bubble-Bubble (control)", "expected_peak": 100.0, "expected_timing": 0.0}
+    ]
+  },
+  "metrics": {
+    "aggregation_pct": {
+      "definition": "Percentage of cells with at least one same-algotype neighbor",
+      "unit": "percent",
+      "range": [0, 100]
+    },
+    "sortedness_pct": {
+      "definition": "Percentage of cells in correct final sorted position",
+      "unit": "percent",
+      "range": [0, 100]
+    },
+    "monotonicity_pct": {
+      "definition": "Percentage of cells >= their predecessor",
+      "unit": "percent",
+      "range": [0, 100]
+    }
+  },
+  "outputs": {
+    "trajectories_csv": "peak_timing_trajectories.csv",
+    "summary_csv": "peak_timing_summary.csv",
+    "total_trajectory_points": 22040,
+    "total_trials": 40
+  },
+  "reference": "Levin et al. (2024) - Classical Sorting Algorithms as a Model of Morphogenesis, arXiv:2401.05375v1",
+  "repository": "https://github.com/zfifteen/emergent-doom-engine",
+  "framework_version": "0.3.0-alpha"
+}
