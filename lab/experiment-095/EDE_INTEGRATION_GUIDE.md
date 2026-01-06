@@ -279,7 +279,9 @@ int steps = engine.executeSorting(cells, 2000);
 
 **Option B: Create Generic Execution Engine Adapter**
 
-**Important Note**: This is a simplified implementation that provides basic sorting functionality. It does NOT implement full EDE patterns like neighborhood views and algotype-based behaviors. It serves as a bridge to allow any `Cell` implementation to work with emergent sorting.
+**IMPORTANT**: This is a **simplified sorting algorithm**, not a full EDE framework adapter.
+
+It provides basic sorting functionality for the Cell interface without implementing full EDE patterns like neighborhood views and algotype-driven behaviors.
 
 ```java
 package lab.experiment095.execution;
@@ -290,18 +292,24 @@ import java.util.List;
 /**
  * Generic cell execution engine for any Cell implementation.
  * 
- * This is a simplified sorting implementation that provides basic emergent
- * sorting functionality for the Cell interface. While it performs effective
- * sorting, it does not implement the full EDE architecture patterns
- * (neighborhood views, algotype-driven behaviors, trajectory recording).
+ * ⚠️ WARNING: SIMPLIFIED SORTING ALGORITHM (not a full EDE adapter)
+ * 
+ * This class provides basic emergent sorting functionality for the Cell interface.
+ * While it performs effective sorting, it does NOT implement the full EDE
+ * architecture patterns such as:
+ *   - Neighborhood views based on algotypes
+ *   - Cell-driven decision making via shouldMoveGiven()/calculateTargetPositionGiven()
+ *   - Trajectory recording and convergence analysis
+ *   - Algotype-based behavioral policies
  * 
  * Use this when:
- * - You want to work with minimal Cell interface (no AbstractCell)
+ * - You want to work with minimal Cell interface (no AbstractCell required)
  * - You don't need full EDE feature set
  * - Speed of integration is more important than leveraging advanced patterns
  * 
  * For production systems requiring neighborhoods and advanced behaviors,
- * consider implementing a more complete EDE-aligned engine.
+ * consider implementing a more complete EDE-aligned engine that adapts
+ * EDE's core architectural patterns rather than just implementing sorting.
  */
 public class GenericCellExecutionEngine<T extends Cell<T>> {
     
@@ -377,24 +385,25 @@ public class ExperimentMetadata {
 }
 ```
 
-Use with cells via external maps:
+Use with cells via external maps (EDE pattern) - metadata is NOT stored on cells:
 
 ```java
-// Create metadata map keyed by sourceId
+// Create metadata map keyed by sourceId (external to cells)
 Map<String, ExperimentMetadata> metadataMap = new HashMap<>();
 for (WaveletFeatureCell cell : cells) {
+    // Lookup metadata from external maps using cell's sourceId
     metadataMap.put(cell.getSourceId(), new ExperimentMetadata(
-        groundTruth.get(cell.getSourceId()),     // External map
-        datasetSource.get(cell.getSourceId()),   // External map
-        qualityScore.get(cell.getSourceId())     // External map
+        groundTruth.get(cell.getSourceId()),           // External map
+        datasetSource.get(cell.getSourceId()),         // External map
+        qualityScore.get(cell.getSourceId())           // External map
     ));
 }
 
-// Access during validation without modifying cells
+// Access during validation WITHOUT storing in cell (EDE pattern)
 for (WaveletFeatureCell cell : cells) {
     ExperimentMetadata metadata = metadataMap.get(cell.getSourceId());
     if (metadata.getGroundTruthLabel() != null && metadata.getGroundTruthLabel()) {
-        // Validate against ground truth
+        // Validate using external metadata, not cell-stored data
         validateAgainstGroundTruth(cell, metadata);
     }
 }
@@ -450,7 +459,7 @@ WaveletFeatureCell cell1 = new WaveletFeatureCell(features1, "trace1", meanPatte
 WaveletFeatureCell cell2 = new WaveletFeatureCell(features2, "trace2", meanPattern);
 assertTrue(cell1.compareTo(cell2) < 0);  // cell1 more PAM-like
 
-// Test sorting
+// Test sorting convergence
 List<WaveletFeatureCell> cells = createCells(...);
 GenericCellExecutionEngine<WaveletFeatureCell> engine = new GenericCellExecutionEngine<>();
 int steps = engine.executeSorting(cells, 2000);
