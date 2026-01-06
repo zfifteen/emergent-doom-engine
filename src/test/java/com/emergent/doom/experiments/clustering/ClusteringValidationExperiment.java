@@ -14,6 +14,7 @@ import com.emergent.doom.probe.StepSnapshot;
 import com.emergent.doom.topology.ChimericTopology;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,14 +85,16 @@ public class ClusteringValidationExperiment {
                                long timestamp,
                                int totalTrialsRun,
                                String hardwareInfo) {
-            this.pairResults = pairResults;
+            this.pairResults = pairResults != null ? new HashMap<>(pairResults) : null;
             this.controlResult = controlResult;
             this.timestamp = timestamp;
             this.totalTrialsRun = totalTrialsRun;
             this.hardwareInfo = hardwareInfo;
         }
         
-        public Map<AlgotypePair, PairValidationResult> pairResults() { return pairResults; }
+        public Map<AlgotypePair, PairValidationResult> pairResults() { 
+            return pairResults != null ? Collections.unmodifiableMap(pairResults) : null; 
+        }
         public PairValidationResult controlResult() { return controlResult; }
         public long timestamp() { return timestamp; }
         public int totalTrialsRun() { return totalTrialsRun; }
@@ -173,8 +176,8 @@ public class ClusteringValidationExperiment {
             this.stdPeakTiming = stdPeakTiming;
             this.pValueVsPaper = pValueVsPaper;
             this.pValueVsControl = pValueVsControl;
-            this.allPeakValues = allPeakValues;
-            this.allPeakTimings = allPeakTimings;
+            this.allPeakValues = new ArrayList<>(allPeakValues);
+            this.allPeakTimings = new ArrayList<>(allPeakTimings);
         }
         
         public AlgotypePair pair() { return pair; }
@@ -184,8 +187,8 @@ public class ClusteringValidationExperiment {
         public double stdPeakTiming() { return stdPeakTiming; }
         public double pValueVsPaper() { return pValueVsPaper; }
         public double pValueVsControl() { return pValueVsControl; }
-        public List<Double> allPeakValues() { return allPeakValues; }
-        public List<Double> allPeakTimings() { return allPeakTimings; }
+        public List<Double> allPeakValues() { return Collections.unmodifiableList(allPeakValues); }
+        public List<Double> allPeakTimings() { return Collections.unmodifiableList(allPeakTimings); }
     }
 
     // Levin paper baselines from Table/Figure data
@@ -388,30 +391,35 @@ public class ClusteringValidationExperiment {
             algotypeMix = Map.of(a, 0.5, b, 0.5);
         }
         
-        ChimericExperimentConfig config = ChimericExperimentConfig.builder()
-            .arraySize(ARRAY_SIZE)
-            .maxSteps(MAX_STEPS)
-            .requiredStableSteps(3)
-            .recordTrajectory(true)
-            .algotypeMix(algotypeMix)
-            .seed(BASE_SEED)
-            .build();
-        
-        // Step 2: Create experiment runner
-        ExperimentRunner<GenericCell> runner = new ExperimentRunner<>(
-            () -> createChimericArray(config),
-            ChimericTopology::new
-        );
-        
-        // Step 3: Run trials (we'll extract aggregation from trajectory snapshots)
-        ExperimentResults<GenericCell> results = runner.runExperiment(config, trials);
+        // Step 1b: Run each trial with a distinct seed and collect all trial results
+        List<TrialResult<GenericCell>> allTrials = new ArrayList<>();
+        for (int trialIndex = 0; trialIndex < trials; trialIndex++) {
+            ChimericExperimentConfig config = ChimericExperimentConfig.builder()
+                .arraySize(ARRAY_SIZE)
+                .maxSteps(MAX_STEPS)
+                .requiredStableSteps(3)
+                .recordTrajectory(true)
+                .algotypeMix(algotypeMix)
+                .seed(BASE_SEED + trialIndex)
+                .build();
+
+            // Create experiment runner for this configuration
+            ExperimentRunner<GenericCell> runner = new ExperimentRunner<>(
+                () -> createChimericArray(config),
+                ChimericTopology::new
+            );
+
+            // Run a single trial and collect its result
+            ExperimentResults<GenericCell> trialResults = runner.runExperiment(config, 1);
+            allTrials.addAll(trialResults.getTrials());
+        }
         
         // Step 4: Extract peak values and timings from all trials
         List<Double> peakValues = new ArrayList<>();
         List<Double> peakTimings = new ArrayList<>();
         AlgotypeAggregationIndex<GenericCell> metric = new AlgotypeAggregationIndex<>();
         
-        for (TrialResult<GenericCell> trial : results.getTrials()) {
+        for (TrialResult<GenericCell> trial : allTrials) {
             // Extract aggregation trajectory
             List<Double> trajectory = extractAggregationTrajectory(trial, metric);
             

@@ -303,13 +303,13 @@ public class ValidationStatistics {
             marginOfError = tCritical * se;
         }
         
-        double difference = expMean - ctrlMean;
-        double ciLower = difference - marginOfError;
-        double ciUpper = difference + marginOfError;
+        // Compute 95% CI for the experimental mean using the computed margin of error
+        double ciLower = expMean - marginOfError;
+        double ciUpper = expMean + marginOfError;
         
-        // Return result for experimental group (with difference CI bounds)
-        return new TTestResult(expMean, expStdDev, pValue, 
-                              expMean + ciLower, expMean + ciUpper, expN);
+        // Return result for experimental group with CI bounds for its mean
+        return new TTestResult(expMean, expStdDev, pValue,
+                              ciLower, ciUpper, expN);
     }
 
     /**
