@@ -93,6 +93,8 @@ for (int i = 0; i < cells.size(); i++) {
 
 ⚠️ **CRITICAL**: `GenericCellExecutionEngine` does NOT currently exist in the EDE framework. This code will NOT compile until you implement it (see EDE_INTEGRATION_GUIDE.md Step 4).
 
+Additionally, note that `GenericCellExecutionEngine` is a **simplified sorting algorithm** (NOT a full EDE adapter). It provides basic sorting but does not implement EDE's architectural patterns like neighborhood views and algotype-based cell behaviors.
+
 ```java
 // 1. Extract features
 List<FeatureVector> rawFeatures = extractor.extractWaveletLeaders(fast5Data);
@@ -106,7 +108,8 @@ List<WaveletFeatureCell> cells = rawFeatures.stream()
     .collect(Collectors.toList());
 
 // 4. Execute emergent sorting
-// ⚠️ GenericCellExecutionEngine must be implemented first (see EDE_INTEGRATION_GUIDE.md Step 4)
+// ⚠️ CRITICAL: GenericCellExecutionEngine must be implemented first (see EDE_INTEGRATION_GUIDE.md Step 4)
+// ⚠️ NOTE: This is a simplified sorting algorithm, not a full EDE adapter
 GenericCellExecutionEngine<WaveletFeatureCell> engine = 
     new GenericCellExecutionEngine<>();
 int steps = engine.executeSorting(cells, 2000);
@@ -204,6 +207,7 @@ private boolean isSortedByDistance(List<WaveletFeatureCell> cells) {
    - `CellBasedExecutionEngine` expects `List<AbstractSortingCell>` (Integer values)
    - If using `Cell<WaveletFeatureCell>` directly with Double values, won't compile
    - Choose Option A (extend AbstractSortingCell) or Option B (implement GenericCellExecutionEngine)
+   - **Do NOT mix**: Using `Cell<WaveletFeatureCell>` interface with `CellBasedExecutionEngine` will cause compilation errors
 
 ### Build and Run
 
