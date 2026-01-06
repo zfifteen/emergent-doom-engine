@@ -84,7 +84,24 @@ public class WaveletFeatureCell implements Cell<WaveletFeatureCell> {
 }
 ```
 
-### Step 2: Refactor EmergentSorter to Use EDE
+### Step 2: Choose Execution Approach
+
+Before refactoring, decide which execution pattern to use:
+
+**Recommended: Option B** - Use `GenericCellExecutionEngine` (defined in Step 3)
+- Works with any `Cell` implementation
+- No need for `AbstractCell` inheritance
+- No algotype definitions required
+- Simplest integration path
+
+**Alternative: Option A** - Extend `WaveletFeatureCell` from `AbstractCell`
+- Provides full EDE features (neighborhoods, behavioral policies)
+- Requires defining `WaveletAlgotype` enum
+- More complex but more powerful
+
+The examples below use **Option B** for simplicity.
+
+### Step 3: Refactor EmergentSorter to Use EDE
 
 Modify `lab/experiment-095/sorting/EmergentSorter.java`:
 
@@ -149,7 +166,7 @@ public class EmergentSorter {
         }
         
         // Step 3: Execute emergent sorting via EDE
-        // Use GenericCellExecutionEngine (see Step 3: Option B below)
+        // Using GenericCellExecutionEngine (see Step 2 choice above)
         // This adapter allows any Cell implementation to work with EDE patterns
         GenericCellExecutionEngine<WaveletFeatureCell> engine = 
             new GenericCellExecutionEngine<>();
@@ -202,11 +219,9 @@ public class EmergentSorter {
 }
 ```
 
-### Step 3: Choose Execution Approach
+### Step 4: Implementation Details for Each Approach
 
-**Recommended**: Use **Option B** (GenericCellExecutionEngine) for simplicity. This works with any `Cell` implementation without requiring `AbstractCell` inheritance or algotype definitions.
-
-**Option A**: Extend `WaveletFeatureCell` from `AbstractCell` instead of just `Cell`
+**For Option B (Recommended)**: Create generic execution engine adapter
 
 ```java
 public class WaveletFeatureCell extends AbstractCell<Double, WaveletAlgotype> {
@@ -265,7 +280,7 @@ public class GenericCellExecutionEngine<T extends Cell<T>> {
 }
 ```
 
-### Step 4: External Metadata Management
+### Step 5: External Metadata Management
 
 Create `lab/experiment-095/metadata/ExperimentMetadata.java`:
 
@@ -320,7 +335,7 @@ for (WaveletFeatureCell cell : cells) {
 }
 ```
 
-### Step 5: Update Main Experiment Runner
+### Step 6: Update Main Experiment Runner
 
 Modify `WaveCrisprSignalExperiment.java` to use refactored components:
 
