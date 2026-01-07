@@ -1,0 +1,10 @@
+# Metadata
+algotype,Test
+frozen_cells,0
+trial_number,4
+array_size,3
+timestamp,1767826887688
+# WARNING: cumulative_comparisons is a rough heuristic - use with caution
+# Trajectory Data
+step_number,sortedness,monotonicity_error,cumulative_swaps,cumulative_comparisons
+0,66.66666666666667,1,0,3
