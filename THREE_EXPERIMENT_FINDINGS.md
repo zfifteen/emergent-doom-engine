@@ -177,7 +177,7 @@ Segment 3: [21,22,23,24,25] (already sorted)
 ```
 
 This creates:
-- **Initial Sortedness**: 24% (only the first element and last 4 elements are correctly positioned)
+- **Initial Sortedness**: 24% (about six elements are already in their correct positions in the initial configuration)
 - **Monotonicity Error**: 19 inversions across the two descending segments
 
 ### Step Progression Analysis
