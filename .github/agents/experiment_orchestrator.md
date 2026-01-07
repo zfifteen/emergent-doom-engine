@@ -381,6 +381,7 @@ All generated tests adhere to EDE Chop Shop philosophy:
 - **Variable names** describe purpose: `arraySizeForParameterSweep`, `aggregationValueAtStep`, `seedForReproducibility`
 - **JavaDoc** for ALL methods (public AND private): "Calculates aggregation value as percentage of cells adjacent to same-algotype neighbors"
 - **Test structure** mirrors scientific method: Hypothesis (PURPOSE) → Experiment (INPUTS) → Results (OUTPUT) → Validation (Assertions)
+- **No Merge Conflicts** Consider the impact on merging as you plan and implement your changes. Ensure no mwerge conflicts exists before finishing work.
 
 ## Example Agent Output Summary
 
