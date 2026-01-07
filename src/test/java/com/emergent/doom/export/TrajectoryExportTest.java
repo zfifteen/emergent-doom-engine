@@ -163,7 +163,7 @@ class TrajectoryExportTest {
         }
         
         // Verify structure
-        assertTrue(lines.size() >= 9); // Metadata (6) + header (2) + data (2) = 10
+        assertTrue(lines.size() >= 10); // Metadata (6) + header (2) + data (2) = 10
         assertEquals("# Metadata", lines.get(0));
         assertEquals("algotype,Bubble", lines.get(1));
         assertEquals("frozen_cells,2", lines.get(2));

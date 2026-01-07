@@ -154,7 +154,7 @@ public class ExperimentTrajectory {
          * @param frozenCells number of frozen (immovable) cells
          * @param trialNumber trial number within the experiment batch
          * @param arraySize size of the cell array
-         * @param timestamp Unix timestamp (milliseconds) when experiment started
+         * @param timestamp Unix timestamp (milliseconds since epoch, typically positive for modern dates)
          */
         public ExperimentMetadata(
                 String algotype,
@@ -174,9 +174,7 @@ public class ExperimentTrajectory {
             if (arraySize <= 0) {
                 throw new IllegalArgumentException("Array size must be positive");
             }
-            if (timestamp < 0) {
-                throw new IllegalArgumentException("Timestamp cannot be negative");
-            }
+            // Note: Timestamp validation removed - negative timestamps are valid for pre-1970 dates
             
             this.algotype = algotype;
             this.frozenCells = frozenCells;

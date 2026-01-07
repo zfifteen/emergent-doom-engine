@@ -93,8 +93,9 @@ public class TrajectoryBuilder {
             int cumulativeSwaps = snapshot.getSwapCount();
             
             // For comparisons, we approximate as swapCount + array_size per step
-            // This is a heuristic since Probe doesn't track per-snapshot comparisons
-            // In a real implementation, this would need to be tracked explicitly
+            // TODO: This is a heuristic since Probe doesn't track per-snapshot comparisons.
+            // When Probe is enhanced to record actual comparison counts, replace this
+            // approximation with the real values from snapshots.
             cumulativeComparisons = cumulativeSwaps + (stepNumber + 1) * arraySize;
             
             steps.add(new ExperimentTrajectory.TrajectoryStep(
@@ -154,8 +155,7 @@ public class TrajectoryBuilder {
             }
         }
         
-        // If we found valid algotype data, assume chimeric
-        // (even if all same type, we want to track aggregation)
-        return foundNonNegative;
+        // Not chimeric - either no valid algotype data or all same type
+        return false;
     }
 }
