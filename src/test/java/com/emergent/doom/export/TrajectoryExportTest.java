@@ -163,19 +163,20 @@ class TrajectoryExportTest {
         }
         
         // Verify structure
-        assertTrue(lines.size() >= 10); // Metadata (6) + header (2) + data (2) = 10
+        assertTrue(lines.size() >= 11); // Metadata (6) + warning (1) + header (2) + data (2) = 11
         assertEquals("# Metadata", lines.get(0));
         assertEquals("algotype,Bubble", lines.get(1));
         assertEquals("frozen_cells,2", lines.get(2));
         assertEquals("trial_number,0", lines.get(3));
         assertEquals("array_size,50", lines.get(4));
         assertEquals("timestamp,1704672000000", lines.get(5));
-        assertEquals("# Trajectory Data", lines.get(6));
+        assertEquals("# WARNING: cumulative_comparisons is a rough heuristic - use with caution", lines.get(6));
+        assertEquals("# Trajectory Data", lines.get(7));
         assertEquals("step_number,sortedness,monotonicity_error,cumulative_swaps,cumulative_comparisons", 
-                     lines.get(7));
+                     lines.get(8));
         
         // Verify first data row
-        String[] row1 = lines.get(8).split(",");
+        String[] row1 = lines.get(9).split(",");
         assertEquals("0", row1[0]); // stepNumber
         assertEquals("50.0", row1[1]); // sortedness
         assertEquals("10", row1[2]); // monotonicityError
@@ -221,17 +222,17 @@ class TrajectoryExportTest {
         }
         
         // Verify header includes aggregation
-        String header = lines.get(7);
+        String header = lines.get(8);
         assertTrue(header.contains("aggregation"), 
                   "Header should include aggregation column for chimeric trajectories");
         assertEquals("step_number,sortedness,monotonicity_error,aggregation,cumulative_swaps,cumulative_comparisons", 
                      header);
         
         // Verify data includes aggregation values
-        String[] row1 = lines.get(8).split(",");
+        String[] row1 = lines.get(9).split(",");
         assertEquals("75.0", row1[3]); // aggregation for step 0
         
-        String[] row2 = lines.get(9).split(",");
+        String[] row2 = lines.get(10).split(",");
         assertEquals("80.0", row2[3]); // aggregation for step 1
     }
     

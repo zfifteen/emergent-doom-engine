@@ -37,8 +37,13 @@ public class TrajectoryBuilder {
      * Build trajectory from probe snapshots.
      * 
      * <p>Computes metrics for each snapshot and constructs a complete trajectory
-     * with metadata. Automatically detects chimeric experiments by checking if
-     * aggregation can be computed from snapshot type data.</p>
+     * with metadata. Detects chimeric experiments by checking if snapshot type
+     * metadata contains valid algotype labels.</p>
+     * 
+     * <p><strong>Important:</strong> Chimeric detection only works with AlgotypedProbe
+     * or other probe implementations that populate algotype labels in snapshot metadata.
+     * Standard Probe always sets algotypeLabel to -1, so aggregation metrics will not
+     * be computed when using standard Probe.</p>
      * 
      * @param probe the probe containing snapshots
      * @param algotype algotype name (e.g., "Bubble", "Fib")
@@ -92,10 +97,11 @@ public class TrajectoryBuilder {
             // Get cumulative swaps from snapshot
             int cumulativeSwaps = snapshot.getSwapCount();
             
-            // For comparisons, we approximate as swapCount + array_size per step
-            // TODO: This is a heuristic since Probe doesn't track per-snapshot comparisons.
-            // When Probe is enhanced to record actual comparison counts, replace this
-            // approximation with the real values from snapshots.
+            // WARNING: Comparison count is a rough heuristic and may be inaccurate
+            // This assumes arraySize comparisons per step, which is not correct for most
+            // sorting algorithms (e.g., bubble sort does fewer as array becomes sorted).
+            // TODO: Enhance Probe to track actual comparison counts per snapshot.
+            // Until then, use this data with caution for metric validation.
             cumulativeComparisons = cumulativeSwaps + (stepNumber + 1) * arraySize;
             
             steps.add(new ExperimentTrajectory.TrajectoryStep(

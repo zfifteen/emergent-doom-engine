@@ -176,7 +176,7 @@ public class ExperimentTrajectory {
             }
             // Note: Timestamp validation removed - negative timestamps are valid for pre-1970 dates
             
-            this.algotype = algotype;
+            this.algotype = algotype.trim();
             this.frozenCells = frozenCells;
             this.trialNumber = trialNumber;
             this.arraySize = arraySize;

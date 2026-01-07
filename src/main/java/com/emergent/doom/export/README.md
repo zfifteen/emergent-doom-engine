@@ -142,16 +142,44 @@ See `src/test/java/com/emergent/doom/export/`:
 
 ### Comparison Count Heuristic
 
+⚠️ **WARNING:** The comparison count is a rough heuristic and may be inaccurate.
+
 Since `Probe` doesn't track per-snapshot comparisons, `TrajectoryBuilder` uses a heuristic:
 ```
 cumulativeComparisons = cumulativeSwaps + (stepNumber + 1) * arraySize
 ```
 
-For more accurate comparison tracking, enhance `Probe` to record comparison counts per snapshot.
+This assumes `arraySize` comparisons per step, which is **not accurate** for most sorting algorithms:
+- Bubble sort performs fewer comparisons as the array becomes sorted
+- Selection sort has a specific comparison pattern that doesn't scale linearly with steps
+- The estimate becomes increasingly incorrect as steps increase
+
+**Use comparison count data with caution for metric validation.** For accurate tracking, enhance `Probe` to record actual comparison counts per snapshot.
 
 ### Chimeric Detection
 
-The system automatically detects chimeric experiments by checking snapshot type metadata. If valid algotype labels are found, aggregation metrics are computed and included in the export.
+⚠️ **IMPORTANT:** Chimeric detection requires `AlgotypedProbe` or snapshot metadata with valid algotype labels.
+
+The standard `Probe` class always sets `algotypeLabel` to `-1` in its snapshots (see `Probe.java:59`), which means:
+- Chimeric detection will always return `false` when using standard `Probe`
+- Aggregation metrics will **not** be computed or exported
+- The aggregation column will be omitted from the CSV
+
+To export aggregation data for chimeric experiments:
+1. Use `AlgotypedProbe` instead of `Probe` for recording snapshots
+2. `AlgotypedProbe` reads algotypes from cell objects via `cell.getAlgotype()`
+3. This populates valid algotype labels (0, 1, 2) in snapshot metadata
+4. `TrajectoryBuilder` will detect multiple algotypes and include aggregation data
+
+**Example for chimeric experiments:**
+```java
+AlgotypedProbe probe = new AlgotypedProbe();
+// ... record snapshots with algotyped cells ...
+ExperimentTrajectory trajectory = TrajectoryBuilder.fromProbe(
+    probe, "Chimeric", 0, 0, 50, System.currentTimeMillis()
+);
+// Aggregation column will be included in CSV export
+```
 
 ## Related Classes
 

@@ -583,7 +583,8 @@ if (!snapshots.isEmpty()) {
             
             // Step 4: Write metadata header
             ExperimentTrajectory.ExperimentMetadata metadata = trajectory.getMetadata();
-            writer.write("# Metadata\n");
+            writer.write("# Metadata");
+            writer.newLine();
             writer.write("algotype,");
             writer.write(escapeCsvValue(metadata.algotype()));
             writer.newLine();
@@ -599,9 +600,12 @@ if (!snapshots.isEmpty()) {
             writer.write("timestamp,");
             writer.write(String.valueOf(metadata.timestamp()));
             writer.newLine();
+            writer.write("# WARNING: cumulative_comparisons is a rough heuristic - use with caution");
+            writer.newLine();
             
             // Step 5: Write trajectory data section header
-            writer.write("# Trajectory Data\n");
+            writer.write("# Trajectory Data");
+            writer.newLine();
             
             // Check if this is a chimeric experiment
             boolean isChimeric = !trajectory.getSteps().isEmpty() && 
