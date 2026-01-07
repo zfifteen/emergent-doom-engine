@@ -3,7 +3,7 @@ algotype,BubbleSort
 frozen_cells,0
 trial_number,2
 array_size,15
-timestamp,1767818808363
+timestamp,1767827350167
 # WARNING: cumulative_comparisons is a rough heuristic - use with caution
 # Trajectory Data
 step_number,sortedness,monotonicity_error,cumulative_swaps,cumulative_comparisons
