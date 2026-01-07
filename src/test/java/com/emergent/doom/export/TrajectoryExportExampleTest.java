@@ -62,12 +62,12 @@ class TrajectoryExportExampleTest {
         };
         probe.recordSnapshot(2, step2, 3);
         
-        // After step 3: [1, 2, 3, 5, 8] - getting closer to sorted
+        // After step 3: [1, 2, 3, 5, 8] - intermediate progress (2 more swaps)
         GenericCell[] step3 = {
             new GenericCell(1), new GenericCell(2), new GenericCell(3),
             new GenericCell(5), new GenericCell(8)
         };
-        probe.recordSnapshot(3, step3, 5);
+        probe.recordSnapshot(3, step3, 2);
         
         // After step 4: [1, 2, 3, 5, 8] - fully sorted
         GenericCell[] step4 = {
