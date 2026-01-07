@@ -518,6 +518,125 @@ if (!snapshots.isEmpty()) {
     }
     
     /**
+     * PURPOSE: Export experiment trajectory to CSV file.
+     * 
+     * INPUTS:
+     *   - filepath: Path where CSV file should be written
+     *   - trajectory: ExperimentTrajectory containing metadata and step data
+     * 
+     * PROCESS:
+     *   1. Validate inputs
+     *   2. Create parent directories if needed
+     *   3. Write metadata header rows
+     *   4. Write column headers for trajectory data
+     *   5. Write each trajectory step as a data row
+     *   6. Close file
+     * 
+     * OUTPUTS: void (side effect: creates CSV file)
+     * 
+     * THROWS: IOException if file operations fail
+     * 
+     * CSV FORMAT EXAMPLE:
+     *   # Metadata
+     *   algotype,Bubble
+     *   frozen_cells,2
+     *   trial_number,0
+     *   array_size,50
+     *   timestamp,1704672000000
+     *   # Trajectory Data
+     *   step_number,sortedness,monotonicity_error,aggregation,cumulative_swaps,cumulative_comparisons
+     *   0,45.2,15,33.3,0,50
+     *   1,52.1,12,41.7,3,100
+     *   2,68.7,8,58.9,7,150
+     * 
+     * USAGE:
+     *   - Export complete experiment trajectory for analysis
+     *   - Import into Python/R for metric dashboard validation
+     * 
+     * DESIGN RATIONALE:
+     *   - Metadata at top enables easy filtering and grouping
+     *   - Self-documenting format with clear headers
+     *   - Compatible with standard CSV parsers
+     * 
+     * @param filepath path to output CSV file
+     * @param trajectory experiment trajectory to export
+     * @throws IOException if file writing fails
+     */
+    public static void exportTrajectoryToCSV(String filepath, ExperimentTrajectory trajectory) 
+            throws IOException {
+        // Step 1: Validate inputs
+        if (filepath == null || filepath.trim().isEmpty()) {
+            throw new IllegalArgumentException("Filepath cannot be null or empty");
+        }
+        if (trajectory == null) {
+            throw new IllegalArgumentException("Trajectory cannot be null");
+        }
+        
+        // Step 2: Ensure parent directories exist
+        ensureDirectoryExists(filepath);
+        
+        // Step 3: Open file writer and write CSV
+        try (java.io.BufferedWriter writer = new java.io.BufferedWriter(
+                new java.io.OutputStreamWriter(
+                    new java.io.FileOutputStream(filepath), 
+                    java.nio.charset.StandardCharsets.UTF_8))) {
+            
+            // Step 4: Write metadata header
+            ExperimentTrajectory.ExperimentMetadata metadata = trajectory.getMetadata();
+            writer.write("# Metadata\n");
+            writer.write("algotype,");
+            writer.write(escapeCsvValue(metadata.algotype()));
+            writer.newLine();
+            writer.write("frozen_cells,");
+            writer.write(String.valueOf(metadata.frozenCells()));
+            writer.newLine();
+            writer.write("trial_number,");
+            writer.write(String.valueOf(metadata.trialNumber()));
+            writer.newLine();
+            writer.write("array_size,");
+            writer.write(String.valueOf(metadata.arraySize()));
+            writer.newLine();
+            writer.write("timestamp,");
+            writer.write(String.valueOf(metadata.timestamp()));
+            writer.newLine();
+            
+            // Step 5: Write trajectory data section header
+            writer.write("# Trajectory Data\n");
+            
+            // Check if this is a chimeric experiment
+            boolean isChimeric = !trajectory.getSteps().isEmpty() && 
+                                trajectory.getSteps().get(0).isChimeric();
+            
+            // Step 6: Write column headers
+            writer.write("step_number,sortedness,monotonicity_error");
+            if (isChimeric) {
+                writer.write(",aggregation");
+            }
+            writer.write(",cumulative_swaps,cumulative_comparisons");
+            writer.newLine();
+            
+            // Step 7: Write trajectory step data
+            for (ExperimentTrajectory.TrajectoryStep step : trajectory.getSteps()) {
+                writer.write(String.valueOf(step.stepNumber()));
+                writer.write(",");
+                writer.write(String.valueOf(step.sortedness()));
+                writer.write(",");
+                writer.write(String.valueOf(step.monotonicityError()));
+                if (isChimeric) {
+                    writer.write(",");
+                    writer.write(step.aggregation() != null ? 
+                                String.valueOf(step.aggregation()) : "");
+                }
+                writer.write(",");
+                writer.write(String.valueOf(step.cumulativeSwaps()));
+                writer.write(",");
+                writer.write(String.valueOf(step.cumulativeComparisons()));
+                writer.newLine();
+            }
+        }
+    }
+    
+    /**
      * PURPOSE: Escape a string value for safe use in CSV format.
      * 
      * INPUTS:
