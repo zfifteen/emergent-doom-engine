@@ -97,11 +97,23 @@ public class TrajectoryBuilder {
             // Get cumulative swaps from snapshot
             int cumulativeSwaps = snapshot.getSwapCount();
             
-            // WARNING: Comparison count is a rough heuristic and may be inaccurate
-            // This assumes arraySize comparisons per step, which is not correct for most
-            // sorting algorithms (e.g., bubble sort does fewer as array becomes sorted).
+            // WARNING: Comparison count is a ROUGH HEURISTIC and likely inaccurate
+            // 
+            // Formula: cumulativeSwaps + (stepNumber + 1) * arraySize
+            // 
+            // This assumes arraySize comparisons per step plus accumulated swaps,
+            // which does NOT match real sorting behavior. For example:
+            // - Bubble sort does O(n) comparisons per pass, decreasing as sorting progresses
+            // - Selection sort does exactly O(n²) comparisons regardless of swaps
+            // - The formula treats swaps and comparisons as independent, which is incorrect
+            // 
+            // The actual comparison count depends on:
+            // 1. The specific sorting algorithm implementation
+            // 2. The current state of the array (partially sorted vs random)
+            // 3. The termination condition (e.g., no swaps in a pass)
+            // 
             // TODO: Enhance Probe to track actual comparison counts per snapshot.
-            // Until then, use this data with caution for metric validation.
+            // Until then, treat this value as an order-of-magnitude estimate only.
             cumulativeComparisons = cumulativeSwaps + (stepNumber + 1) * arraySize;
             
             steps.add(new ExperimentTrajectory.TrajectoryStep(
@@ -145,13 +157,11 @@ public class TrajectoryBuilder {
         
         // If all algotype labels are -1, it's not chimeric
         // If we see different non-negative labels, it's chimeric
-        boolean foundNonNegative = false;
         Integer firstLabel = null;
         
         for (Object[] typeData : types) {
             int label = (Integer) typeData[1];
             if (label >= 0) {
-                foundNonNegative = true;
                 if (firstLabel == null) {
                     firstLabel = label;
                 } else if (!firstLabel.equals(label)) {

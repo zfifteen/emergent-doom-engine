@@ -174,7 +174,9 @@ public class ExperimentTrajectory {
             if (arraySize <= 0) {
                 throw new IllegalArgumentException("Array size must be positive");
             }
-            // Note: Timestamp validation removed - negative timestamps are valid for pre-1970 dates
+            // Note: Timestamp not validated - while experiments typically run in present day
+            // (positive timestamps), validation is omitted to support edge cases like
+            // replaying historical data or testing with fixed timestamps
             
             this.algotype = algotype.trim();
             this.frozenCells = frozenCells;
