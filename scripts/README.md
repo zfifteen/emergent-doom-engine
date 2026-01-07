@@ -2,6 +2,49 @@
 
 This directory contains utility scripts for the Emergent Doom Engine project.
 
+## Trajectory Export Validation
+
+### validate_trajectory.py
+
+**NEW**: Python script for validating exported trajectory CSV files and demonstrating compatibility with data analysis workflows.
+
+**Purpose:**
+- Validate CSV format and structure
+- Compute Levin et al. (2024) metrics
+- Detect Delayed Gratification events
+- Analyze Monotonicity Error progression
+- Verify Sortedness progression
+- Validate final experiment state
+
+**Requirements:**
+- Python 3.6+
+- pandas library (`pip3 install pandas`)
+
+**Usage:**
+```bash
+python3 scripts/validate_trajectory.py <trajectory_csv_file>
+```
+
+**Example:**
+```bash
+python3 scripts/validate_trajectory.py experiments/data/bubble_test_trajectory.csv
+```
+
+**Output:**
+The script provides detailed validation output including:
+- CSV format validation
+- Delayed Gratification event detection
+- Monotonicity Error trend analysis
+- Sortedness progression analysis
+- Final state validation
+- Overall validation status (PASSED/FAILED)
+
+**Exit Codes:**
+- `0` - Validation passed
+- `1` - Validation failed or error occurred
+
+---
+
 ## Documentation Link Validation (Phase 8)
 
 Automated validation of markdown links in test suite documentation.
