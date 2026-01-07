@@ -1,5 +1,5 @@
 /**
- * Core Components: Swap Mechanics - Tests for conditional swap logic and frozen cell constraints.
+ * Chapter 2: Swap Mechanics - Tests for conditional swap logic and frozen cell constraints.
  *
  * <p>Swaps are the fundamental local interaction mechanism in the EDE. Tests in this package
  * validate that the {@code SwapEngine} correctly implements conditional swapping, frozen cell
@@ -34,6 +34,7 @@
  * <p>After mastering swap mechanics, proceed to {@link com.emergent.doom.probe} to learn
  * about execution trajectory recording and observability.</p>
  *
+ * @see <a href="README.md">Swap Package README</a>
  * @see com.emergent.doom.swap.SwapEngine
  * @see com.emergent.doom.swap.FrozenCellStatus
  */

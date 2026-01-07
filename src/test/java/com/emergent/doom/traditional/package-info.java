@@ -1,5 +1,5 @@
 /**
- * Advanced Features: Traditional Algorithm Comparison - Tests validating EDE against classical implementations.
+ * Chapter 5: Traditional Algorithm Comparison - Tests validating EDE against classical implementations.
  *
  * <p>Traditional algorithm comparison provides validation that EDE sorting produces functionally
  * equivalent results to classical implementations while revealing differences in execution dynamics
@@ -35,6 +35,7 @@
  * <p>After understanding traditional comparisons, explore {@link com.emergent.doom.experiment}
  * for experimental validation and statistical analysis of emergent behavior.</p>
  *
+ * @see <a href="README.md">Traditional Package README</a>
  * @see com.emergent.doom.traditional.TraditionalSortEngine
  * @see com.emergent.doom.traditional.TraditionalSortMetrics
  */

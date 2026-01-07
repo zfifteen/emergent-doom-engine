@@ -1,5 +1,5 @@
 /**
- * Foundations: Cell Interface - Tests for the lightweight Cell interface.
+ * Chapter 1: Cell Foundations - Tests for the lightweight Cell interface.
  *
  * <p>The Cell interface is the foundation of the Emergent Doom Engine, defining the minimal
  * contract for domain-agnostic sorting. Tests in this package validate that cells remain
@@ -31,6 +31,7 @@
  * <p>After mastering cell fundamentals, proceed to {@link com.emergent.doom.swap} to learn
  * about swap mechanics and frozen cell constraints.</p>
  *
+ * @see <a href="README.md">Cell Package README</a>
  * @see com.emergent.doom.cell.Cell
  */
 package com.emergent.doom.cell;

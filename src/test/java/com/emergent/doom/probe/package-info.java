@@ -1,5 +1,5 @@
 /**
- * Core Components: Probe Recording - Tests for execution trajectory observability.
+ * Chapter 2: Probe Recording - Tests for execution trajectory observability.
  *
  * <p>Probes provide observability into emergent computation by capturing execution trajectories.
  * Tests in this package validate that probes correctly record cell state snapshots, track swap
@@ -36,6 +36,7 @@
  * <p>After mastering probe recording, proceed to {@link com.emergent.doom.metrics} to learn
  * about quality measures and convergence detection.</p>
  *
+ * @see <a href="README.md">Probe Package README</a>
  * @see com.emergent.doom.probe.Probe
  * @see com.emergent.doom.probe.ThreadSafeProbe
  */

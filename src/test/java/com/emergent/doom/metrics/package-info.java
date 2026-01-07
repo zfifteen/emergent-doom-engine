@@ -1,5 +1,5 @@
 /**
- * Core Components: Metrics - Tests for problem-space navigation measures.
+ * Chapter 2: Metrics - Tests for problem-space navigation measures.
  *
  * <p>Metrics quantify emergent computation by measuring problem-space traversal. Tests in this
  * package validate correct computation of monotonicity, sortedness, delayed gratification, and
@@ -38,6 +38,7 @@
  * <p>After mastering metrics, proceed to {@link com.emergent.doom.execution} to learn
  * about execution engines and convergence detection.</p>
  *
+ * @see <a href="README.md">Metrics Package README</a>
  * @see com.emergent.doom.metrics.Monotonicity
  * @see com.emergent.doom.metrics.DelayedGratificationCalculator
  */

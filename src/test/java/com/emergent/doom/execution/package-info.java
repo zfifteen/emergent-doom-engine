@@ -1,5 +1,5 @@
 /**
- * Execution Engines - Tests for emergent computation orchestration.
+ * Chapter 3: Execution Engines - Tests for emergent computation orchestration.
  *
  * <p>Execution engines orchestrate emergent computation by coordinating cell swaps, managing
  * metadata, and detecting convergence. Tests in this package validate that engines correctly
@@ -38,6 +38,7 @@
  * <p>After mastering execution engines, proceed to {@link com.emergent.doom.experiment} to learn
  * about experimental validation and statistical analysis.</p>
  *
+ * @see <a href="README.md">Execution Package README</a>
  * @see com.emergent.doom.execution.CellBasedExecutionEngine
  * @see com.emergent.doom.execution.ConvergenceDetector
  */
