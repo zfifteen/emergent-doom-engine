@@ -407,7 +407,7 @@ public class ThreeExperimentTestRunner {
         System.out.println("representing more realistic experimental scenarios.");
         System.out.println("\nKey observations:");
         System.out.println("  • Initial sortedness is higher (24.0%) due to partially ordered segments");
-        System.out.println("  • Monotonicity error starts at 20 (multiple inversions in descending segments)");
+        System.out.println("  • Monotonicity error starts at 19 (multiple inversions in descending segments)");
         System.out.println("  • Framework correctly computes metrics for complex initial states");
         System.out.println("  • CSV export handles larger data sets without issues");
         System.out.println("  • 75 swaps demonstrates realistic O(n²) behavior for bubble sort");
