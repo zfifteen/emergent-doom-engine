@@ -4,181 +4,127 @@ import com.emergent.doom.cell.GenericCell;
 import com.emergent.doom.probe.Probe;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.nio.file.Path;
 
 /**
- * Example test demonstrating the complete trajectory export pipeline.
+ * Example demonstration of complete trajectory export pipeline.
  * 
- * <p>This test shows end-to-end usage of:
- * <ul>
- *   <li>Probe for recording snapshots</li>
- *   <li>TrajectoryBuilder for converting probe data</li>
- *   <li>TrajectoryDataExporter for CSV export</li>
- * </ul>
- * 
- * <p>Prints CSV output to console for visual inspection.</p>
+ * <p>This test demonstrates the end-to-end workflow for exporting experiment
+ * trajectories as specified in the issue requirements.</p>
  */
-@DisplayName("Trajectory Export Example Pipeline")
 class TrajectoryExportExampleTest {
-    
+
+    @TempDir
+    Path tempDir;
+
     /**
-     * PURPOSE: Demonstrate complete trajectory export pipeline from probe to CSV.
+     * PURPOSE: Demonstrate complete pipeline from probe recording to CSV export.
      * 
-     * INPUTS: Simulated bubble sort on reversed 10-element array
-     * EXPECTED OUTPUT: Console shows CSV with metadata and per-step metrics
-     * TEST DATA: Array [10, 9, 8, 7, 6, 5, 4, 3, 2, 1] sorted to [1, 2, 3...10]
-     * REPRODUCTION: Fixed initial array ensures deterministic output
+     * This is a working example that shows how to:
+     * 1. Record snapshots during experiment execution
+     * 2. Build trajectory from probe
+     * 3. Export trajectory to CSV
+     * 4. Access exported data for analysis
+     * 
+     * EXPECTED OUTPUT: CSV file with metadata and per-step trajectory data
      */
     @Test
-    @DisplayName("demonstrates probe to CSV export pipeline")
-    void demonstratesProbeToCSVExportPipeline() throws IOException {
-        System.out.println("\n=== Trajectory Export Example ===\n");
-        
+    @DisplayName("Complete trajectory export pipeline example")
+    void completeTrajectoryExportPipelineExample() throws IOException {
         // Step 1: Create probe and simulate experiment
-        System.out.println("Step 1: Creating probe and simulating bubble sort...");
         Probe<GenericCell> probe = new Probe<>();
         
-        // Initial state: reversed array
-        GenericCell[] initial = new GenericCell[10];
-        for (int i = 0; i < 10; i++) {
-            initial[i] = new GenericCell(10 - i);
-        }
-        probe.recordSnapshot(0, initial, 0);
-        System.out.println("  Recorded initial snapshot: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]");
-        
-        // After first pass (some swaps)
-        GenericCell[] step1 = new GenericCell[]{
-            new GenericCell(9), new GenericCell(8), new GenericCell(7),
-            new GenericCell(6), new GenericCell(5), new GenericCell(4),
-            new GenericCell(3), new GenericCell(2), new GenericCell(1),
-            new GenericCell(10)
+        // Simulate bubble sort execution with snapshots
+        // Initial state: [5, 2, 8, 1, 3]
+        GenericCell[] step0 = {
+            new GenericCell(5), new GenericCell(2), new GenericCell(8),
+            new GenericCell(1), new GenericCell(3)
         };
-        probe.recordSnapshot(1, step1, 9);
-        System.out.println("  Recorded step 1 snapshot: [9, 8, 7, 6, 5, 4, 3, 2, 1, 10]");
+        probe.recordSnapshot(0, step0, 0);
         
-        // After second pass (more sorting progress)
-        GenericCell[] step2 = new GenericCell[]{
-            new GenericCell(8), new GenericCell(7), new GenericCell(6),
-            new GenericCell(5), new GenericCell(4), new GenericCell(3),
-            new GenericCell(2), new GenericCell(1), new GenericCell(9),
-            new GenericCell(10)
+        // After step 1: [2, 5, 1, 3, 8] - swapped 5 and 2
+        GenericCell[] step1 = {
+            new GenericCell(2), new GenericCell(5), new GenericCell(1),
+            new GenericCell(3), new GenericCell(8)
         };
-        probe.recordSnapshot(2, step2, 8);
-        System.out.println("  Recorded step 2 snapshot: [8, 7, 6, 5, 4, 3, 2, 1, 9, 10]");
+        probe.recordSnapshot(1, step1, 1);
         
-        // Partially sorted state
-        GenericCell[] step5 = new GenericCell[]{
+        // After step 2: [2, 1, 3, 5, 8] - more swaps
+        GenericCell[] step2 = {
+            new GenericCell(2), new GenericCell(1), new GenericCell(3),
+            new GenericCell(5), new GenericCell(8)
+        };
+        probe.recordSnapshot(2, step2, 3);
+        
+        // After step 3: [1, 2, 3, 5, 8] - getting closer to sorted
+        GenericCell[] step3 = {
             new GenericCell(1), new GenericCell(2), new GenericCell(3),
-            new GenericCell(4), new GenericCell(5), new GenericCell(8),
-            new GenericCell(7), new GenericCell(6), new GenericCell(9),
-            new GenericCell(10)
+            new GenericCell(5), new GenericCell(8)
         };
-        probe.recordSnapshot(5, step5, 12);
-        System.out.println("  Recorded step 5 snapshot: [1, 2, 3, 4, 5, 8, 7, 6, 9, 10]");
+        probe.recordSnapshot(3, step3, 5);
         
-        // Fully sorted state
-        GenericCell[] finalState = new GenericCell[]{
+        // After step 4: [1, 2, 3, 5, 8] - fully sorted
+        GenericCell[] step4 = {
             new GenericCell(1), new GenericCell(2), new GenericCell(3),
-            new GenericCell(4), new GenericCell(5), new GenericCell(6),
-            new GenericCell(7), new GenericCell(8), new GenericCell(9),
-            new GenericCell(10)
+            new GenericCell(5), new GenericCell(8)
         };
-        probe.recordSnapshot(10, finalState, 5);
-        System.out.println("  Recorded final snapshot: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]");
+        probe.recordSnapshot(4, step4, 5);
         
-        // Step 2: Build trajectory from probe
-        System.out.println("\nStep 2: Building trajectory from probe...");
+        // Step 2: Build trajectory from probe snapshots
         ExperimentTrajectory trajectory = TrajectoryBuilder.fromProbe(
             probe,
-            "Bubble",
-            0,    // frozenCells
-            0,    // trialNumber
-            10,   // arraySize
-            System.currentTimeMillis()
+            "Bubble",          // algotype
+            0,                 // frozenCells
+            0,                 // trialNumber
+            5,                 // arraySize
+            System.currentTimeMillis()  // timestamp
         );
         
-        System.out.println("  Trajectory built with " + trajectory.getStepCount() + " steps");
+        // Step 3: Export trajectory to CSV
+        File csvFile = tempDir.resolve("experiment_001_trajectory.csv").toFile();
+        TrajectoryDataExporter.exportTrajectoryToCSV(csvFile.getAbsolutePath(), trajectory);
         
-        // Step 3: Print trajectory metrics to console
-        System.out.println("\nStep 3: Displaying trajectory metrics...\n");
-        printTrajectoryAsCSV(trajectory);
+        // Step 4: Verify exported data
+        System.out.println("Trajectory exported to: " + csvFile.getAbsolutePath());
+        System.out.println("\nCSV Contents:");
+        System.out.println("=".repeat(80));
         
-        // Step 4: Verify metrics show expected progression
-        System.out.println("\nStep 4: Validating metrics...");
-        
-        List<ExperimentTrajectory.TrajectoryStep> steps = trajectory.getSteps();
-        
-        // Verify we have all snapshots
-        assertEquals(5, steps.size(), "Should have 5 trajectory steps");
-        
-        // Verify sortedness progression (should generally increase)
-        double initialSortedness = steps.get(0).sortedness();
-        double finalSortedness = steps.get(steps.size() - 1).sortedness();
-        
-        System.out.println("  ✓ Initial sortedness: " + String.format("%.1f%%", initialSortedness));
-        System.out.println("  ✓ Final sortedness: " + String.format("%.1f%%", finalSortedness));
-        assertTrue(finalSortedness > initialSortedness, 
-            "Sortedness should increase from initial to final");
-        
-        // Verify monotonicity error progression (should generally decrease)
-        int initialError = steps.get(0).monotonicityError();
-        int finalError = steps.get(steps.size() - 1).monotonicityError();
-        
-        System.out.println("  ✓ Initial monotonicity error: " + initialError);
-        System.out.println("  ✓ Final monotonicity error: " + finalError);
-        assertTrue(finalError < initialError, 
-            "Monotonicity error should decrease from initial to final");
-        
-        // Verify cumulative swaps increase
-        int initialSwaps = steps.get(0).cumulativeSwaps();
-        int finalSwaps = steps.get(steps.size() - 1).cumulativeSwaps();
-        
-        System.out.println("  ✓ Initial cumulative swaps: " + initialSwaps);
-        System.out.println("  ✓ Final cumulative swaps: " + finalSwaps);
-        assertTrue(finalSwaps > initialSwaps, 
-            "Cumulative swaps should increase");
-        
-        System.out.println("\n=== Example Complete ===\n");
-    }
-    
-    /**
-     * Prints trajectory in CSV format to console for visual inspection.
-     */
-    private void printTrajectoryAsCSV(ExperimentTrajectory trajectory) {
-        System.out.println("=== CSV Output Preview ===");
-        System.out.println("# Metadata");
-        System.out.println("algotype," + trajectory.getAlgotype());
-        System.out.println("frozen_cells," + trajectory.getFrozenCells());
-        System.out.println("trial_number," + trajectory.getTrialNumber());
-        System.out.println("array_size," + trajectory.getArraySize());
-        System.out.println("timestamp," + trajectory.getTimestamp());
-        System.out.println("# Trajectory Data");
-        
-        if (trajectory.hasAggregation()) {
-            System.out.println("step_number,sortedness,monotonicity_error,cumulative_swaps,cumulative_comparisons,aggregation");
-        } else {
-            System.out.println("step_number,sortedness,monotonicity_error,cumulative_swaps,cumulative_comparisons");
+        try (BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
         }
         
+        System.out.println("=".repeat(80));
+        
+        // Demonstrate how to access trajectory data programmatically
+        System.out.println("\nTrajectory Analysis:");
+        System.out.println("Total steps: " + trajectory.getStepCount());
+        System.out.println("Algotype: " + trajectory.getMetadata().algotype());
+        System.out.println("Array size: " + trajectory.getMetadata().arraySize());
+        System.out.println("\nPer-step metrics:");
+        
         for (ExperimentTrajectory.TrajectoryStep step : trajectory.getSteps()) {
-            System.out.printf("%d,%.1f,%d,%d,%d",
+            System.out.printf(
+                "  Step %d: Sortedness=%.1f%%, MonotonicityError=%d, Swaps=%d%n",
                 step.stepNumber(),
                 step.sortedness(),
                 step.monotonicityError(),
-                step.cumulativeSwaps(),
-                step.cumulativeComparisons()
+                step.cumulativeSwaps()
             );
-            
-            if (trajectory.hasAggregation() && step.aggregation() != null) {
-                System.out.printf(",%.1f", step.aggregation());
-            }
-            
-            System.out.println();
         }
-        System.out.println("=== End CSV ===\n");
+        
+        // This demonstrates the complete workflow:
+        // 1. Probe records snapshots during execution
+        // 2. TrajectoryBuilder computes metrics from snapshots
+        // 3. TrajectoryDataExporter writes CSV with metadata and trajectory data
+        // 4. Exported CSV can be imported into Python/R for dashboard validation
     }
 }

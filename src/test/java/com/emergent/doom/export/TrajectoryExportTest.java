@@ -1,319 +1,304 @@
 package com.emergent.doom.export;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import com.emergent.doom.cell.GenericCell;
+import com.emergent.doom.probe.Probe;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests for trajectory export functionality.
+ * Integration tests for trajectory building and exporting.
  * 
- * <p>Validates CSV file creation, format, metadata headers, and data integrity.</p>
- * 
- * <p><strong>Test Coverage:</strong> 6 tests</p>
- * <ul>
- *   <li>CSV file creation</li>
- *   <li>Metadata header format</li>
- *   <li>Column headers</li>
- *   <li>Per-step data rows</li>
- *   <li>Aggregation column for chimeric experiments</li>
- *   <li>Parent directory creation</li>
- * </ul>
+ * <p>Tests the complete pipeline: Probe snapshots → TrajectoryBuilder → CSV export.</p>
  */
-@DisplayName("Trajectory Export Tests")
 class TrajectoryExportTest {
-    
-    private Path testOutputDir;
-    private Path testCsvFile;
-    
-    @BeforeEach
-    void setUp() throws IOException {
-        testOutputDir = Paths.get("target", "test-trajectory-exports");
-        testCsvFile = testOutputDir.resolve("test_trajectory.csv");
-        
-        // Ensure clean test directory
-        if (Files.exists(testOutputDir)) {
-            Files.walk(testOutputDir)
-                .sorted((a, b) -> b.compareTo(a))
-                .forEach(path -> {
-                    try {
-                        Files.deleteIfExists(path);
-                    } catch (IOException e) {
-                        // Ignore cleanup errors
-                    }
-                });
-        }
-    }
-    
-    @AfterEach
-    void tearDown() throws IOException {
-        // Clean up test files
-        if (Files.exists(testOutputDir)) {
-            Files.walk(testOutputDir)
-                .sorted((a, b) -> b.compareTo(a))
-                .forEach(path -> {
-                    try {
-                        Files.deleteIfExists(path);
-                    } catch (IOException e) {
-                        // Ignore cleanup errors
-                    }
-                });
-        }
-    }
-    
+
+    @TempDir
+    Path tempDir;
+
     /**
-     * PURPOSE: Verify CSV file is created at specified path.
+     * PURPOSE: As a developer, I want to build a trajectory from probe snapshots
+     * so that I can analyze execution dynamics.
      * 
-     * INPUTS: Valid trajectory and file path
-     * EXPECTED OUTPUT: File exists after export
-     * TEST DATA: Simple 2-step trajectory
+     * INPUTS: Probe with 3 snapshots
+     * EXPECTED OUTPUT: Trajectory with 3 steps
+     * TEST DATA: Small array with progressing sort states
+     * REPRODUCTION: Record snapshots, build trajectory, verify step count
      */
     @Test
-    @DisplayName("creates CSV file at specified path")
-    void createsCSVFileAtSpecifiedPath() throws IOException {
-        // Arrange
-        ExperimentTrajectory trajectory = createSimpleTrajectory(2);
+    @DisplayName("Build trajectory from probe snapshots")
+    void buildTrajectoryFromProbeSnapshots() {
+        // Create probe and record snapshots
+        Probe<GenericCell> probe = new Probe<>();
         
-        // Act
-        TrajectoryDataExporter.exportTrajectoryToCSV(testCsvFile.toString(), trajectory);
+        // Initial state: [5, 2, 8, 1, 3]
+        GenericCell[] cells1 = {
+            new GenericCell(5), new GenericCell(2), new GenericCell(8),
+            new GenericCell(1), new GenericCell(3)
+        };
+        probe.recordSnapshot(0, cells1, 0);
         
-        // Assert
-        assertTrue(Files.exists(testCsvFile), "CSV file should be created");
-        assertTrue(Files.size(testCsvFile) > 0, "CSV file should have content");
-    }
-    
-    /**
-     * PURPOSE: Verify CSV contains correct metadata header.
-     * 
-     * INPUTS: Trajectory with known metadata values
-     * EXPECTED OUTPUT: CSV starts with metadata section
-     * TEST DATA: "Bubble", 2 frozen, trial 5, size 30
-     * REPRODUCTION: Fixed seed not needed (metadata only)
-     */
-    @Test
-    @DisplayName("exports metadata header correctly")
-    void exportsMetadataHeaderCorrectly() throws IOException {
-        // Arrange
-        ExperimentTrajectory trajectory = new ExperimentTrajectory(
-            "Bubble",
-            2,
-            5,
-            30,
-            1704675000000L,
-            createSteps(3, false)
+        // After one step: [2, 5, 1, 3, 8] - one swap
+        GenericCell[] cells2 = {
+            new GenericCell(2), new GenericCell(5), new GenericCell(1),
+            new GenericCell(3), new GenericCell(8)
+        };
+        probe.recordSnapshot(1, cells2, 1);
+        
+        // After two steps: [2, 1, 3, 5, 8] - three swaps total
+        GenericCell[] cells3 = {
+            new GenericCell(2), new GenericCell(1), new GenericCell(3),
+            new GenericCell(5), new GenericCell(8)
+        };
+        probe.recordSnapshot(2, cells3, 3);
+        
+        // Build trajectory
+        ExperimentTrajectory trajectory = TrajectoryBuilder.fromProbe(
+            probe, "Bubble", 0, 0, 5, System.currentTimeMillis()
         );
         
-        // Act
-        TrajectoryDataExporter.exportTrajectoryToCSV(testCsvFile.toString(), trajectory);
+        // Verify
+        assertEquals(3, trajectory.getStepCount());
+        assertEquals("Bubble", trajectory.getMetadata().algotype());
+        assertEquals(0, trajectory.getMetadata().frozenCells());
+        assertEquals(5, trajectory.getMetadata().arraySize());
+    }
+    
+    /**
+     * PURPOSE: As a developer, I want trajectory steps to have correct metric values
+     * so that analysis is accurate.
+     * 
+     * INPUTS: Probe with snapshots of known sortedness
+     * EXPECTED OUTPUT: Trajectory with accurate metric calculations
+     * TEST DATA: Progressing from 20% to 100% sorted
+     * REPRODUCTION: Build trajectory, check sortedness progression
+     */
+    @Test
+    @DisplayName("Trajectory steps contain correct metric values")
+    void trajectoryStepsContainCorrectMetrics() {
+        Probe<GenericCell> probe = new Probe<>();
         
-        // Assert
-        List<String> lines = Files.readAllLines(testCsvFile);
-        assertTrue(lines.size() >= 7, "Should have metadata + header + data");
+        // Step 0: Mostly unsorted [5,4,3,2,1] - 20% sorted
+        GenericCell[] cells1 = {
+            new GenericCell(5), new GenericCell(4), new GenericCell(3),
+            new GenericCell(2), new GenericCell(1)
+        };
+        probe.recordSnapshot(0, cells1, 0);
         
-        // Check metadata section
+        // Step 1: Perfectly sorted [1,2,3,4,5] - 100% sorted
+        GenericCell[] cells2 = {
+            new GenericCell(1), new GenericCell(2), new GenericCell(3),
+            new GenericCell(4), new GenericCell(5)
+        };
+        probe.recordSnapshot(1, cells2, 10);
+        
+        ExperimentTrajectory trajectory = TrajectoryBuilder.fromProbe(
+            probe, "Test", 0, 0, 5, System.currentTimeMillis()
+        );
+        
+        List<ExperimentTrajectory.TrajectoryStep> steps = trajectory.getSteps();
+        
+        // Check first step (reversed array)
+        ExperimentTrajectory.TrajectoryStep step0 = steps.get(0);
+        assertEquals(0, step0.stepNumber());
+        assertEquals(20.0, step0.sortedness(), 0.1); // First element always counts
+        assertEquals(4, step0.monotonicityError()); // 4 inversions
+        assertEquals(0, step0.cumulativeSwaps());
+        
+        // Check second step (sorted array)
+        ExperimentTrajectory.TrajectoryStep step1 = steps.get(1);
+        assertEquals(1, step1.stepNumber());
+        assertEquals(100.0, step1.sortedness(), 0.1);
+        assertEquals(0, step1.monotonicityError()); // No inversions
+        assertEquals(10, step1.cumulativeSwaps());
+    }
+    
+    /**
+     * PURPOSE: As a developer, I want to export trajectory to CSV
+     * so that I can analyze it with external tools.
+     * 
+     * INPUTS: Trajectory with metadata and steps
+     * EXPECTED OUTPUT: CSV file with metadata header and step data
+     * TEST DATA: 2-step trajectory
+     * REPRODUCTION: Export to CSV, read file, verify structure
+     */
+    @Test
+    @DisplayName("Export trajectory to CSV file")
+    void exportTrajectoryToCsvFile() throws IOException {
+        // Create simple trajectory
+        List<ExperimentTrajectory.TrajectoryStep> steps = new ArrayList<>();
+        steps.add(new ExperimentTrajectory.TrajectoryStep(0, 50.0, 10, null, 0, 50));
+        steps.add(new ExperimentTrajectory.TrajectoryStep(1, 75.0, 5, null, 3, 100));
+        
+        ExperimentTrajectory.ExperimentMetadata metadata = 
+            new ExperimentTrajectory.ExperimentMetadata(
+                "Bubble", 2, 0, 50, 1704672000000L
+            );
+        
+        ExperimentTrajectory trajectory = new ExperimentTrajectory(steps, metadata);
+        
+        // Export to CSV
+        File csvFile = tempDir.resolve("test_trajectory.csv").toFile();
+        TrajectoryDataExporter.exportTrajectoryToCSV(csvFile.getAbsolutePath(), trajectory);
+        
+        // Verify file exists
+        assertTrue(csvFile.exists());
+        
+        // Read and verify content
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+        }
+        
+        // Verify structure
+        assertTrue(lines.size() >= 11); // Metadata (6) + warning (1) + header (2) + data (2) = 11
         assertEquals("# Metadata", lines.get(0));
         assertEquals("algotype,Bubble", lines.get(1));
         assertEquals("frozen_cells,2", lines.get(2));
-        assertEquals("trial_number,5", lines.get(3));
-        assertEquals("array_size,30", lines.get(4));
-        assertTrue(lines.get(5).startsWith("timestamp,"), "Timestamp line should exist");
+        assertEquals("trial_number,0", lines.get(3));
+        assertEquals("array_size,50", lines.get(4));
+        assertEquals("timestamp,1704672000000", lines.get(5));
+        assertEquals("# WARNING: cumulative_comparisons is a rough heuristic - use with caution", lines.get(6));
+        assertEquals("# Trajectory Data", lines.get(7));
+        assertEquals("step_number,sortedness,monotonicity_error,cumulative_swaps,cumulative_comparisons", 
+                     lines.get(8));
+        
+        // Verify first data row
+        String[] row1 = lines.get(9).split(",");
+        assertEquals("0", row1[0]); // stepNumber
+        assertEquals("50.0", row1[1]); // sortedness
+        assertEquals("10", row1[2]); // monotonicityError
+        assertEquals("0", row1[3]); // cumulativeSwaps
+        assertEquals("50", row1[4]); // cumulativeComparisons
     }
     
     /**
-     * PURPOSE: Verify CSV contains correct column headers.
-     * 
-     * INPUTS: Non-chimeric trajectory
-     * EXPECTED OUTPUT: Header row with step_number, sortedness, monotonicity_error, swaps, comparisons
-     * TEST DATA: Simple trajectory without aggregation
-     */
-    @Test
-    @DisplayName("exports column headers correctly")
-    void exportsColumnHeadersCorrectly() throws IOException {
-        // Arrange
-        ExperimentTrajectory trajectory = createSimpleTrajectory(2);
-        
-        // Act
-        TrajectoryDataExporter.exportTrajectoryToCSV(testCsvFile.toString(), trajectory);
-        
-        // Assert
-        List<String> lines = Files.readAllLines(testCsvFile);
-        
-        // Find trajectory data header (after metadata)
-        int headerIndex = -1;
-        for (int i = 0; i < lines.size(); i++) {
-            if (lines.get(i).equals("# Trajectory Data")) {
-                headerIndex = i + 1;
-                break;
-            }
-        }
-        
-        assertTrue(headerIndex > 0, "Should find trajectory data header");
-        String columnHeader = lines.get(headerIndex);
-        assertEquals("step_number,sortedness,monotonicity_error,cumulative_swaps,cumulative_comparisons",
-            columnHeader, "Column headers should match expected format");
-    }
-    
-    /**
-     * PURPOSE: Verify CSV contains correct per-step data.
-     * 
-     * INPUTS: Trajectory with 3 known steps
-     * EXPECTED OUTPUT: Data rows match trajectory step values
-     * TEST DATA: 3 steps with specific metric values
-     */
-    @Test
-    @DisplayName("exports per-step data correctly")
-    void exportsPerStepDataCorrectly() throws IOException {
-        // Arrange
-        List<ExperimentTrajectory.TrajectoryStep> steps = new ArrayList<>();
-        steps.add(new ExperimentTrajectory.TrajectoryStep(0, 10.0, 9, null, 0, 10));
-        steps.add(new ExperimentTrajectory.TrajectoryStep(1, 30.0, 7, null, 5, 25));
-        steps.add(new ExperimentTrajectory.TrajectoryStep(2, 50.0, 5, null, 12, 42));
-        
-        ExperimentTrajectory trajectory = new ExperimentTrajectory(
-            "Selection", 0, 0, 10, System.currentTimeMillis(), steps
-        );
-        
-        // Act
-        TrajectoryDataExporter.exportTrajectoryToCSV(testCsvFile.toString(), trajectory);
-        
-        // Assert
-        List<String> lines = Files.readAllLines(testCsvFile);
-        
-        // Find first data row (after column headers)
-        int dataStartIndex = -1;
-        for (int i = 0; i < lines.size(); i++) {
-            if (lines.get(i).startsWith("step_number,")) {
-                dataStartIndex = i + 1;
-                break;
-            }
-        }
-        
-        assertTrue(dataStartIndex > 0, "Should find data start");
-        
-        // Verify data rows
-        assertEquals("0,10.0,9,0,10", lines.get(dataStartIndex));
-        assertEquals("1,30.0,7,5,25", lines.get(dataStartIndex + 1));
-        assertEquals("2,50.0,5,12,42", lines.get(dataStartIndex + 2));
-    }
-    
-    /**
-     * PURPOSE: Verify CSV includes aggregation column for chimeric experiments.
+     * PURPOSE: As a developer, I want chimeric trajectories to include aggregation
+     * so that I can analyze clustering dynamics.
      * 
      * INPUTS: Trajectory with aggregation data
-     * EXPECTED OUTPUT: Column headers include "aggregation", data rows include values
-     * TEST DATA: 2 steps with aggregation percentages
+     * EXPECTED OUTPUT: CSV with aggregation column
+     * TEST DATA: Chimeric trajectory with 80% aggregation
+     * REPRODUCTION: Export chimeric trajectory, verify aggregation column present
      */
     @Test
-    @DisplayName("includes aggregation column for chimeric experiments")
-    void includesAggregationColumnForChimericExperiments() throws IOException {
-        // Arrange
+    @DisplayName("Export chimeric trajectory includes aggregation column")
+    void exportChimericTrajectoryIncludesAggregation() throws IOException {
+        // Create chimeric trajectory
         List<ExperimentTrajectory.TrajectoryStep> steps = new ArrayList<>();
-        steps.add(new ExperimentTrajectory.TrajectoryStep(0, 10.0, 9, 75.0, 0, 10));
-        steps.add(new ExperimentTrajectory.TrajectoryStep(1, 20.0, 7, 72.5, 5, 25));
+        steps.add(new ExperimentTrajectory.TrajectoryStep(0, 50.0, 10, 75.0, 0, 50));
+        steps.add(new ExperimentTrajectory.TrajectoryStep(1, 75.0, 5, 80.0, 3, 100));
         
-        ExperimentTrajectory trajectory = new ExperimentTrajectory(
-            "Chimeric", 0, 0, 10, System.currentTimeMillis(), steps
-        );
+        ExperimentTrajectory.ExperimentMetadata metadata = 
+            new ExperimentTrajectory.ExperimentMetadata(
+                "Chimeric", 0, 0, 50, System.currentTimeMillis()
+            );
         
-        // Act
-        TrajectoryDataExporter.exportTrajectoryToCSV(testCsvFile.toString(), trajectory);
+        ExperimentTrajectory trajectory = new ExperimentTrajectory(steps, metadata);
         
-        // Assert
-        List<String> lines = Files.readAllLines(testCsvFile);
+        // Export to CSV
+        File csvFile = tempDir.resolve("chimeric_trajectory.csv").toFile();
+        TrajectoryDataExporter.exportTrajectoryToCSV(csvFile.getAbsolutePath(), trajectory);
         
-        // Find column header
-        String columnHeader = null;
-        int dataStartIndex = -1;
-        for (int i = 0; i < lines.size(); i++) {
-            if (lines.get(i).startsWith("step_number,")) {
-                columnHeader = lines.get(i);
-                dataStartIndex = i + 1;
-                break;
+        // Read and verify
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
             }
         }
         
-        assertNotNull(columnHeader, "Should find column header");
-        assertTrue(columnHeader.contains("aggregation"), "Should include aggregation column");
+        // Verify header includes aggregation
+        String header = lines.get(8);
+        assertTrue(header.contains("aggregation"), 
+                  "Header should include aggregation column for chimeric trajectories");
+        assertEquals("step_number,sortedness,monotonicity_error,aggregation,cumulative_swaps,cumulative_comparisons", 
+                     header);
         
         // Verify data includes aggregation values
-        assertTrue(lines.get(dataStartIndex).endsWith(",75.0"), "First row should include aggregation");
-        assertTrue(lines.get(dataStartIndex + 1).endsWith(",72.5"), "Second row should include aggregation");
+        String[] row1 = lines.get(9).split(",");
+        assertEquals("75.0", row1[3]); // aggregation for step 0
+        
+        String[] row2 = lines.get(10).split(",");
+        assertEquals("80.0", row2[3]); // aggregation for step 1
     }
     
     /**
-     * PURPOSE: Verify parent directories are created automatically.
+     * PURPOSE: As a developer, I want trajectory export to create parent directories
+     * so that I don't have to manage directory structure manually.
      * 
      * INPUTS: File path with non-existent parent directories
-     * EXPECTED OUTPUT: Directories are created, file is written
+     * EXPECTED OUTPUT: Directories created automatically, CSV exported successfully
      * TEST DATA: Nested directory path
+     * REPRODUCTION: Export to nested path, verify file exists
      */
     @Test
-    @DisplayName("creates parent directories automatically")
-    void createsParentDirectoriesAutomatically() throws IOException {
-        // Arrange
-        Path nestedPath = testOutputDir.resolve("nested").resolve("path").resolve("trajectory.csv");
-        ExperimentTrajectory trajectory = createSimpleTrajectory(2);
-        
-        // Ensure parent doesn't exist
-        assertFalse(Files.exists(nestedPath.getParent()), "Parent should not exist initially");
-        
-        // Act
-        TrajectoryDataExporter.exportTrajectoryToCSV(nestedPath.toString(), trajectory);
-        
-        // Assert
-        assertTrue(Files.exists(nestedPath), "File should be created");
-        assertTrue(Files.exists(nestedPath.getParent()), "Parent directories should be created");
-    }
-    
-    // ============ Helper Methods ============
-    
-    /**
-     * Creates a simple trajectory for testing.
-     */
-    private ExperimentTrajectory createSimpleTrajectory(int stepCount) {
-        return new ExperimentTrajectory(
-            "Bubble",
-            0,
-            0,
-            10,
-            System.currentTimeMillis(),
-            createSteps(stepCount, false)
-        );
-    }
-    
-    /**
-     * Creates a list of trajectory steps.
-     * 
-     * @param count Number of steps to create
-     * @param withAggregation Whether to include aggregation data
-     */
-    private List<ExperimentTrajectory.TrajectoryStep> createSteps(int count, boolean withAggregation) {
+    @DisplayName("Trajectory export creates parent directories")
+    void trajectoryExportCreatesParentDirectories() throws IOException {
+        // Create trajectory
         List<ExperimentTrajectory.TrajectoryStep> steps = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            double sortedness = 10.0 + (i * 15.0);
-            int monotonicityError = Math.max(0, 9 - (i * 2));
-            int cumulativeSwaps = i * 5;
-            int cumulativeComparisons = i * 20 + 10;
-            Double aggregation = withAggregation ? (75.0 - i * 2.5) : null;
-            
-            steps.add(new ExperimentTrajectory.TrajectoryStep(
-                i,
-                sortedness,
-                monotonicityError,
-                aggregation,
-                cumulativeSwaps,
-                cumulativeComparisons
-            ));
-        }
-        return steps;
+        steps.add(new ExperimentTrajectory.TrajectoryStep(0, 50.0, 10, null, 0, 50));
+        
+        ExperimentTrajectory.ExperimentMetadata metadata = 
+            new ExperimentTrajectory.ExperimentMetadata(
+                "Test", 0, 0, 50, System.currentTimeMillis()
+            );
+        
+        ExperimentTrajectory trajectory = new ExperimentTrajectory(steps, metadata);
+        
+        // Export to nested path
+        File csvFile = tempDir.resolve("data/experiments/run001/trajectory.csv").toFile();
+        TrajectoryDataExporter.exportTrajectoryToCSV(csvFile.getAbsolutePath(), trajectory);
+        
+        // Verify file and directories exist
+        assertTrue(csvFile.exists());
+        assertTrue(csvFile.getParentFile().exists());
+    }
+    
+    /**
+     * PURPOSE: As a developer, I want trajectory export to handle empty metadata gracefully
+     * so that edge cases are handled properly.
+     * 
+     * INPUTS: Trajectory with invalid parameters
+     * EXPECTED OUTPUT: IllegalArgumentException
+     * TEST DATA: Null filepath, null trajectory
+     * REPRODUCTION: Attempt export with invalid inputs
+     */
+    @Test
+    @DisplayName("Trajectory export validates inputs")
+    void trajectoryExportValidatesInputs() {
+        ExperimentTrajectory.ExperimentMetadata metadata = 
+            new ExperimentTrajectory.ExperimentMetadata(
+                "Test", 0, 0, 50, System.currentTimeMillis()
+            );
+        
+        List<ExperimentTrajectory.TrajectoryStep> steps = new ArrayList<>();
+        steps.add(new ExperimentTrajectory.TrajectoryStep(0, 50.0, 10, null, 0, 50));
+        ExperimentTrajectory trajectory = new ExperimentTrajectory(steps, metadata);
+        
+        // Null filepath
+        assertThrows(IllegalArgumentException.class, () -> {
+            TrajectoryDataExporter.exportTrajectoryToCSV(null, trajectory);
+        });
+        
+        // Null trajectory
+        assertThrows(IllegalArgumentException.class, () -> {
+            TrajectoryDataExporter.exportTrajectoryToCSV(
+                tempDir.resolve("test.csv").toString(), null
+            );
+        });
     }
 }

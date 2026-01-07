@@ -1,6 +1,7 @@
 package com.emergent.doom.export;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -11,392 +12,345 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Tests for ExperimentTrajectory data structure.
  * 
- * <p>Validates correct construction, immutability, and accessor methods
- * for trajectory metadata and per-step metrics.</p>
- * 
- * <p><strong>Test Coverage:</strong> 15 tests</p>
- * <ul>
- *   <li>Construction with valid inputs</li>
- *   <li>Metadata accessor methods</li>
- *   <li>Step collection immutability</li>
- *   <li>Aggregation detection</li>
- *   <li>TrajectoryStep accessors</li>
- * </ul>
+ * <p>Validates the immutable trajectory and metadata records that encapsulate
+ * per-step experiment data for metric dashboard validation.</p>
  */
-@DisplayName("ExperimentTrajectory Tests")
 class ExperimentTrajectoryTest {
-    
-    /**
-     * PURPOSE: Verify trajectory can be constructed with valid metadata and steps.
-     * 
-     * INPUTS: Valid algotype, frozen cells, trial number, array size, timestamp, and step list
-     * EXPECTED OUTPUT: Non-null trajectory with correct metadata
-     * TEST DATA: "Bubble", 0 frozen, trial 0, size 10, current timestamp, 3 steps
-     */
-    @Test
-    @DisplayName("constructs trajectory with valid inputs")
-    void constructsTrajectoryWithValidInputs() {
-        // Arrange
-        String algotype = "Bubble";
-        int frozenCells = 0;
-        int trialNumber = 0;
-        int arraySize = 10;
-        long timestamp = System.currentTimeMillis();
-        List<ExperimentTrajectory.TrajectoryStep> steps = createSampleSteps(3);
+
+    @Nested
+    @DisplayName("TrajectoryStep Validation")
+    class TrajectoryStepTests {
         
-        // Act
-        ExperimentTrajectory trajectory = new ExperimentTrajectory(
-            algotype, frozenCells, trialNumber, arraySize, timestamp, steps
-        );
+        /**
+         * PURPOSE: As a developer, I want valid trajectory steps to be created successfully
+         * so that I can build complete experiment trajectories.
+         * 
+         * INPUTS: Valid step parameters (stepNumber=0, sortedness=75.0, etc.)
+         * EXPECTED OUTPUT: TrajectoryStep created without exception
+         * TEST DATA: step 0 with realistic metric values
+         * REPRODUCTION: new TrajectoryStep(...) with valid parameters
+         */
+        @Test
+        @DisplayName("Valid trajectory step creation succeeds")
+        void validTrajectoryStepCreation() {
+            assertDoesNotThrow(() -> {
+                new ExperimentTrajectory.TrajectoryStep(
+                    0,      // stepNumber
+                    75.0,   // sortedness
+                    5,      // monotonicityError
+                    null,   // aggregation (non-chimeric)
+                    10,     // cumulativeSwaps
+                    50      // cumulativeComparisons
+                );
+            });
+        }
         
-        // Assert
-        assertNotNull(trajectory, "Trajectory should be constructed");
-        assertEquals(algotype, trajectory.getAlgotype());
-        assertEquals(frozenCells, trajectory.getFrozenCells());
-        assertEquals(trialNumber, trajectory.getTrialNumber());
-        assertEquals(arraySize, trajectory.getArraySize());
-        assertEquals(timestamp, trajectory.getTimestamp());
-    }
-    
-    /**
-     * PURPOSE: Verify getSteps() returns immutable copy of steps.
-     * 
-     * INPUTS: Trajectory with 5 steps
-     * EXPECTED OUTPUT: Modification of returned list throws exception
-     * TEST DATA: 5 sample trajectory steps
-     */
-    @Test
-    @DisplayName("getSteps() returns immutable list")
-    void getStepsReturnsImmutableList() {
-        // Arrange
-        List<ExperimentTrajectory.TrajectoryStep> steps = createSampleSteps(5);
-        ExperimentTrajectory trajectory = createSampleTrajectory(steps);
+        /**
+         * PURPOSE: As a developer, I want chimeric trajectory steps to include aggregation
+         * so that I can analyze clustering dynamics.
+         * 
+         * INPUTS: Step with aggregation=80.0
+         * EXPECTED OUTPUT: isChimeric() returns true
+         * TEST DATA: step with aggregation value
+         * REPRODUCTION: Create step with non-null aggregation, check isChimeric()
+         */
+        @Test
+        @DisplayName("Chimeric trajectory step has aggregation data")
+        void chimericStepHasAggregation() {
+            ExperimentTrajectory.TrajectoryStep step = 
+                new ExperimentTrajectory.TrajectoryStep(
+                    0, 75.0, 5, 80.0, 10, 50
+                );
+            
+            assertTrue(step.isChimeric());
+            assertEquals(80.0, step.aggregation());
+        }
         
-        // Act
-        List<ExperimentTrajectory.TrajectoryStep> returnedSteps = trajectory.getSteps();
+        /**
+         * PURPOSE: As a developer, I want non-chimeric steps to have null aggregation
+         * so that I can distinguish homogeneous experiments.
+         * 
+         * INPUTS: Step with aggregation=null
+         * EXPECTED OUTPUT: isChimeric() returns false
+         * TEST DATA: step without aggregation
+         * REPRODUCTION: Create step with null aggregation, check isChimeric()
+         */
+        @Test
+        @DisplayName("Non-chimeric trajectory step has null aggregation")
+        void nonChimericStepHasNullAggregation() {
+            ExperimentTrajectory.TrajectoryStep step = 
+                new ExperimentTrajectory.TrajectoryStep(
+                    0, 75.0, 5, null, 10, 50
+                );
+            
+            assertFalse(step.isChimeric());
+            assertNull(step.aggregation());
+        }
         
-        // Assert
-        assertThrows(UnsupportedOperationException.class, () -> {
-            returnedSteps.add(createStep(99, 50.0, 5, null, 100, 500));
-        }, "Should not be able to modify returned list");
-    }
-    
-    /**
-     * PURPOSE: Verify getStepCount() returns correct number of steps.
-     * 
-     * INPUTS: Trajectory with 10 steps
-     * EXPECTED OUTPUT: getStepCount() returns 10
-     * TEST DATA: 10 sample trajectory steps
-     */
-    @Test
-    @DisplayName("getStepCount() returns correct count")
-    void getStepCountReturnsCorrectCount() {
-        // Arrange
-        List<ExperimentTrajectory.TrajectoryStep> steps = createSampleSteps(10);
-        ExperimentTrajectory trajectory = createSampleTrajectory(steps);
+        /**
+         * PURPOSE: As a developer, I want negative step numbers to be rejected
+         * so that trajectory data remains valid.
+         * 
+         * INPUTS: stepNumber=-1
+         * EXPECTED OUTPUT: IllegalArgumentException
+         * TEST DATA: invalid negative step number
+         * REPRODUCTION: new TrajectoryStep(-1, ...)
+         */
+        @Test
+        @DisplayName("Negative step number throws exception")
+        void negativeStepNumberThrowsException() {
+            assertThrows(IllegalArgumentException.class, () -> {
+                new ExperimentTrajectory.TrajectoryStep(
+                    -1, 75.0, 5, null, 10, 50
+                );
+            });
+        }
         
-        // Act & Assert
-        assertEquals(10, trajectory.getStepCount());
-    }
-    
-    /**
-     * PURPOSE: Verify hasAggregation() returns false when no aggregation data present.
-     * 
-     * INPUTS: Trajectory with steps having null aggregation
-     * EXPECTED OUTPUT: hasAggregation() returns false
-     * TEST DATA: 3 steps with null aggregation values
-     */
-    @Test
-    @DisplayName("hasAggregation() returns false for non-chimeric experiment")
-    void hasAggregationReturnsFalseForNonChimeric() {
-        // Arrange
-        List<ExperimentTrajectory.TrajectoryStep> steps = createSampleSteps(3);
-        ExperimentTrajectory trajectory = createSampleTrajectory(steps);
+        /**
+         * PURPOSE: As a developer, I want sortedness out of range to be rejected
+         * so that metric values remain valid.
+         * 
+         * INPUTS: sortedness=150.0 (invalid, should be 0-100)
+         * EXPECTED OUTPUT: IllegalArgumentException
+         * TEST DATA: invalid sortedness value
+         * REPRODUCTION: new TrajectoryStep(..., 150.0, ...)
+         */
+        @Test
+        @DisplayName("Sortedness out of range throws exception")
+        void sortednessOutOfRangeThrowsException() {
+            assertThrows(IllegalArgumentException.class, () -> {
+                new ExperimentTrajectory.TrajectoryStep(
+                    0, 150.0, 5, null, 10, 50
+                );
+            });
+        }
         
-        // Act & Assert
-        assertFalse(trajectory.hasAggregation(), "Should not have aggregation for non-chimeric");
-    }
-    
-    /**
-     * PURPOSE: Verify hasAggregation() returns true when aggregation data present.
-     * 
-     * INPUTS: Trajectory with steps having non-null aggregation
-     * EXPECTED OUTPUT: hasAggregation() returns true
-     * TEST DATA: 3 steps with aggregation values
-     */
-    @Test
-    @DisplayName("hasAggregation() returns true for chimeric experiment")
-    void hasAggregationReturnsTrueForChimeric() {
-        // Arrange
-        List<ExperimentTrajectory.TrajectoryStep> steps = new ArrayList<>();
-        steps.add(createStep(0, 10.0, 9, 75.0, 0, 10));
-        steps.add(createStep(1, 20.0, 7, 72.5, 5, 25));
-        steps.add(createStep(2, 30.0, 5, 70.0, 10, 40));
-        ExperimentTrajectory trajectory = createSampleTrajectory(steps);
+        /**
+         * PURPOSE: As a developer, I want aggregation out of range to be rejected
+         * so that metric values remain valid.
+         * 
+         * INPUTS: aggregation=120.0 (invalid, should be 0-100)
+         * EXPECTED OUTPUT: IllegalArgumentException
+         * TEST DATA: invalid aggregation value
+         * REPRODUCTION: new TrajectoryStep(..., ..., 120.0, ...)
+         */
+        @Test
+        @DisplayName("Aggregation out of range throws exception")
+        void aggregationOutOfRangeThrowsException() {
+            assertThrows(IllegalArgumentException.class, () -> {
+                new ExperimentTrajectory.TrajectoryStep(
+                    0, 75.0, 5, 120.0, 10, 50
+                );
+            });
+        }
         
-        // Act & Assert
-        assertTrue(trajectory.hasAggregation(), "Should have aggregation for chimeric");
-    }
-    
-    /**
-     * PURPOSE: Verify TrajectoryStep accessors return correct values.
-     * 
-     * INPUTS: Single TrajectoryStep with known values
-     * EXPECTED OUTPUT: All accessors return expected values
-     * TEST DATA: step 5, sortedness 67.5%, error 3, aggregation 50.0%, swaps 25, comparisons 125
-     */
-    @Test
-    @DisplayName("TrajectoryStep accessors return correct values")
-    void trajectoryStepAccessorsReturnCorrectValues() {
-        // Arrange
-        int stepNumber = 5;
-        double sortedness = 67.5;
-        int monotonicityError = 3;
-        Double aggregation = 50.0;
-        int cumulativeSwaps = 25;
-        int cumulativeComparisons = 125;
-        
-        // Act
-        ExperimentTrajectory.TrajectoryStep step = createStep(
-            stepNumber, sortedness, monotonicityError, aggregation, 
-            cumulativeSwaps, cumulativeComparisons
-        );
-        
-        // Assert
-        assertEquals(stepNumber, step.stepNumber());
-        assertEquals(sortedness, step.sortedness(), 0.01);
-        assertEquals(monotonicityError, step.monotonicityError());
-        assertEquals(aggregation, step.aggregation());
-        assertEquals(cumulativeSwaps, step.cumulativeSwaps());
-        assertEquals(cumulativeComparisons, step.cumulativeComparisons());
-    }
-    
-    /**
-     * PURPOSE: Verify getAlgotype() returns correct algorithm identifier.
-     * 
-     * INPUTS: Trajectory with "Selection" algotype
-     * EXPECTED OUTPUT: getAlgotype() returns "Selection"
-     * TEST DATA: "Selection" algotype string
-     */
-    @Test
-    @DisplayName("getAlgotype() returns correct value")
-    void getAlgotypeReturnsCorrectValue() {
-        // Arrange
-        ExperimentTrajectory trajectory = new ExperimentTrajectory(
-            "Selection", 1, 2, 50, System.currentTimeMillis(), createSampleSteps(2)
-        );
-        
-        // Act & Assert
-        assertEquals("Selection", trajectory.getAlgotype());
-    }
-    
-    /**
-     * PURPOSE: Verify getFrozenCells() returns correct count.
-     * 
-     * INPUTS: Trajectory with 3 frozen cells
-     * EXPECTED OUTPUT: getFrozenCells() returns 3
-     * TEST DATA: frozenCells = 3
-     */
-    @Test
-    @DisplayName("getFrozenCells() returns correct value")
-    void getFrozenCellsReturnsCorrectValue() {
-        // Arrange
-        ExperimentTrajectory trajectory = new ExperimentTrajectory(
-            "Bubble", 3, 0, 30, System.currentTimeMillis(), createSampleSteps(2)
-        );
-        
-        // Act & Assert
-        assertEquals(3, trajectory.getFrozenCells());
-    }
-    
-    /**
-     * PURPOSE: Verify getTrialNumber() returns correct identifier.
-     * 
-     * INPUTS: Trajectory with trial number 7
-     * EXPECTED OUTPUT: getTrialNumber() returns 7
-     * TEST DATA: trialNumber = 7
-     */
-    @Test
-    @DisplayName("getTrialNumber() returns correct value")
-    void getTrialNumberReturnsCorrectValue() {
-        // Arrange
-        ExperimentTrajectory trajectory = new ExperimentTrajectory(
-            "Insertion", 0, 7, 20, System.currentTimeMillis(), createSampleSteps(2)
-        );
-        
-        // Act & Assert
-        assertEquals(7, trajectory.getTrialNumber());
-    }
-    
-    /**
-     * PURPOSE: Verify getArraySize() returns correct size.
-     * 
-     * INPUTS: Trajectory with array size 100
-     * EXPECTED OUTPUT: getArraySize() returns 100
-     * TEST DATA: arraySize = 100
-     */
-    @Test
-    @DisplayName("getArraySize() returns correct value")
-    void getArraySizeReturnsCorrectValue() {
-        // Arrange
-        ExperimentTrajectory trajectory = new ExperimentTrajectory(
-            "Bubble", 0, 0, 100, System.currentTimeMillis(), createSampleSteps(2)
-        );
-        
-        // Act & Assert
-        assertEquals(100, trajectory.getArraySize());
-    }
-    
-    /**
-     * PURPOSE: Verify getTimestamp() returns correct value.
-     * 
-     * INPUTS: Trajectory with specific timestamp
-     * EXPECTED OUTPUT: getTimestamp() returns exact timestamp
-     * TEST DATA: timestamp = 1704675000000L
-     */
-    @Test
-    @DisplayName("getTimestamp() returns correct value")
-    void getTimestampReturnsCorrectValue() {
-        // Arrange
-        long timestamp = 1704675000000L;
-        ExperimentTrajectory trajectory = new ExperimentTrajectory(
-            "Bubble", 0, 0, 10, timestamp, createSampleSteps(2)
-        );
-        
-        // Act & Assert
-        assertEquals(timestamp, trajectory.getTimestamp());
-    }
-    
-    /**
-     * PURPOSE: Verify empty trajectory works correctly.
-     * 
-     * INPUTS: Trajectory with empty step list
-     * EXPECTED OUTPUT: getStepCount() returns 0, hasAggregation() returns false
-     * TEST DATA: Empty step list
-     */
-    @Test
-    @DisplayName("handles empty trajectory")
-    void handlesEmptyTrajectory() {
-        // Arrange
-        List<ExperimentTrajectory.TrajectoryStep> emptySteps = new ArrayList<>();
-        ExperimentTrajectory trajectory = new ExperimentTrajectory(
-            "Bubble", 0, 0, 10, System.currentTimeMillis(), emptySteps
-        );
-        
-        // Act & Assert
-        assertEquals(0, trajectory.getStepCount());
-        assertFalse(trajectory.hasAggregation());
-    }
-    
-    /**
-     * PURPOSE: Verify trajectory with single step works correctly.
-     * 
-     * INPUTS: Trajectory with exactly one step
-     * EXPECTED OUTPUT: getStepCount() returns 1, getSteps() contains single step
-     * TEST DATA: Single step at step 0
-     */
-    @Test
-    @DisplayName("handles single-step trajectory")
-    void handlesSingleStepTrajectory() {
-        // Arrange
-        List<ExperimentTrajectory.TrajectoryStep> singleStep = createSampleSteps(1);
-        ExperimentTrajectory trajectory = createSampleTrajectory(singleStep);
-        
-        // Act & Assert
-        assertEquals(1, trajectory.getStepCount());
-        assertEquals(1, trajectory.getSteps().size());
-    }
-    
-    /**
-     * PURPOSE: Verify TrajectoryStep with null aggregation works correctly.
-     * 
-     * INPUTS: TrajectoryStep with aggregation = null
-     * EXPECTED OUTPUT: aggregation() returns null
-     * TEST DATA: Step with null aggregation
-     */
-    @Test
-    @DisplayName("TrajectoryStep handles null aggregation")
-    void trajectoryStepHandlesNullAggregation() {
-        // Arrange & Act
-        ExperimentTrajectory.TrajectoryStep step = createStep(0, 50.0, 5, null, 10, 50);
-        
-        // Assert
-        assertNull(step.aggregation(), "Aggregation should be null for non-chimeric");
-    }
-    
-    /**
-     * PURPOSE: Verify trajectory preserves step order.
-     * 
-     * INPUTS: Trajectory with 5 steps in specific order
-     * EXPECTED OUTPUT: getSteps() returns steps in same order
-     * TEST DATA: 5 steps with stepNumbers 0, 1, 2, 3, 4
-     */
-    @Test
-    @DisplayName("preserves step order")
-    void preservesStepOrder() {
-        // Arrange
-        List<ExperimentTrajectory.TrajectoryStep> steps = createSampleSteps(5);
-        ExperimentTrajectory trajectory = createSampleTrajectory(steps);
-        
-        // Act
-        List<ExperimentTrajectory.TrajectoryStep> returnedSteps = trajectory.getSteps();
-        
-        // Assert
-        for (int i = 0; i < 5; i++) {
-            assertEquals(i, returnedSteps.get(i).stepNumber(), 
-                "Step order should be preserved");
+        /**
+         * PURPOSE: As a developer, I want negative cumulative swaps to be rejected
+         * so that counter data remains valid.
+         * 
+         * INPUTS: cumulativeSwaps=-5
+         * EXPECTED OUTPUT: IllegalArgumentException
+         * TEST DATA: invalid negative swap count
+         * REPRODUCTION: new TrajectoryStep(..., -5, ...)
+         */
+        @Test
+        @DisplayName("Negative cumulative swaps throws exception")
+        void negativeCumulativeSwapsThrowsException() {
+            assertThrows(IllegalArgumentException.class, () -> {
+                new ExperimentTrajectory.TrajectoryStep(
+                    0, 75.0, 5, null, -5, 50
+                );
+            });
         }
     }
     
-    // ============ Helper Methods ============
-    
-    /**
-     * Creates a sample trajectory with given steps.
-     */
-    private ExperimentTrajectory createSampleTrajectory(List<ExperimentTrajectory.TrajectoryStep> steps) {
-        return new ExperimentTrajectory(
-            "Bubble",
-            0,
-            0,
-            10,
-            System.currentTimeMillis(),
-            steps
-        );
-    }
-    
-    /**
-     * Creates a list of sample trajectory steps.
-     */
-    private List<ExperimentTrajectory.TrajectoryStep> createSampleSteps(int count) {
-        List<ExperimentTrajectory.TrajectoryStep> steps = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            double sortedness = 10.0 + (i * 10.0);
-            int monotonicityError = Math.max(0, 9 - i);
-            int cumulativeSwaps = i * 5;
-            int cumulativeComparisons = i * 25;
-            steps.add(createStep(i, sortedness, monotonicityError, null, 
-                cumulativeSwaps, cumulativeComparisons));
+    @Nested
+    @DisplayName("ExperimentMetadata Validation")
+    class ExperimentMetadataTests {
+        
+        /**
+         * PURPOSE: As a developer, I want valid metadata to be created successfully
+         * so that I can associate context with trajectories.
+         * 
+         * INPUTS: Valid metadata parameters
+         * EXPECTED OUTPUT: ExperimentMetadata created without exception
+         * TEST DATA: Bubble algotype, 2 frozen cells, trial 0, size 50
+         * REPRODUCTION: new ExperimentMetadata(...) with valid parameters
+         */
+        @Test
+        @DisplayName("Valid experiment metadata creation succeeds")
+        void validExperimentMetadataCreation() {
+            assertDoesNotThrow(() -> {
+                new ExperimentTrajectory.ExperimentMetadata(
+                    "Bubble",               // algotype
+                    2,                      // frozenCells
+                    0,                      // trialNumber
+                    50,                     // arraySize
+                    System.currentTimeMillis()  // timestamp
+                );
+            });
         }
-        return steps;
+        
+        /**
+         * PURPOSE: As a developer, I want null algotype to be rejected
+         * so that metadata remains valid.
+         * 
+         * INPUTS: algotype=null
+         * EXPECTED OUTPUT: IllegalArgumentException
+         * TEST DATA: null algotype string
+         * REPRODUCTION: new ExperimentMetadata(null, ...)
+         */
+        @Test
+        @DisplayName("Null algotype throws exception")
+        void nullAlgotypeThrowsException() {
+            assertThrows(IllegalArgumentException.class, () -> {
+                new ExperimentTrajectory.ExperimentMetadata(
+                    null, 2, 0, 50, System.currentTimeMillis()
+                );
+            });
+        }
+        
+        /**
+         * PURPOSE: As a developer, I want negative frozen cells to be rejected
+         * so that metadata remains valid.
+         * 
+         * INPUTS: frozenCells=-1
+         * EXPECTED OUTPUT: IllegalArgumentException
+         * TEST DATA: invalid negative frozen cells
+         * REPRODUCTION: new ExperimentMetadata(..., -1, ...)
+         */
+        @Test
+        @DisplayName("Negative frozen cells throws exception")
+        void negativeFrozenCellsThrowsException() {
+            assertThrows(IllegalArgumentException.class, () -> {
+                new ExperimentTrajectory.ExperimentMetadata(
+                    "Bubble", -1, 0, 50, System.currentTimeMillis()
+                );
+            });
+        }
+        
+        /**
+         * PURPOSE: As a developer, I want zero or negative array size to be rejected
+         * so that metadata remains valid.
+         * 
+         * INPUTS: arraySize=0
+         * EXPECTED OUTPUT: IllegalArgumentException
+         * TEST DATA: invalid zero array size
+         * REPRODUCTION: new ExperimentMetadata(..., 0, ...)
+         */
+        @Test
+        @DisplayName("Zero array size throws exception")
+        void zeroArraySizeThrowsException() {
+            assertThrows(IllegalArgumentException.class, () -> {
+                new ExperimentTrajectory.ExperimentMetadata(
+                    "Bubble", 2, 0, 0, System.currentTimeMillis()
+                );
+            });
+        }
     }
     
-    /**
-     * Creates a single TrajectoryStep with given values.
-     */
-    private ExperimentTrajectory.TrajectoryStep createStep(
-            int stepNumber,
-            double sortedness,
-            int monotonicityError,
-            Double aggregation,
-            int cumulativeSwaps,
-            int cumulativeComparisons) {
-        return new ExperimentTrajectory.TrajectoryStep(
-            stepNumber,
-            sortedness,
-            monotonicityError,
-            aggregation,
-            cumulativeSwaps,
-            cumulativeComparisons
-        );
+    @Nested
+    @DisplayName("ExperimentTrajectory Construction")
+    class ExperimentTrajectoryTests {
+        
+        /**
+         * PURPOSE: As a developer, I want to create a complete experiment trajectory
+         * so that I can export it for analysis.
+         * 
+         * INPUTS: List of 3 trajectory steps and metadata
+         * EXPECTED OUTPUT: ExperimentTrajectory with 3 steps
+         * TEST DATA: 3 steps with progressing sortedness
+         * REPRODUCTION: new ExperimentTrajectory(steps, metadata)
+         */
+        @Test
+        @DisplayName("Complete trajectory creation succeeds")
+        void completeTrajectoryCreation() {
+            List<ExperimentTrajectory.TrajectoryStep> steps = new ArrayList<>();
+            steps.add(new ExperimentTrajectory.TrajectoryStep(0, 50.0, 10, null, 0, 50));
+            steps.add(new ExperimentTrajectory.TrajectoryStep(1, 70.0, 6, null, 5, 100));
+            steps.add(new ExperimentTrajectory.TrajectoryStep(2, 90.0, 2, null, 12, 150));
+            
+            ExperimentTrajectory.ExperimentMetadata metadata = 
+                new ExperimentTrajectory.ExperimentMetadata(
+                    "Bubble", 0, 0, 50, System.currentTimeMillis()
+                );
+            
+            ExperimentTrajectory trajectory = new ExperimentTrajectory(steps, metadata);
+            
+            assertEquals(3, trajectory.getStepCount());
+            assertEquals("Bubble", trajectory.getMetadata().algotype());
+        }
+        
+        /**
+         * PURPOSE: As a developer, I want trajectory steps to be immutable
+         * so that exported data cannot be corrupted.
+         * 
+         * INPUTS: Trajectory with 2 steps, attempt to modify original list
+         * EXPECTED OUTPUT: Original list modification doesn't affect trajectory
+         * TEST DATA: 2 steps, add third step after creation
+         * REPRODUCTION: Create trajectory, modify original steps list, verify trajectory unchanged
+         */
+        @Test
+        @DisplayName("Trajectory steps are immutable")
+        void trajectoryStepsAreImmutable() {
+            List<ExperimentTrajectory.TrajectoryStep> steps = new ArrayList<>();
+            steps.add(new ExperimentTrajectory.TrajectoryStep(0, 50.0, 10, null, 0, 50));
+            steps.add(new ExperimentTrajectory.TrajectoryStep(1, 70.0, 6, null, 5, 100));
+            
+            ExperimentTrajectory.ExperimentMetadata metadata = 
+                new ExperimentTrajectory.ExperimentMetadata(
+                    "Bubble", 0, 0, 50, System.currentTimeMillis()
+                );
+            
+            ExperimentTrajectory trajectory = new ExperimentTrajectory(steps, metadata);
+            
+            // Modify original list
+            steps.add(new ExperimentTrajectory.TrajectoryStep(2, 90.0, 2, null, 12, 150));
+            
+            // Trajectory should still have 2 steps
+            assertEquals(2, trajectory.getStepCount());
+        }
+        
+        /**
+         * PURPOSE: As a developer, I want null steps to be rejected
+         * so that trajectory data remains valid.
+         * 
+         * INPUTS: steps=null
+         * EXPECTED OUTPUT: IllegalArgumentException
+         * TEST DATA: null steps list
+         * REPRODUCTION: new ExperimentTrajectory(null, metadata)
+         */
+        @Test
+        @DisplayName("Null steps throws exception")
+        void nullStepsThrowsException() {
+            ExperimentTrajectory.ExperimentMetadata metadata = 
+                new ExperimentTrajectory.ExperimentMetadata(
+                    "Bubble", 0, 0, 50, System.currentTimeMillis()
+                );
+            
+            assertThrows(IllegalArgumentException.class, () -> {
+                new ExperimentTrajectory(null, metadata);
+            });
+        }
+        
+        /**
+         * PURPOSE: As a developer, I want null metadata to be rejected
+         * so that trajectory context remains valid.
+         * 
+         * INPUTS: metadata=null
+         * EXPECTED OUTPUT: IllegalArgumentException
+         * TEST DATA: null metadata
+         * REPRODUCTION: new ExperimentTrajectory(steps, null)
+         */
+        @Test
+        @DisplayName("Null metadata throws exception")
+        void nullMetadataThrowsException() {
+            List<ExperimentTrajectory.TrajectoryStep> steps = new ArrayList<>();
+            steps.add(new ExperimentTrajectory.TrajectoryStep(0, 50.0, 10, null, 0, 50));
+            
+            assertThrows(IllegalArgumentException.class, () -> {
+                new ExperimentTrajectory(steps, null);
+            });
+        }
     }
 }

@@ -1,92 +1,59 @@
 package com.emergent.doom.export;
 
 import com.emergent.doom.cell.Cell;
+import com.emergent.doom.metrics.AlgotypeAggregationIndex;
+import com.emergent.doom.metrics.Monotonicity;
 import com.emergent.doom.metrics.MonotonicityError;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.probe.StepSnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
- * Factory for constructing ExperimentTrajectory instances from Probe data.
+ * Builds ExperimentTrajectory from Probe snapshots.
  * 
- * <p>This class provides factory methods to build trajectory objects from probe
- * snapshots, calculating per-step metrics including sortedness, monotonicity error,
- * and cumulative operation counts.</p>
+ * <p>This utility extracts per-step metrics from probe snapshots to construct
+ * a complete trajectory suitable for export and analysis.</p>
  * 
- * <p><strong>Purpose in Emergent Doom Engine:</strong></p>
- * <ul>
- *   <li>Transform raw Probe snapshots into structured trajectory data</li>
- *   <li>Calculate derived metrics (sortedness, monotonicity) from cell states</li>
- *   <li>Support data export pipeline for analysis and visualization</li>
- * </ul>
+ * <p><strong>Usage:</strong></p>
+ * <pre>{@code
+ * Probe<GenericCell> probe = new Probe<>();
+ * // ... run experiment, probe records snapshots ...
  * 
- * <p><strong>Design:</strong> All methods are static factory methods. This class
- * cannot be instantiated.</p>
- * 
- * @see ExperimentTrajectory
- * @see Probe
+ * ExperimentTrajectory trajectory = TrajectoryBuilder.fromProbe(
+ *     probe,
+ *     "Bubble",    // algotype
+ *     2,           // frozenCells
+ *     0,           // trialNumber
+ *     50,          // arraySize
+ *     System.currentTimeMillis()
+ * );
+ * }</pre>
  */
 public class TrajectoryBuilder {
     
     /**
-     * Private constructor prevents instantiation.
-     */
-    private TrajectoryBuilder() {
-        throw new UnsupportedOperationException("TrajectoryBuilder is a static factory class");
-    }
-    
-    /**
-     * Builds an ExperimentTrajectory from Probe snapshots.
+     * Build trajectory from probe snapshots.
      * 
-     * <p>This is the primary factory method for converting probe data into
-     * a trajectory suitable for export and analysis.</p>
+     * <p>Computes metrics for each snapshot and constructs a complete trajectory
+     * with metadata. Detects chimeric experiments by checking if snapshot type
+     * metadata contains valid algotype labels.</p>
      * 
-     * <p><strong>PURPOSE:</strong> Transform probe snapshots into trajectory with metrics</p>
+     * <p><strong>Important:</strong> Chimeric detection only works with AlgotypedProbe
+     * or other probe implementations that populate algotype labels in snapshot metadata.
+     * Standard Probe always sets algotypeLabel to -1, so aggregation metrics will not
+     * be computed when using standard Probe.</p>
      * 
-     * <p><strong>INPUTS:</strong></p>
-     * <ul>
-     *   <li>probe: Probe containing recorded snapshots</li>
-     *   <li>algotype: Algorithm type identifier (e.g., "Bubble", "Selection")</li>
-     *   <li>frozenCells: Number of frozen cells in experiment</li>
-     *   <li>trialNumber: Trial identifier</li>
-     *   <li>arraySize: Size of cell array</li>
-     *   <li>timestamp: Experiment start time in milliseconds</li>
-     * </ul>
-     * 
-     * <p><strong>PROCESS:</strong></p>
-     * <ol>
-     *   <li>Validate probe contains snapshots</li>
-     *   <li>Determine sorted reference order from final snapshot</li>
-     *   <li>For each snapshot:
-     *     <ul>
-     *       <li>Calculate sortedness percentage</li>
-     *       <li>Calculate monotonicity error</li>
-     *       <li>Extract cumulative swap count</li>
-     *       <li>Estimate cumulative comparisons (heuristic)</li>
-     *     </ul>
-     *   </li>
-     *   <li>Build and return ExperimentTrajectory</li>
-     * </ol>
-     * 
-     * <p><strong>OUTPUTS:</strong> ExperimentTrajectory with per-step metrics</p>
-     * 
-     * <p><strong>THROWS:</strong> IllegalArgumentException if probe is null or empty</p>
-     * 
-     * <p><strong>KNOWN LIMITATION:</strong> Comparison count uses heuristic formula:
-     * cumulativeSwaps + (stepNumber + 1) * arraySize. For accurate counts, enhance
-     * Probe to record actual comparison counts per snapshot.</p>
-     * 
-     * @param probe Probe containing experiment snapshots
-     * @param algotype Algorithm type identifier
-     * @param frozenCells Number of frozen cells
-     * @param trialNumber Trial identifier
-     * @param arraySize Size of cell array
-     * @param timestamp Experiment timestamp
-     * @param <T> Cell type
-     * @return ExperimentTrajectory with calculated metrics
+     * @param probe the probe containing snapshots
+     * @param algotype algotype name (e.g., "Bubble", "Fib")
+     * @param frozenCells number of frozen cells
+     * @param trialNumber trial number
+     * @param arraySize array size
+     * @param timestamp experiment start timestamp (milliseconds)
+     * @param <T> cell type
+     * @return complete experiment trajectory
+     * @throws IllegalArgumentException if probe is null or has no snapshots
      */
     public static <T extends Cell<T>> ExperimentTrajectory fromProbe(
             Probe<T> probe,
@@ -96,49 +63,46 @@ public class TrajectoryBuilder {
             int arraySize,
             long timestamp) {
         
-        // Step 1: Validate probe
         if (probe == null) {
             throw new IllegalArgumentException("Probe cannot be null");
         }
-        
-        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
-        if (snapshots.isEmpty()) {
-            throw new IllegalArgumentException("Probe contains no snapshots");
+        if (probe.getSnapshotCount() == 0) {
+            throw new IllegalArgumentException("Probe has no snapshots");
         }
         
-        // Step 2: Determine sorted reference order
-        // Use final snapshot as the target sorted order
-        StepSnapshot<T> finalSnapshot = snapshots.get(snapshots.size() - 1);
-        List<Comparable<?>> sortedReference = new ArrayList<>(finalSnapshot.getComparableValues());
-        sortedReference.sort(null); // Natural ordering
-        
-        // Step 3: Build trajectory steps
+        List<StepSnapshot<T>> snapshots = probe.getSnapshots();
         List<ExperimentTrajectory.TrajectoryStep> steps = new ArrayList<>();
-        int cumulativeSwaps = 0;
+        
+        // Create metric instances
+        Monotonicity<T> monotonicityMetric = new Monotonicity<>();
+        MonotonicityError<T> monotonicityErrorMetric = new MonotonicityError<>();
+        AlgotypeAggregationIndex<T> aggregationMetric = new AlgotypeAggregationIndex<>();
+        
+        // Track cumulative comparisons (initially just use compareAndSwapCount from probe)
+        int cumulativeComparisons = 0;
         
         for (StepSnapshot<T> snapshot : snapshots) {
             int stepNumber = snapshot.getStepNumber();
-            cumulativeSwaps += snapshot.getSwapCount();
             
-            // Calculate sortedness (percentage in correct position)
-            double sortedness = calculateSortedness(
-                snapshot.getComparableValues(),
-                sortedReference
-            );
+            // Compute metrics from snapshot
+            double sortedness = monotonicityMetric.compute(snapshot);
+            int monotonicityError = (int) monotonicityErrorMetric.compute(snapshot);
             
-            // Calculate monotonicity error
-            int monotonicityError = calculateMonotonicityError(
-                snapshot.getComparableValues()
-            );
-            
-            // Heuristic for cumulative comparisons
-            // Since Probe doesn't track per-snapshot comparisons, estimate as:
-            // cumulativeSwaps + (stepNumber + 1) * arraySize
-            int cumulativeComparisons = cumulativeSwaps + (stepNumber + 1) * arraySize;
-            
-            // Aggregation is null for non-chimeric experiments
-            // Can be enhanced later to detect and calculate from snapshot types
+            // Try to compute aggregation (only for chimeric experiments)
             Double aggregation = null;
+            if (isChimeric(snapshot)) {
+                aggregation = aggregationMetric.compute(snapshot);
+            }
+            
+            // Get cumulative swaps from snapshot
+            int cumulativeSwaps = snapshot.getSwapCount();
+            
+            // WARNING: Comparison count is a rough heuristic and may be inaccurate
+            // This assumes arraySize comparisons per step, which is not correct for most
+            // sorting algorithms (e.g., bubble sort does fewer as array becomes sorted).
+            // TODO: Enhance Probe to track actual comparison counts per snapshot.
+            // Until then, use this data with caution for metric validation.
+            cumulativeComparisons = cumulativeSwaps + (stepNumber + 1) * arraySize;
             
             steps.add(new ExperimentTrajectory.TrajectoryStep(
                 stepNumber,
@@ -150,85 +114,54 @@ public class TrajectoryBuilder {
             ));
         }
         
-        // Step 4: Build and return trajectory
-        return new ExperimentTrajectory(
-            algotype,
-            frozenCells,
-            trialNumber,
-            arraySize,
-            timestamp,
-            steps
-        );
-    }
-    
-    /**
-     * Calculates sortedness as percentage of cells in correct final position.
-     * 
-     * <p><strong>PURPOSE:</strong> Measure how close current state is to target sorted state</p>
-     * 
-     * <p><strong>ALGORITHM:</strong></p>
-     * <ol>
-     *   <li>Compare each element in current state with corresponding element in sorted reference</li>
-     *   <li>Count matches where current[i] equals sortedReference[i]</li>
-     *   <li>Return (matchCount / arraySize) * 100.0</li>
-     * </ol>
-     * 
-     * @param current Current cell values
-     * @param sortedReference Target sorted order
-     * @return Sortedness percentage (0.0 to 100.0)
-     */
-    private static double calculateSortedness(
-            List<Comparable<?>> current,
-            List<Comparable<?>> sortedReference) {
-        
-        if (current.size() != sortedReference.size()) {
-            throw new IllegalArgumentException(
-                "Current and sorted arrays must have same size"
+        ExperimentTrajectory.ExperimentMetadata metadata = 
+            new ExperimentTrajectory.ExperimentMetadata(
+                algotype,
+                frozenCells,
+                trialNumber,
+                arraySize,
+                timestamp
             );
-        }
         
-        int correctPositions = 0;
-        for (int i = 0; i < current.size(); i++) {
-            if (current.get(i).equals(sortedReference.get(i))) {
-                correctPositions++;
-            }
-        }
-        
-        return (correctPositions / (double) current.size()) * 100.0;
+        return new ExperimentTrajectory(steps, metadata);
     }
     
     /**
-     * Calculates monotonicity error as count of out-of-order adjacent pairs.
+     * Check if snapshot represents a chimeric experiment.
      * 
-     * <p><strong>PURPOSE:</strong> Measure local disorder in array</p>
+     * <p>A chimeric experiment has cells with different algotypes, which is
+     * detectable from the type metadata in snapshots.</p>
      * 
-     * <p><strong>ALGORITHM:</strong></p>
-     * <ol>
-     *   <li>Iterate through adjacent pairs</li>
-     *   <li>Count pairs where left > right (out of order)</li>
-     *   <li>Return total count</li>
-     * </ol>
-     * 
-     * <p><strong>REFERENCE:</strong> Uses MonotonicityError metric from EDE metrics package</p>
-     * 
-     * @param values Cell values to analyze
-     * @return Count of out-of-order adjacent pairs
+     * @param snapshot the snapshot to check
+     * @return true if chimeric (multiple algotypes present)
      */
-    @SuppressWarnings("unchecked")
-    private static int calculateMonotonicityError(List<Comparable<?>> values) {
-        if (values == null || values.size() < 2) {
-            return 0;
+    private static boolean isChimeric(StepSnapshot<?> snapshot) {
+        // Check if types have meaningful algotype data
+        // types[i] = [groupId, algotypeLabel, value, isFrozen]
+        List<Object[]> types = snapshot.getTypes();
+        if (types == null || types.isEmpty()) {
+            return false;
         }
         
-        int count = 0;
-        for (int i = 0; i < values.size() - 1; i++) {
-            Comparable left = (Comparable) values.get(i);
-            Comparable right = (Comparable) values.get(i + 1);
-            if (left.compareTo(right) > 0) {
-                count++;
+        // If all algotype labels are -1, it's not chimeric
+        // If we see different non-negative labels, it's chimeric
+        boolean foundNonNegative = false;
+        Integer firstLabel = null;
+        
+        for (Object[] typeData : types) {
+            int label = (Integer) typeData[1];
+            if (label >= 0) {
+                foundNonNegative = true;
+                if (firstLabel == null) {
+                    firstLabel = label;
+                } else if (!firstLabel.equals(label)) {
+                    // Found different algotypes - definitely chimeric
+                    return true;
+                }
             }
         }
         
-        return count;
+        // Not chimeric - either no valid algotype data or all same type
+        return false;
     }
 }

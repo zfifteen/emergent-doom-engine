@@ -3,10 +3,11 @@ algotype,Bubble
 frozen_cells,0
 trial_number,0
 array_size,10
-timestamp,1767813923045
+timestamp,1767814567645
+# WARNING: cumulative_comparisons is a rough heuristic - use with caution
 # Trajectory Data
 step_number,sortedness,monotonicity_error,cumulative_swaps,cumulative_comparisons
-0,0.0,9,0,10
-1,20.0,7,5,25
-2,40.0,5,12,42
-5,100.0,0,24,84
+0,10.0,9,0,10
+1,30.0,7,5,25
+2,50.0,5,7,37
+5,100.0,0,12,72

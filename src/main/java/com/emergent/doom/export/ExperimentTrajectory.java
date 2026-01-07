@@ -5,41 +5,67 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Represents a complete experimental trajectory with per-step metrics.
+ * Encapsulates complete trajectory data for a single experiment run.
  * 
- * <p>This class captures the evolution of an experiment over time, recording metrics
- * at each step including sortedness, monotonicity error, swap counts, and optional
- * aggregation values for chimeric experiments.</p>
- * 
- * <p><strong>Purpose in Emergent Doom Engine:</strong></p>
+ * <p>This structure captures step-by-step evolution of metrics required for
+ * dashboard validation as specified in the Levin et al. (2024) paper:
  * <ul>
- *   <li>Package experiment data for export to CSV/JSON formats</li>
- *   <li>Enable trajectory analysis and visualization</li>
- *   <li>Support delayed gratification and convergence analysis</li>
- *   <li>Facilitate comparison across different algotypes and configurations</li>
+ *   <li><strong>Delayed Gratification (DG):</strong> Requires sortedness history to detect
+ *       temporary decreases that enable later gains</li>
+ *   <li><strong>Aggregation Peaks:</strong> Requires aggregation history to identify
+ *       maximum clustering and timing</li>
+ *   <li><strong>Monotonicity Error:</strong> Requires full trajectory to track error
+ *       tolerance dynamics</li>
+ *   <li><strong>Error Tolerance Analysis:</strong> Requires comparing trajectories across
+ *       frozen cell counts (0, 1, 2, 3)</li>
  * </ul>
+ * </p>
  * 
- * <p><strong>Design:</strong> Immutable after construction. All fields are final and
- * collections are unmodifiable. Use TrajectoryBuilder to construct instances.</p>
+ * <p><strong>Design:</strong> Immutable value object containing metadata and step-by-step
+ * trajectory data. Supports export to CSV, JSON, or other formats via TrajectoryDataExporter.</p>
  * 
- * @see TrajectoryBuilder
  * @see TrajectoryDataExporter
  */
 public class ExperimentTrajectory {
     
-    private final String algotype;
-    private final int frozenCells;
-    private final int trialNumber;
-    private final int arraySize;
-    private final long timestamp;
     private final List<TrajectoryStep> steps;
+    private final ExperimentMetadata metadata;
     
     /**
-     * Immutable class representing metrics at a single experimental step.
+     * Create an experiment trajectory with metadata and step data.
      * 
-     * <p>Each TrajectoryStep captures the state of the experiment at a specific
-     * iteration, including sortedness percentage, monotonicity error, and cumulative
-     * operation counts.</p>
+     * @param steps list of trajectory steps (will be copied to ensure immutability)
+     * @param metadata experiment metadata
+     * @throws IllegalArgumentException if steps or metadata is null
+     */
+    public ExperimentTrajectory(List<TrajectoryStep> steps, ExperimentMetadata metadata) {
+        if (steps == null) {
+            throw new IllegalArgumentException("Steps cannot be null");
+        }
+        if (metadata == null) {
+            throw new IllegalArgumentException("Metadata cannot be null");
+        }
+        this.steps = Collections.unmodifiableList(new ArrayList<>(steps));
+        this.metadata = metadata;
+    }
+    
+    public List<TrajectoryStep> getSteps() {
+        return steps;
+    }
+    
+    public ExperimentMetadata getMetadata() {
+        return metadata;
+    }
+    
+    public int getStepCount() {
+        return steps.size();
+    }
+    
+    /**
+     * Immutable class representing a single step in the execution trajectory.
+     * 
+     * <p>Each step captures the state of key metrics at that point in execution,
+     * enabling detailed analysis of emergent behavior over time.</p>
      */
     public static class TrajectoryStep {
         private final int stepNumber;
@@ -50,14 +76,14 @@ public class ExperimentTrajectory {
         private final int cumulativeComparisons;
         
         /**
-         * Constructs a TrajectoryStep with all metrics.
+         * Create a trajectory step with validation.
          * 
-         * @param stepNumber Step/iteration number (0-based)
-         * @param sortedness Percentage of cells in correct final sorted position (0.0-100.0)
-         * @param monotonicityError Number of out-of-order adjacent pairs
-         * @param aggregation Optional aggregation percentage for chimeric experiments (null if not applicable)
-         * @param cumulativeSwaps Total number of swaps up to this step
-         * @param cumulativeComparisons Total number of comparisons up to this step
+         * @param stepNumber the execution step number (0-based)
+         * @param sortedness percentage of cells in correct relative order (0-100%)
+         * @param monotonicityError count of adjacent inversions
+         * @param aggregation percentage of cells with same-type neighbors (0-100%, null for non-chimeric)
+         * @param cumulativeSwaps total swaps executed up to this step
+         * @param cumulativeComparisons total comparisons executed up to this step
          */
         public TrajectoryStep(
                 int stepNumber,
@@ -66,6 +92,25 @@ public class ExperimentTrajectory {
                 Double aggregation,
                 int cumulativeSwaps,
                 int cumulativeComparisons) {
+            if (stepNumber < 0) {
+                throw new IllegalArgumentException("Step number cannot be negative");
+            }
+            if (sortedness < 0.0 || sortedness > 100.0) {
+                throw new IllegalArgumentException("Sortedness must be between 0 and 100");
+            }
+            if (monotonicityError < 0) {
+                throw new IllegalArgumentException("Monotonicity error cannot be negative");
+            }
+            if (aggregation != null && (aggregation < 0.0 || aggregation > 100.0)) {
+                throw new IllegalArgumentException("Aggregation must be between 0 and 100");
+            }
+            if (cumulativeSwaps < 0) {
+                throw new IllegalArgumentException("Cumulative swaps cannot be negative");
+            }
+            if (cumulativeComparisons < 0) {
+                throw new IllegalArgumentException("Cumulative comparisons cannot be negative");
+            }
+            
             this.stepNumber = stepNumber;
             this.sortedness = sortedness;
             this.monotonicityError = monotonicityError;
@@ -80,107 +125,77 @@ public class ExperimentTrajectory {
         public Double aggregation() { return aggregation; }
         public int cumulativeSwaps() { return cumulativeSwaps; }
         public int cumulativeComparisons() { return cumulativeComparisons; }
+        
+        /**
+         * Check if this is a chimeric experiment step (has aggregation data).
+         */
+        public boolean isChimeric() {
+            return aggregation != null;
+        }
     }
     
     /**
-     * Constructs an ExperimentTrajectory with metadata and per-step data.
+     * Immutable class representing experiment metadata.
      * 
-     * <p>This constructor is package-private. Use TrajectoryBuilder to create instances.</p>
-     * 
-     * @param algotype Algorithm type identifier (e.g., "Bubble", "Selection", "Chimeric")
-     * @param frozenCells Number of frozen cells in the experiment
-     * @param trialNumber Trial identifier for this experiment run
-     * @param arraySize Size of the cell array being sorted
-     * @param timestamp Experiment start time in milliseconds since epoch
-     * @param steps List of per-step metrics
+     * <p>Metadata provides context for interpreting trajectory data, enabling
+     * filtering and grouping during analysis.</p>
      */
-    ExperimentTrajectory(
-            String algotype,
-            int frozenCells,
-            int trialNumber,
-            int arraySize,
-            long timestamp,
-            List<TrajectoryStep> steps) {
-        this.algotype = algotype;
-        this.frozenCells = frozenCells;
-        this.trialNumber = trialNumber;
-        this.arraySize = arraySize;
-        this.timestamp = timestamp;
-        this.steps = Collections.unmodifiableList(new ArrayList<>(steps));
+    public static class ExperimentMetadata {
+        private final String algotype;
+        private final int frozenCells;
+        private final int trialNumber;
+        private final int arraySize;
+        private final long timestamp;
+        
+        /**
+         * Create experiment metadata with validation.
+         * 
+         * @param algotype the algotype used in this experiment (e.g., "Bubble", "Fib")
+         * @param frozenCells number of frozen (immovable) cells
+         * @param trialNumber trial number within the experiment batch
+         * @param arraySize size of the cell array
+         * @param timestamp Unix timestamp (milliseconds since epoch, typically positive for modern dates)
+         */
+        public ExperimentMetadata(
+                String algotype,
+                int frozenCells,
+                int trialNumber,
+                int arraySize,
+                long timestamp) {
+            if (algotype == null || algotype.trim().isEmpty()) {
+                throw new IllegalArgumentException("Algotype cannot be null or empty");
+            }
+            if (frozenCells < 0) {
+                throw new IllegalArgumentException("Frozen cells cannot be negative");
+            }
+            if (trialNumber < 0) {
+                throw new IllegalArgumentException("Trial number cannot be negative");
+            }
+            if (arraySize <= 0) {
+                throw new IllegalArgumentException("Array size must be positive");
+            }
+            // Note: Timestamp validation removed - negative timestamps are valid for pre-1970 dates
+            
+            this.algotype = algotype.trim();
+            this.frozenCells = frozenCells;
+            this.trialNumber = trialNumber;
+            this.arraySize = arraySize;
+            this.timestamp = timestamp;
+        }
+        
+        public String algotype() { return algotype; }
+        public int frozenCells() { return frozenCells; }
+        public int trialNumber() { return trialNumber; }
+        public int arraySize() { return arraySize; }
+        public long timestamp() { return timestamp; }
     }
     
-    /**
-     * Returns the algorithm type identifier.
-     * 
-     * @return Algotype string (e.g., "Bubble", "Selection", "Chimeric")
-     */
-    public String getAlgotype() {
-        return algotype;
-    }
-    
-    /**
-     * Returns the number of frozen cells in this experiment.
-     * 
-     * @return Frozen cell count
-     */
-    public int getFrozenCells() {
-        return frozenCells;
-    }
-    
-    /**
-     * Returns the trial number identifier.
-     * 
-     * @return Trial number
-     */
-    public int getTrialNumber() {
-        return trialNumber;
-    }
-    
-    /**
-     * Returns the size of the cell array.
-     * 
-     * @return Array size
-     */
-    public int getArraySize() {
-        return arraySize;
-    }
-    
-    /**
-     * Returns the experiment start timestamp.
-     * 
-     * @return Timestamp in milliseconds since epoch
-     */
-    public long getTimestamp() {
-        return timestamp;
-    }
-    
-    /**
-     * Returns an unmodifiable list of all trajectory steps.
-     * 
-     * @return List of TrajectoryStep records
-     */
-    public List<TrajectoryStep> getSteps() {
-        return steps;
-    }
-    
-    /**
-     * Returns the number of steps in this trajectory.
-     * 
-     * @return Step count
-     */
-    public int getStepCount() {
-        return steps.size();
-    }
-    
-    /**
-     * Checks if this trajectory includes aggregation data.
-     * 
-     * <p>Aggregation data is present for chimeric experiments where multiple
-     * algotypes coexist in the same cell array.</p>
-     * 
-     * @return true if any step has non-null aggregation value
-     */
-    public boolean hasAggregation() {
-        return steps.stream().anyMatch(step -> step.aggregation() != null);
+    @Override
+    public String toString() {
+        return String.format(
+            "ExperimentTrajectory[algotype=%s, frozen=%d, trial=%d, arraySize=%d, steps=%d]",
+            metadata.algotype(), metadata.frozenCells(), metadata.trialNumber(),
+            metadata.arraySize(), steps.size()
+        );
     }
 }

@@ -94,8 +94,8 @@ public class ManualIntegrationTest {
         
         System.out.println("  ✓ Trajectory built successfully");
         System.out.println("  ✓ Steps captured: " + trajectory.getStepCount());
-        System.out.println("  ✓ Algorithm: " + trajectory.getAlgotype());
-        System.out.println("  ✓ Array size: " + trajectory.getArraySize());
+        System.out.println("  ✓ Algorithm: " + trajectory.getMetadata().algotype());
+        System.out.println("  ✓ Array size: " + trajectory.getMetadata().arraySize());
         
         // Step 3: Export to CSV
         System.out.println("\nStep 3: Exporting trajectory to CSV...");
