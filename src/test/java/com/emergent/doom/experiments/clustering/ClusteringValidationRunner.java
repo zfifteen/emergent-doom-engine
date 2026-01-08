@@ -4,7 +4,6 @@ import com.emergent.doom.cell.AbstractSortingCell;
 import com.emergent.doom.cell.SortingAlgotype;
 import com.emergent.doom.execution.CellBasedExecutionEngine;
 import com.emergent.doom.factory.SortingCellFactory;
-import com.emergent.doom.metrics.AlgotypeAggregationIndex;
 
 import java.time.Instant;
 import java.util.*;
@@ -63,6 +62,7 @@ public class ClusteringValidationRunner {
     private static final double BUBBLE_INSERTION_EXPECTED = 65.0;  // ± 5%
     private static final double SELECTION_INSERTION_EXPECTED = 69.0; // ± 5%
     private static final double CONTROL_MAXIMUM = 60.0;  // Homogeneous should be < this
+    private static final double CONTROL_TOLERANCE = 0.0;  // No expected value, just upper bound
 
     // =========================
     // Result Container
@@ -83,8 +83,8 @@ public class ClusteringValidationRunner {
         double expectedValue;
         double tolerance;  // ± tolerance
         double pValue;      // vs expected (t-test)
-        boolean passesExpected; // p >= 0.05 (not significantly different)
-        boolean differsFromControl; // p < 0.05 (significantly different from < 60%)
+        boolean passesExpected; // p >= 0.05 (not significantly different from expected)
+        boolean passesControl;   // mean < CONTROL_MAXIMUM (for control experiments only)
 
         ExperimentResult(String name, double expectedValue, double tolerance) {
             this.name = name;
@@ -107,7 +107,17 @@ public class ClusteringValidationRunner {
             this.totalSteps = totalSteps;
         }
 
+        /**
+         * Returns peak timing as percentage of maximum steps.
+         * Handles zero-step case (edge case when array is pre-sorted).
+         *
+         * @return timing percentage [0.0, 100.0]
+         */
         double getTimingAsPercent() {
+            if (totalSteps == 0) {
+                // No steps taken means peak occurred immediately (0% progress)
+                return 0.0;
+            }
             return (peakStep * 100.0) / totalSteps;
         }
     }
@@ -163,6 +173,9 @@ public class ClusteringValidationRunner {
 
     /**
      * Execute chimeric population experiment.
+     *
+     * <p>Creates 100 trials of mixed-algotype populations, measures peak aggregation
+     * for each trial, and performs statistical analysis against expected baselines.</p>
      */
     static ExperimentResult runExperiment(
             String name,
@@ -175,7 +188,6 @@ public class ClusteringValidationRunner {
         System.out.flush();
 
         ExperimentResult result = new ExperimentResult(name, expectedPeak, tolerance);
-        AlgotypeAggregationIndex<AbstractSortingCell> metric = new AlgotypeAggregationIndex<>();
         CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
 
         for (int trial = 0; trial < TRIALS_PER_PAIR; trial++) {
@@ -198,7 +210,7 @@ public class ClusteringValidationRunner {
             // For now, use final aggregation as peak
             // (Full trajectory recording would give step-by-step peaks)
             // TODO: Integrate with Probe for step-by-step recording
-            double peakAggregation = estimatePeakAggregation(cells, metric);
+            double peakAggregation = estimatePeakAggregation(cells);
 
             result.trialPeaks.add(new TrialPeak(
                     peakAggregation,
@@ -220,14 +232,18 @@ public class ClusteringValidationRunner {
 
     /**
      * Execute homogeneous control experiment (negative baseline).
+     *
+     * <p>Creates pure Bubble populations (no mixed types). Should show much lower
+     * aggregation than chimeric pairs, validating that clustering requires multiple
+     * algotypes.</p>
      */
     static ExperimentResult runControlExperiment(String name) {
         System.out.println("Running: " + name + "  (" + TRIALS_PER_PAIR + " trials)");
         System.out.flush();
 
-        ExperimentResult result = new ExperimentResult(name, 0.0, 0.0);
-        result.expectedValue = 60.0;  // Should be below this
-        AlgotypeAggregationIndex<AbstractSortingCell> metric = new AlgotypeAggregationIndex<>();
+        // Control uses expectedValue of 0.0 so t-test is skipped
+        // Instead, we validate separately that mean < CONTROL_MAXIMUM
+        ExperimentResult result = new ExperimentResult(name, 0.0, CONTROL_TOLERANCE);
         CellBasedExecutionEngine engine = new CellBasedExecutionEngine();
 
         for (int trial = 0; trial < TRIALS_PER_PAIR; trial++) {
@@ -243,7 +259,7 @@ public class ClusteringValidationRunner {
                     distribution, ARRAY_SIZE, MAX_VALUE);
 
             int stepsToConvergence = engine.executeSorting(cells, MAX_STEPS);
-            double peakAggregation = estimatePeakAggregation(cells, metric);
+            double peakAggregation = estimatePeakAggregation(cells);
 
             result.trialPeaks.add(new TrialPeak(
                     peakAggregation,
@@ -268,14 +284,14 @@ public class ClusteringValidationRunner {
 
     /**
      * Estimate peak aggregation from final state.
-     * TODO: Integrate with Probe for true step-by-step peak tracking
+     *
+     * <p>CURRENT IMPLEMENTATION: Measures aggregation in final sorted state.
+     * Aggregation = (cells with at least one same-algotype neighbor / total cells) × 100%</p>
+     *
+     * <p>TODO: Integrate with Probe for true step-by-step peak tracking during
+     * execution, rather than only measuring final state.</p>
      */
-    static double estimatePeakAggregation(
-            List<AbstractSortingCell> cells,
-            AlgotypeAggregationIndex<AbstractSortingCell> metric) {
-
-        // Simplified estimation: return final aggregation
-        // Real implementation would track at each step via probe
+    static double estimatePeakAggregation(List<AbstractSortingCell> cells) {
         int sameTypeCount = 0;
         for (int i = 0; i < cells.size(); i++) {
             AbstractSortingCell current = cells.get(i);
@@ -290,6 +306,9 @@ public class ClusteringValidationRunner {
 
     /**
      * Calculate mean, std dev, min, max from trial peaks.
+     *
+     * <p>Applies Bessel's correction (n-1 divisor) to standard deviation for
+     * unbiased sample estimate.</p>
      */
     static void calculateStatistics(ExperimentResult result) {
         if (result.trialPeaks.isEmpty()) {
@@ -331,15 +350,27 @@ public class ClusteringValidationRunner {
         result.peakStdDev = Math.sqrt(peakVariance / (n - 1));  // Bessel's correction
         result.timingStdDev = Math.sqrt(timingVariance / (n - 1));
 
-        // T-test vs expected (one-sample)
+        // T-test vs expected (one-sample, only for chimeric experiments)
         if (result.expectedValue > 0) {
             result.pValue = calculateTTestPValue(result.peakMean, result.peakStdDev, n, result.expectedValue);
             result.passesExpected = result.pValue >= 0.05;
+        } else {
+            // Control experiment: validate that mean < CONTROL_MAXIMUM
+            result.passesControl = result.peakMean < CONTROL_MAXIMUM;
         }
     }
 
     /**
-     * One-sample t-test p-value.
+     * One-sample t-test p-value (two-tailed).
+     *
+     * <p>Tests whether the sample mean is significantly different from expectedValue.
+     * Uses normal approximation (adequate for n ≥ 30, and we have n=100).</p>
+     *
+     * @param mean sample mean
+     * @param stdDev sample standard deviation
+     * @param n sample size
+     * @param expectedValue null hypothesis mean
+     * @return two-tailed p-value
      */
     static double calculateTTestPValue(double mean, double stdDev, int n, double expectedValue) {
         if (stdDev == 0) {
@@ -348,26 +379,24 @@ public class ClusteringValidationRunner {
         double tStat = (mean - expectedValue) / (stdDev / Math.sqrt(n));
         double absT = Math.abs(tStat);
 
-        // Simplified: use normal approximation for n >= 30
-        if (n >= 30) {
-            double zScore = absT;
-            return 2.0 * (1.0 - normalCDF(zScore));  // Two-tailed
-        }
-
-        // For smaller n, approximate with normal (reasonable for n=100)
+        // Use normal approximation (adequate for n=100)
         double zScore = absT;
-        return 2.0 * (1.0 - normalCDF(zScore));
+        return 2.0 * (1.0 - normalCDF(zScore));  // Two-tailed
     }
 
     /**
-     * Standard normal CDF approximation.
+     * Standard normal cumulative distribution function.
+     *
+     * <p>Uses error function approximation for CDF at z-score.</p>
      */
     static double normalCDF(double z) {
         return 0.5 * (1.0 + erf(z / Math.sqrt(2.0)));
     }
 
     /**
-     * Error function approximation.
+     * Error function approximation (Abramowitz and Stegun).
+     *
+     * <p>Approximates erf(x) with maximum error ~1.5e-7.</p>
      */
     static double erf(double x) {
         double a1 = 0.254829592;
@@ -398,10 +427,12 @@ public class ClusteringValidationRunner {
         System.out.println("-".repeat(80));
 
         for (ExperimentResult r : results) {
-            String status = r.passesExpected ? "✓ PASS" : "✗ FAIL";
+            String status = r.passesExpected || r.passesControl ? "✓ PASS" : "✗ FAIL";
             String peakStr = String.format("%.1f ± %.1f", r.peakMean, r.peakStdDev);
             String timingStr = String.format("%.1f ± %.1f", r.timingMean, r.timingStdDev);
-            String expectedStr = String.format("%.0f ± %.0f", r.expectedValue, r.tolerance);
+            String expectedStr = r.expectedValue > 0
+                    ? String.format("%.0f ± %.0f", r.expectedValue, r.tolerance)
+                    : String.format("< %.0f", CONTROL_MAXIMUM);
             System.out.println(String.format("%-25s %10s %10s %10s %15s",
                     r.name, peakStr, timingStr, expectedStr, status));
         }
@@ -426,6 +457,10 @@ public class ClusteringValidationRunner {
                 System.out.println(String.format("    Expected: %.0f ± %.0f%%", r.expectedValue, r.tolerance));
                 System.out.println(String.format("    p-value:  %.4f", r.pValue));
                 System.out.println(String.format("    Result:   %s (α = 0.05)", r.passesExpected ? "PASS" : "FAIL"));
+            } else {
+                System.out.println("  Control Validation:");
+                System.out.println(String.format("    Max expected: < %.0f%%", CONTROL_MAXIMUM));
+                System.out.println(String.format("    Result:   %s", r.passesControl ? "PASS" : "FAIL"));
             }
             System.out.println();
         }
@@ -436,21 +471,20 @@ public class ClusteringValidationRunner {
         System.out.println("-".repeat(80));
 
         int passCount = 0;
-        for (ExperimentResult r : results) {
-            if (r.passesExpected) passCount++;
+        for (int i = 0; i < results.size() - 1; i++) {  // -1 for control
+            if (results.get(i).passesExpected) passCount++;
         }
 
         System.out.println(String.format("Experiments matching paper expectations: %d/%d",
-                passCount, results.size() - 1));  // -1 for control
+                passCount, results.size() - 1));
 
         // Check control
         ExperimentResult control = results.get(results.size() - 1);
-        boolean controlPasses = control.peakMean < 60.0;
-        System.out.println(String.format("Control < 60%% baseline: %s (actual: %.1f%%)",
-                controlPasses ? "✓ PASS" : "✗ FAIL", control.peakMean));
+        System.out.println(String.format("Control < %.0f%% baseline: %s (actual: %.1f%%)",
+                CONTROL_MAXIMUM, control.passesControl ? "✓ PASS" : "✗ FAIL", control.peakMean));
 
         System.out.println();
-        if (passCount == results.size() - 1 && controlPasses) {
+        if (passCount == results.size() - 1 && control.passesControl) {
             System.out.println("✓ ALL VALIDATION CRITERIA MET - Framework reproduces Levin clustering behavior!");
         } else {
             System.out.println("✗ Some validation criteria not met - see detailed results above");
