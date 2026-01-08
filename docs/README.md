@@ -69,5 +69,8 @@ PR [#113](https://github.com/zfifteen/emergent-doom-engine/pull/113) implemented
 - Replaced `SynchronousExecutionEngine` with `CellBasedExecutionEngine`
 - Produces characteristic 18.30% aggregation variance signature matching Levin research
 
+### Snapshot Metadata Guardrails (January 2026)
+- Skip invalid algotype labels when computing snapshot type distributions to avoid export-time crashes when metadata is unavailable.
+
 ---
 *Last updated: January 6, 2026*
