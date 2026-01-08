@@ -402,7 +402,7 @@ java -cp target/classes com.emergent.doom.examples.NewCellArchitectureDemo
 
 **Cell**: Autonomous agent carrying intrinsic properties (value, algotype) that travel together during swaps. Implements `AbstractCell<V, A>` with domain-specific value type and algotype enum.
 
-**Algotype**: Behavioral policy determining swap decisions—BUBBLE (bidirectional adjacent), INSERTION (left-migrating), SELECTION (ideal-position seeking), FIBONACCI (logarithmic viewing). Embedded as immutable property within each cell. Algotypes are inputs; clustering is the emergent output.
+**Algotype**: Behavioral policy determining swap decisions—BUBBLE (bidirectional adjacent), INSERTION (left-migrating), SELECTION (ideal-position seeking), FIBONACCI (logarithmic viewing). Embedded as immutable property within each cell. Algotypes are *inputs*; clustering is the emergent *output*.
 
 **Clustering Primitive**: The singular computational mechanism of EDE. Emergent spatial segregation by strategy type, universal across all domains. What varies per domain is the cell type and comparison logic; the clustering mechanism is invariant.
 
