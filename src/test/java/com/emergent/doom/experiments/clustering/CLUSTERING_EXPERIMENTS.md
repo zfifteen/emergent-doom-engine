@@ -93,7 +93,7 @@ Experiment                Peak        Timing %   Expected         Status
 Bubble-Selection       72.3 ± 4.8     42.1 ± 8.2     72 ± 5        ✓ PASS
 Bubble-Insertion       65.2 ± 4.2     21.3 ± 7.1     65 ± 5        ✓ PASS
 Selection-Insertion    69.1 ± 4.5     19.8 ± 6.9     69 ± 5        ✓ PASS
-Bubble-Bubble          58.2 ± 3.1     100.0 ± 5.0     <60 ± 0       ✓ PASS
+Bubble-Bubble          58.2 ± 3.1     100.0 ± 5.0     < 60 ± 0       ✓ PASS
 
 VALIDATION SUMMARY
 Experiments matching expectations: 3/3
@@ -106,8 +106,22 @@ Control < 60% baseline: ✓ PASS (58.2%)
 
 - `SortingCellFactory` – creates chimeric populations with specified algotype ratios
 - `CellBasedExecutionEngine` – executes sorting algorithm
-- `AlgotypeAggregationIndex<T>` – measures clustering via snapshot probe data
 - `AbstractSortingCell` – cell implementation with algotype tracking
+- `AlgotypeAggregationIndex<T>` – (future) snapshot-based clustering measurement (not currently integrated)
+
+## Implementation Notes
+
+### Current Design (January 8, 2026)
+
+**Aggregation Calculation:**
+- Measured directly in `estimatePeakAggregation()` without invoking `AlgotypeAggregationIndex`
+- Counts cells with same-type neighbor in current sorted array
+- Approximates peak by measuring final state (not true step-by-step tracking)
+
+**Why Not Use AlgotypeAggregationIndex Yet?**
+- Metric class is designed for snapshot probe data (future feature)
+- Current implementation lacks per-step trajectory recording
+- Integration pending completion of Probe infrastructure
 
 ## Future Enhancements
 
@@ -127,12 +141,20 @@ for (int step = 0; step < snapshots.size(); step++) {
 }
 ```
 
-### 2. Timing Analysis
+### 2. AlgotypeAggregationIndex Integration
 
-**Current:** Approximate peak timing from convergence step.
+**TODO:** Once Probe infrastructure is mature, integrate metric class:
+```java
+AlgotypeAggregationIndex<AbstractSortingCell> metric = new AlgotypeAggregationIndex<>();
+// Use metric.compute(snapshot) within step-by-step loop (above)
+```
+
+### 3. Timing Analysis
+
+**Current:** Approximate peak timing from convergence step.  
 **TODO:** Precise timing from step-by-step trajectory (see above).
 
-### 3. JSON Export
+### 4. JSON Export
 
 **TODO:** Export full result set as JSON for downstream analysis:
 ```json
@@ -152,7 +174,7 @@ for (int step = 0; step < snapshots.size(); step++) {
 }
 ```
 
-### 4. Failure Analysis
+### 5. Failure Analysis
 
 **TODO:** Detailed reporting for failed experiments:
 - Which trial parameters caused failures?
@@ -214,5 +236,6 @@ Homogeneous population validates that aggregation doesn't artificially inflate:
 ## Author & Status
 
 **Created:** January 8, 2026  
-**Status:** Initial implementation (step-by-step tracking pending)  
+**Last Fixed:** January 8, 2026 (resolved code review issues)  
+**Status:** Implementation complete (step-by-step tracking pending)  
 **Next:** Integrate Probe for trajectory recording, JSON export
