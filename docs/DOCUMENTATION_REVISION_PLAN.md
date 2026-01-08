@@ -252,7 +252,7 @@ A behavioral policy assigned to a cell determining its swap decision logic. Exam
 The process of applying the clustering primitive to a new problem domain by specifying: (1) cell type, (2) comparison logic, (3) strategy enum.
 
 ### TBPC
-[User to provide expansion - appears in factorization findings documents]
+Two-Basin Problem-Capacity. A factorization-domain construct describing how problem instances partition into (at least) two basins of attraction with respect to algorithm performance or capacity.
 ```
 
 ---

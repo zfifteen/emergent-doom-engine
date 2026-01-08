@@ -930,17 +930,17 @@ def get_pos_success_rate(cells, frozen_cell_num):
 
 **Aggregation Value**: Percentage of cells adjacent to same-algotype neighbors
 
-**Algotype**: A behavioral policy assigned to a cell determining its swap decision logic. Examples: BUBBLE, INSERTION, SELECTION (sorting domain); SMALL_PRIMES, FERMAT (factorization domain). Algotypes are INPUTS to the system; clustering is the OUTPUT.
+**Algotype**: A behavioral policy assigned to a cell determining its swap decision logic. Examples: BUBBLE, INSERTION, SELECTION (sorting domain); SMALL_PRIMES, FERMAT (factorization domain). Algotypes are *inputs* to the system; clustering is the *output*.
 
 **Cell Vision**: How many positions a cell can see (always 1 in current implementation)
 
 **Chimeric Array**: Array with cells following different algotypes
 
-**Clustering Primitive**: The singular computational primitive of EDE. Emergent spatial segregation of cells by strategy/algotype. Universal across all domains; instantiated with domain-specific cell types and comparison logic.
+**Clustering Primitive**: The singular computational primitive of EDE. Emergent spatial segregation of cells by strategy/Algotype. Universal across all domains; instantiated with domain-specific cell types and comparison logic.
 
 **Delayed Gratification (DG)**: Ratio of sortedness recovery to temporary setback
 
-**Domain Instantiation**: The process of applying the clustering primitive to a new problem domain by specifying: (1) cell type, (2) comparison logic, (3) strategy enum.
+**Domain Instantiation**: The process of applying the Clustering Primitive to a new problem domain by specifying: (1) cell type, (2) comparison logic, (3) strategy enum.
 
 **Frozen Cell**: Cell with `status == FREEZE`, cannot initiate swaps
 
@@ -956,7 +956,7 @@ def get_pos_success_rate(cells, frozen_cell_num):
 
 **Spearman Distance**: Sum of positional displacements from sorted order
 
-**TBPC**: [User to provide expansion - appears in factorization findings documents]
+**TBPC**: Two-Basin Problem-Capacity
 
 ---
 
