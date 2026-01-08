@@ -121,7 +121,7 @@ def validate_trajectory(csv_path):
     # Overall validation
     print("\n--- Overall Validation ---")
     
-    is_sorted = final_step['sortedness'] == 100.0
+    is_sorted = abs(final_step['sortedness'] - 100.0) < 0.01  # Tolerance for floating-point comparison
     error_decreased = error_values[-1] < error_values[0]
     sortedness_increased = sortedness[-1] > sortedness[0]
     

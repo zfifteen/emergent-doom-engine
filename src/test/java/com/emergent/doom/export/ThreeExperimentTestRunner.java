@@ -307,10 +307,22 @@ public class ThreeExperimentTestRunner {
             
             // Initial: partially sorted with some disorder
             GenericCell[] step0 = new GenericCell[25];
-            // Mix of ordered and disordered segments
+            
+            /**
+             * Test configuration rationale:
+             * This array tests the framework's ability to handle complex initial states
+             * with mixed ordering patterns. The configuration consists of:
+             * - Two descending segments (20→11 and 10→1): tests inversion counting
+             * - One pre-sorted ascending tail (21→25): tests partial monotonicity
+             * 
+             * This validates:
+             * 1. Correct monotonicity calculation with mixed patterns (expected 24%)
+             * 2. Accurate inversion counting across segment boundaries (expected 19)
+             * 3. Proper handling of arrays with non-uniform ordering
+             */
             int[] initialValues = {
-                20, 19, 18, 17, 16, 15, 14, 13, 12, 11,  // Descending
-                10, 9, 8, 7, 6, 5, 4, 3, 2, 1,            // Descending
+                20, 19, 18, 17, 16, 15, 14, 13, 12, 11,  // Descending segment 1
+                10, 9, 8, 7, 6, 5, 4, 3, 2, 1,            // Descending segment 2
                 21, 22, 23, 24, 25                         // Ascending (already sorted)
             };
             for (int i = 0; i < 25; i++) {

@@ -30,13 +30,33 @@ import java.util.List;
  */
 public class FalsificationTestRunner {
     
+    /**
+     * Test case data container for falsification testing.
+     * 
+     * <p>Each test case represents a minimal array configuration with known ground truth
+     * for both expected and actual metric values. The test compares the framework's
+     * computed metrics against mathematically derived expected values.</p>
+     */
     private static class TestCase {
+        /** Human-readable name describing this test case */
         String name;
+        
+        /** Input array configuration to test */
         int[] inputArray;
+        
+        /** Expected sortedness (Monotonicity) percentage based on manual calculation */
         double expectedSortedness;
+        
+        /** Expected monotonicity error (number of inversions) based on manual calculation */
         int expectedMonotonicityError;
+        
+        /** Actual sortedness value computed by the framework */
         double actualSortedness;
+        
+        /** Actual monotonicity error computed by the framework */
         int actualMonotonicityError;
+        
+        /** Whether this test case passed (actual matches expected within tolerance) */
         boolean passed;
         
         void printResult() {
@@ -187,13 +207,13 @@ public class FalsificationTestRunner {
     
     /**
      * Test Case 3: Two Elements (Reversed)
-     * Expected: 0% sorted, 1 inversion
+     * Expected: 50% monotonicity (first element counts), 1 inversion
      */
     private static TestCase runTestCase3_TwoElementsReversed() throws IOException {
         TestCase tc = new TestCase();
         tc.name = "Two Elements (Reversed)";
         tc.inputArray = new int[]{2, 1};
-        tc.expectedSortedness = 0.0;  // 0/2 elements in correct position
+        tc.expectedSortedness = 50.0;  // Monotonicity: first element counts → 1/2 = 50%
         tc.expectedMonotonicityError = 1;  // One inversion (2>1)
         
         Probe<GenericCell> probe = new Probe<>();
@@ -217,16 +237,17 @@ public class FalsificationTestRunner {
     
     /**
      * Test Case 4: Three Elements (One Swap Away)
-     * Expected: 33.33% sorted, 1 inversion
+     * Expected: 66.67% monotonicity, 1 inversion
      */
     private static TestCase runTestCase4_ThreeElementsOneSwap() throws IOException {
         TestCase tc = new TestCase();
         tc.name = "Three Elements (One Swap Away from Sorted)";
         tc.inputArray = new int[]{1, 3, 2};
-        // Position 0: has 1, needs 1 -> correct
-        // Position 1: has 3, needs 2 -> incorrect
-        // Position 2: has 2, needs 3 -> incorrect
-        tc.expectedSortedness = 33.33;  // 1/3 elements correct (only element 1)
+        // Monotonicity calculation:
+        // - Element at index 0 (value 1): counts (first element)
+        // - Element at index 1 (value 3): counts (3 >= 1)
+        // - Element at index 2 (value 2): doesn't count (2 < 3)
+        tc.expectedSortedness = 66.67;  // Monotonicity: 2/3 elements → 66.67%
         tc.expectedMonotonicityError = 1;  // One inversion (3>2)
         
         Probe<GenericCell> probe = new Probe<>();
@@ -261,10 +282,12 @@ public class FalsificationTestRunner {
             21, 22, 23, 24, 25                         // Sorted tail
         };
         
-        // Manual calculation:
-        // Positions 0-19: all incorrect (have values 20-1, need 1-20)
-        // Positions 20-24: all correct (have 21-25, need 21-25)
-        tc.expectedSortedness = 20.0;  // 5/25 elements correct
+        // Monotonicity calculation:
+        // - First element (20): counts (first element)
+        // - Elements 1-19 (descending 19...1): don't count (each < predecessor)
+        // - Elements 20-24 (21-25): all count (each >= predecessor)
+        // Total: 1 + 5 = 6 elements → 6/25 = 24%
+        tc.expectedSortedness = 24.0;  // Monotonicity: 6/25 = 24%
         tc.expectedMonotonicityError = 19;  // 19 consecutive inversions
         
         Probe<GenericCell> probe = new Probe<>();
