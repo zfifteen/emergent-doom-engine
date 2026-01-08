@@ -100,9 +100,9 @@ public class FactorizationCellTest {
         FactorizationCell cellP = new FactorizationCell(SEMIPRIME_N, FACTOR_P);
         assertEquals(0L, cellP.getRemainder(), "143 % 11 should be 0 (11 is a factor)");
         
-        // d=13: 143 % 13 = 0 (13 is a factor of 143)
-        FactorizationCell cellQ = new FactorizationCell(SEMIPRIME_N, FACTOR_Q);
-        assertEquals(0L, cellQ.getRemainder(), "143 % 13 should be 0 (13 is a factor)");
+        // Note: Factor 13 is outside search range [2, √143] since 13 > 11.96
+        // In semi-prime factorization, only divisors up to √N are tested
+        // If p ≤ √N is found, then q = N/p is computed directly (not searched)
     }
     
     @Test
@@ -203,13 +203,16 @@ public class FactorizationCellTest {
     @DisplayName("should record which algotype discovered the factor")
     void shouldRecordDiscoveringAlgotype() {
         FactorizationCell cellP = new FactorizationCell(SEMIPRIME_N, FACTOR_P);
-        FactorizationCell cellQ = new FactorizationCell(SEMIPRIME_N, FACTOR_Q);
+        // Note: FACTOR_Q (13) is outside search range, so we test with a different divisor
+        FactorizationCell cell2 = new FactorizationCell(SEMIPRIME_N, 2L);
         
         cellP.lockAsFactor("TrialDivision", 3L);
-        cellQ.lockAsFactor("Pollard", 8L);
+        // We can't lock cell2 as a factor since 143 % 2 != 0
+        // Instead, just test claiming without locking
+        cell2.setClaimingAlgotype("Pollard");
         
         assertEquals("TrialDivision", cellP.getClaimingAlgotype());
-        assertEquals("Pollard", cellQ.getClaimingAlgotype());
+        assertEquals("Pollard", cell2.getClaimingAlgotype());
     }
     
     @Test
@@ -284,13 +287,14 @@ public class FactorizationCellTest {
     @Test
     @DisplayName("should produce readable toString representation")
     void shouldProduceReadableToString() {
-        FactorizationCell cell = new FactorizationCell(SEMIPRIME_N, 5L);
+        // Use factor 11 which has remainder 0, so it can be locked
+        FactorizationCell cell = new FactorizationCell(SEMIPRIME_N, FACTOR_P);
         cell.lockAsFactor("Fermat", 7L);
         
         String representation = cell.toString();
         
         assertTrue(representation.contains("143"), "toString should include semiprime N");
-        assertTrue(representation.contains("5"), "toString should include divisor d");
+        assertTrue(representation.contains("11"), "toString should include divisor d");
         assertTrue(representation.contains("Fermat"), "toString should include claiming algotype");
         assertTrue(representation.contains("7"), "toString should include discovery step");
     }
@@ -322,19 +326,16 @@ public class FactorizationCellTest {
     @Test
     @DisplayName("should track independent discovery of two factors as separate locked cells")
     void shouldTrackMultipleFactorDiscoveries() {
-        // Simulate discovering factor 11 first, then factor 13
-        // (Note: 13 > sqrt(143), so this is hypothetical for illustration)
-        FactorizationCell factorP = new FactorizationCell(SEMIPRIME_N, 11L);
-        FactorizationCell factorQ = new FactorizationCell(SEMIPRIME_N, 13L);  // Will fail constructor
-        
-        // This will throw because 13 > sqrt(143)
+        // Verify that divisors beyond √N are rejected by constructor
+        // For N=143, √143 ≈ 11.96, so divisor 13 (the larger factor) is rejected
         assertThrows(
             IllegalArgumentException.class,
-            () -> new FactorizationCell(SEMIPRIME_N, 13L),
+            () -> new FactorizationCell(SEMIPRIME_N, FACTOR_Q),
             "Divisor 13 exceeds sqrt(143), so search space limits prevent testing q discovery directly"
         );
         
-        // Instead, verify that we can track first factor discovery independently
+        // Verify that we can track the smaller factor discovery within search range
+        FactorizationCell factorP = new FactorizationCell(SEMIPRIME_N, FACTOR_P);
         factorP.lockAsFactor("TrialDivision", 3L);
         assertTrue(factorP.isFactor(), "First factor should be locked");
         assertEquals(3L, factorP.getDiscoveredAtStep());
