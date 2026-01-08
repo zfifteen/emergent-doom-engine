@@ -234,7 +234,7 @@ public class ClusteringValidationRunner {
                 // Track peak
                 if (currentAggregation > peakAggregation) {
                     peakAggregation = currentAggregation;
-                    peakStep = step;
+                    peakStep = totalSteps;
                 }
 
                 // Stop if sorted or no swaps occurred
