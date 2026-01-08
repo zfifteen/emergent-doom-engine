@@ -40,6 +40,10 @@ public class AnalysisCLI {
         if (args.length > 0) {
             try {
                 numTrials = Integer.parseInt(args[0]);
+                if (numTrials <= 0) {
+                    System.err.println("Trial count must be positive, got: " + numTrials);
+                    System.exit(1);
+                }
             } catch (NumberFormatException e) {
                 System.err.println("Invalid trial count: " + args[0]);
                 System.exit(1);
@@ -98,7 +102,7 @@ public class AnalysisCLI {
         
         System.out.print("Exporting aggregate statistics...");
         System.out.flush();
-        results.exportStatisticsToCSV(outputDir + "/statistics.csv");
+        results.exportStatisticsToCSV(java.nio.file.Paths.get(outputDir, "statistics.csv").toString());
         System.out.println(" done");
         
         System.out.println();
