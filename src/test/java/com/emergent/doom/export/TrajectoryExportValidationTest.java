@@ -198,7 +198,7 @@ class TrajectoryExportValidationTest {
             // Element 5: 5 >= 4 ✓
             // Total: 4/5 = 80%
             assertEquals(80.0, step.sortedness(), 0.01,
-                "Sortedness should be 80% (4 elements in monotonic order with predecessor)");
+                "sortedness should be 80% (4 of 5 elements counted as monotonic under the metric definition)");
         }
 
         /**
@@ -482,7 +482,7 @@ class TrajectoryExportValidationTest {
          */
         @Test
         @DisplayName("Single-element array is trivially sorted")
-        void singleElementArrayIsTriviallyFortified() {
+        void singleElementArrayIsTriviallySorted() {
             // TestWeaver: Mathematical verification
             // Array [42]:
             //   Sortedness: 100% (single element always in correct position)
@@ -702,14 +702,20 @@ class TrajectoryExportValidationTest {
             };
             probe.recordSnapshot(0, step0, 0);
             
-            // Step 1: Partial progress - 37.5% sorted (3 elements)
+            // Step 1: Partial progress - 62.5% sorted (5 elements in monotonic order with predecessor)
+            // Array: [6,7,8,4,5,2,3,1]
+            // Positions: 0(first), 1(7>=6✓), 2(8>=7✓), 3(4>=8✗), 4(5>=4✓), 5(2>=5✗), 6(3>=2✓), 7(1>=3✗)
+            // Count: 1 + 4 passing = 5 out of 8 = 62.5%
             GenericCell[] step1 = {
                 new GenericCell(6), new GenericCell(7), new GenericCell(8), new GenericCell(4),
                 new GenericCell(5), new GenericCell(2), new GenericCell(3), new GenericCell(1)
             };
             probe.recordSnapshot(1, step1, 5);
             
-            // Step 2: More progress but still incomplete - 62.5% sorted (5 elements)
+            // Step 2: More progress - 87.5% sorted (7 elements in monotonic order with predecessor)
+            // Array: [4,5,6,7,8,2,3,1]
+            // Positions: 0(first), 1(5>=4✓), 2(6>=5✓), 3(7>=6✓), 4(8>=7✓), 5(2>=8✗), 6(3>=2✓), 7(1>=3✗)
+            // Count: 1 + 6 passing = 7 out of 8 = 87.5%
             GenericCell[] step2 = {
                 new GenericCell(4), new GenericCell(5), new GenericCell(6), new GenericCell(7),
                 new GenericCell(8), new GenericCell(2), new GenericCell(3), new GenericCell(1)

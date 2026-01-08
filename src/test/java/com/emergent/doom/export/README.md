@@ -1,7 +1,7 @@
 # Export Package Tests
 
 ---
-**Documentation Version:** Commit [ff7f7f3](https://github.com/zfifteen/emergent-doom-engine/commit/ff7f7f3)  
+**Documentation Version:** Draft  
 **Last Updated:** 2026-01-08 (TestWeaver automated maintenance)
 
 **Recent Changes:**
@@ -61,7 +61,7 @@ Basic integration tests for trajectory building and CSV export pipeline. Validat
 - `swapCountRespectsTheoreticalBound()` - Worst-case ≤ n(n-1)/2 for bubble sort
 
 **Category 3: Boundary Conditions** (4 tests)
-- `singleElementArrayIsTriviallyFortified()` - Size=1 → 100% sorted, 0 error
+- `singleElementArrayIsTriviallySorted()` - Size=1 → 100% sorted, 0 error
 - `twoElementArraysHandleBothCases()` - Size=2 in sorted and reversed order
 - `alreadySortedInputIsImmediatelyRecognized()` - Pre-sorted → 100% sortedness from start
 - `duplicateElementsAreHandledCorrectly()` - Arrays with repeated values
@@ -215,7 +215,7 @@ void swapCountRespectsTheoreticalBound() {
 ## Key Formulas Verified
 
 | Metric | Formula | Reference |
-|--------|---------|-----------|
+|--------|---------|----------|
 | **Sortedness** | `(cells in monotonic order with predecessor / n) × 100` | Levin et al. (2024), p.8 |
 | **Monotonicity Error** | `count of adjacent inversions` | MonotonicityError.java |
 | **Adjacent Inversions** | `pairs (i, i+1) where cells[i] > cells[i+1]` | Range: [0, n-1] |
