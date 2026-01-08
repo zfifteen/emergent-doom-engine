@@ -271,8 +271,8 @@ src/test/java/com/emergent/doom/factorization/
 | Success criteria | High-level: Demonstrate EDE beyond sorting |
 | Implementation plan | High-level: Advance EDE as domain-general framework |
 
-| This experiment instantiates | The universal clustering primitive |
-|------------------------------|-----------------------------------|
-| Cell type | FactorCell (candidate integer) |
-| Comparison logic | Factor fitness score |
-| Strategies | SMALL_PRIMES, FERMAT_NEAR_SQRT, RANDOM_SAMPLE |
+This experiment instantiates the universal clustering primitive via:
+
+- **Cell type:** FactorCell (candidate integer)
+- **Comparison logic:** Factor fitness score
+- **Strategies:** SMALL_PRIMES, FERMAT_NEAR_SQRT, RANDOM_SAMPLE
