@@ -192,7 +192,8 @@ public class FactorizationAlgotypesTest {
         FactorizationCell[] divisors = createDivisorArray(N_437);  // 19 × 23, √437 ≈ 20.9
         
         // Execute multiple steps to allow Fermat to shift promising candidates
-        for (long step = 0; step < 10; step++) {
+        // Fermat wraps around the array, so we need enough steps to process all cells
+        for (long step = 0; step < divisors.length; step++) {
             fermat.executeStep(divisors, N_437, step);
         }
         
