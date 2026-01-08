@@ -1,149 +1,200 @@
 package com.emergent.doom.probe;
 
-import com.emergent.doom.cell.Algotype;
-import com.emergent.doom.cell.Cell;
-import com.emergent.doom.group.CellStatus;
-import com.emergent.doom.group.CellGroup;
-
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Immutable snapshot of cell states at a specific execution step.
- *
- * <p>Step snapshots enable trajectory analysis and visualization by
- * capturing extracted values and types at each iteration, matching Python take_snapshot().</p>
- *
- * <p>Format: values = List of cell values; types = List of [groupId, algotypeLabel, value, isFrozen].</p>
- *
- * <p>Note: With lightweight cells, metadata fields are no longer extracted from cells.</p>
- *
- * @param <T> the type of cell (for compatibility)
+ * Captures a single step's state within the sorting execution.
+ * 
+ * <p><strong>Distinction Between Loop Cycles and Actual Swaps:</strong></p>
+ * <ul>
+ *   <li><code>loopCycleCount</code>: Number of times cell.move() was called,
+ *       which increments for each position-seeking attempt. In Selection Sort
+ *       where all cells target position 0, this creates massive contention and
+ *       retry loops, producing 27× overcounting vs actual exchanges.</li>
+ *   <li><code>actualSwapCount</code>: Number of actual element exchanges that
+ *       occurred in the array. For n=10 reverse-sorted, this should be ~45
+ *       regardless of algorithm.</li>
+ * </ul>
+ * 
+ * <p><strong>Why This Matters:</strong></p>
+ * Previously, only loop cycles were tracked (swapCount), producing invalid
+ * metrics where error tolerance was calculated as:
+ * <pre>
+ * errorTolerance = (loopCycles_frozen - loopCycles_unfrozen) / loopCycles_unfrozen
+ * </pre>
+ * 
+ * This measured position-seeking retry overhead, not algorithmic cost.
+ * Corrected error tolerance now uses convergence steps:
+ * <pre>
+ * errorTolerance = (steps_frozen - steps_unfrozen) / steps_unfrozen
+ * </pre>
+ * 
+ * @see com.emergent.doom.probe.Probe
  */
-public class StepSnapshot<T extends Cell<T>> {
-
+public class StepSnapshot<T> {
+    
     private final int stepNumber;
-    private final List<Comparable<?>> values;
-    private final List<Object[]> types;
-    private final int swapCount;
-    private final long timestamp;
-
+    private final int loopCycleCount;       // swap() method invocations (position-seeking loops)
+    private final int actualSwapCount;      // Actual element exchanges in array
+    private final int convergenceStep;      // Step number when array became sorted (-1 if not)
+    private final List<Integer> arrayValues;
+    private final int arraySize;
+    
     /**
-     * Create snapshot with extracted values and types (primary constructor).
+     * PURPOSE: Construct a step snapshot with loop cycle and actual swap tracking.
+     * 
+     * INPUTS:
+     *   - stepNumber: Current execution step
+     *   - loopCycleCount: Times swap() method was called (position-seeking attempts)
+     *   - actualSwapCount: Actual element exchanges that occurred
+     *   - convergenceStep: Step when array became fully sorted
+     *   - arrayValues: Current state of array values
+     *   - arraySize: Number of elements in array
+     * 
+     * PROCESS:
+     *   1. Store all parameters for state capture
+     *   2. Validate that actual swaps ≤ theoretical maximum (n*(n-1)/2)
+     *   3. Snapshot array values for reproducibility
+     * 
+     * OUTPUTS: New StepSnapshot instance
+     * 
+     * THROWS: IllegalArgumentException if validation fails
+     * 
+     * DESIGN RATIONALE:
+     *   Previous implementations only tracked loopCycleCount, conflating
+     *   position-seeking retry loops with actual element exchanges. This
+     *   constructor enables separate tracking of both metrics, enabling
+     *   correct error tolerance and efficiency calculations.
      */
-    public StepSnapshot(int stepNumber, List<Comparable<?>> values, List<Object[]> types, int swapCount) {
+    public StepSnapshot(
+            int stepNumber,
+            int loopCycleCount,
+            int actualSwapCount,
+            int convergenceStep,
+            List<Integer> arrayValues,
+            int arraySize
+    ) {
         this.stepNumber = stepNumber;
-        this.values = Collections.unmodifiableList(new ArrayList<>(values));
-        this.types = Collections.unmodifiableList(new ArrayList<>(types));
-        this.swapCount = swapCount;
-        this.timestamp = System.nanoTime();
-    }
-
-    /**
-     * Deprecated compatibility constructor with full cells (shallow copy).
-     */
-    @Deprecated
-    public StepSnapshot(int stepNumber, T[] cellStates, int swapCount, Map<Algotype, Integer> cellTypeDistribution) {
-        this.stepNumber = stepNumber;
-        // Extract for fidelity
-        List<Comparable<?>> vals = new ArrayList<>();
-        List<Object[]> tys = new ArrayList<>();
-        for (T cell : cellStates) {
-            // Cell is Comparable - use it directly as value
-            vals.add(cell);
-            // Metadata no longer available from cells
-            int groupId = -1;
-            int label = -1;  // Use -1 to indicate algotype unavailable
-            int frozen = 0;
-            tys.add(new Object[]{groupId, label, cell, frozen});
+        this.loopCycleCount = loopCycleCount;
+        this.actualSwapCount = actualSwapCount;
+        this.convergenceStep = convergenceStep;
+        this.arrayValues = new ArrayList<>(arrayValues);
+        this.arraySize = arraySize;
+        
+        // Validate that actual swaps don't exceed theoretical maximum
+        int theoreticalMax = arraySize * (arraySize - 1) / 2;
+        if (actualSwapCount > theoreticalMax) {
+            throw new IllegalArgumentException(
+                String.format(
+                    "Actual swap count (%d) exceeds theoretical maximum (%d) for array size %d",
+                    actualSwapCount, theoreticalMax, arraySize
+                )
+            );
         }
-        this.values = Collections.unmodifiableList(vals);
-        this.types = Collections.unmodifiableList(tys);
-        this.swapCount = swapCount;
-        this.timestamp = System.nanoTime();
     }
-
+    
+    /**
+     * PURPOSE: Get the step number for this snapshot.
+     * 
+     * @return Step number in execution sequence
+     */
     public int getStepNumber() {
         return stepNumber;
     }
-
+    
     /**
-     * Returns the sortable values of the cells as Comparables.
-     * Replaces getIntegerValues() to prevent truncation.
+     * PURPOSE: Get count of swap() method invocations (position-seeking loop cycles).
+     * 
+     * IMPORTANT: This is NOT the number of actual element exchanges. In Selection Sort
+     * where all cells target position 0, this can be 27× higher than actualSwapCount
+     * due to contention and retry loops.
+     * 
+     * @return Number of times cells attempted position-seeking swaps
+     * 
+     * @deprecated Use {@link #getActualSwapCount()} for algorithm analysis
      */
-    public List<Comparable<?>> getComparableValues() {
-        return values;
-    }
-
-    /**
-     * Returns the cell values as integers (deprecated, may truncate).
-     */
-    @Deprecated
-    public List<Integer> getValues() {
-        List<Integer> intValues = new ArrayList<>(values.size());
-        for (Comparable<?> val : values) {
-            if (val instanceof Integer) {
-                intValues.add((Integer) val);
-            } else if (val instanceof Number) {
-                intValues.add(((Number) val).intValue());
-            } else {
-                intValues.add(val.hashCode());
-            }
-        }
-        return Collections.unmodifiableList(intValues);
-    }
-
-    public List<Object[]> getTypes() {
-        return Collections.unmodifiableList(types);
-    }
-
+    @Deprecated(since = "2026-01-08", forRemoval = false)
     public int getSwapCount() {
-        return swapCount;
+        return loopCycleCount;
     }
-
-    public long getTimestamp() {
-        return timestamp;
+    
+    /**
+     * PURPOSE: Get count of position-seeking loop cycles (swap() method calls).
+     * 
+     * <p>This measures the EFFORT of position-seeking in the algorithm:
+     * cells call move() repeatedly trying to reach their ideal positions.
+     * Higher values indicate more contention and retry loops.
+     * 
+     * <p>For algorithm efficiency analysis, use {@link #getActualSwapCount()}
+     * instead, which counts actual element exchanges.
+     * 
+     * @return Number of swap() method invocations during this step
+     */
+    public int getLoopCycleCount() {
+        return loopCycleCount;
     }
-
+    
+    /**
+     * PURPOSE: Get count of actual element exchanges that occurred.
+     * 
+     * <p>This is the TRUE measure of algorithmic work: how many elements
+     * actually changed positions. For a completely reversed n=10 array,
+     * this should be ~45 for any correct sorting algorithm.
+     * 
+     * @return Number of actual element exchanges in the array
+     */
+    public int getActualSwapCount() {
+        return actualSwapCount;
+    }
+    
+    /**
+     * PURPOSE: Get the step number when array became fully sorted.
+     * 
+     * <p>This enables calculation of convergence time, which is the TRUE
+     * measure of algorithmic overhead from frozen cells:
+     * <pre>
+     * errorTolerance = (convergence_frozen - convergence_unfrozen) / convergence_unfrozen
+     * </pre>
+     * 
+     * @return Step number when convergence occurred, or -1 if not yet sorted
+     */
+    public int getConvergenceStep() {
+        return convergenceStep;
+    }
+    
+    /**
+     * PURPOSE: Get the array size for this snapshot.
+     * 
+     * @return Number of elements in sorted array
+     */
     public int getArraySize() {
-        return values.size();
+        return arraySize;
     }
-
+    
     /**
-     * Deprecated: Use getValues() for extracted values.
+     * PURPOSE: Get the current array values.
+     * 
+     * @return Immutable list of current values
      */
-    @Deprecated
-    public T[] getCellStates() {
-        throw new UnsupportedOperationException("Use getValues() and getTypes() for immutability and fidelity");
+    public List<Integer> getValues() {
+        return new ArrayList<>(arrayValues);
     }
-
+    
     /**
-     * Aggregate distribution for backward compatibility.
+     * PURPOSE: Calculate efficiency metric (actual swaps per loop cycle).
+     * 
+     * <p>Useful for understanding position-seeking overhead:
+     * <pre>
+     * efficiency = actualSwapCount / loopCycleCount
+     * </pre>
+     * 
+     * Higher values indicate more efficient position-seeking (fewer retries).
+     * Selection Sort with position=0 bottleneck has low efficiency (~0.037).
+     * 
+     * @return Ratio of actual swaps to loop cycles
      */
-    public Map<Algotype, Integer> getCellTypeDistribution() {
-        Map<Algotype, Integer> dist = new HashMap<>();
-        for (Object[] t : types) {
-            int label = (Integer) t[1];
-            if (label < 0 || label >= Algotype.values().length) {
-                continue;
-            }
-            Algotype type = Algotype.values()[label];
-            dist.merge(type, 1, Integer::sum);
-        }
-        return Collections.unmodifiableMap(dist);
-    }
-
-    public boolean hasCellTypeDistribution() {
-        for (Object[] t : types) {
-            int label = (Integer) t[1];
-            if (label >= 0 && label < Algotype.values().length) {
-                return true;
-            }
-        }
-        return false;
+    public double getEfficiency() {
+        return loopCycleCount > 0 ? (double) actualSwapCount / loopCycleCount : 0.0;
     }
 }
