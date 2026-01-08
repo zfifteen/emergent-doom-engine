@@ -115,6 +115,10 @@ public class ClusteringValidationRunner {
          */
         double getTimingAsPercent() {
             if (totalSteps == 0) {
+                // Avoid division by zero; if no steps were taken, treat timing as 0% progress.
+                return 0.0;
+            }
+            if (totalSteps == 0) {
                 // No steps taken means peak occurred immediately (0% progress)
                 return 0.0;
             }
