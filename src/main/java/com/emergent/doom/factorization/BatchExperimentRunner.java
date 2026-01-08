@@ -4,7 +4,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -183,7 +182,9 @@ public class BatchExperimentRunner {
                     return Math.pow(peak - mean, 2);
                 })
                 .sum();
-            return Math.sqrt(sumSquaredDiffs / numTrials);
+            // Use sample standard deviation (n-1) for unbiased estimator
+            int denominator = (numTrials > 1) ? (numTrials - 1) : 1;
+            return Math.sqrt(sumSquaredDiffs / denominator);
         }
         
         /**
@@ -230,7 +231,8 @@ public class BatchExperimentRunner {
          */
         public void exportAllTrialsToCSV(String outputDir) throws IOException {
             for (int i = 0; i < trialResults.size(); i++) {
-                String filename = outputDir + "/trial_" + (i + 1) + "_seed_" + (baseSeed + i) + ".csv";
+                String filename = java.nio.file.Paths.get(outputDir, 
+                    "trial_" + (i + 1) + "_seed_" + (baseSeed + i) + ".csv").toString();
                 trialResults.get(i).exportToCSV(filename);
             }
         }

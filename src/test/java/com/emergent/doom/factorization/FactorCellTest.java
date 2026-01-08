@@ -284,24 +284,22 @@ class FactorCellTest {
         @Test
         @DisplayName("Cell returns empty when no beneficial swap exists")
         void noBeneficialSwap() {
-            // GIVEN: Cell already in correct position (higher fitness than both neighbors)
-            FactorCell highFitness = new FactorCell(11, TARGET_N, FactorStrategy.SMALL_PRIMES, 1);
-            FactorCell lowLeft = new FactorCell(5, TARGET_N, FactorStrategy.RANDOM_SAMPLE, 0);
-            FactorCell lowRight = new FactorCell(7, TARGET_N, FactorStrategy.RANDOM_SAMPLE, 2);
+            // GIVEN: Cell already at front with highest fitness
+            FactorCell highFitness = new FactorCell(11, TARGET_N, FactorStrategy.SMALL_PRIMES, 0);
+            FactorCell lowRight = new FactorCell(7, TARGET_N, FactorStrategy.RANDOM_SAMPLE, 1);
             
             List<AbstractCell<Integer, FactorStrategy>> array = new ArrayList<>();
-            array.add(lowLeft);      // Position 0
-            array.add(highFitness);  // Position 1
-            array.add(lowRight);     // Position 2
+            array.add(highFitness);  // Position 0
+            array.add(lowRight);     // Position 1
             
-            // Build neighborhood view
+            // Build neighborhood view - only sees right neighbor
             NeighborhoodView<Integer, FactorStrategy> neighbors = 
-                new NeighborhoodView<>(highFitness, 1, 3, array, List.of(0, 1, 2));
+                new NeighborhoodView<>(highFitness, 0, 2, array, List.of(0, 1));
             
             // WHEN: Calculating target position
             Optional<Integer> target = highFitness.calculateTargetPositionGiven(neighbors);
             
-            // THEN: No beneficial swap
+            // THEN: No beneficial swap (already at front with highest fitness)
             assertFalse(target.isPresent());
         }
     }
