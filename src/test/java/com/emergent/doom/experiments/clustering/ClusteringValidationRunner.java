@@ -4,9 +4,12 @@ import com.emergent.doom.cell.AbstractSortingCell;
 import com.emergent.doom.cell.SortingAlgotype;
 import com.emergent.doom.execution.CellBasedExecutionEngine;
 import com.emergent.doom.factory.SortingCellFactory;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Executes clustering validation experiments against Levin et al. (2024) baselines.
@@ -126,7 +129,8 @@ public class ClusteringValidationRunner {
     // Main Execution
     // =========================
 
-    public static void main(String[] args) {
+    @Test
+    public void runValidationExperiments() {
         System.out.println("=".repeat(80));
         System.out.println("CLUSTERING VALIDATION EXPERIMENTS");
         System.out.println("Reference: Levin et al. (2024)");
@@ -544,10 +548,14 @@ public class ClusteringValidationRunner {
                 CONTROL_MAXIMUM, control.passesControl ? "✓ PASS" : "✗ FAIL", control.peakMean));
 
         System.out.println();
-        if (passCount == results.size() - 1 && control.passesControl) {
+        boolean success = passCount == results.size() - 1 && control.passesControl;
+
+        if (success) {
             System.out.println("✓ ALL VALIDATION CRITERIA MET - Framework reproduces Levin clustering behavior!");
         } else {
             System.out.println("✗ Some validation criteria not met - see detailed results above");
         }
+
+        assertTrue(success, "Validation criteria not met: Expected all experiments to pass.");
     }
 }
