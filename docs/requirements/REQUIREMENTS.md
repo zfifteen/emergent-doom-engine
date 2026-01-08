@@ -954,6 +954,22 @@ def get_pos_success_rate(cells, frozen_cell_num):
 
 ---
 
+## Appendix: Glossary
+
+### Clustering Primitive
+The singular computational primitive of EDE. Emergent spatial segregation of cells by strategy/algotype. Universal across all domains; instantiated with domain-specific cell types and comparison logic.
+
+### Algotype
+A behavioral policy assigned to a cell determining its swap decision logic. Examples: BUBBLE, INSERTION, SELECTION (sorting domain); SMALL_PRIMES, FERMAT (factorization domain). Algotypes are INPUTS to the system; clustering is the OUTPUT.
+
+### Domain Instantiation
+The process of applying the clustering primitive to a new problem domain by specifying: (1) cell type, (2) comparison logic, (3) strategy enum.
+
+### TBPC
+[User to provide expansion - appears in factorization findings documents]
+
+---
+
 **Document Version**: 2.0
 **Date**: December 31, 2025
 **Status**: Revised to match cell_research ground truth

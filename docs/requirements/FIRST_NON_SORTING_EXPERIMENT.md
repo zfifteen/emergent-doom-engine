@@ -3,7 +3,7 @@
 **Version:** 1.0  
 **Date:** 2026-01-02  
 **Status:** Draft  
-**Goal Supported:** Demonstrate EDE on a non-sorting application using clustering as computational primitive
+**Goal Supported:** Demonstrate clustering primitive instantiation for integer factorization domain
 
 ---
 
@@ -270,3 +270,9 @@ src/test/java/com/emergent/doom/factorization/
 | Experiment design | Sub-goal: Validate clustering as computational primitive |
 | Success criteria | High-level: Demonstrate EDE beyond sorting |
 | Implementation plan | High-level: Advance EDE as domain-general framework |
+
+| This experiment instantiates | The universal clustering primitive |
+|------------------------------|-----------------------------------|
+| Cell type | FactorCell (candidate integer) |
+| Comparison logic | Factor fitness score |
+| Strategies | SMALL_PRIMES, FERMAT_NEAR_SQRT, RANDOM_SAMPLE |
