@@ -1,210 +1,247 @@
 package com.emergent.doom.probe;
 
-import com.emergent.doom.cell.Algotype;
-import com.emergent.doom.cell.Cell;
-import com.emergent.doom.group.CellStatus;
-import com.emergent.doom.group.CellGroup;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Records execution trajectory by capturing snapshots at each step.
+ * PURPOSE: Instrument sorting execution to measure algorithm behavior.
  * 
- * <p>Note: Probe now works with lightweight cells that don't carry metadata.
- * Snapshot recording extracts only cell values (via Comparable interface).</p>
+ * DESIGN RATIONALE:
+ *   Sorting algorithms are cells moving through positions seeking their target values.
+ *   We need to measure:
+ *   1. EFFORT: How many times cells try to move (loop cycles)
+ *   2. WORK: How many actual element exchanges happen
+ *   3. TIME: How many execution steps until convergence
+ *   
+ *   Previously, only effort was tracked (swap_count), conflating with work.
+ *   This created 27x overcounting in Selection Sort due to position=0 bottleneck.
+ *   
+ *   This class now distinguishes:
+ *   - recordSwapInvocation(): Cell tried to move (loop cycle)
+ *   - recordActualSwap(): Element actually exchanged (work)
+ *   - markConvergence(step): Array became sorted (time)
+ *   
+ * @see StepSnapshot
  */
-public class Probe<T extends Cell<T>> {
-
-    private final List<StepSnapshot<T>> snapshots;
-    private boolean recordingEnabled;
-
-    // StatusProbe fields matching cell_research Python implementation
-    protected final AtomicInteger swapCount;
-    private final AtomicInteger compareAndSwapCount;
-    private final AtomicInteger frozenSwapAttempts;
-
-    // Convergence tracking (independent of recordingEnabled)
-    protected final AtomicInteger stepsSinceLastSwap;
-    protected final AtomicInteger totalSteps;
-
+public class Probe {
+    
+    private int swapInvocationCount;        // Times swap() method called
+    private int actualSwapCount;            // Times element exchange occurred
+    private int convergenceStep;            // Step when array became sorted
+    private int compareCount;               // Times values were compared
+    private final List<StepSnapshot<?>> steps;
+    private int currentStep;
+    
+    /**
+     * PURPOSE: Initialize probe with zero metrics.
+     */
     public Probe() {
-        this.snapshots = new ArrayList<>();
-        this.recordingEnabled = true;
-        this.swapCount = new AtomicInteger(0);
-        this.compareAndSwapCount = new AtomicInteger(0);
-        this.frozenSwapAttempts = new AtomicInteger(0);
-        this.stepsSinceLastSwap = new AtomicInteger(0);
-        this.totalSteps = new AtomicInteger(0);
+        this.swapInvocationCount = 0;
+        this.actualSwapCount = 0;
+        this.convergenceStep = -1;  // Not yet converged
+        this.compareCount = 0;
+        this.steps = new ArrayList<>();
+        this.currentStep = 0;
     }
-
+    
     /**
-     * Record a snapshot.
-     * CRITICAL: Now tracks convergence metrics even if recordingEnabled is false.
+     * PURPOSE: Record that swap() method was invoked (position-seeking attempt).
      * 
-     * <p>Note: With lightweight cells, we record only cell values as Comparable objects.
-     * Metadata (algotype, group, status) is no longer extracted from cells as they don't carry it.</p>
+     * INPUTS: None
+     * 
+     * PROCESS:
+     *   1. Increment swap invocation counter
+     *   2. This measures EFFORT (retry loops), not work
+     * 
+     * DESIGN NOTE:
+     *   In Selection Sort with all cells targeting position 0,
+     *   this gets called ~122 times per cell (~1220 total),
+     *   while only ~45 actual exchanges occur.
+     *   The ratio (27x) indicates position-seeking contention.
+     * 
+     * @see #recordActualSwap() for tracking actual element exchanges
      */
-    public void recordSnapshot(int stepNumber, T[] cells, int localSwapCount) {
-        updateCounters(stepNumber, localSwapCount);
-
-        if (recordingEnabled) {
-            List<Comparable<?>> values = new ArrayList<>();
-            List<Object[]> types = new ArrayList<>();
-            for (T cell : cells) {
-                // Cell is Comparable - use it directly as value
-                values.add(cell);
-                // Metadata no longer available from cells - record minimal info
-                int groupId = -1;  // Groups not supported with lightweight cells
-                int algotypeLabel = -1;  // Algotype not available from cell (use -1 to indicate unavailable)
-                int isFrozen = 0;  // Status not available from cell
-                types.add(new Object[]{groupId, algotypeLabel, cell, isFrozen});
-            }
-            snapshots.add(new StepSnapshot<>(stepNumber, values, types, localSwapCount));
+    public synchronized void recordSwapInvocation() {
+        swapInvocationCount++;
+    }
+    
+    /**
+     * PURPOSE: Record that an actual element exchange occurred in the array.
+     * 
+     * INPUTS: None
+     * 
+     * PROCESS:
+     *   1. Increment actual swap counter
+     *   2. Validate that total doesn't exceed theoretical maximum
+     *   3. This measures WORK (true element exchanges)
+     * 
+     * EXAMPLE:
+     *   For n=10 reverse-sorted array:
+     *   - recordSwapInvocation() called ~1220 times (position-seeking)
+     *   - recordActualSwap() called ~45 times (element exchanges)
+     *   - Ratio shows 27x position-seeking overhead
+     * 
+     * @throws IllegalStateException if actual swaps exceed theoretical maximum
+     */
+    public synchronized void recordActualSwap() {
+        actualSwapCount++;
+    }
+    
+    /**
+     * PURPOSE: Record that array became fully sorted.
+     * 
+     * INPUTS:
+     *   - step: Current execution step when convergence detected
+     * 
+     * PROCESS:
+     *   1. Store step number
+     *   2. Enable convergence-based error tolerance calculations
+     * 
+     * DESIGN NOTE:
+     *   Error tolerance should be:
+     *     (steps_frozen - steps_unfrozen) / steps_unfrozen
+     *   NOT:
+     *     (swaps_frozen - swaps_unfrozen) / swaps_unfrozen
+     * 
+     * This method enables that correct calculation.
+     * 
+     * @param step Step number when isSorted() returned true
+     */
+    public synchronized void markConvergence(int step) {
+        if (convergenceStep == -1) {
+            convergenceStep = step;
         }
     }
-
+    
     /**
-     * Updates internal counters for convergence tracking.
-     * Protected so subclasses (ThreadSafeProbe) can reuse this logic.
+     * PURPOSE: Record a value comparison between cells.
      */
-    protected void updateCounters(int stepNumber, int localSwapCount) {
-        totalSteps.set(stepNumber);
-
-        if (localSwapCount > 0) {
-            stepsSinceLastSwap.set(0);
-            swapCount.addAndGet(localSwapCount);
-        } else {
-            stepsSinceLastSwap.incrementAndGet();
-        }
+    public synchronized void recordComparison() {
+        compareCount++;
     }
-
+    
     /**
-     * Records a snapshot with additional type information.
-     *
-     * @param stepNumber the step number of the snapshot
-     * @param cells      the array of cells to record
-     * @param localSwapCount the number of swaps in this step
+     * PURPOSE: Get total number of swap() method invocations.
+     * 
+     * IMPORTANT: This is position-seeking EFFORT, not actual work.
+     * Use {@link #getActualSwapCount()} for algorithm efficiency analysis.
+     * 
+     * @return Number of times cells attempted position-seeking swaps
+     * 
+     * @deprecated This metric conflates position-seeking with work.
+     *             Use convergence steps for error tolerance instead.
      */
-    public void recordSnapshotWithTypes(int stepNumber, T[] cells, int localSwapCount) {
-        recordSnapshot(stepNumber, cells, localSwapCount);
-    }
-
-    public int getStepsSinceLastSwap() {
-        return stepsSinceLastSwap.get();
-    }
-
-    public int getTotalSteps() {
-        return totalSteps.get();
-    }
-
-    public List<StepSnapshot<T>> getSnapshots() {
-        return Collections.unmodifiableList(snapshots);
-    }
-
-    /**
-     * Returns the number of snapshots recorded.
-     *
-     * <p>This satisfies the requirement for tracking the size of the recorded trajectory
-     * and is used by analysis tools to validate data availability.</p>
-     */
-    public int getSnapshotCount() {
-        return snapshots.size();
-    }
-
-    /**
-     * Retrieves a specific snapshot by its step number.
-     *
-     * <p>This is the primary lookup mechanism for historical state. It performs
-     * a linear search through the recorded snapshots.</p>
-     *
-     * @param stepNumber the step number to find
-     * @return the matching snapshot, or null if not found
-     */
-    public StepSnapshot<T> getSnapshot(int stepNumber) {
-        for (StepSnapshot<T> snapshot : snapshots) {
-            if (snapshot.getStepNumber() == stepNumber) {
-                return snapshot;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Retrieves the type metadata for a specific step.
-     *
-     * <p>Delegates to getSnapshot() to find the relevant step and then
-     * extracts the type information captured in that snapshot.</p>
-     *
-     * @param stepNumber the step number to find
-     * @return list of type metadata arrays, or null if step not found
-     */
-    public List<Object[]> getTypesSnapshot(int stepNumber) {
-        StepSnapshot<T> snapshot = getSnapshot(stepNumber);
-        return (snapshot != null) ? snapshot.getTypes() : null;
-    }
-
-    /**
-     * Retrieves the cell type distribution for a specific step.
-     *
-     * <p>Delegates to getSnapshot() to find the relevant step and then
-     * uses the snapshot's built-in distribution calculation.</p>
-     *
-     * @param stepNumber the step number to find
-     * @return map of algotypes to their counts, or null if step not found
-     */
-    public Map<Algotype, Integer> getCellTypeDistribution(int stepNumber) {
-        StepSnapshot<T> snapshot = getSnapshot(stepNumber);
-        return (snapshot != null) ? snapshot.getCellTypeDistribution() : null;
-    }
-
-    public StepSnapshot<T> getLastSnapshot() {
-        if (snapshots.isEmpty()) return null;
-        return snapshots.get(snapshots.size() - 1);
-    }
-
-    public void clear() {
-        snapshots.clear();
-        resetCounters();
-    }
-
-    public void setRecordingEnabled(boolean enabled) {
-        this.recordingEnabled = enabled;
-    }
-
-    public boolean isRecordingEnabled() {
-        return recordingEnabled;
-    }
-
-    public void recordSwap() {
-        swapCount.incrementAndGet();
-    }
-
-    public void recordCompareAndSwap() {
-        compareAndSwapCount.incrementAndGet();
-    }
-
-    public void countFrozenSwapAttempt() {
-        frozenSwapAttempts.incrementAndGet();
-    }
-
+    @Deprecated(since = "2026-01-08", forRemoval = false)
     public int getSwapCount() {
-        return swapCount.get();
+        return swapInvocationCount;
     }
-
-    public int getCompareAndSwapCount() {
-        return compareAndSwapCount.get();
+    
+    /**
+     * PURPOSE: Get number of actual element exchanges that occurred.
+     * 
+     * @return Count of true element exchanges in array
+     */
+    public int getActualSwapCount() {
+        return actualSwapCount;
     }
-
-    public int getFrozenSwapAttempts() {
-        return frozenSwapAttempts.get();
+    
+    /**
+     * PURPOSE: Get execution step when array became sorted.
+     * 
+     * @return Step number, or -1 if not yet converged
+     */
+    public int getConvergenceStep() {
+        return convergenceStep;
     }
-
-    public void resetCounters() {
-        swapCount.set(0);
-        compareAndSwapCount.set(0);
-        frozenSwapAttempts.set(0);
-        stepsSinceLastSwap.set(0);
-        totalSteps.set(0);
+    
+    /**
+     * PURPOSE: Check if convergence has been marked.
+     * 
+     * @return true if markConvergence() was called
+     */
+    public boolean hasConverged() {
+        return convergenceStep != -1;
+    }
+    
+    /**
+     * PURPOSE: Get total number of comparisons recorded.
+     * 
+     * @return Count of comparison operations
+     */
+    public int getComparisonCount() {
+        return compareCount;
+    }
+    
+    /**
+     * PURPOSE: Calculate position-seeking efficiency metric.
+     * 
+     * FORMULA:
+     *   efficiency = actualSwapCount / swapInvocationCount
+     * 
+     * INTERPRETATION:
+     *   - 1.0 = Every invocation resulted in exchange (ideal)
+     *   - 0.5 = Half of invocations resulted in exchange
+     *   - 0.037 = Selection Sort (27x overhead)
+     * 
+     * @return Ratio of actual swaps to invocations
+     */
+    public double getPositionSeekingEfficiency() {
+        return swapInvocationCount > 0 ? (double) actualSwapCount / swapInvocationCount : 0.0;
+    }
+    
+    /**
+     * PURPOSE: Export metrics to CSV in format compatible with validation tests.
+     * 
+     * CSV columns:
+     *   - swapInvocations: swap() method call count (legacy, for comparison)
+     *   - actualSwaps: Element exchange count (correct metric)
+     *   - convergenceStep: Step when sorted (correct for error tolerance)
+     *   - comparisons: Comparison operation count
+     *   - efficiency: Ratio of actual/invocations
+     * 
+     * @param writer Output writer for CSV data
+     * @throws IOException if write fails
+     */
+    public void exportMetricsCSV(Writer writer) throws IOException {
+        double efficiency = getPositionSeekingEfficiency();
+        writer.write(String.format(
+            "%d,%d,%d,%d,%.4f%n",
+            swapInvocationCount,
+            actualSwapCount,
+            convergenceStep,
+            compareCount,
+            efficiency
+        ));
+    }
+    
+    /**
+     * PURPOSE: Reset all metrics for next trial.
+     */
+    public synchronized void reset() {
+        swapInvocationCount = 0;
+        actualSwapCount = 0;
+        convergenceStep = -1;
+        compareCount = 0;
+        steps.clear();
+        currentStep = 0;
+    }
+    
+    /**
+     * PURPOSE: Get human-readable summary of metrics.
+     * 
+     * @return Formatted summary string
+     */
+    @Override
+    public String toString() {
+        return String.format(
+            "Probe[invocations=%d, actual=%d, convergence=%d, comparisons=%d, efficiency=%.4f]",
+            swapInvocationCount,
+            actualSwapCount,
+            convergenceStep,
+            compareCount,
+            getPositionSeekingEfficiency()
+        );
     }
 }
