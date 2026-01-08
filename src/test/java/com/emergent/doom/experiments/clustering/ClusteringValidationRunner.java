@@ -176,6 +176,9 @@ public class ClusteringValidationRunner {
      *
      * <p>Creates 100 trials of mixed-algotype populations, measures peak aggregation
      * for each trial, and performs statistical analysis against expected baselines.</p>
+     *
+     * <p><strong>FIXED:</strong> Now tracks aggregation at each step to capture true peak
+     * during sorting process, not just final state.</p>
      */
     static ExperimentResult runExperiment(
             String name,
@@ -204,18 +207,36 @@ public class ClusteringValidationRunner {
             List<AbstractSortingCell> cells = factory.createRandomCells(
                     distribution, ARRAY_SIZE, MAX_VALUE);
 
-            // Execute sorting
-            int stepsToConvergence = engine.executeSorting(cells, MAX_STEPS);
+            // Track peak aggregation during sorting process (FIXED)
+            double peakAggregation = 0.0;
+            int peakStep = 0;
+            int totalSteps = 0;
 
-            // For now, use final aggregation as peak
-            // (Full trajectory recording would give step-by-step peaks)
-            // TODO: Integrate with Probe for step-by-step recording
-            double peakAggregation = estimatePeakAggregation(cells);
+            // Execute step-by-step to track aggregation at each step
+            for (int step = 0; step < MAX_STEPS; step++) {
+                // Measure aggregation at current step
+                double currentAggregation = estimatePeakAggregation(cells);
+
+                // Track peak
+                if (currentAggregation > peakAggregation) {
+                    peakAggregation = currentAggregation;
+                    peakStep = step;
+                }
+
+                // Execute one sorting step
+                int swaps = engine.executeStep(cells);
+                totalSteps = step + 1;
+
+                // Stop if sorted or no swaps occurred
+                if (swaps == 0 || isSorted(cells)) {
+                    break;
+                }
+            }
 
             result.trialPeaks.add(new TrialPeak(
                     peakAggregation,
-                    stepsToConvergence,  // Approximate peak timing
-                    stepsToConvergence
+                    peakStep,
+                    totalSteps
             ));
 
             if ((trial + 1) % 10 == 0) {
@@ -236,6 +257,8 @@ public class ClusteringValidationRunner {
      * <p>Creates pure Bubble populations (no mixed types). Should show much lower
      * aggregation than chimeric pairs, validating that clustering requires multiple
      * algotypes.</p>
+     *
+     * <p><strong>FIXED:</strong> Now tracks aggregation at each step to capture true peak.</p>
      */
     static ExperimentResult runControlExperiment(String name) {
         System.out.println("Running: " + name + "  (" + TRIALS_PER_PAIR + " trials)");
@@ -258,13 +281,36 @@ public class ClusteringValidationRunner {
             List<AbstractSortingCell> cells = factory.createRandomCells(
                     distribution, ARRAY_SIZE, MAX_VALUE);
 
-            int stepsToConvergence = engine.executeSorting(cells, MAX_STEPS);
-            double peakAggregation = estimatePeakAggregation(cells);
+            // Track peak aggregation during sorting process (FIXED)
+            double peakAggregation = 0.0;
+            int peakStep = 0;
+            int totalSteps = 0;
+
+            // Execute step-by-step to track aggregation at each step
+            for (int step = 0; step < MAX_STEPS; step++) {
+                // Measure aggregation at current step
+                double currentAggregation = estimatePeakAggregation(cells);
+
+                // Track peak
+                if (currentAggregation > peakAggregation) {
+                    peakAggregation = currentAggregation;
+                    peakStep = step;
+                }
+
+                // Execute one sorting step
+                int swaps = engine.executeStep(cells);
+                totalSteps = step + 1;
+
+                // Stop if sorted or no swaps occurred
+                if (swaps == 0 || isSorted(cells)) {
+                    break;
+                }
+            }
 
             result.trialPeaks.add(new TrialPeak(
                     peakAggregation,
-                    stepsToConvergence,
-                    stepsToConvergence
+                    peakStep,
+                    totalSteps
             ));
 
             if ((trial + 1) % 10 == 0) {
@@ -283,13 +329,12 @@ public class ClusteringValidationRunner {
     // =========================
 
     /**
-     * Estimate peak aggregation from final state.
+     * Measure aggregation at current state.
      *
-     * <p>CURRENT IMPLEMENTATION: Measures aggregation in final sorted state.
-     * Aggregation = (cells with at least one same-algotype neighbor / total cells) × 100%</p>
+     * <p>Aggregation = (cells with at least one same-algotype neighbor / total cells) × 100%</p>
      *
-     * <p>TODO: Integrate with Probe for true step-by-step peak tracking during
-     * execution, rather than only measuring final state.</p>
+     * <p>This method is now called at each step during sorting to track the true peak
+     * aggregation as it emerges and then decreases during the sorting process.</p>
      */
     static double estimatePeakAggregation(List<AbstractSortingCell> cells) {
         int sameTypeCount = 0;
@@ -302,6 +347,21 @@ public class ClusteringValidationRunner {
             }
         }
         return (sameTypeCount * 100.0) / cells.size();
+    }
+
+    /**
+     * Check if cell array is sorted by values.
+     *
+     * @param cells the cell array
+     * @return true if sorted
+     */
+    private static boolean isSorted(List<AbstractSortingCell> cells) {
+        for (int i = 0; i < cells.size() - 1; i++) {
+            if (cells.get(i).readValue() > cells.get(i + 1).readValue()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

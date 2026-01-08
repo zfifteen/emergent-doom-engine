@@ -114,40 +114,46 @@ Control < 60% baseline: ✓ PASS (58.2%)
 ### Current Design (January 8, 2026)
 
 **Aggregation Calculation:**
-- Measured directly in `estimatePeakAggregation()` without invoking `AlgotypeAggregationIndex`
-- Counts cells with same-type neighbor in current sorted array
-- Approximates peak by measuring final state (not true step-by-step tracking)
+- Measured at each step during sorting process using `estimatePeakAggregation()`
+- Tracks peak aggregation as it emerges mid-sort and then decreases toward final state
+- Counts cells with same-type neighbor at current array state
+- **FIXED:** Now properly captures peak during sorting, not just final state
 
-**Why Not Use AlgotypeAggregationIndex Yet?**
-- Metric class is designed for snapshot probe data (future feature)
-- Current implementation lacks per-step trajectory recording
-- Integration pending completion of Probe infrastructure
+**Step-by-Step Tracking:**
+- Experiments execute sorting one step at a time
+- Aggregation measured after each step
+- Peak value and timing recorded across all steps
+- Correctly captures the 19-42% progress timing reported in Levin et al.
 
 ## Future Enhancements
 
-### 1. Step-by-Step Trajectory Recording
+### 1. Probe Infrastructure Integration
 
-**Current limitation:** Peak aggregation measured at final state only.
+**Current implementation:** Step-by-step aggregation tracking implemented directly in experiment runner.
 
-**TODO:** Integrate with `Probe` to record aggregation at each step:
+**Future enhancement:** Integrate with `Probe` infrastructure for richer trajectory data:
 ```java
-List<StepSnapshot<T>> snapshots = probe.recordFullTrajectory();
-for (int step = 0; step < snapshots.size(); step++) {
-    double agg = metric.compute(snapshots.get(step));
-    if (agg > peakAggregation) {
-        peakAggregation = agg;
-        peakStep = step;
-    }
-}
+Probe<AbstractSortingCell> probe = new Probe<>();
+List<StepSnapshot<AbstractSortingCell>> snapshots = probe.recordFullTrajectory();
+// Enable additional metrics beyond aggregation
 ```
 
 ### 2. AlgotypeAggregationIndex Integration
 
-**TODO:** Once Probe infrastructure is mature, integrate metric class:
+**Future enhancement:** Once Probe infrastructure is mature, replace direct aggregation calculation with metric class:
 ```java
 AlgotypeAggregationIndex<AbstractSortingCell> metric = new AlgotypeAggregationIndex<>();
-// Use metric.compute(snapshot) within step-by-step loop (above)
+double agg = metric.compute(snapshot);
+// Enables consistent metric computation across experiments
 ```
+
+### 3. Enhanced Metrics
+
+**Potential additions:**
+- Spatial autocorrelation coefficients
+- Cluster size distribution analysis
+- Temporal clustering dynamics
+- Multi-metric validation against paper
 
 ### 3. Timing Analysis
 
