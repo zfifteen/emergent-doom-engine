@@ -107,7 +107,7 @@ Control < 60% baseline: ✓ PASS (58.2%)
 - `SortingCellFactory` – creates chimeric populations with specified algotype ratios
 - `CellBasedExecutionEngine` – executes sorting algorithm
 - `AbstractSortingCell` – cell implementation with algotype tracking
-- `AlgotypeAggregationIndex<T>` – (future) snapshot-based clustering measurement (not currently integrated)
+- `AlgotypeAggregationIndex<T>` – optional metric for snapshot-based clustering analysis (not used in the current peak aggregation calculation, which is computed directly)
 
 ## Implementation Notes
 
