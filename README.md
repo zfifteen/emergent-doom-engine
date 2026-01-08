@@ -56,7 +56,7 @@ The engine implements computation through autonomous cell interactions rather th
 
 Global order emerges from collective local dynamics. No centralized controller orchestrates the solution—cells discover it through repeated pairwise interactions.
 
-### Computational Primitives
+### Algotype Implementations
 
 Four fundamental algotypes implement sorting policies from the Levin research:
 
@@ -69,6 +69,22 @@ Four fundamental algotypes implement sorting policies from the Levin research:
 **FIBONACCI**: Logarithmic neighbor coverage via Fibonacci-distance viewing. Novel algotype extending traditional algorithms with non-local awareness.
 
 These policies combine local topology (which neighbors are visible) with swap logic (when to propose exchanges). Emergent behaviors arise from algotype interactions in heterogeneous populations.
+
+### The Clustering Primitive
+
+Clustering is THE computational primitive of the Emergent Doom Engine. When cells with different algotypes (behavioral strategies) interact through local comparisons and swaps, they spontaneously segregate into spatial clusters by strategy type.
+
+**What varies across domains:**
+- **Cell type**: What entity is being sorted/organized
+- **Comparison logic**: How cells determine ordering (`compareTo()`)
+- **Strategy assignments**: Which algotypes/policies are mixed
+
+**What remains constant:**
+- The clustering mechanism (spatial segregation by strategy)
+- The aggregation metric (% of cells with same-type neighbors)
+- The emergent properties (delayed gratification, error tolerance)
+
+For the formal specification, see [CLUSTERING_PRIMITIVE_SPEC.md](docs/requirements/CLUSTERING_PRIMITIVE_SPEC.md).
 
 ### Why Use Emergence?
 
@@ -386,7 +402,9 @@ java -cp target/classes com.emergent.doom.examples.NewCellArchitectureDemo
 
 **Cell**: Autonomous agent carrying intrinsic properties (value, algotype) that travel together during swaps. Implements `AbstractCell<V, A>` with domain-specific value type and algotype enum.
 
-**Algotype**: Behavioral policy determining swap decisions—BUBBLE (bidirectional adjacent), INSERTION (left-migrating), SELECTION (ideal-position seeking), FIBONACCI (logarithmic viewing). Embedded as immutable property within each cell.
+**Algotype**: Behavioral policy determining swap decisions—BUBBLE (bidirectional adjacent), INSERTION (left-migrating), SELECTION (ideal-position seeking), FIBONACCI (logarithmic viewing). Embedded as immutable property within each cell. Algotypes are inputs; clustering is the emergent output.
+
+**Clustering Primitive**: The singular computational mechanism of EDE. Emergent spatial segregation by strategy type, universal across all domains. What varies per domain is the cell type and comparison logic; the clustering mechanism is invariant.
 
 **Neighborhood View**: Encapsulation of visible neighbors based on algotype rules. Hides array access mechanics, preserves "local knowledge only" principle.
 
