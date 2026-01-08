@@ -248,7 +248,7 @@ class FactorCellTest {
             
             // Build neighborhood view
             NeighborhoodView<Integer, FactorStrategy> neighbors = 
-                new NeighborhoodView<>(highFitness, 1, 2, List.of(0, 1), array);
+                new NeighborhoodView<>(highFitness, 1, 2, array, List.of(0, 1));
             
             // WHEN: Calculating target position
             Optional<Integer> target = highFitness.calculateTargetPositionGiven(neighbors);
@@ -271,7 +271,7 @@ class FactorCellTest {
             
             // Build neighborhood view
             NeighborhoodView<Integer, FactorStrategy> neighbors = 
-                new NeighborhoodView<>(lowFitness, 0, 2, List.of(0, 1), array);
+                new NeighborhoodView<>(lowFitness, 0, 2, array, List.of(0, 1));
             
             // WHEN: Calculating target position
             Optional<Integer> target = lowFitness.calculateTargetPositionGiven(neighbors);
@@ -296,7 +296,7 @@ class FactorCellTest {
             
             // Build neighborhood view
             NeighborhoodView<Integer, FactorStrategy> neighbors = 
-                new NeighborhoodView<>(highFitness, 1, 3, List.of(0, 1, 2), array);
+                new NeighborhoodView<>(highFitness, 1, 3, array, List.of(0, 1, 2));
             
             // WHEN: Calculating target position
             Optional<Integer> target = highFitness.calculateTargetPositionGiven(neighbors);
