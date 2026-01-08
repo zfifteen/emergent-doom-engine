@@ -837,13 +837,10 @@ class TrajectoryExportValidationTest {
             
             int arraySize = 10;
             
-            // Step 0: Initial state - 60% sorted
-            // Monotonic positions: [1,2,3,4,10] followed by descending [9,8,7,6,5]
-            // First element: 1 (counts)
-            // 2≥1✓, 3≥2✓, 4≥3✓, 10≥4✓, 9≥10✗, 8≥9✓, 7≥8✓, 6≥7✓, 5≥6✓
-            // Count: 1+4+0+4 = 9... Let me recalculate
-            // Actually: position by position: 1→2✓, 2→3✓, 3→4✓, 4→10✓, 10→9✗, 9→8✗, 8→7✗, 7→6✗, 6→5✗
-            // Monotonic count: 1 (first) + 4 (increasing) + 0 (all decreasing) = 5
+            // Step 0: Initial state - 50% sorted
+            // Array: [1,2,3,4,10,9,8,7,6,5]
+            // Monotonic check: 1→2✓, 2→3✓, 3→4✓, 4→10✓, 10→9✗, 9→8✗, 8→7✗, 7→6✗, 6→5✗
+            // Monotonic count: 1 (first element) + 4 (increasing pairs) = 5
             // Sortedness: 5/10 = 50%
             GenericCell[] step0 = {
                 new GenericCell(1), new GenericCell(2), new GenericCell(3),
@@ -853,10 +850,10 @@ class TrajectoryExportValidationTest {
             };
             probe.recordSnapshot(0, step0, 0);
             
-            // Step 1: DELAYED GRATIFICATION - sortedness DECREASES to 40%
+            // Step 1: DELAYED GRATIFICATION - sortedness DECREASES to 30%
             // Array: [1,2,10,9,8,7,6,5,4,3] - moved 10 earlier, disrupting order
-            // Monotonic: 1→2✓, 2→10✓, 10→9✗, 9→8✗, 8→7✗, 7→6✗, 6→5✗, 5→4✗, 4→3✗
-            // Count: 1 + 2 = 3
+            // Monotonic check: 1→2✓, 2→10✓, 10→9✗, 9→8✗, 8→7✗, 7→6✗, 6→5✗, 5→4✗, 4→3✗
+            // Monotonic count: 1 (first element) + 2 (increasing pairs) = 3
             // Sortedness: 3/10 = 30%
             GenericCell[] step1 = {
                 new GenericCell(1), new GenericCell(2), new GenericCell(10),
@@ -866,10 +863,10 @@ class TrajectoryExportValidationTest {
             };
             probe.recordSnapshot(1, step1, 3);
             
-            // Step 2: Recovery begins - sortedness increases to 60%
+            // Step 2: Recovery begins - sortedness increases to 90%
             // Array: [1,2,3,4,5,6,7,8,10,9] - partial recovery
-            // Monotonic: all increasing except last pair
-            // Count: 1 + 8 = 9
+            // Monotonic check: All pairs increasing except last (10→9✗)
+            // Monotonic count: 1 (first element) + 8 (increasing pairs) = 9
             // Sortedness: 9/10 = 90%
             GenericCell[] step2 = {
                 new GenericCell(1), new GenericCell(2), new GenericCell(3),
