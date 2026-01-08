@@ -90,68 +90,68 @@
                     </archive>
                 </configuration>
             </plugin>
-                         
-        <!-- Maven Resources Plugin for filtering -->
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>3.3.1</version>
-            <configuration>
-                <encoding>UTF-8</encoding>
-            </configuration>
-            <executions>
-                <!-- Filter scripts -->
-                <execution>
-                    <id>filter-scripts</id>
-                    <phase>process-resources</phase>
-                    <goals>
-                        <goal>copy-resources</goal>
-                    </goals>
-                    <configuration>
-                        <outputDirectory>${project.basedir}/scripts</outputDirectory>
-                        <resources>
-                            <resource>
-                                <directory>src/main/resources/scripts</directory>
-                                <filtering>true</filtering>
-                                <includes>
-                                    <include>*.sh</include>
-                                </includes>
-                            </resource>
-                        </resources>
-                    </configuration>
-                </execution>
-                <!-- Filter README.md -->
-                <execution>
-                    <id>filter-readme</id>
-                    <phase>process-resources</phase>
-                    <goals>
-                        <goal>copy-resources</goal>
-                    </goals>
-                    <configuration>
-                        <outputDirectory>${project.basedir}</outputDirectory>
-                        <resources>
-                            <resource>
-                                <directory>src/main/resources</directory>
-                                <filtering>true</filtering>
-                                <includes>
-                                    <include>README.md.template</include>
-                                </includes>
-                            </resource>
-                        </resources>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
-        
-        <!-- Versions Maven Plugin for version management -->
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>versions-maven-plugin</artifactId>
-            <version>2.16.2</version>
-            <configuration>
-                <generateBackupPoms>false</generateBackupPoms>
-            </configuration>
-        </plugin>
+
+            <!-- Maven Resources Plugin for filtering -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+                <executions>
+                    <!-- Filter scripts -->
+                    <execution>
+                        <id>filter-scripts</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/scripts</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources/scripts</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>*.sh</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!-- Filter README.md -->
+                    <execution>
+                        <id>filter-readme</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>README.md.template</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Versions Maven Plugin for version management -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.16.2</version>
+                <configuration>
+                    <generateBackupPoms>false</generateBackupPoms>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
