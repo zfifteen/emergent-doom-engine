@@ -475,7 +475,7 @@ mvn test
 
 ```bash
 mvn package
-java -jar target/emergent-doom-engine-0.3.0-alpha.jar
+java -jar target/emergent-doom-engine-0.4.0-alpha.jar
 ```
 
 ## Example Application: Integer Factorization
