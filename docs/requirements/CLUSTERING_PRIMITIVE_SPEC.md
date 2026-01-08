@@ -11,7 +11,7 @@
 
 **Clustering is THE computational primitive of the Emergent Doom Engine.**
 
-This document formalizes the universal clustering mechanism that powers all EDE applications. Clustering is not one of several primitives—it is the singular emergent pattern that the framework extracts from morphogenetic cell dynamics. Different domains instantiate clustering with different cell types and comparison logic, but the primitive itself is invariant.
+In the Emergent Doom Engine, clustering is the universal mechanism that powers all applications: different domains instantiate it with different cell types and comparison logic, but the primitive itself is invariant. It is not one of several primitives—it is the singular emergent pattern that the framework extracts from morphogenetic cell dynamics.
 
 This document formalizes how the emergent clustering behavior observed in chimeric sorting arrays can be extracted and reused as a **general-purpose computational primitive**. Clustering is not merely a side effect—it is "free compute" that partitions problem spaces, groups compatible strategies, and reveals structure without explicit programming.
 
