@@ -35,6 +35,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * - Statistical validation (t-tests, 95% CI)
  * - Bessel's correction applied to sample standard deviation
  * </p>
+ *
+ * <p><strong>CRITICAL FIX (Jan 8, 2026):</strong> Corrected aggregation measurement timing.
+ * Aggregation is now measured AFTER each sorting step executes, not before. This ensures
+ * we capture the actual post-sort clustering state, not the pre-sort state. Causality is
+ * preserved: step executes → cells may move → aggregation measured on result.</p>
  */
 public class ClusteringValidationRunner {
 
@@ -181,8 +186,9 @@ public class ClusteringValidationRunner {
      * <p>Creates 100 trials of mixed-algotype populations, measures peak aggregation
      * for each trial, and performs statistical analysis against expected baselines.</p>
      *
-     * <p><strong>FIXED:</strong> Now tracks aggregation at each step to capture true peak
-     * during sorting process, not just final state.</p>
+     * <p><strong>FIXED (Jan 8, 2026):</strong> Aggregation is now measured AFTER each
+     * sorting step executes. This captures the actual post-sort state where clustering
+     * emerges, not the pre-sort state. Causal ordering: execute step → measure result.</p>
      */
     static ExperimentResult runExperiment(
             String name,
@@ -211,25 +217,25 @@ public class ClusteringValidationRunner {
             List<AbstractSortingCell> cells = factory.createRandomCells(
                     distribution, ARRAY_SIZE, MAX_VALUE);
 
-            // Track peak aggregation during sorting process (FIXED)
+            // Track peak aggregation during sorting process
             double peakAggregation = 0.0;
             int peakStep = 0;
             int totalSteps = 0;
 
             // Execute step-by-step to track aggregation at each step
             for (int step = 0; step < MAX_STEPS; step++) {
-                // Measure aggregation at current step
+                // Execute one sorting step FIRST
+                int swaps = engine.executeStep(cells);
+                totalSteps = step + 1;
+
+                // THEN measure aggregation on the result of this step
                 double currentAggregation = estimatePeakAggregation(cells);
 
                 // Track peak
                 if (currentAggregation > peakAggregation) {
                     peakAggregation = currentAggregation;
-                    peakStep = step;
+                    peakStep = totalSteps;
                 }
-
-                // Execute one sorting step
-                int swaps = engine.executeStep(cells);
-                totalSteps = step + 1;
 
                 // Stop if sorted or no swaps occurred
                 if (swaps == 0 || isSorted(cells)) {

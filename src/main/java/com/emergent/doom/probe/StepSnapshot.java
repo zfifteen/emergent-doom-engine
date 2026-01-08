@@ -128,6 +128,9 @@ public class StepSnapshot<T extends Cell<T>> {
         Map<Algotype, Integer> dist = new HashMap<>();
         for (Object[] t : types) {
             int label = (Integer) t[1];
+            if (label < 0 || label >= Algotype.values().length) {
+                continue;
+            }
             Algotype type = Algotype.values()[label];
             dist.merge(type, 1, Integer::sum);
         }
@@ -135,6 +138,12 @@ public class StepSnapshot<T extends Cell<T>> {
     }
 
     public boolean hasCellTypeDistribution() {
-        return true;
+        for (Object[] t : types) {
+            int label = (Integer) t[1];
+            if (label >= 0 && label < Algotype.values().length) {
+                return true;
+            }
+        }
+        return false;
     }
 }
