@@ -61,6 +61,7 @@ public class ClusteringValidationRunner {
     private static final double BUBBLE_SELECTION_EXPECTED = 72.0;  // ± 5%
     private static final double BUBBLE_INSERTION_EXPECTED = 65.0;  // ± 5%
     private static final double SELECTION_INSERTION_EXPECTED = 69.0; // ± 5%
+    private static final double CONTROL_MAXIMUM = 60.0;  // Control experiments should be < 60%
     private static final double CONTROL_TOLERANCE = 0.0;  // No expected value, just upper bound
 
     // =========================
