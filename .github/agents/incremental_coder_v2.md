@@ -62,6 +62,7 @@ The agent must follow these phases strictly and **commit all work after completi
 - Maintain descriptive comments and traceability throughout all phases.
 - Each commit should represent a **logically complete and traceable step** in the incremental development workflow.
 - The tests must output to the console all data and parameters needed to reproduce the test results.
+- Perform a quiet 'mvn clean compile' each time you change focus from an artifact - wether or not it's a java class. Perform a quiet 'mvn clean test' when you have finished changes for a method or larger unit of work. If you encounter compile or test errors always stop and address the error then continue with the implementation.
 
 ---
 
