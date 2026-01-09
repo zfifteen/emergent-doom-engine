@@ -5,6 +5,9 @@ import com.emergent.doom.factorization.*;
 import java.io.IOException;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Demonstration of factorization experiment.
  *
@@ -21,10 +24,11 @@ import java.util.Map;
  * </ul>
  */
 public class FactorizationDemo {
+    private static final Logger logger = LoggerFactory.getLogger(FactorizationDemo.class);
     
     public static void main(String[] args) {
-        System.out.println("=== Factorization Experiment Demo ===");
-        System.out.println();
+        logger.info("=== Factorization Experiment Demo ===");
+        logger.info("");
         
         // Configure experiment
         int target = 143;  // 11 × 13
@@ -38,78 +42,78 @@ public class FactorizationDemo {
             FactorStrategy.RANDOM_SAMPLE, 0.34
         );
         
-        System.out.println("Configuration:");
-        System.out.println("  Target (N): " + target + " (11 × 13)");
-        System.out.println("  Array size: " + arraySize + " candidates");
-        System.out.println("  Strategy distribution:");
-        System.out.println("    - SMALL_PRIMES: 33%");
-        System.out.println("    - FERMAT_NEAR_SQRT: 33%");
-        System.out.println("    - RANDOM_SAMPLE: 34%");
-        System.out.println("  Random seed: " + seed);
-        System.out.println("  Max steps: " + maxSteps);
-        System.out.println();
+        logger.info("Configuration:");
+        logger.info("  Target (N): {} (11 × 13)", target);
+        logger.info("  Array size: {} candidates", arraySize);
+        logger.info("  Strategy distribution:");
+        logger.info("    - SMALL_PRIMES: 33%");
+        logger.info("    - FERMAT_NEAR_SQRT: 33%");
+        logger.info("    - RANDOM_SAMPLE: 34%");
+        logger.info("  Random seed: {}", seed);
+        logger.info("  Max steps: {}", maxSteps);
+        logger.info("");
         
         // Create and run experiment
         FactorizationExperiment experiment = new FactorizationExperiment(
             target, arraySize, distribution, seed, maxSteps
         );
         
-        System.out.println("Running experiment...");
+        logger.info("Running experiment...");
         FactorizationExperiment.ExperimentResults results = experiment.runTrial();
         
         // Print results
-        System.out.println();
-        System.out.println("=== Results ===");
-        System.out.println("Convergence step: " + results.getConvergenceStep());
-        System.out.println("Peak aggregation: " + String.format("%.2f%%", results.getPeakAggregation()));
-        System.out.println("Peak aggregation step: " + results.getPeakAggregationStep());
+        logger.info("");
+        logger.info("=== Results ===");
+        logger.info("Convergence step: {}", results.getConvergenceStep());
+        logger.info("Peak aggregation: {:.2f}%", results.getPeakAggregation());
+        logger.info("Peak aggregation step: {}", results.getPeakAggregationStep());
         
         // Print initial and final states
         FactorizationExperiment.StepData initial = results.trajectory.get(0);
         FactorizationExperiment.StepData finalState = results.trajectory.get(results.trajectory.size() - 1);
         
-        System.out.println();
-        System.out.println("Initial state:");
-        System.out.println("  Aggregation: " + String.format("%.2f%%", initial.aggregation));
-        System.out.println("  Avg fitness: " + String.format("%.4f", initial.avgFitness));
-        System.out.println("  Max fitness: " + String.format("%.4f", initial.maxFitness));
-        System.out.println("  Perfect factors: " + initial.perfectFactorCount);
-        System.out.println("  Perfect factor positions: " + initial.perfectFactorPositions);
+        logger.info("");
+        logger.info("Initial state:");
+        logger.info("  Aggregation: {:.2f}%", initial.aggregation);
+        logger.info("  Avg fitness: {:.4f}", initial.avgFitness);
+        logger.info("  Max fitness: {:.4f}", initial.maxFitness);
+        logger.info("  Perfect factors: {}", initial.perfectFactorCount);
+        logger.info("  Perfect factor positions: {}", initial.perfectFactorPositions);
         
-        System.out.println();
-        System.out.println("Final state:");
-        System.out.println("  Aggregation: " + String.format("%.2f%%", finalState.aggregation));
-        System.out.println("  Avg fitness: " + String.format("%.4f", finalState.avgFitness));
-        System.out.println("  Max fitness: " + String.format("%.4f", finalState.maxFitness));
-        System.out.println("  Perfect factors: " + finalState.perfectFactorCount);
-        System.out.println("  Perfect factor positions: " + finalState.perfectFactorPositions);
+        logger.info("");
+        logger.info("Final state:");
+        logger.info("  Aggregation: {:.2f}%", finalState.aggregation);
+        logger.info("  Avg fitness: {:.4f}", finalState.avgFitness);
+        logger.info("  Max fitness: {:.4f}", finalState.maxFitness);
+        logger.info("  Perfect factors: {}", finalState.perfectFactorCount);
+        logger.info("  Perfect factor positions: {}", finalState.perfectFactorPositions);
         
         // Export to CSV
         String filename = "factorization_experiment_" + seed + ".csv";
         try {
             results.exportToCSV(filename);
-            System.out.println();
-            System.out.println("Trajectory exported to: " + filename);
+            logger.info("");
+            logger.info("Trajectory exported to: {}", filename);
         } catch (IOException e) {
-            System.err.println("Failed to export CSV: " + e.getMessage());
+            logger.error("Failed to export CSV: {}", e.getMessage());
         }
         
-        System.out.println();
-        System.out.println("=== Interpretation ===");
-        System.out.println("Baseline aggregation (random): ~50-61%");
-        System.out.println("Hypothesis: Peak aggregation > 60% indicates meaningful clustering");
+        logger.info("");
+        logger.info("=== Interpretation ===");
+        logger.info("Baseline aggregation (random): ~50-61%");
+        logger.info("Hypothesis: Peak aggregation > 60% indicates meaningful clustering");
         
         if (results.getPeakAggregation() > 60.0) {
-            System.out.println("✓ HYPOTHESIS SUPPORTED: Peak aggregation exceeds baseline!");
+            logger.info("✓ HYPOTHESIS SUPPORTED: Peak aggregation exceeds baseline!");
         } else {
-            System.out.println("✗ HYPOTHESIS NOT SUPPORTED: Peak aggregation within baseline range");
+            logger.info("✗ HYPOTHESIS NOT SUPPORTED: Peak aggregation within baseline range");
         }
         
         if (finalState.perfectFactorPositions.size() > 0) {
-            System.out.println("✓ True factors detected in candidate set");
-            System.out.println("✓ Factors migrated to front (positions " + finalState.perfectFactorPositions + ")");
+            logger.info("✓ True factors detected in candidate set");
+            logger.info("✓ Factors migrated to front (positions {})", finalState.perfectFactorPositions);
         } else {
-            System.out.println("✗ No perfect factors in final arrangement (may have been excluded during generation)");
+            logger.info("✗ No perfect factors in final arrangement (may have been excluded during generation)");
         }
     }
 }

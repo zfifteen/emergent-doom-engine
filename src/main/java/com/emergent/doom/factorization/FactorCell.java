@@ -397,8 +397,12 @@ public class FactorCell extends AbstractCell<Integer, FactorStrategy> {
      */
     @Override
     public boolean hasGreaterValueThan(AbstractCell<Integer, FactorStrategy> other) {
-        FactorCell otherFactor = (FactorCell) other;
-        return this.fitness > otherFactor.fitness;
+        if (other instanceof FactorCell) {
+            FactorCell otherFactor = (FactorCell) other;
+            return this.fitness > otherFactor.fitness;
+        } else {
+            return false; // Cannot compare with non-FactorCell
+        }
     }
     
     /**
@@ -422,9 +426,13 @@ public class FactorCell extends AbstractCell<Integer, FactorStrategy> {
      */
     @Override
     public int compareTo(AbstractCell<Integer, FactorStrategy> other) {
-        FactorCell otherFactor = (FactorCell) other;
-        // Descending fitness order (higher fitness = "less than" for front-of-array sorting)
-        return Double.compare(otherFactor.fitness, this.fitness);
+        if (other instanceof FactorCell) {
+            FactorCell otherFactor = (FactorCell) other;
+            // Descending fitness order (higher fitness = "less than" for front-of-array sorting)
+            return Double.compare(otherFactor.fitness, this.fitness);
+        } else {
+            return 0; // Cannot compare with non-FactorCell, treat as equal
+        }
     }
     
     // ==================== DISPLAY ====================

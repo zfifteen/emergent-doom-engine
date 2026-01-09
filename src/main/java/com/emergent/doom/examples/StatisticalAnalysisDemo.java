@@ -5,6 +5,9 @@ import com.emergent.doom.statistics.StatisticalTests;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Demonstration of statistical analysis capabilities.
  * 
@@ -13,13 +16,14 @@ import java.util.List;
  * cell-view vs traditional sorting algorithms.</p>
  */
 public class StatisticalAnalysisDemo {
+    private static final Logger logger = LoggerFactory.getLogger(StatisticalAnalysisDemo.class);
     
     public static void main(String[] args) {
-        System.out.println("=".repeat(70));
-        System.out.println("Statistical Analysis Demonstration");
-        System.out.println("Emergent Doom Engine - Category 7 Implementation");
-        System.out.println("=".repeat(70));
-        System.out.println();
+        logger.info("=".repeat(70));
+        logger.info("Statistical Analysis Demonstration");
+        logger.info("Emergent Doom Engine - Category 7 Implementation");
+        logger.info("=".repeat(70));
+        logger.info("");
         
         // Example 1: Z-Score Calculation
         // Simulate comparing Selection sort (cell-view vs traditional)
@@ -36,14 +40,14 @@ public class StatisticalAnalysisDemo {
         // Example 4: Confidence Intervals
         demonstrateConfidenceIntervals();
         
-        System.out.println("\n" + "=".repeat(70));
-        System.out.println("Statistical Analysis Demo Complete");
-        System.out.println("=".repeat(70));
+        logger.info("\n" + "=".repeat(70));
+        logger.info("Statistical Analysis Demo Complete");
+        logger.info("=".repeat(70));
     }
     
     private static void demonstrateZScore() {
-        System.out.println("Example 1: Z-Score Calculation");
-        System.out.println("-".repeat(70));
+        logger.info("Example 1: Z-Score Calculation");
+        logger.info("-".repeat(70));
         
         // Simulate results from 100 experiments
         // Traditional selection sort: mean ~100 swaps, stddev ~5
@@ -58,30 +62,30 @@ public class StatisticalAnalysisDemo {
             cellViewMean, traditionalMean, traditionalStdDev, sampleSize
         );
         
-        System.out.println("Comparing Selection Sort Implementations:");
-        System.out.println("  Traditional mean:   " + traditionalMean + " swaps");
-        System.out.println("  Cell-view mean:     " + cellViewMean + " swaps");
-        System.out.println("  Traditional stddev: " + traditionalStdDev);
-        System.out.println("  Sample size:        " + sampleSize);
-        System.out.println();
-        System.out.println("  Z-Score:            " + String.format("%.2f", zScore));
+        logger.info("Comparing Selection Sort Implementations:");
+        logger.info("  Traditional mean:   {} swaps", traditionalMean);
+        logger.info("  Cell-view mean:     {} swaps", cellViewMean);
+        logger.info("  Traditional stddev: {}", traditionalStdDev);
+        logger.info("  Sample size:        {}", sampleSize);
+        logger.info("");
+        logger.info("  Z-Score:            {:.2f}", zScore);
         
         if (Math.abs(zScore) > 2.58) {
-            System.out.println("  Significance:       HIGHLY SIGNIFICANT (p < 0.01)");
+            logger.info("  Significance:       HIGHLY SIGNIFICANT (p < 0.01)");
         } else if (Math.abs(zScore) > 1.96) {
-            System.out.println("  Significance:       SIGNIFICANT (p < 0.05)");
+            logger.info("  Significance:       SIGNIFICANT (p < 0.05)");
         } else {
-            System.out.println("  Significance:       NOT SIGNIFICANT");
+            logger.info("  Significance:       NOT SIGNIFICANT");
         }
         
-        System.out.println("\nInterpretation: Cell-view selection sort requires significantly");
-        System.out.println("more swaps due to lack of global knowledge (10x difference).");
-        System.out.println();
+        logger.info("\nInterpretation: Cell-view selection sort requires significantly");
+        logger.info("more swaps due to lack of global knowledge (10x difference).");
+        logger.info("");
     }
     
     private static void demonstrateTTest() {
-        System.out.println("Example 2: One-Sample T-Test");
-        System.out.println("-".repeat(70));
+        logger.info("Example 2: One-Sample T-Test");
+        logger.info("-".repeat(70));
         
         // Sample data: bubble sort swap counts from 10 trials
         List<Double> bubbleSwaps = Arrays.asList(
@@ -95,26 +99,25 @@ public class StatisticalAnalysisDemo {
         double sampleMean = StatisticalTests.calculateMean(bubbleSwaps);
         double sampleStdDev = StatisticalTests.calculateStdDev(bubbleSwaps);
         
-        System.out.println("Cell-view Bubble Sort Analysis:");
-        System.out.println("  Sample size:        " + bubbleSwaps.size());
-        System.out.println("  Sample mean:        " + String.format("%.2f", sampleMean));
-        System.out.println("  Sample stddev:      " + String.format("%.2f", sampleStdDev));
-        System.out.println("  Expected mean:      " + expectedMean);
-        System.out.println();
-        System.out.println("  T-Test p-value:     " + String.format("%.4f", pValue));
+        logger.info("Cell-view Bubble Sort Analysis:");
+        logger.info("  Sample size:        {}", bubbleSwaps.size());
+        logger.info("  Sample mean:        {:.2f}", sampleMean);
+        logger.info("  Sample stddev:      {:.2f}", sampleStdDev);
+        logger.info("  Expected mean:      {}", expectedMean);
+        logger.info("");
+        logger.info("  T-Test p-value:     {:.4f}", pValue);
         
         boolean significant = StatisticalTests.isSignificant(pValue, 0.05);
-        System.out.println("  Significant (α=0.05): " + (significant ? "YES" : "NO"));
+        logger.info("  Significant (α=0.05): {}", (significant ? "YES" : "NO"));
         
-        System.out.println("\nInterpretation: " + 
-            (significant ? "Cell-view bubble sort differs significantly from traditional."
-                        : "Cell-view bubble sort performs similarly to traditional."));
-        System.out.println();
+        logger.info("\nInterpretation: {}Cell-view bubble sort differs significantly from traditional.",
+            (significant ? "" : "No "));
+        logger.info("");
     }
     
     private static void demonstrateTwoSampleComparison() {
-        System.out.println("Example 3: Two-Sample Comparison");
-        System.out.println("-".repeat(70));
+        logger.info("Example 3: Two-Sample Comparison");
+        logger.info("-".repeat(70));
         
         // Compare bubble vs insertion sort (cell-view)
         List<Double> bubbleSwaps = Arrays.asList(
@@ -130,24 +133,23 @@ public class StatisticalAnalysisDemo {
         double bubbleMean = StatisticalTests.calculateMean(bubbleSwaps);
         double insertionMean = StatisticalTests.calculateMean(insertionSwaps);
         
-        System.out.println("Comparing Cell-View Algorithms:");
-        System.out.println("  Bubble mean:        " + String.format("%.2f", bubbleMean));
-        System.out.println("  Insertion mean:     " + String.format("%.2f", insertionMean));
-        System.out.println();
-        System.out.println("  T-Test p-value:     " + String.format("%.4f", pValue));
+        logger.info("Comparing Cell-View Algorithms:");
+        logger.info("  Bubble mean:        {:.2f}", bubbleMean);
+        logger.info("  Insertion mean:     {:.2f}", insertionMean);
+        logger.info("");
+        logger.info("  T-Test p-value:     {:.4f}", pValue);
         
         boolean significant = StatisticalTests.isSignificant(pValue, 0.05);
-        System.out.println("  Significant (α=0.05): " + (significant ? "YES" : "NO"));
+        logger.info("  Significant (α=0.05): {}", (significant ? "YES" : "NO"));
         
-        System.out.println("\nInterpretation: " + 
-            (significant ? "The two algorithms show significantly different performance."
-                        : "The two algorithms show similar performance."));
-        System.out.println();
+        logger.info("\nInterpretation: {}The two algorithms show significantly different performance.",
+            (significant ? "" : "No "));
+        logger.info("");
     }
     
     private static void demonstrateConfidenceIntervals() {
-        System.out.println("Example 4: Confidence Intervals");
-        System.out.println("-".repeat(70));
+        logger.info("Example 4: Confidence Intervals");
+        logger.info("-".repeat(70));
         
         List<Double> swapCounts = Arrays.asList(
             2450.0, 2510.0, 2480.0, 2490.0, 2520.0,
@@ -165,21 +167,19 @@ public class StatisticalAnalysisDemo {
             mean, stdDev, swapCounts.size(), 0.99
         );
         
-        System.out.println("Swap Count Analysis:");
-        System.out.println("  Sample size:        " + swapCounts.size());
-        System.out.println("  Mean:               " + String.format("%.2f", mean));
-        System.out.println("  Std deviation:      " + String.format("%.2f", stdDev));
-        System.out.println();
-        System.out.println("  95% Confidence Interval: [" + 
-            String.format("%.2f", ci95[0]) + ", " + 
-            String.format("%.2f", ci95[1]) + "]");
-        System.out.println("  99% Confidence Interval: [" + 
-            String.format("%.2f", ci99[0]) + ", " + 
-            String.format("%.2f", ci99[1]) + "]");
+        logger.info("Swap Count Analysis:");
+        logger.info("  Sample size:        {}", swapCounts.size());
+        logger.info("  Mean:               {:.2f}", mean);
+        logger.info("  Std deviation:      {:.2f}", stdDev);
+        logger.info("");
+        logger.info("  95% Confidence Interval: [{} , {} ]", 
+            String.format("%.2f", ci95[0]), String.format("%.2f", ci95[1]));
+        logger.info("  99% Confidence Interval: [{} , {} ]", 
+            String.format("%.2f", ci99[0]), String.format("%.2f", ci99[1]));
         
-        System.out.println("\nInterpretation: We are 95% confident the true mean lies");
-        System.out.println("between " + String.format("%.2f", ci95[0]) + 
-            " and " + String.format("%.2f", ci95[1]) + " swaps.");
-        System.out.println();
+        logger.info("\nInterpretation: We are 95% confident the true mean lies");
+        logger.info("between {} and {} swaps.", String.format("%.2f", ci95[0]), 
+            String.format("%.2f", ci95[1]));
+        logger.info("");
     }
 }

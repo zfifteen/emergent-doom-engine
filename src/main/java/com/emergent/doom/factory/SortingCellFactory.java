@@ -2,7 +2,12 @@ package com.emergent.doom.factory;
 
 import com.emergent.doom.cell.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
+import java.util.Comparator;
 
 /**
  * Factory for creating sorting cells with embedded algotypes (Levin-aligned semantics).
