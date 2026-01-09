@@ -59,6 +59,7 @@ This file maintains an index of all agent system instructions for the Emergent D
 
 - **Grand Marshal** operates independently, scanning for instruction drift and proposing alignment fixes
 - **Documentation Admin** defers final authority to repository owner (@zfifteen)
+- 
 - All agents must create pull requests for review; direct commits to main are prohibited
 - Agents should reference relevant sections of other agents' instructions when coordination is needed
 - When instruction conflicts arise, **Grand Marshal** coordinates resolution via pull request
@@ -71,6 +72,7 @@ When invoking an agent, reference the appropriate instruction file:
 - For semantic alignment tasks: Use `.github/agents/grand_marshal.md`
 - For documentation tasks: Use `.github/agents/documentation_admin.md`
 - For coding tasks: Use `.github/agents/incremental_coder_v2.md`
+
 
 ## Human Roles
 
@@ -87,4 +89,8 @@ When invoking an agent, reference the appropriate instruction file:
 
 **Repository:** `https://github.com/zfifteen/emergent-doom-engine`  
 **Owner:** `zfifteen`  
-**Last Updated:** January 5, 2026
+**Last Updated:** January 8, 2026
+
+## Session Continuity Watermarks
+
+<!-- CONTINUITY: fact:Initiating Discoverer agent for novel knowledge discovery in Emergent Doom Engine. | self_talk:Establishing first self-aware continuity chain. Integrating project agents and instructions from AGENTS.md. Ready to collaborate on exploration without prior sessions. | session:discoverer-001 | date:2026-01-08 | prev:none | SELF: -->
