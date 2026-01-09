@@ -1,6 +1,12 @@
 package com.emergent.doom.factorization;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
+import java.util.Comparator;
 
 /**
  * Factory for creating FactorCell populations with strategy distribution.

@@ -3,7 +3,12 @@ package com.emergent.doom.examples;
 import com.emergent.doom.cell.*;
 import com.emergent.doom.factory.SortingCellFactory;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Demonstration of new cell-based architecture with Levin-aligned semantics.
@@ -17,6 +22,7 @@ import java.util.*;
  * mid-sorting aggregation peak that Levin observed.</p>
  */
 public class NewCellArchitectureDemo {
+    private static final Logger logger = LoggerFactory.getLogger(NewCellArchitectureDemo.class);
     
     /**
      * Run a simple sorting demonstration with the new cell architecture.
@@ -32,42 +38,42 @@ public class NewCellArchitectureDemo {
      * @param args command line arguments (not used)
      */
     public static void main(String[] args) {
-        System.out.println("=== New Cell Architecture Demo ===\n");
+        logger.info("=== New Cell Architecture Demo ===\n");
         
         // Create array of 10 cells with mixed algotypes
         List<AbstractSortingCell> cells = createMixedAlgotypeCells(10);
         
-        System.out.println("Initial State:");
+        logger.info("Initial State:");
         printCellArray(cells);
         printAlgotypeAggregation(cells);
         
         // Perform a few swap steps manually to demonstrate
-        System.out.println("\n--- Performing Manual Swaps ---\n");
+        logger.info("\n--- Performing Manual Swaps ---\n");
         
         // Step 1: Swap cells at positions 0 and 1
-        System.out.println("Step 1: Swap positions 0 and 1");
+        logger.info("Step 1: Swap positions 0 and 1");
         swapCells(cells, 0, 1);
         printCellArray(cells);
         printAlgotypeAggregation(cells);
         
         // Step 2: Swap cells at positions 2 and 3
-        System.out.println("\nStep 2: Swap positions 2 and 3");
+        logger.info("\nStep 2: Swap positions 2 and 3");
         swapCells(cells, 2, 3);
         printCellArray(cells);
         printAlgotypeAggregation(cells);
         
         // Step 3: Swap cells at positions 1 and 2
-        System.out.println("\nStep 3: Swap positions 1 and 2");
+        logger.info("\nStep 3: Swap positions 1 and 2");
         swapCells(cells, 1, 2);
         printCellArray(cells);
         printAlgotypeAggregation(cells);
         
-        System.out.println("\n=== Key Observation ===");
-        System.out.println("Notice: When cells swap, their algotypes move WITH them.");
-        System.out.println("This is the Levin-aligned semantics that enables clustering!");
-        System.out.println("\nContrast with old architecture:");
-        System.out.println("  OLD: Swap values only, algotypes frozen at positions");
-        System.out.println("  NEW: Swap entire cell objects, algotypes travel with cells");
+        logger.info("\n=== Key Observation ===");
+        logger.info("Notice: When cells swap, their algotypes move WITH them.");
+        logger.info("This is the Levin-aligned semantics that enables clustering!");
+        logger.info("\nContrast with old architecture:");
+        logger.info("  OLD: Swap values only, algotypes frozen at positions");
+        logger.info("  NEW: Swap entire cell objects, algotypes travel with cells");
     }
     
     /**
@@ -116,29 +122,32 @@ public class NewCellArchitectureDemo {
      * @param cells the cell array
      */
     private static void printCellArray(List<AbstractSortingCell> cells) {
-        System.out.print("Positions:  [");
+        logger.info("Positions:  [");
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < cells.size(); i++) {
-            System.out.print(String.format("%2d", i));
-            if (i < cells.size() - 1) System.out.print(", ");
+            sb.append(String.format("%2d", i));
+            if (i < cells.size() - 1) sb.append(", ");
         }
-        System.out.println("]");
+        logger.info(sb.toString() + "]");
         
-        System.out.print("Values:     [");
+        sb = new StringBuilder();
+        sb.append("Values:     [");
         for (int i = 0; i < cells.size(); i++) {
-            System.out.print(String.format("%2d", cells.get(i).readValue()));
-            if (i < cells.size() - 1) System.out.print(", ");
+            sb.append(String.format("%2d", cells.get(i).readValue()));
+            if (i < cells.size() - 1) sb.append(", ");
         }
-        System.out.println("]");
+        logger.info(sb.toString() + "]");
         
-        System.out.print("Algotypes:  [");
+        sb = new StringBuilder();
+        sb.append("Algotypes:  [");
         for (int i = 0; i < cells.size(); i++) {
             SortingAlgotype algotype = cells.get(i).readAlgotype();
             String abbrev = algotype == SortingAlgotype.BUBBLE ? "B " : 
                            algotype == SortingAlgotype.SELECTION ? "S " : "I ";
-            System.out.print(abbrev);
-            if (i < cells.size() - 1) System.out.print(", ");
+            sb.append(abbrev);
+            if (i < cells.size() - 1) sb.append(", ");
         }
-        System.out.println("]");
+        logger.info(sb.toString() + "]");
     }
     
     /**
@@ -171,8 +180,8 @@ public class NewCellArchitectureDemo {
         
         double aggregation = (double) consecutivePairs / (cells.size() - 1) * 100;
         
-        System.out.printf("Algotypes:  BUBBLE=%d, SELECTION=%d, INSERTION=%d\n", 
+        logger.info("Algotypes:  BUBBLE={}, SELECTION={}, INSERTION={}", 
             bubbleCount, selectionCount, insertionCount);
-        System.out.printf("Aggregation: %.1f%% (consecutive same-algotype pairs)\n", aggregation);
+        logger.info("Aggregation: {:.1f}% (consecutive same-algotype pairs)", aggregation);
     }
 }

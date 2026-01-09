@@ -2,7 +2,9 @@ package com.emergent.doom.execution;
 
 import com.emergent.doom.cell.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  * Simple execution engine using new cell-based architecture (Levin-aligned semantics).

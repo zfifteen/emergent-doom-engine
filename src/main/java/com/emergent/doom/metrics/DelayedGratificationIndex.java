@@ -46,8 +46,10 @@ public class DelayedGratificationIndex<T extends Cell<T>> implements Metric<T> {
         double avgValue = computeAverageValue(cells);
         for (int i = 0; i < n; i++) {
             T cell = cells[i];
-            double quality = Math.abs(cell.getValue() - avgValue); // Deviation as proxy for "quality difference"
-            totalQuality += (i + 1) * quality; // Weight by position (1-based for later emphasis)
+            if (cell != null) {
+                double quality = Math.abs(cell.getValue() - avgValue); // Deviation as proxy for "quality difference"
+                totalQuality += (i + 1) * quality; // Weight by position (1-based for later emphasis)
+            }
         }
         return totalQuality / (n * (n + 1) / 2.0); // Normalize by avg position weight
     }
@@ -62,14 +64,21 @@ public class DelayedGratificationIndex<T extends Cell<T>> implements Metric<T> {
         int n = values.size();
         
         double sum = 0.0;
+        int count = 0;
         for (Integer val : values) {
-            sum += val;
+            if (val != null) {
+                sum += val;
+                count++;
+            }
         }
-        double avgValue = n > 0 ? sum / n : 0.0;
+        double avgValue = count > 0 ? sum / count : 0.0;
 
         for (int i = 0; i < n; i++) {
-            double quality = Math.abs(values.get(i) - avgValue);
-            totalQuality += (i + 1) * quality;
+            Integer val = values.get(i);
+            if (val != null) {
+                double quality = Math.abs(val - avgValue);
+                totalQuality += (i + 1) * quality;
+            }
         }
         return totalQuality / (n * (n + 1) / 2.0);
     }

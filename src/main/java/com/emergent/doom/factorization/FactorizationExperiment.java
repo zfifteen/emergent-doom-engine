@@ -6,7 +6,9 @@ import com.emergent.doom.execution.GenericExecutionEngine;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Orchestrates factorization experiments using emergent clustering.
