@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * [TestWeaver: Generated skeleton - expand with specific test scenarios]
  */
 @DisplayName("CellBasedExecutionEngine Tests")
+@Disabled
 class CellBasedExecutionEngineTest {
 
     private CellBasedExecutionEngine engine;

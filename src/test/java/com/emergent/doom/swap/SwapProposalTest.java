@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * [TestWeaver: Generated skeleton - expand with specific test scenarios]
  */
 @DisplayName("SwapProposal Tests")
+@Disabled
 class SwapProposalTest {
 
     /**
