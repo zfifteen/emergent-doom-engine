@@ -1,6 +1,7 @@
 package com.emergent.doom.examples;
 
-import com.emergent.doom.factorization.*;
+import com.emergent.doom.factorization.FactorStrategy;
+import com.emergent.doom.factorization.FactorizationExperiment;
 
 import java.io.IOException;
 import java.util.Map;
