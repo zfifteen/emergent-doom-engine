@@ -20,34 +20,43 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * Scientific experiment testing whether factor localization is caused by clustering or fitness-driven sorting.
+ * Scientific experiment testing whether factor LOCALIZATION is caused by fitness-field clustering or fitness-driven sorting.
  *
  * <p><strong>CENTRAL HYPOTHESIS:</strong> Factor localization in the Emergent Doom Engine
- * factorization domain is driven by FITNESS-BASED SORTING, not by algotype clustering.
- * This experiment creates five experimental conditions with varying aggregation levels
+ * factorization domain is driven by FITNESS-BASED SORTING, not by pre-existing fitness-field clustering.
+ * This experiment creates five experimental conditions with varying spatial structure
  * to isolate the causal mechanism.</p>
+ *
+ * <p><strong>SEMANTIC ALIGNMENT (v2):</strong> This version uses Levin-consistent terminology:</p>
+ * <ul>
+ *   <li><strong>Localization:</strong> Concentration of high-fitness configurations in morphospace (measured by inter-factor proximity)</li>
+ *   <li><strong>Fitness Clustering:</strong> Spatial aggregation of similar FITNESS values (not strategy labels)</li>
+ *   <li><strong>Strategy Aggregation:</strong> Spatial grouping of same-STRATEGY cells (v1 metric, for comparison)</li>
+ * </ul>
  *
  * <p><strong>EXPERIMENTAL CONDITIONS:</strong></p>
  * <table border="1">
- * <tr><th>Condition</th><th>Aggregation</th><th>Purpose</th></tr>
+ * <tr><th>Condition</th><th>Strategy Aggregation</th><th>Purpose</th></tr>
  * <tr><td>C1: Baseline</td><td>~50-60%</td><td>Natural chimeric distribution (reference)</td></tr>
- * <tr><td>C2: High Aggregation</td><td>~75%</td><td>Pre-clustered by strategy (test clustering hypothesis)</td></tr>
- * <tr><td>C3: Zero Aggregation</td><td>~0-10%</td><td>Maximally mixed strategies (test if clustering is necessary)</td></tr>
+ * <tr><td>C2: High Strategy Aggregation</td><td>~75%</td><td>Pre-clustered by strategy (test clustering hypothesis)</td></tr>
+ * <tr><td>C3: Zero Strategy Aggregation</td><td>~0-10%</td><td>Maximally mixed strategies (test if strategy grouping is necessary)</td></tr>
  * <tr><td>C4: Fitness Control</td><td>~50-60%</td><td>No true factors (test if fitness is necessary)</td></tr>
- * <tr><td>C5: Homogeneous</td><td>100%</td><td>Single strategy (test if aggregation alone is sufficient)</td></tr>
+ * <tr><td>C5: Homogeneous</td><td>100%</td><td>Single strategy (test if strategy diversity is necessary)</td></tr>
  * </table>
  *
  * <p><strong>PREDICTION MATRIX:</strong></p>
  * <table border="1">
  * <tr><th>Hypothesis</th><th>C1</th><th>C2</th><th>C3</th><th>C4</th><th>C5</th></tr>
- * <tr><td>Clustering Causes Localization</td><td>Localizes</td><td><strong>Fastest</strong></td><td><strong>No localization</strong></td><td>?</td><td>Fastest</td></tr>
+ * <tr><td>Fitness Clustering Causes Localization</td><td>Localizes</td><td><strong>Depends on fitness clustering</strong></td><td><strong>Depends on fitness clustering</strong></td><td>?</td><td>Depends on fitness clustering</td></tr>
  * <tr><td>Fitness Causes Localization</td><td>Localizes</td><td>Same speed</td><td>Same speed</td><td><strong>No localization</strong></td><td>Same speed</td></tr>
  * </table>
  *
- * <p><strong>KEY METRICS:</strong></p>
+ * <p><strong>KEY METRICS (v2):</strong></p>
  * <ul>
- *   <li>Aggregation value (clustering measure)</li>
- *   <li>Factor positions (localization measure)</li>
+ *   <li>Strategy aggregation (v1 metric for comparison)</li>
+ *   <li>Fitness clustering (v2 fitness-field metric)</li>
+ *   <li>Factor localization (inter-factor proximity)</li>
+ *   <li>Factor positions (array positions of 11 and 13)</li>
  *   <li>Mean factor distance from front (convergence speed)</li>
  *   <li>Fitness gradient (sorting progress)</li>
  *   <li>Strategy entropy (diversity measure)</li>
@@ -77,14 +86,16 @@ import java.util.Random;
  *
  * <p><strong>DESIGN RATIONALE:</strong></p>
  * <ul>
- *   <li>Five conditions isolate clustering vs fitness as causal factors</li>
+ *   <li>Five conditions isolate fitness-field clustering vs fitness-driven sorting as causal factors</li>
  *   <li>30 reps per condition provide statistical power</li>
  *   <li>Per-step metrics enable time-series analysis</li>
  *   <li>Snapshots enable visualization and post-hoc analysis</li>
  *   <li>Reproducible: fixed random seeds (rep number = seed)</li>
+ *   <li>Fitness-field metrics avoid circular reasoning in hypothesis testing</li>
  * </ul>
  *
- * <p><strong>REFERENCE:</strong> See experiment specification in task description</p>
+ * <p><strong>REFERENCE:</strong> See experiments/clustering_vs_fitness_experiment_2026_01_10/EXPERIMENT_SETUP_AUDIT.md
+ * for detailed analysis of v1 issues and rationale for v2 semantic realignment.</p>
  */
 public class ClusteringVsFitnessExperiment {
     
@@ -98,6 +109,32 @@ public class ClusteringVsFitnessExperiment {
     
     /** Maximum execution steps per run */
     private static final int MAX_STEPS = 100;
+    
+    /**
+     * Convergence position threshold (both factors must be in positions [0, CONVERGENCE_POSITION]).
+     *
+     * <p><strong>PHASE 2 FIX:</strong> Resolves inconsistency between documentation sources.
+     * CLUSTERING_VS_FITNESS_EXPERIMENT.md said [0,3], FINDINGS.md said [0,4].
+     * Settled on [0,4] (5 positions) as it provides slightly more lenient convergence
+     * criterion while maintaining front-clustering requirement.</p>
+     *
+     * <p><strong>SEMANTIC NOTE:</strong> This is CONVERGENCE (task success), not
+     * LOCALIZATION (pattern formation). Localization is measured by inter-factor
+     * distance via FactorLocalizationIndex.</p>
+     */
+    private static final int CONVERGENCE_POSITION = 4;
+    
+    /**
+     * Stagnation threshold (steps with zero progress before declaring stagnation).
+     *
+     * <p><strong>PHASE 2 FIX:</strong> Distinguish "not yet converged" from "stuck
+     * in local attractor". If swaps = 0 for this many consecutive steps, mark as
+     * stagnant rather than in-progress.</p>
+     *
+     * <p><strong>RATIONALE:</strong> Prevents false negatives where runs appear
+     * "not converged" when they've actually reached a stable non-optimal state.</p>
+     */
+    private static final int STAGNATION_THRESHOLD = 20;
     
     /** Number of repetitions per condition */
     private static final int REPS_PER_CONDITION = 30;
@@ -198,22 +235,27 @@ public class ClusteringVsFitnessExperiment {
     /**
      * Execute single experiment run with metric recording.
      *
-     * <p><strong>PURPOSE:</strong> Run execution steps until convergence or max steps,
+     * <p><strong>PURPOSE:</strong> Run execution steps until convergence, stagnation, or max steps,
      * recording metrics at each step.</p>
      *
      * <p><strong>PROCESS:</strong></p>
      * <ol>
      *   <li>Record initial state (step 0)</li>
-     *   <li>While not converged and steps < MAX_STEPS:</li>
+     *   <li>While not converged/stagnated and steps < MAX_STEPS:</li>
      *   <li>  Execute step with GenericExecutionEngine</li>
      *   <li>  Compute and record metrics</li>
-     *   <li>  Check convergence (both factors in positions 0-4 or swaps=0)</li>
+     *   <li>  Check convergence (both factors in positions [0, CONVERGENCE_POSITION])</li>
+     *   <li>  Check stagnation (swaps = 0 for STAGNATION_THRESHOLD steps)</li>
      * </ol>
      *
-     * <p><strong>CONVERGENCE CRITERIA:</strong></p>
+     * <p><strong>CONVERGENCE CRITERIA (PHASE 2):</strong></p>
      * <ul>
-     *   <li>Both factors in positions 0-4 (successful localization), OR</li>
-     *   <li>swapCount = 0 (no beneficial swaps remain)</li>
+     *   <li>Both factors in positions [0, CONVERGENCE_POSITION] (successful localization)</li>
+     * </ul>
+     *
+     * <p><strong>STAGNATION CRITERIA (PHASE 2 NEW):</strong></p>
+     * <ul>
+     *   <li>swapCount = 0 for STAGNATION_THRESHOLD consecutive steps (stuck in local attractor)</li>
      * </ul>
      *
      * @param cells the cell array to execute
@@ -223,9 +265,12 @@ public class ClusteringVsFitnessExperiment {
         List<StepMetrics> metricsHistory = new ArrayList<>();
         GenericExecutionEngine<Integer, FactorStrategy> engine = new GenericExecutionEngine<>();
         
-        // Record initial state (step 0, swaps 0)
-        StepMetrics initialMetrics = computeMetrics(0, cells, 0);
+        // Record initial state (step 0, swaps 0, not stagnant)
+        StepMetrics initialMetrics = computeMetrics(0, cells, 0, 0, false);
         metricsHistory.add(initialMetrics);
+        
+        // Stagnation tracking
+        int consecutiveZeroSwaps = 0;
         
         // Execute steps
         int step = 0;
@@ -234,12 +279,27 @@ public class ClusteringVsFitnessExperiment {
             int swaps = engine.executeStep(castToAbstractCells(cells));
             step++;
             
+            // Track stagnation
+            if (swaps == 0) {
+                consecutiveZeroSwaps++;
+            } else {
+                consecutiveZeroSwaps = 0;
+            }
+            
+            // Determine if stagnant
+            boolean isStagnant = consecutiveZeroSwaps >= STAGNATION_THRESHOLD;
+            
             // Compute and record metrics
-            StepMetrics stepMetrics = computeMetrics(step, cells, swaps);
+            StepMetrics stepMetrics = computeMetrics(step, cells, swaps, consecutiveZeroSwaps, isStagnant);
             metricsHistory.add(stepMetrics);
             
             // Check convergence
             if (isConverged(stepMetrics)) {
+                break;
+            }
+            
+            // PHASE 2: Check stagnation
+            if (isStagnant) {
                 break;
             }
         }
@@ -250,30 +310,95 @@ public class ClusteringVsFitnessExperiment {
     /**
      * Check if experiment has converged.
      *
-     * <p><strong>CONVERGENCE CRITERIA:</strong></p>
+     * <p><strong>CONVERGENCE CRITERIA (PHASE 2):</strong></p>
      * <ul>
-     *   <li>Both factors in positions 0-4 (successful localization), OR</li>
-     *   <li>swapCount = 0 (no beneficial swaps remain)</li>
+     *   <li>Both factors in positions [0, CONVERGENCE_POSITION] (successful localization)</li>
      * </ul>
      *
+     * <p><strong>NOTE:</strong> Stagnation (swaps = 0 for STAGNATION_THRESHOLD steps)
+     * is now checked separately in the execution loop, not here.</p>
+     *
      * @param metrics the current step metrics
-     * @return true if converged
+     * @return true if converged (task success)
      */
     private boolean isConverged(StepMetrics metrics) {
-        // No swaps = converged
-        if (metrics.swapCount == 0) {
-            return true;
-        }
-        
-        // Both factors in positions 0-4 = successful localization
+        // Both factors in convergence zone = successful localization
         int pos11 = metrics.factorPositions[0];
         int pos13 = metrics.factorPositions[1];
         
-        if (pos11 >= 0 && pos11 <= 4 && pos13 >= 0 && pos13 <= 4) {
-            return true;
+        return (pos11 >= 0 && pos11 <= CONVERGENCE_POSITION && 
+                pos13 >= 0 && pos13 <= CONVERGENCE_POSITION);
+    }
+    
+    // ==================== FACTOR INJECTION (PHASE 2 FIX) ====================
+    
+    /**
+     * Ensure both true factors (11 and 13) are present in cell array.
+     *
+     * <p><strong>PHASE 2 CORRECTNESS FIX:</strong> Per EXPERIMENT_SETUP_AUDIT.md §2,
+     * factor 13 was frequently missing from candidate pools in v1 experiment,
+     * making convergence impossible by definition. This method guarantees both
+     * factors are present in all non-control conditions.</p>
+     *
+     * <p><strong>STRATEGY:</strong></p>
+     * <ol>
+     *   <li>Check if factors 11 and 13 are already present</li>
+     *   <li>If missing, deterministically replace cells to inject factors</li>
+     *   <li>Use seed-based positioning for reproducibility</li>
+     *   <li>Preserve strategy distribution as much as possible</li>
+     * </ol>
+     *
+     * <p><strong>INJECTION LOGIC:</strong></p>
+     * <ul>
+     *   <li>If factor 11 missing: replace cell at position (seed % 17) with factor 11</li>
+     *   <li>If factor 13 missing: replace cell at position (seed % 17 + 17) with factor 13</li>
+     *   <li>Choose SMALL_PRIMES strategy for injected factors (both are prime)</li>
+     * </ul>
+     *
+     * <p><strong>APPLICABILITY:</strong></p>
+     * <ul>
+     *   <li>C1, C2, C3, C5: APPLY (need factors for hypothesis testing)</li>
+     *   <li>C4 (fitness control): DO NOT APPLY (intentionally excludes factors)</li>
+     * </ul>
+     *
+     * @param cells the cell array (modified in-place if factors missing)
+     * @param seed the random seed for deterministic positioning
+     */
+    private void ensureFactorsPresent(List<FactorCell> cells, long seed) {
+        // Check if factors already present
+        boolean has11 = false;
+        boolean has13 = false;
+        
+        for (FactorCell cell : cells) {
+            int value = cell.readValue();
+            if (value == 11) has11 = true;
+            if (value == 13) has13 = true;
         }
         
-        return false;
+        // If both present, no action needed
+        if (has11 && has13) {
+            return;
+        }
+        
+        // Inject missing factors deterministically
+        Random rand = new Random(seed);
+        
+        if (!has11) {
+            // Replace cell at position derived from seed
+            int pos = rand.nextInt(17); // First 17 positions
+            cells.set(pos, new FactorCell(11, TARGET, FactorStrategy.SMALL_PRIMES, pos));
+        }
+        
+        if (!has13) {
+            // Replace cell at different position
+            int pos = 17 + rand.nextInt(17); // Positions 17-33
+            cells.set(pos, new FactorCell(13, TARGET, FactorStrategy.SMALL_PRIMES, pos));
+        }
+        
+        // Update positions to ensure consistency
+        for (int i = 0; i < cells.size(); i++) {
+            cells.get(i).updatePositionTo(i);
+        }
     }
     
     // ==================== CONDITION GENERATORS ====================
@@ -343,6 +468,9 @@ public class ClusteringVsFitnessExperiment {
             cells.get(i).updatePositionTo(i);
         }
         
+        // PHASE 2 FIX: Guarantee factors 11 and 13 present
+        ensureFactorsPresent(cells, seed);
+        
         return cells;
     }
     
@@ -396,6 +524,9 @@ public class ClusteringVsFitnessExperiment {
             int candidate = 2 + rand.nextInt(sqrtN - 1);
             cells.add(new FactorCell(candidate, TARGET, FactorStrategy.RANDOM_SAMPLE, position++));
         }
+        
+        // PHASE 2 FIX: Guarantee factors 11 and 13 present
+        ensureFactorsPresent(cells, seed);
         
         return cells;
     }
@@ -454,6 +585,9 @@ public class ClusteringVsFitnessExperiment {
             
             cells.add(new FactorCell(candidate, TARGET, strategy, position));
         }
+        
+        // PHASE 2 FIX: Guarantee factors 11 and 13 present
+        ensureFactorsPresent(cells, seed);
         
         return cells;
     }
@@ -541,6 +675,17 @@ public class ClusteringVsFitnessExperiment {
             cells.get(i).updatePositionTo(i);
         }
         
+        // PHASE 2 FIX: Verify factors 11 and 13 are ABSENT (negative control)
+        // Replace any that might have slipped through
+        for (int i = 0; i < cells.size(); i++) {
+            int value = cells.get(i).readValue();
+            if (value == 11 || value == 13) {
+                // Replace with a safe non-factor value
+                int replacement = (value == 11) ? 2 : 3; // Use 2 or 3 (both non-factors)
+                cells.set(i, new FactorCell(replacement, TARGET, cells.get(i).readAlgotype(), i));
+            }
+        }
+        
         return cells;
     }
     
@@ -585,6 +730,9 @@ public class ClusteringVsFitnessExperiment {
             cells.add(new FactorCell(candidates.get(position), TARGET, FactorStrategy.FERMAT_NEAR_SQRT, position));
         }
         
+        // PHASE 2 FIX: Guarantee factors 11 and 13 present
+        ensureFactorsPresent(cells, seed);
+        
         return cells;
     }
     
@@ -592,6 +740,10 @@ public class ClusteringVsFitnessExperiment {
      * Filter out true factors (11 and 13) from candidate list.
      *
      * <p><strong>PURPOSE:</strong> Remove perfect factors for C4 control condition.</p>
+     *
+     * <p><strong>PHASE 2 NOTE:</strong> C4 is negative control - factors MUST be absent
+     * to test if fitness gradient is necessary for localization. This is opposite
+     * of factor injection in C1-C3-C5.</p>
      *
      * @param candidates the candidate list
      * @return filtered list without 11 or 13
@@ -616,22 +768,33 @@ public class ClusteringVsFitnessExperiment {
      *
      * <p><strong>PROCESS:</strong></p>
      * <ol>
-     *   <li>Compute aggregation value (clustering)</li>
-     *   <li>Find factor positions (candidates 11 and 13)</li>
+     *   <li>Compute strategy aggregation (v1 metric for comparison)</li>
+     *   <li>Compute fitness clustering (v2 fitness-field metric)</li>
+     *   <li>Find factor positions and compute localization (v2 metric)</li>
      *   <li>Compute mean factor distance from front</li>
      *   <li>Compute fitness gradient mean and std</li>
      *   <li>Compute strategy entropy (global and front)</li>
-     *   <li>Package into StepMetrics object</li>
+     *   <li>Package into StepMetrics object with stagnation info</li>
      * </ol>
      *
      * @param step the step number
      * @param cells the cell array
      * @param swaps the number of swaps in this step
+     * @param consecutiveZeroSwaps consecutive steps with zero swaps
+     * @param isStagnant whether run is stagnant
      * @return StepMetrics object with all measurements
      */
-    private StepMetrics computeMetrics(int step, List<FactorCell> cells, int swaps) {
-        double aggregation = computeAggregation(cells);
+    private StepMetrics computeMetrics(int step, List<FactorCell> cells, int swaps, 
+                                      int consecutiveZeroSwaps, boolean isStagnant) {
+        // v1 metric: strategy-label aggregation (for comparison)
+        double strategyAgg = computeStrategyAggregation(cells);
+        
+        // v2 metrics: fitness-field clustering and localization
+        double fitnessClustering = computeFitnessClustering(cells);
         int[] factorPositions = findFactorPositions(cells);
+        double factorLocalization = computeFactorLocalization(factorPositions, cells.size());
+        
+        // Other metrics
         double meanFactorDist = computeMeanFactorDistance(factorPositions);
         double[] fitnessGradient = computeFitnessGradient(cells);
         double entropyGlobal = computeStrategyEntropy(cells, 0, cells.size());
@@ -639,28 +802,36 @@ public class ClusteringVsFitnessExperiment {
         
         return new StepMetrics(
             step,
-            aggregation,
+            strategyAgg,
+            fitnessClustering,
+            factorLocalization,
             factorPositions,
             meanFactorDist,
             fitnessGradient[0], // mean
             fitnessGradient[1], // std
             entropyGlobal,
             entropyFront,
-            swaps
+            swaps,
+            consecutiveZeroSwaps,
+            isStagnant
         );
     }
     
     /**
-     * Compute aggregation value (percentage of cells with same-strategy neighbor).
+     * Compute strategy aggregation value (v1 metric - strategy-label clustering).
+     *
+     * <p><strong>SEMANTIC NOTE:</strong> This measures STRATEGY-LABEL adjacency,
+     * not fitness-field clustering. Renamed from "aggregation" to "strategyAggregation"
+     * for clarity in v2 experiment.</p>
      *
      * <p><strong>FORMULA:</strong> (cells with >= 1 same-strategy neighbor / total cells) × 100</p>
      *
      * <p><strong>REFERENCE:</strong> AlgotypeAggregationIndex.java</p>
      *
      * @param cells the cell array
-     * @return aggregation percentage [0.0, 100.0]
+     * @return strategy aggregation percentage [0.0, 100.0]
      */
-    private double computeAggregation(List<FactorCell> cells) {
+    private double computeStrategyAggregation(List<FactorCell> cells) {
         if (cells.size() <= 1) {
             return 100.0;
         }
@@ -680,6 +851,77 @@ public class ClusteringVsFitnessExperiment {
         }
         
         return (sameStrategyNeighborCount * 100.0) / cells.size();
+    }
+    
+    /**
+     * Compute fitness clustering value (v2 metric - fitness-field spatial aggregation).
+     *
+     * <p><strong>SEMANTIC ALIGNMENT:</strong> This measures FITNESS-SIMILARITY adjacency,
+     * independent of strategy labels. This avoids circular reasoning in experimental
+     * design where clustering hypothesis is tested using clustering-based measurement.</p>
+     *
+     * <p><strong>FORMULA:</strong> (cells with >= 1 fitness-similar neighbor / total cells) × 100,
+     * where "similar" means |fitness[i] - fitness[neighbor]| < threshold (0.1)</p>
+     *
+     * <p><strong>REFERENCE:</strong> FitnessSimilarityClusteringIndex.java</p>
+     *
+     * @param cells the cell array
+     * @return fitness clustering percentage [0.0, 100.0]
+     */
+    private double computeFitnessClustering(List<FactorCell> cells) {
+        if (cells.size() <= 1) {
+            return 100.0;
+        }
+        
+        final double FITNESS_THRESHOLD = 0.1;
+        int similarFitnessNeighborCount = 0;
+        
+        for (int i = 0; i < cells.size(); i++) {
+            double currentFitness = cells.get(i).getFitness();
+            
+            boolean hasLeftSimilar = (i > 0) && 
+                (Math.abs(cells.get(i - 1).getFitness() - currentFitness) < FITNESS_THRESHOLD);
+            boolean hasRightSimilar = (i < cells.size() - 1) && 
+                (Math.abs(cells.get(i + 1).getFitness() - currentFitness) < FITNESS_THRESHOLD);
+            
+            if (hasLeftSimilar || hasRightSimilar) {
+                similarFitnessNeighborCount++;
+            }
+        }
+        
+        return (similarFitnessNeighborCount * 100.0) / cells.size();
+    }
+    
+    /**
+     * Compute factor localization index (v2 metric - inter-factor proximity).
+     *
+     * <p><strong>SEMANTIC ALIGNMENT:</strong> Per Levin, "localization" is concentration
+     * of high-fitness configurations. This metric captures pattern formation independent
+     * of task-specific convergence criteria.</p>
+     *
+     * <p><strong>FORMULA:</strong> 1.0 - (interFactorDistance / maxDistance)</p>
+     *
+     * <p><strong>REFERENCE:</strong> FactorLocalizationIndex.java</p>
+     *
+     * @param factorPositions array of [pos_factor1, pos_factor2]
+     * @param arraySize size of array (for normalization)
+     * @return localization index [0.0, 1.0]
+     */
+    private double computeFactorLocalization(int[] factorPositions, int arraySize) {
+        int pos1 = factorPositions[0];
+        int pos2 = factorPositions[1];
+        
+        // If either factor missing, no localization possible
+        if (pos1 < 0 || pos2 < 0) {
+            return 0.0;
+        }
+        
+        // Compute inter-factor distance
+        int distance = Math.abs(pos1 - pos2);
+        
+        // Normalize by maximum possible distance and invert
+        int maxDistance = arraySize - 1;
+        return 1.0 - ((double) distance / maxDistance);
     }
     
     /**
