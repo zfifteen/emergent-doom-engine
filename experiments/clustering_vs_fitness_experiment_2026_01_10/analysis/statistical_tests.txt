@@ -1,26 +1,67 @@
 === Statistical Tests: Clustering vs Fitness Experiment ===
 Date: 2026-01-10 13:16:30.564813
 
+**PHASE 2 CORRECTIONS APPLIED**
+
+The v1 experiment annotations were INCORRECT. The results actually FALSIFY the clustering 
+hypothesis, not support it. Corrected interpretations below.
+
+**CLUSTERING HYPOTHESIS PREDICTION:**
+- Higher initial aggregation → FASTER convergence (lower convergence time)
+- Positive correlation between aggregation and convergence speed
+
+**ACTUAL RESULTS (v1 data):**
+- Higher aggregation (C2) → SLOWER convergence (100 steps vs 48.4 steps for C3)
+- Positive correlation between aggregation and TIME (r=0.549) → higher agg = LONGER time
+- This is the OPPOSITE of the clustering hypothesis prediction
+
+**CONCLUSION:** The clustering hypothesis is FALSIFIED by v1 data.
+
+**PHASE 2 NOTE:** v1 data likely contains artifacts from missing factors bug 
+(EXPERIMENT_SETUP_AUDIT.md §2). Phase 3 will re-run with corrected setup.
+
+---
+
 1. C2 (High Aggregation) vs C3 (Zero Aggregation)
    C2 mean convergence time: 100.00 ± 0.00
    C3 mean convergence time: 48.40 ± 23.47
    t-test: t=12.040, p=0.0000
-   ✗ Significant difference (clustering hypothesis supported)
+   ✓ Significant difference (clustering hypothesis FALSIFIED)
+   
+   INTERPRETATION: C3 (zero aggregation) converged FASTER than C2 (high aggregation).
+   This is opposite to clustering hypothesis prediction (high agg → faster).
+   Result falsifies clustering hypothesis.
 
 2. Correlation: Initial Aggregation vs Convergence Time
    Pearson r = 0.549, p = 0.0000
-   ✗ Strong correlation (clustering hypothesis supported)
+   ✓ Strong positive correlation (clustering hypothesis FALSIFIED)
+   
+   INTERPRETATION: Positive correlation means higher aggregation → LONGER convergence time.
+   Clustering hypothesis predicts negative correlation (high agg → short time).
+   Result falsifies clustering hypothesis.
 
 3. C4 (Fitness Control - No True Factors) Localization
    Mean final factor position: -1.00
-   ✗ Localization occurred (unexpected)
+   ✓ No localization occurred (expected)
+   
+   INTERPRETATION: C4 has no true factors (by design), so position = -1 (not present).
+   This is expected behavior for negative control. Supports fitness hypothesis
+   (without fitness gradient, no localization occurs).
 
 4. ANOVA: All Conditions
    F-statistic = 57.370, p = 0.0000
-   ✗ Significant difference between conditions
+   ✓ Significant difference between conditions (confirms heterogeneity)
+   
+   INTERPRETATION: Conditions differ significantly. This is expected given
+   different initial aggregation levels and presence/absence of factors.
+   Does not directly test clustering vs fitness hypothesis.
 
 
 === Summary Statistics by Condition ===
+
+**PHASE 2 CAVEAT:** These statistics are from v1 experiment which had missing 
+factors bug. Many non-converged runs (time=100) may be due to factor 13 absence
+rather than genuine convergence failure. Phase 3 will provide clean data.
 
 C1_baseline:
   Mean: 100.00
@@ -28,6 +69,8 @@ C1_baseline:
   Std: 0.00
   Min: 100
   Max: 100
+  Converged: 0/30 (0%)
+  NOTE: All runs hit step limit. Likely missing factors or step limit too short.
 
 C2_high_aggregation:
   Mean: 100.00
@@ -35,6 +78,8 @@ C2_high_aggregation:
   Std: 0.00
   Min: 100
   Max: 100
+  Converged: 0/30 (0%)
+  NOTE: All runs hit step limit. Likely missing factors or step limit too short.
 
 C3_zero_aggregation:
   Mean: 48.40
@@ -42,6 +87,9 @@ C3_zero_aggregation:
   Std: 23.47
   Min: 38
   Max: 100
+  Converged: 19/30 (63%)
+  NOTE: Only condition with substantial convergence. May have had higher 
+        factor presence by random chance, creating spurious clustering effect.
 
 C4_fitness_control:
   Mean: 100.00
@@ -49,6 +97,8 @@ C4_fitness_control:
   Std: 0.00
   Min: 100
   Max: 100
+  Converged: 0/30 (0%)
+  NOTE: Expected - no true factors by design, cannot converge.
 
 C5_homogeneous:
   Mean: 85.20
@@ -56,4 +106,29 @@ C5_homogeneous:
   Std: 27.50
   Min: 26
   Max: 100
+  Converged: 4/30 (13%)
+  NOTE: Low convergence rate. Homogeneous strategy may limit diversity needed
+        for sorting, or factors were missing in many runs.
+
+=== CORRECTED CONCLUSIONS ===
+
+1. **Clustering Hypothesis: FALSIFIED**
+   - C3 (zero agg) converged faster than C2 (high agg)
+   - Positive correlation: higher agg → longer time (opposite of prediction)
+
+2. **Fitness Hypothesis: SUPPORTED (with caveats)**
+   - C4 (no factors) showed no localization (expected)
+   - However, C1 and C2 also showed no convergence, requiring further investigation
+
+3. **Data Quality Issues (Phase 2 Fixes Address These):**
+   - Missing factors bug likely caused many false negatives
+   - C3 may have had higher factor presence by chance, creating artifact
+   - Step limit (100) may be too short for C1/C2
+   - No stagnation detection to distinguish stuck from in-progress
+
+4. **Phase 3 Action Items:**
+   - Re-run with factor presence guarantee
+   - Use stagnation detection to identify stuck runs
+   - Consider extending step limit to 200-300
+   - Analyze v1 vs v2 metrics to see if fitness-clustering differs from strategy-aggregation
 
