@@ -1,6 +1,10 @@
 package com.emergent.doom.execution;
 
-import com.emergent.doom.cell.*;
+import com.emergent.doom.cell.AbstractCell;
+import com.emergent.doom.cell.AbstractSortingCell;
+import com.emergent.doom.cell.NeighborhoodView;
+import com.emergent.doom.cell.SelectionSortingCell;
+import com.emergent.doom.cell.SortingAlgotype;
 
 import java.util.List;
 import java.util.ArrayList;

@@ -1,6 +1,10 @@
 package com.emergent.doom.factory;
 
-import com.emergent.doom.cell.*;
+import com.emergent.doom.cell.AbstractSortingCell;
+import com.emergent.doom.cell.BubbleSortingCell;
+import com.emergent.doom.cell.InsertionSortingCell;
+import com.emergent.doom.cell.SelectionSortingCell;
+import com.emergent.doom.cell.SortingAlgotype;
 
 import java.util.List;
 import java.util.Map;

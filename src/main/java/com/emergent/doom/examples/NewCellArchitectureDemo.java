@@ -1,6 +1,8 @@
 package com.emergent.doom.examples;
 
-import com.emergent.doom.cell.*;
+import com.emergent.doom.cell.AbstractCell;
+import com.emergent.doom.cell.AbstractSortingCell;
+import com.emergent.doom.cell.SortingAlgotype;
 import com.emergent.doom.factory.SortingCellFactory;
 
 import java.util.List;

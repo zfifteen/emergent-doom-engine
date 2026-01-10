@@ -2,7 +2,6 @@ package com.emergent.doom.swap;
 
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.probe.Probe;
-import com.emergent.doom.swap.FrozenCellStatus.FrozenType;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

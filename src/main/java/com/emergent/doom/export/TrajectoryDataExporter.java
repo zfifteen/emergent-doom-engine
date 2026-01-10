@@ -1,7 +1,6 @@
 package com.emergent.doom.export;
 
 import com.emergent.doom.cell.Cell;
-import com.emergent.doom.cell.HasValue;
 import com.emergent.doom.probe.Probe;
 import com.emergent.doom.probe.StepSnapshot;
 

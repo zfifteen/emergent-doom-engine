@@ -2,7 +2,6 @@ package com.emergent.doom.probe;
 
 import com.emergent.doom.cell.Algotype;
 import com.emergent.doom.cell.Cell;
-import com.emergent.doom.group.CellStatus;
 
 import java.util.ArrayList;
 import java.util.Collections;
