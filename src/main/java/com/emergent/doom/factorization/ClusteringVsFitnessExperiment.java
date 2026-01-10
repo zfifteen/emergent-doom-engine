@@ -20,34 +20,43 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * Scientific experiment testing whether factor localization is caused by clustering or fitness-driven sorting.
+ * Scientific experiment testing whether factor LOCALIZATION is caused by fitness-field clustering or fitness-driven sorting.
  *
  * <p><strong>CENTRAL HYPOTHESIS:</strong> Factor localization in the Emergent Doom Engine
- * factorization domain is driven by FITNESS-BASED SORTING, not by algotype clustering.
- * This experiment creates five experimental conditions with varying aggregation levels
+ * factorization domain is driven by FITNESS-BASED SORTING, not by pre-existing fitness-field clustering.
+ * This experiment creates five experimental conditions with varying spatial structure
  * to isolate the causal mechanism.</p>
+ *
+ * <p><strong>SEMANTIC ALIGNMENT (v2):</strong> This version uses Levin-consistent terminology:</p>
+ * <ul>
+ *   <li><strong>Localization:</strong> Concentration of high-fitness configurations in morphospace (measured by inter-factor proximity)</li>
+ *   <li><strong>Fitness Clustering:</strong> Spatial aggregation of similar FITNESS values (not strategy labels)</li>
+ *   <li><strong>Strategy Aggregation:</strong> Spatial grouping of same-STRATEGY cells (v1 metric, for comparison)</li>
+ * </ul>
  *
  * <p><strong>EXPERIMENTAL CONDITIONS:</strong></p>
  * <table border="1">
- * <tr><th>Condition</th><th>Aggregation</th><th>Purpose</th></tr>
+ * <tr><th>Condition</th><th>Strategy Aggregation</th><th>Purpose</th></tr>
  * <tr><td>C1: Baseline</td><td>~50-60%</td><td>Natural chimeric distribution (reference)</td></tr>
- * <tr><td>C2: High Aggregation</td><td>~75%</td><td>Pre-clustered by strategy (test clustering hypothesis)</td></tr>
- * <tr><td>C3: Zero Aggregation</td><td>~0-10%</td><td>Maximally mixed strategies (test if clustering is necessary)</td></tr>
+ * <tr><td>C2: High Strategy Aggregation</td><td>~75%</td><td>Pre-clustered by strategy (test clustering hypothesis)</td></tr>
+ * <tr><td>C3: Zero Strategy Aggregation</td><td>~0-10%</td><td>Maximally mixed strategies (test if strategy grouping is necessary)</td></tr>
  * <tr><td>C4: Fitness Control</td><td>~50-60%</td><td>No true factors (test if fitness is necessary)</td></tr>
- * <tr><td>C5: Homogeneous</td><td>100%</td><td>Single strategy (test if aggregation alone is sufficient)</td></tr>
+ * <tr><td>C5: Homogeneous</td><td>100%</td><td>Single strategy (test if strategy diversity is necessary)</td></tr>
  * </table>
  *
  * <p><strong>PREDICTION MATRIX:</strong></p>
  * <table border="1">
  * <tr><th>Hypothesis</th><th>C1</th><th>C2</th><th>C3</th><th>C4</th><th>C5</th></tr>
- * <tr><td>Clustering Causes Localization</td><td>Localizes</td><td><strong>Fastest</strong></td><td><strong>No localization</strong></td><td>?</td><td>Fastest</td></tr>
+ * <tr><td>Fitness Clustering Causes Localization</td><td>Localizes</td><td><strong>Depends on fitness clustering</strong></td><td><strong>Depends on fitness clustering</strong></td><td>?</td><td>Depends on fitness clustering</td></tr>
  * <tr><td>Fitness Causes Localization</td><td>Localizes</td><td>Same speed</td><td>Same speed</td><td><strong>No localization</strong></td><td>Same speed</td></tr>
  * </table>
  *
- * <p><strong>KEY METRICS:</strong></p>
+ * <p><strong>KEY METRICS (v2):</strong></p>
  * <ul>
- *   <li>Aggregation value (clustering measure)</li>
- *   <li>Factor positions (localization measure)</li>
+ *   <li>Strategy aggregation (v1 metric for comparison)</li>
+ *   <li>Fitness clustering (v2 fitness-field metric)</li>
+ *   <li>Factor localization (inter-factor proximity)</li>
+ *   <li>Factor positions (array positions of 11 and 13)</li>
  *   <li>Mean factor distance from front (convergence speed)</li>
  *   <li>Fitness gradient (sorting progress)</li>
  *   <li>Strategy entropy (diversity measure)</li>
@@ -77,14 +86,16 @@ import java.util.Random;
  *
  * <p><strong>DESIGN RATIONALE:</strong></p>
  * <ul>
- *   <li>Five conditions isolate clustering vs fitness as causal factors</li>
+ *   <li>Five conditions isolate fitness-field clustering vs fitness-driven sorting as causal factors</li>
  *   <li>30 reps per condition provide statistical power</li>
  *   <li>Per-step metrics enable time-series analysis</li>
  *   <li>Snapshots enable visualization and post-hoc analysis</li>
  *   <li>Reproducible: fixed random seeds (rep number = seed)</li>
+ *   <li>Fitness-field metrics avoid circular reasoning in hypothesis testing</li>
  * </ul>
  *
- * <p><strong>REFERENCE:</strong> See experiment specification in task description</p>
+ * <p><strong>REFERENCE:</strong> See experiments/clustering_vs_fitness_experiment_2026_01_10/EXPERIMENT_SETUP_AUDIT.md
+ * for detailed analysis of v1 issues and rationale for v2 semantic realignment.</p>
  */
 public class ClusteringVsFitnessExperiment {
     
@@ -616,8 +627,9 @@ public class ClusteringVsFitnessExperiment {
      *
      * <p><strong>PROCESS:</strong></p>
      * <ol>
-     *   <li>Compute aggregation value (clustering)</li>
-     *   <li>Find factor positions (candidates 11 and 13)</li>
+     *   <li>Compute strategy aggregation (v1 metric for comparison)</li>
+     *   <li>Compute fitness clustering (v2 fitness-field metric)</li>
+     *   <li>Find factor positions and compute localization (v2 metric)</li>
      *   <li>Compute mean factor distance from front</li>
      *   <li>Compute fitness gradient mean and std</li>
      *   <li>Compute strategy entropy (global and front)</li>
@@ -630,8 +642,15 @@ public class ClusteringVsFitnessExperiment {
      * @return StepMetrics object with all measurements
      */
     private StepMetrics computeMetrics(int step, List<FactorCell> cells, int swaps) {
-        double aggregation = computeAggregation(cells);
+        // v1 metric: strategy-label aggregation (for comparison)
+        double strategyAgg = computeStrategyAggregation(cells);
+        
+        // v2 metrics: fitness-field clustering and localization
+        double fitnessClustering = computeFitnessClustering(cells);
         int[] factorPositions = findFactorPositions(cells);
+        double factorLocalization = computeFactorLocalization(factorPositions, cells.size());
+        
+        // Other metrics
         double meanFactorDist = computeMeanFactorDistance(factorPositions);
         double[] fitnessGradient = computeFitnessGradient(cells);
         double entropyGlobal = computeStrategyEntropy(cells, 0, cells.size());
@@ -639,7 +658,9 @@ public class ClusteringVsFitnessExperiment {
         
         return new StepMetrics(
             step,
-            aggregation,
+            strategyAgg,
+            fitnessClustering,
+            factorLocalization,
             factorPositions,
             meanFactorDist,
             fitnessGradient[0], // mean
@@ -651,16 +672,20 @@ public class ClusteringVsFitnessExperiment {
     }
     
     /**
-     * Compute aggregation value (percentage of cells with same-strategy neighbor).
+     * Compute strategy aggregation value (v1 metric - strategy-label clustering).
+     *
+     * <p><strong>SEMANTIC NOTE:</strong> This measures STRATEGY-LABEL adjacency,
+     * not fitness-field clustering. Renamed from "aggregation" to "strategyAggregation"
+     * for clarity in v2 experiment.</p>
      *
      * <p><strong>FORMULA:</strong> (cells with >= 1 same-strategy neighbor / total cells) × 100</p>
      *
      * <p><strong>REFERENCE:</strong> AlgotypeAggregationIndex.java</p>
      *
      * @param cells the cell array
-     * @return aggregation percentage [0.0, 100.0]
+     * @return strategy aggregation percentage [0.0, 100.0]
      */
-    private double computeAggregation(List<FactorCell> cells) {
+    private double computeStrategyAggregation(List<FactorCell> cells) {
         if (cells.size() <= 1) {
             return 100.0;
         }
@@ -680,6 +705,77 @@ public class ClusteringVsFitnessExperiment {
         }
         
         return (sameStrategyNeighborCount * 100.0) / cells.size();
+    }
+    
+    /**
+     * Compute fitness clustering value (v2 metric - fitness-field spatial aggregation).
+     *
+     * <p><strong>SEMANTIC ALIGNMENT:</strong> This measures FITNESS-SIMILARITY adjacency,
+     * independent of strategy labels. This avoids circular reasoning in experimental
+     * design where clustering hypothesis is tested using clustering-based measurement.</p>
+     *
+     * <p><strong>FORMULA:</strong> (cells with >= 1 fitness-similar neighbor / total cells) × 100,
+     * where "similar" means |fitness[i] - fitness[neighbor]| < threshold (0.1)</p>
+     *
+     * <p><strong>REFERENCE:</strong> FitnessSimilarityClusteringIndex.java</p>
+     *
+     * @param cells the cell array
+     * @return fitness clustering percentage [0.0, 100.0]
+     */
+    private double computeFitnessClustering(List<FactorCell> cells) {
+        if (cells.size() <= 1) {
+            return 100.0;
+        }
+        
+        final double FITNESS_THRESHOLD = 0.1;
+        int similarFitnessNeighborCount = 0;
+        
+        for (int i = 0; i < cells.size(); i++) {
+            double currentFitness = cells.get(i).getFitness();
+            
+            boolean hasLeftSimilar = (i > 0) && 
+                (Math.abs(cells.get(i - 1).getFitness() - currentFitness) < FITNESS_THRESHOLD);
+            boolean hasRightSimilar = (i < cells.size() - 1) && 
+                (Math.abs(cells.get(i + 1).getFitness() - currentFitness) < FITNESS_THRESHOLD);
+            
+            if (hasLeftSimilar || hasRightSimilar) {
+                similarFitnessNeighborCount++;
+            }
+        }
+        
+        return (similarFitnessNeighborCount * 100.0) / cells.size();
+    }
+    
+    /**
+     * Compute factor localization index (v2 metric - inter-factor proximity).
+     *
+     * <p><strong>SEMANTIC ALIGNMENT:</strong> Per Levin, "localization" is concentration
+     * of high-fitness configurations. This metric captures pattern formation independent
+     * of task-specific convergence criteria.</p>
+     *
+     * <p><strong>FORMULA:</strong> 1.0 - (interFactorDistance / maxDistance)</p>
+     *
+     * <p><strong>REFERENCE:</strong> FactorLocalizationIndex.java</p>
+     *
+     * @param factorPositions array of [pos_factor1, pos_factor2]
+     * @param arraySize size of array (for normalization)
+     * @return localization index [0.0, 1.0]
+     */
+    private double computeFactorLocalization(int[] factorPositions, int arraySize) {
+        int pos1 = factorPositions[0];
+        int pos2 = factorPositions[1];
+        
+        // If either factor missing, no localization possible
+        if (pos1 < 0 || pos2 < 0) {
+            return 0.0;
+        }
+        
+        // Compute inter-factor distance
+        int distance = Math.abs(pos1 - pos2);
+        
+        // Normalize by maximum possible distance and invert
+        int maxDistance = arraySize - 1;
+        return 1.0 - ((double) distance / maxDistance);
     }
     
     /**

@@ -7,15 +7,29 @@ import com.emergent.doom.probe.StepSnapshot;
 import java.util.List;
 
 /**
- * Measures spatial clustering of cells by algotype in chimeric populations.
+ * Measures spatial clustering of cells by ALGOTYPE (strategy label) in chimeric populations.
  *
- * <p>From Levin et al. (2024), p.8-9 and REQUIREMENTS.md §7.6:
+ * <p><strong>SEMANTIC CLARIFICATION:</strong> This metric measures STRATEGY-LABEL adjacency,
+ * NOT fitness-field clustering. Use {@link FitnessSimilarityClusteringIndex} for
+ * fitness-based clustering analysis to avoid circular reasoning in experimental design.</p>
+ *
+ * <p><strong>USE CASE:</strong> Chimeric algotype studies (Levin §8) where the goal
+ * is to measure emergent aggregation of cells with the SAME ALGORITHM (algotype),
+ * independent of their fitness values. This is the original Levin metric for
+ * studying algorithmic "personality" clustering.</p>
+ *
+ * <p><strong>NOT FOR:</strong> Pattern formation or localization experiments where
+ * "clustering" refers to fitness-field structure. Using this metric to both define
+ * experimental conditions AND measure outcomes creates circular reasoning (begging
+ * the question).</p>
+ *
+ * <p><strong>REFERENCE:</strong> From Levin et al. (2024), p.8-9 and REQUIREMENTS.md §7.6:
  * "In sorting experiments with mixed Algotypes, we measured the extent to which cells
  * of the same Algotype aggregated together (spatially) within the array. We defined
  * Aggregation Value as the percentage of cells with directly adjacent neighboring
  * cells that were all the same Algotype."</p>
  *
- * <p>Formula: (cells with at least one same-type neighbor / total cells) × 100</p>
+ * <p><strong>FORMULA:</strong> (cells with at least one same-algotype neighbor / total cells) × 100</p>
  *
  * <p>This matches the cell_research Python implementation:
  * <pre>{@code
@@ -32,7 +46,7 @@ import java.util.List;
  * <p>For a random 50/50 mix of two algotypes, expected baseline is ~75%.
  * (Each cell has ~75% chance of having at least one matching neighbor.)</p>
  *
- * <p>Examples (B=Bubble, S=Selection):
+ * <p><strong>EXAMPLES</strong> (B=Bubble, S=Selection):
  * <ul>
  *   <li>[B, B, B, S, S, S] → 100% (all cells have at least one same-type neighbor)</li>
  *   <li>[B, S, B, S, B, S] → 0% (no cell has a same-type neighbor)</li>
@@ -41,7 +55,15 @@ import java.util.List;
  * </ul>
  * </p>
  *
+ * <p><strong>COMPARISON WITH FITNESS CLUSTERING:</strong></p>
+ * <table border="1">
+ * <tr><th>Metric</th><th>Measures</th><th>Use Case</th></tr>
+ * <tr><td>AlgotypeAggregationIndex</td><td>Strategy-label adjacency</td><td>Chimeric algotype studies</td></tr>
+ * <tr><td>FitnessSimilarityClusteringIndex</td><td>Fitness-field clustering</td><td>Pattern formation, localization</td></tr>
+ * </table>
+ *
  * @param <T> the type of cell
+ * @see FitnessSimilarityClusteringIndex for fitness-based clustering metric
  */
 public class AlgotypeAggregationIndex<T extends Cell<T>> implements Metric<T> {
 

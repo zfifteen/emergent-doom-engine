@@ -41,21 +41,73 @@ public class StepMetrics {
     // ==================== CLUSTERING METRICS ====================
     
     /**
-     * Aggregation value: percentage of cells with at least one same-strategy neighbor.
+     * Strategy aggregation: percentage of cells with at least one same-strategy neighbor.
+     *
+     * <p><strong>SEMANTIC NOTE:</strong> This measures STRATEGY-LABEL adjacency, not
+     * fitness-field clustering. Renamed from "aggregationValue" to "strategyAggregation"
+     * for semantic clarity (v2 experiment). See {@link #fitnessClustering} for
+     * fitness-based clustering metric.</p>
      *
      * <p><strong>FORMULA:</strong> (cells with same-strategy neighbor / total cells) × 100</p>
      *
      * <p><strong>INTERPRETATION:</strong></p>
      * <ul>
-     *   <li>100% = complete clustering (all cells grouped by strategy)</li>
+     *   <li>100% = complete strategy grouping (all cells grouped by strategy)</li>
      *   <li>~50-60% = random baseline for 3-strategy chimeric population</li>
-     *   <li>0% = maximally mixed (no adjacent same-strategy cells)</li>
+     *   <li>0% = maximally mixed strategies (no adjacent same-strategy cells)</li>
      * </ul>
      *
-     * <p><strong>HYPOTHESIS TEST:</strong> If clustering causes localization, C2 (high agg)
-     * should show faster factor movement than C3 (zero agg).</p>
+     * <p><strong>EXPERIMENTAL NOTE:</strong> Used for MANIPULATION (C2 pre-groups strategies),
+     * not for MEASUREMENT. Using this as outcome metric creates circular reasoning.</p>
+     *
+     * @deprecated Use {@link #fitnessClustering} for hypothesis testing to avoid circular reasoning
      */
-    public final double aggregationValue;
+    @Deprecated
+    public final double strategyAggregation;
+    
+    /**
+     * Fitness clustering: percentage of cells with at least one similar-fitness neighbor.
+     *
+     * <p><strong>SEMANTIC ALIGNMENT:</strong> This measures FITNESS-FIELD spatial aggregation,
+     * independent of strategy labels. This is the correct metric for testing whether
+     * "clustering" (fitness-similarity adjacency) affects factor localization.</p>
+     *
+     * <p><strong>FORMULA:</strong> (cells with fitness-similar neighbor / total cells) × 100,
+     * where "similar" means |fitness[i] - fitness[neighbor]| < 0.1</p>
+     *
+     * <p><strong>INTERPRETATION:</strong></p>
+     * <ul>
+     *   <li>High (≥75%) = fitness landscape is spatially clustered (similar fitness grouped)</li>
+     *   <li>~50% = random fitness distribution</li>
+     *   <li>Low (≤25%) = fitness landscape is fragmented (dissimilar fitness mixed)</li>
+     * </ul>
+     *
+     * <p><strong>HYPOTHESIS TEST:</strong> If fitness clustering drives localization,
+     * conditions with higher fitnessClustering should show faster factor movement.</p>
+     */
+    public final double fitnessClustering;
+    
+    /**
+     * Factor localization: normalized proximity of high-fitness factors.
+     *
+     * <p><strong>SEMANTIC ALIGNMENT:</strong> Per Levin, "localization" is concentration
+     * of high-fitness configurations in morphospace. This metric captures pattern formation
+     * independent of task-specific convergence criteria.</p>
+     *
+     * <p><strong>FORMULA:</strong> 1.0 - (interFactorDistance / maxDistance)</p>
+     *
+     * <p><strong>INTERPRETATION:</strong></p>
+     * <ul>
+     *   <li>1.0 = perfect localization (factors adjacent)</li>
+     *   <li>~0.5 = moderate dispersion (factors mid-array apart)</li>
+     *   <li>0.0 = maximum dispersion (factors at opposite ends)</li>
+     * </ul>
+     *
+     * <p><strong>COMPARISON:</strong> Factors at [2,3] have high localization (0.98)
+     * AND convergence. Factors at [0,49] have convergence criteria met but LOW localization (0.02).
+     * This metric separates pattern formation from task success.</p>
+     */
+    public final double factorLocalization;
     
     /**
      * Shannon entropy of strategy distribution across entire array.
@@ -175,7 +227,9 @@ public class StepMetrics {
      * <p><strong>INPUTS:</strong></p>
      * <ul>
      *   <li>stepNumber - execution step (0 = initial, 1+ = after execution)</li>
-     *   <li>aggregationValue - clustering percentage [0.0, 100.0]</li>
+     *   <li>strategyAggregation - strategy-label clustering percentage [0.0, 100.0] (v1 metric)</li>
+     *   <li>fitnessClustering - fitness-similarity clustering percentage [0.0, 100.0] (v2 metric)</li>
+     *   <li>factorLocalization - inter-factor proximity [0.0, 1.0] (v2 metric)</li>
      *   <li>factorPositions - positions of factors 11 and 13 (length 2 array)</li>
      *   <li>meanFactorDistanceFromFront - average factor distance from position 0</li>
      *   <li>fitnessGradientMean - mean |fitness[i] - fitness[i+1]|</li>
@@ -189,7 +243,9 @@ public class StepMetrics {
      * Only checks factorPositions array length for safety.</p>
      *
      * @param stepNumber the step number
-     * @param aggregationValue the aggregation percentage
+     * @param strategyAggregation the strategy-label clustering percentage (v1)
+     * @param fitnessClustering the fitness-similarity clustering percentage (v2)
+     * @param factorLocalization the inter-factor proximity (v2)
      * @param factorPositions the positions of true factors
      * @param meanFactorDistanceFromFront the mean factor distance from front
      * @param fitnessGradientMean the mean fitness gradient
@@ -201,7 +257,9 @@ public class StepMetrics {
      */
     public StepMetrics(
             int stepNumber,
-            double aggregationValue,
+            double strategyAggregation,
+            double fitnessClustering,
+            double factorLocalization,
             int[] factorPositions,
             double meanFactorDistanceFromFront,
             double fitnessGradientMean,
@@ -217,7 +275,9 @@ public class StepMetrics {
         }
         
         this.stepNumber = stepNumber;
-        this.aggregationValue = aggregationValue;
+        this.strategyAggregation = strategyAggregation;
+        this.fitnessClustering = fitnessClustering;
+        this.factorLocalization = factorLocalization;
         this.factorPositions = factorPositions;
         this.meanFactorDistanceFromFront = meanFactorDistanceFromFront;
         this.fitnessGradientMean = fitnessGradientMean;
@@ -235,7 +295,7 @@ public class StepMetrics {
      * <p><strong>PURPOSE:</strong> Generate CSV-compatible string for time-series export.</p>
      *
      * <p><strong>FORMAT:</strong> 
-     * step,aggregation,factor_11_pos,factor_13_pos,mean_factor_dist,
+     * step,strategy_agg,fitness_clust,factor_local,factor_11_pos,factor_13_pos,mean_factor_dist,
      * fitness_grad_mean,fitness_grad_std,entropy_global,entropy_front,swaps</p>
      *
      * <p><strong>OUTPUTS:</strong> Comma-separated string (no trailing newline)</p>
@@ -243,9 +303,11 @@ public class StepMetrics {
      * @return CSV row string
      */
     public String toCsvRow() {
-        return String.format("%d,%.2f,%d,%d,%.2f,%.4f,%.4f,%.4f,%.4f,%d",
+        return String.format("%d,%.2f,%.2f,%.4f,%d,%d,%.2f,%.4f,%.4f,%.4f,%.4f,%d",
             stepNumber,
-            aggregationValue,
+            strategyAggregation,
+            fitnessClustering,
+            factorLocalization,
             factorPositions[0],
             factorPositions[1],
             meanFactorDistanceFromFront,
@@ -267,7 +329,7 @@ public class StepMetrics {
      * @return CSV header string
      */
     public static String getCsvHeader() {
-        return "step,aggregation,factor_11_pos,factor_13_pos,mean_factor_dist," +
+        return "step,strategy_agg,fitness_clust,factor_local,factor_11_pos,factor_13_pos,mean_factor_dist," +
                "fitness_grad_mean,fitness_grad_std,entropy_global,entropy_front,swaps";
     }
     
@@ -276,9 +338,11 @@ public class StepMetrics {
     @Override
     public String toString() {
         return String.format(
-            "StepMetrics[step=%d, agg=%.1f%%, factors=[%d,%d], dist=%.1f, swaps=%d]",
+            "StepMetrics[step=%d, stratAgg=%.1f%%, fitClust=%.1f%%, local=%.3f, factors=[%d,%d], dist=%.1f, swaps=%d]",
             stepNumber,
-            aggregationValue,
+            strategyAggregation,
+            fitnessClustering,
+            factorLocalization,
             factorPositions[0],
             factorPositions[1],
             meanFactorDistanceFromFront,
