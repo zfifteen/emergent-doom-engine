@@ -74,7 +74,7 @@
       "strategy": "SMALL_PRIMES"
     },
     {
-      "candidate": 11,
+      "candidate": 13,
       "fitness": 1.0,
       "position": 12,
       "strategy": "SMALL_PRIMES"
