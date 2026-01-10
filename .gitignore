@@ -23,6 +23,3 @@ ENV/
 .venv
 
 node_modules/
-
-# Experiment output
-experiments/

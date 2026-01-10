@@ -1,0 +1,59 @@
+=== Statistical Tests: Clustering vs Fitness Experiment ===
+Date: 2026-01-10 13:16:30.564813
+
+1. C2 (High Aggregation) vs C3 (Zero Aggregation)
+   C2 mean convergence time: 100.00 ± 0.00
+   C3 mean convergence time: 48.40 ± 23.47
+   t-test: t=12.040, p=0.0000
+   ✗ Significant difference (clustering hypothesis supported)
+
+2. Correlation: Initial Aggregation vs Convergence Time
+   Pearson r = 0.549, p = 0.0000
+   ✗ Strong correlation (clustering hypothesis supported)
+
+3. C4 (Fitness Control - No True Factors) Localization
+   Mean final factor position: -1.00
+   ✗ Localization occurred (unexpected)
+
+4. ANOVA: All Conditions
+   F-statistic = 57.370, p = 0.0000
+   ✗ Significant difference between conditions
+
+
+=== Summary Statistics by Condition ===
+
+C1_baseline:
+  Mean: 100.00
+  Median: 100.00
+  Std: 0.00
+  Min: 100
+  Max: 100
+
+C2_high_aggregation:
+  Mean: 100.00
+  Median: 100.00
+  Std: 0.00
+  Min: 100
+  Max: 100
+
+C3_zero_aggregation:
+  Mean: 48.40
+  Median: 38.00
+  Std: 23.47
+  Min: 38
+  Max: 100
+
+C4_fitness_control:
+  Mean: 100.00
+  Median: 100.00
+  Std: 0.00
+  Min: 100
+  Max: 100
+
+C5_homogeneous:
+  Mean: 85.20
+  Median: 100.00
+  Std: 27.50
+  Min: 26
+  Max: 100
+
