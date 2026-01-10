@@ -265,8 +265,8 @@ public class ClusteringVsFitnessExperiment {
         List<StepMetrics> metricsHistory = new ArrayList<>();
         GenericExecutionEngine<Integer, FactorStrategy> engine = new GenericExecutionEngine<>();
         
-        // Record initial state (step 0, swaps 0)
-        StepMetrics initialMetrics = computeMetrics(0, cells, 0);
+        // Record initial state (step 0, swaps 0, not stagnant)
+        StepMetrics initialMetrics = computeMetrics(0, cells, 0, 0, false);
         metricsHistory.add(initialMetrics);
         
         // Stagnation tracking
@@ -286,8 +286,11 @@ public class ClusteringVsFitnessExperiment {
                 consecutiveZeroSwaps = 0;
             }
             
+            // Determine if stagnant
+            boolean isStagnant = consecutiveZeroSwaps >= STAGNATION_THRESHOLD;
+            
             // Compute and record metrics
-            StepMetrics stepMetrics = computeMetrics(step, cells, swaps);
+            StepMetrics stepMetrics = computeMetrics(step, cells, swaps, consecutiveZeroSwaps, isStagnant);
             metricsHistory.add(stepMetrics);
             
             // Check convergence
@@ -296,7 +299,7 @@ public class ClusteringVsFitnessExperiment {
             }
             
             // PHASE 2: Check stagnation
-            if (consecutiveZeroSwaps >= STAGNATION_THRESHOLD) {
+            if (isStagnant) {
                 break;
             }
         }
@@ -672,6 +675,17 @@ public class ClusteringVsFitnessExperiment {
             cells.get(i).updatePositionTo(i);
         }
         
+        // PHASE 2 FIX: Verify factors 11 and 13 are ABSENT (negative control)
+        // Replace any that might have slipped through
+        for (int i = 0; i < cells.size(); i++) {
+            int value = cells.get(i).readValue();
+            if (value == 11 || value == 13) {
+                // Replace with a safe non-factor value
+                int replacement = (value == 11) ? 2 : 3; // Use 2 or 3 (both non-factors)
+                cells.set(i, new FactorCell(replacement, TARGET, cells.get(i).readAlgotype(), i));
+            }
+        }
+        
         return cells;
     }
     
@@ -760,15 +774,18 @@ public class ClusteringVsFitnessExperiment {
      *   <li>Compute mean factor distance from front</li>
      *   <li>Compute fitness gradient mean and std</li>
      *   <li>Compute strategy entropy (global and front)</li>
-     *   <li>Package into StepMetrics object</li>
+     *   <li>Package into StepMetrics object with stagnation info</li>
      * </ol>
      *
      * @param step the step number
      * @param cells the cell array
      * @param swaps the number of swaps in this step
+     * @param consecutiveZeroSwaps consecutive steps with zero swaps
+     * @param isStagnant whether run is stagnant
      * @return StepMetrics object with all measurements
      */
-    private StepMetrics computeMetrics(int step, List<FactorCell> cells, int swaps) {
+    private StepMetrics computeMetrics(int step, List<FactorCell> cells, int swaps, 
+                                      int consecutiveZeroSwaps, boolean isStagnant) {
         // v1 metric: strategy-label aggregation (for comparison)
         double strategyAgg = computeStrategyAggregation(cells);
         
@@ -794,7 +811,9 @@ public class ClusteringVsFitnessExperiment {
             fitnessGradient[1], // std
             entropyGlobal,
             entropyFront,
-            swaps
+            swaps,
+            consecutiveZeroSwaps,
+            isStagnant
         );
     }
     

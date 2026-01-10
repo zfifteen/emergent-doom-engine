@@ -217,6 +217,32 @@ public class StepMetrics {
      */
     public final int swapCount;
     
+    /**
+     * Number of consecutive steps with zero swaps.
+     *
+     * <p><strong>PHASE 2 STAGNATION DETECTION:</strong> Tracks how many consecutive
+     * steps have had swapCount = 0. When this reaches STAGNATION_THRESHOLD, the run
+     * is considered stuck in a local attractor rather than still making progress.</p>
+     *
+     * <p><strong>PURPOSE:</strong> Distinguish "not yet converged" from "stuck in local optimum".</p>
+     */
+    public final int consecutiveZeroSwapSteps;
+    
+    /**
+     * Whether this step represents a stagnant state.
+     *
+     * <p><strong>PHASE 2 STAGNATION DETECTION:</strong> True if consecutiveZeroSwapSteps
+     * has reached STAGNATION_THRESHOLD (typically 20 steps).</p>
+     *
+     * <p><strong>INTERPRETATION:</strong></p>
+     * <ul>
+     *   <li>isStagnant=false, converged=false → still making progress</li>
+     *   <li>isStagnant=true, converged=false → stuck in local attractor</li>
+     *   <li>converged=true → successfully reached target (isStagnant irrelevant)</li>
+     * </ul>
+     */
+    public final boolean isStagnant;
+    
     // ==================== CONSTRUCTOR ====================
     
     /**
@@ -253,6 +279,8 @@ public class StepMetrics {
      * @param strategyEntropyGlobal the global strategy entropy
      * @param strategyEntropyFront the front region strategy entropy
      * @param swapCount the number of swaps
+     * @param consecutiveZeroSwapSteps the count of consecutive zero-swap steps
+     * @param isStagnant whether the run is stagnant
      * @throws IllegalArgumentException if factorPositions is not length 2
      */
     public StepMetrics(
@@ -266,7 +294,9 @@ public class StepMetrics {
             double fitnessGradientStd,
             double strategyEntropyGlobal,
             double strategyEntropyFront,
-            int swapCount) {
+            int swapCount,
+            int consecutiveZeroSwapSteps,
+            boolean isStagnant) {
         
         if (factorPositions.length != 2) {
             throw new IllegalArgumentException(
@@ -285,6 +315,8 @@ public class StepMetrics {
         this.strategyEntropyGlobal = strategyEntropyGlobal;
         this.strategyEntropyFront = strategyEntropyFront;
         this.swapCount = swapCount;
+        this.consecutiveZeroSwapSteps = consecutiveZeroSwapSteps;
+        this.isStagnant = isStagnant;
     }
     
     // ==================== CSV EXPORT ====================
@@ -294,16 +326,16 @@ public class StepMetrics {
      *
      * <p><strong>PURPOSE:</strong> Generate CSV-compatible string for time-series export.</p>
      *
-     * <p><strong>FORMAT:</strong> 
+     * <p><strong>FORMAT (PHASE 2):</strong> 
      * step,strategy_agg,fitness_clust,factor_local,factor_11_pos,factor_13_pos,mean_factor_dist,
-     * fitness_grad_mean,fitness_grad_std,entropy_global,entropy_front,swaps</p>
+     * fitness_grad_mean,fitness_grad_std,entropy_global,entropy_front,swaps,consec_zero_swaps,stagnant</p>
      *
      * <p><strong>OUTPUTS:</strong> Comma-separated string (no trailing newline)</p>
      *
      * @return CSV row string
      */
     public String toCsvRow() {
-        return String.format("%d,%.2f,%.2f,%.4f,%d,%d,%.2f,%.4f,%.4f,%.4f,%.4f,%d",
+        return String.format("%d,%.2f,%.2f,%.4f,%d,%d,%.2f,%.4f,%.4f,%.4f,%.4f,%d,%d,%s",
             stepNumber,
             strategyAggregation,
             fitnessClustering,
@@ -315,7 +347,9 @@ public class StepMetrics {
             fitnessGradientStd,
             strategyEntropyGlobal,
             strategyEntropyFront,
-            swapCount
+            swapCount,
+            consecutiveZeroSwapSteps,
+            isStagnant ? "true" : "false"
         );
     }
     
@@ -330,7 +364,7 @@ public class StepMetrics {
      */
     public static String getCsvHeader() {
         return "step,strategy_agg,fitness_clust,factor_local,factor_11_pos,factor_13_pos,mean_factor_dist," +
-               "fitness_grad_mean,fitness_grad_std,entropy_global,entropy_front,swaps";
+               "fitness_grad_mean,fitness_grad_std,entropy_global,entropy_front,swaps,consec_zero_swaps,stagnant";
     }
     
     // ==================== DISPLAY ====================
