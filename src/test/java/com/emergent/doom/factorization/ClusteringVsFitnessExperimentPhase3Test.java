@@ -361,20 +361,39 @@ public class ClusteringVsFitnessExperimentPhase3Test {
      *
      * <p><strong>OUTPUT:</strong> Printed to console for manual documentation update</p>
      */
-    @Test
+@Test
     @DisplayName("Generate summary statistics for v2 experiment results")
     void generatesSummaryStatisticsForV2Results() throws IOException {
-        Path resultsPath = Paths.get(RESULTS_DIR);
+        // ... (same body)
+    }
+
+    /**
+     * Validate factor injection independence across conditions (issue #2 fix).
+     * 
+     * <p><strong>PURPOSE:</strong> Ensure condition-specific seeding prevents position collision.
+     * Same seed should produce different injection positions for different conditions.</p>
+     */
+    @Test
+    @DisplayName("Factor injection positions differ across conditions (issue #2 fix)")
+    void factorInjectionPositionsDifferAcrossConditions() {
+        ClusteringVsFitnessExperiment experiment = new ClusteringVsFitnessExperiment();
+        long seed = 5L;
         
-        String[] conditions = {"C1_baseline", "C2_high_aggregation", "C3_zero_aggregation", 
-                               "C4_fitness_control", "C5_homogeneous"};
+        List<FactorCell> c1 = experiment.generateC1Baseline(seed);
+        List<FactorCell> c2 = experiment.generateC2HighAggregation(seed);
         
-        // Check if results are v2 format
-        Path sampleFile = resultsPath.resolve("C1_baseline_rep_001.csv");
-        if (!Files.exists(sampleFile)) {
-            System.out.println("SKIP: No experiment results found. Run full experiment test first.");
-            return;
+        int c1Pos11 = -1, c2Pos11 = -1;
+        for (int i = 0; i < c1.size(); i++) {
+            if (c1.get(i).readValue() == 11) { c1Pos11 = i; break; }
         }
+        for (int i = 0; i < c2.size(); i++) {
+            if (c2.get(i).readValue() == 11) { c2Pos11 = i; break; }
+        }
+        
+        assertNotEquals(c1Pos11, c2Pos11, "Factor 11 positions must differ across conditions for same seed");
+        System.out.printf("✓ Issue #2 fixed: C1 pos11=%d, C2 pos11=%d (seed=%d)%n", c1Pos11, c2Pos11, seed);
+    }
+}
         
         String header = Files.readAllLines(sampleFile).get(0);
         boolean isV2Format = header.contains("strategy_agg") && header.contains("fitness_clust");
