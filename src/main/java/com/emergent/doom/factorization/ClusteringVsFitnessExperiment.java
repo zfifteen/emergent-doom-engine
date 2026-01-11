@@ -56,7 +56,7 @@ import java.util.Random;
  *   <li>Strategy aggregation (v1 metric for comparison)</li>
  *   <li>Fitness clustering (v2 fitness-field metric)</li>
  *   <li>Factor localization (inter-factor proximity)</li>
- *   <li>Factor positions (array positions of 11 and 13)</li>
+ *   <li>Factor positions (array positions of factorA and factorB)</li>
  *   <li>Mean factor distance from front (convergence speed)</li>
  *   <li>Fitness gradient (sorting progress)</li>
  *   <li>Strategy entropy (diversity measure)</li>
@@ -65,7 +65,7 @@ import java.util.Random;
  * <p><strong>EXECUTION PROTOCOL:</strong></p>
  * <ol>
  *   <li>Run 30 repetitions per condition (150 total runs)</li>
- *   <li>Each run: 50 cells, target N=143 (11×13), max 100 steps</li>
+ *   <li>Each run: 50 cells, target N (e.g. 143), max 100 steps</li>
  *   <li>Record per-step metrics to CSV</li>
  *   <li>Save array snapshots every 5 steps to JSON</li>
  *   <li>Convergence: both factors in positions 0-4 OR swaps=0</li>
@@ -100,9 +100,6 @@ import java.util.Random;
 public class ClusteringVsFitnessExperiment {
     
     // ==================== CONFIGURATION CONSTANTS ====================
-    
-    /** Target semiprime to factor */
-    private static final int TARGET = 143;
     
     /** Array size (number of candidate cells) */
     private static final int ARRAY_SIZE = 50;
@@ -156,14 +153,49 @@ private static final int STAGNATION_THRESHOLD = 20;
     /** Snapshot interval (save array state every N steps) */
     private static final int SNAPSHOT_INTERVAL = 5;
     
+    // ==================== INSTANCE CONFIGURATION ====================
+
+    /** Target semiprime to factor */
+    private final int target;
+
+    /** First factor of the target (usually <= sqrt(N)) */
+    private final int factorA;
+
+    /** Second factor of the target (usually > sqrt(N)) */
+    private final int factorB;
+    
     /** Experiment output directory */
-    private static final String OUTPUT_DIR = "experiments/clustering_vs_fitness_experiment_2026_01_10";
+    private final String outputDir;
     
     /** Results subdirectory */
-    private static final String RESULTS_DIR = OUTPUT_DIR + "/results";
+    private final String resultsDir;
     
     /** Snapshots subdirectory */
-    private static final String SNAPSHOTS_DIR = OUTPUT_DIR + "/snapshots";
+    private final String snapshotsDir;
+
+    /**
+     * Default constructor using baseline configuration (Target 143).
+     */
+    public ClusteringVsFitnessExperiment() {
+        this(143, 11, 13, "experiments/clustering_vs_fitness_experiment_2026_01_10");
+    }
+
+    /**
+     * Configurable constructor for scaling experiments.
+     *
+     * @param target the semiprime to factor
+     * @param factorA the first factor
+     * @param factorB the second factor
+     * @param outputDir the directory for experiment outputs
+     */
+    public ClusteringVsFitnessExperiment(int target, int factorA, int factorB, String outputDir) {
+        this.target = target;
+        this.factorA = factorA;
+        this.factorB = factorB;
+        this.outputDir = outputDir;
+        this.resultsDir = outputDir + "/results";
+        this.snapshotsDir = outputDir + "/snapshots";
+    }
     
     // ==================== EXPERIMENT EXECUTION ====================
     
@@ -190,7 +222,7 @@ private static final int STAGNATION_THRESHOLD = 20;
      */
     public void runFullExperiment() throws IOException {
         System.out.println("=== Clustering vs Fitness Experiment ===");
-        System.out.println("Target: N = " + TARGET);
+        System.out.println("Target: N = " + target + " (" + factorA + " x " + factorB + ")");
         System.out.println("Array size: " + ARRAY_SIZE);
         System.out.println("Max steps: " + MAX_STEPS);
         System.out.println("Reps per condition: " + REPS_PER_CONDITION);
@@ -207,7 +239,7 @@ private static final int STAGNATION_THRESHOLD = 20;
         runCondition("C5_homogeneous", this::generateC5Homogeneous);
         
         System.out.println("\n=== Experiment Complete ===");
-        System.out.println("Output directory: " + OUTPUT_DIR);
+        System.out.println("Output directory: " + outputDir);
     }
     
     /**
@@ -231,7 +263,7 @@ private static final int STAGNATION_THRESHOLD = 20;
             List<StepMetrics> metrics = executeExperimentRun(cells);
             
             // Write results CSV
-            String csvFilename = String.format("%s/%s_rep_%03d.csv", RESULTS_DIR, conditionName, rep);
+            String csvFilename = String.format("%s/%s_rep_%03d.csv", resultsDir, conditionName, rep);
             writeCsvResults(csvFilename, metrics);
             
             // Write snapshots
@@ -243,7 +275,7 @@ private static final int STAGNATION_THRESHOLD = 20;
             }
         }
         
-        System.out.println("  ✓ Condition complete\n");
+        System.out.println("  \u2713 Condition complete\n");
     }
     
     /**
@@ -339,17 +371,17 @@ private static final int STAGNATION_THRESHOLD = 20;
      */
     private boolean isConverged(StepMetrics metrics) {
         // Both factors in convergence zone = successful localization
-        int pos11 = metrics.factorPositions[0];
-        int pos13 = metrics.factorPositions[1];
+        int posA = metrics.factorPositions[0];
+        int posB = metrics.factorPositions[1];
         
-        return (pos11 >= 0 && pos11 <= CONVERGENCE_POSITION && 
-                pos13 >= 0 && pos13 <= CONVERGENCE_POSITION);
+        return (posA >= 0 && posA <= CONVERGENCE_POSITION && 
+                posB >= 0 && posB <= CONVERGENCE_POSITION);
     }
     
     // ==================== FACTOR INJECTION (PHASE 2 FIX) ====================
     
     /**
-     * Ensure both true factors (11 and 13) are present in cell array.
+     * Ensure both true factors (factorA and factorB) are present in cell array.
      *
      * <p><strong>PHASE 2 CORRECTNESS FIX:</strong> Per EXPERIMENT_SETUP_AUDIT.md §2,
      * factor 13 was frequently missing from candidate pools in v1 experiment,
@@ -362,7 +394,7 @@ private static final int STAGNATION_THRESHOLD = 20;
      *
      * <p><strong>STRATEGY:</strong></p>
      * <ol>
-     *   <li>Check if factors 11 and 13 are already present</li>
+     *   <li>Check if factors A and B are already present</li>
      *   <li>If missing, deterministically replace cells to inject factors</li>
      *   <li>Use condition-hashed seed for unique positioning per condition</li>
      *   <li>Preserve strategy distribution as much as possible</li>
@@ -370,8 +402,8 @@ private static final int STAGNATION_THRESHOLD = 20;
      *
      * <p><strong>INJECTION LOGIC:</strong></p>
      * <ul>
-     *   <li>If factor 11 missing: replace cell at position (injectionSeed % 17) with factor 11</li>
-     *   <li>If factor 13 missing: replace cell at position (injectionSeed % 17 + 17) with factor 13</li>
+     *   <li>If factor A missing: replace cell at position (injectionSeed % 17) with factor A</li>
+     *   <li>If factor B missing: replace cell at position (injectionSeed % 17 + 17) with factor B</li>
      *   <li>Choose SMALL_PRIMES strategy for injected factors (both are prime)</li>
      * </ul>
      *
@@ -387,17 +419,17 @@ private static final int STAGNATION_THRESHOLD = 20;
      */
     private void ensureFactorsPresent(List<FactorCell> cells, long seed, String condition) {
         // Check if factors already present
-        boolean has11 = false;
-        boolean has13 = false;
+        boolean hasFactorA = false;
+        boolean hasFactorB = false;
         
         for (FactorCell cell : cells) {
             int value = cell.readValue();
-            if (value == 11) has11 = true;
-            if (value == 13) has13 = true;
+            if (value == factorA) hasFactorA = true;
+            if (value == factorB) hasFactorB = true;
         }
         
         // If both present, no action needed
-        if (has11 && has13) {
+        if (hasFactorA && hasFactorB) {
             return;
         }
         
@@ -405,16 +437,16 @@ private static final int STAGNATION_THRESHOLD = 20;
         long injectionSeed = seed ^ condition.hashCode();
         Random rand = new Random(injectionSeed);
         
-        if (!has11) {
+        if (!hasFactorA) {
             // Replace cell at position derived from injectionSeed
             int pos = rand.nextInt(17); // First 17 positions
-            cells.set(pos, new FactorCell(11, TARGET, FactorStrategy.SMALL_PRIMES, pos));
+            cells.set(pos, new FactorCell(factorA, target, FactorStrategy.SMALL_PRIMES, pos));
         }
         
-        if (!has13) {
+        if (!hasFactorB) {
             // Replace cell at different position
             int pos = 17 + rand.nextInt(17); // Positions 17-33
-            cells.set(pos, new FactorCell(13, TARGET, FactorStrategy.SMALL_PRIMES, pos));
+            cells.set(pos, new FactorCell(factorB, target, FactorStrategy.SMALL_PRIMES, pos));
         }
         
         // Update positions to ensure consistency
@@ -426,6 +458,48 @@ private static final int STAGNATION_THRESHOLD = 20;
     // ==================== CONDITION GENERATORS ====================
     
     /**
+     * Generate standard pool of candidates (33% SmallPrimes, 34% Fermat, 33% Random).
+     *
+     * @param rand random source
+     * @return unordered list of cells
+     */
+    private List<FactorCell> generateStandardPool(Random rand) {
+        List<FactorCell> cells = new ArrayList<>();
+        int sqrtN = (int) Math.sqrt(target);
+        
+        // 33% SMALL_PRIMES, 34% FERMAT, 33% RANDOM
+        int[] counts = {17, 17, 16};
+        FactorStrategy[] strategies = {
+            FactorStrategy.SMALL_PRIMES,
+            FactorStrategy.FERMAT_NEAR_SQRT,
+            FactorStrategy.RANDOM_SAMPLE
+        };
+        
+        int position = 0; // Temporary position, will be reset by Arranger
+        for (int stratIdx = 0; stratIdx < 3; stratIdx++) {
+            FactorStrategy strategy = strategies[stratIdx];
+            int count = counts[stratIdx];
+            
+            for (int i = 0; i < count; i++) {
+                int candidate;
+                if (strategy == FactorStrategy.SMALL_PRIMES) {
+                    List<Integer> primes = CandidateGenerator.generateSmallPrimes(target, sqrtN, rand);
+                    if (primes.isEmpty()) primes.add(2);
+                    candidate = primes.get(rand.nextInt(primes.size()));
+                } else if (strategy == FactorStrategy.FERMAT_NEAR_SQRT) {
+                    candidate = Math.max(2, sqrtN - 5 + rand.nextInt(11));
+                    candidate = Math.min(candidate, sqrtN);
+                } else {
+                    candidate = 2 + rand.nextInt(sqrtN - 1);
+                }
+                
+                cells.add(new FactorCell(candidate, target, strategy, position++));
+            }
+        }
+        return cells;
+    }
+
+    /**
      * C1: Baseline (Natural Chimeric Distribution).
      *
      * <p><strong>PURPOSE:</strong> Reference condition with random strategy distribution.</p>
@@ -434,7 +508,7 @@ private static final int STAGNATION_THRESHOLD = 20;
      * <ul>
      *   <li>Distribution: 33% SMALL_PRIMES, 34% FERMAT_NEAR_SQRT, 33% RANDOM_SAMPLE</li>
      *   <li>Expected aggregation: ~50-60% (random baseline)</li>
-     *   <li>True factors: Present (11 and 13 may appear in any strategy's candidates)</li>
+     *   <li>True factors: Present (factors may appear in any strategy's candidates)</li>
      * </ul>
      *
      * <p><strong>HYPOTHESIS TEST:</strong> Should show standard factor localization dynamics.
@@ -445,55 +519,15 @@ private static final int STAGNATION_THRESHOLD = 20;
      */
     List<FactorCell> generateC1Baseline(long seed) {
         Random rand = new Random(seed);
-        List<FactorCell> cells = new ArrayList<>();
-        int sqrtN = (int) Math.sqrt(TARGET);
         
-        // Generate candidates with duplicate handling to ensure we get exactly 50 cells
-        // 33% SMALL_PRIMES, 34% FERMAT, 33% RANDOM
-        int[] counts = {17, 17, 16}; // SMALL_PRIMES, FERMAT, RANDOM
-        FactorStrategy[] strategies = {
-            FactorStrategy.SMALL_PRIMES,
-            FactorStrategy.FERMAT_NEAR_SQRT,
-            FactorStrategy.RANDOM_SAMPLE
-        };
+        // 1. Generate standard pool
+        List<FactorCell> cells = generateStandardPool(rand);
         
-        int position = 0;
-        for (int stratIdx = 0; stratIdx < 3; stratIdx++) {
-            FactorStrategy strategy = strategies[stratIdx];
-            int count = counts[stratIdx];
-            
-            for (int i = 0; i < count; i++) {
-                int candidate;
-                if (strategy == FactorStrategy.SMALL_PRIMES) {
-                    // Generate from small primes with wrapping
-                    List<Integer> primes = CandidateGenerator.generateSmallPrimes(TARGET, sqrtN, rand);
-                    if (primes.isEmpty()) primes.add(2);
-                    candidate = primes.get(rand.nextInt(primes.size()));
-                } else if (strategy == FactorStrategy.FERMAT_NEAR_SQRT) {
-                    // Generate near sqrt
-                    candidate = Math.max(2, sqrtN - 5 + rand.nextInt(11));
-                    candidate = Math.min(candidate, sqrtN);
-                } else {
-                    // Random sample
-                    candidate = 2 + rand.nextInt(sqrtN - 1);
-                }
-                
-                cells.add(new FactorCell(candidate, TARGET, strategy, position++));
-            }
-        }
-        
-        // Shuffle for random spatial distribution
-        java.util.Collections.shuffle(cells, rand);
-        
-        // Update positions after shuffle
-        for (int i = 0; i < cells.size(); i++) {
-            cells.get(i).updatePositionTo(i);
-        }
-        
-        // PHASE 2 FIX: Guarantee factors 11 and 13 present (with condition-specific seeding)
+        // 2. Ensure factors present (inject into pool if missing)
         ensureFactorsPresent(cells, seed, "C1_baseline");
         
-        return cells;
+        // 3. Arrange randomly
+        return SpatialArranger.arrange(cells, SpatialArranger.LayoutMode.RANDOM, rand);
     }
     
     /**
@@ -522,35 +556,15 @@ private static final int STAGNATION_THRESHOLD = 20;
      */
     List<FactorCell> generateC2HighAggregation(long seed) {
         Random rand = new Random(seed);
-        List<FactorCell> cells = new ArrayList<>();
-        int position = 0;
-        int sqrtN = (int) Math.sqrt(TARGET);
         
-        // Block 1: SMALL_PRIMES (positions 0-16, 17 cells)
-        List<Integer> primes = CandidateGenerator.generateSmallPrimes(TARGET, sqrtN, rand);
-        if (primes.isEmpty()) primes.add(2);
-        for (int i = 0; i < 17; i++) {
-            int candidate = primes.get(rand.nextInt(primes.size()));
-            cells.add(new FactorCell(candidate, TARGET, FactorStrategy.SMALL_PRIMES, position++));
-        }
+        // 1. Generate standard pool
+        List<FactorCell> cells = generateStandardPool(rand);
         
-        // Block 2: FERMAT_NEAR_SQRT (positions 17-33, 17 cells)
-        for (int i = 0; i < 17; i++) {
-            int candidate = Math.max(2, sqrtN - 5 + rand.nextInt(11));
-            candidate = Math.min(candidate, sqrtN);
-            cells.add(new FactorCell(candidate, TARGET, FactorStrategy.FERMAT_NEAR_SQRT, position++));
-        }
-        
-        // Block 3: RANDOM_SAMPLE (positions 34-49, 16 cells)
-        for (int i = 0; i < 16; i++) {
-            int candidate = 2 + rand.nextInt(sqrtN - 1);
-            cells.add(new FactorCell(candidate, TARGET, FactorStrategy.RANDOM_SAMPLE, position++));
-        }
-        
-        // PHASE 2 FIX: Guarantee factors 11 and 13 present (with condition-specific seeding)
+        // 2. Ensure factors present
         ensureFactorsPresent(cells, seed, "C2_high_aggregation");
         
-        return cells;
+        // 3. Arrange clustered
+        return SpatialArranger.arrange(cells, SpatialArranger.LayoutMode.CLUSTERED, rand);
     }
     
     /**
@@ -578,40 +592,14 @@ private static final int STAGNATION_THRESHOLD = 20;
     private List<FactorCell> generateC3ZeroAggregation(long seed) {
         Random rand = new Random(seed);
         
-        // Generate candidates for each strategy
-        List<Integer> smallPrimes = CandidateGenerator.generateSmallPrimes(TARGET, 17, rand);
-        List<Integer> fermat = CandidateGenerator.generateFermatNearSqrt(TARGET, 17, rand);
-        List<Integer> random = CandidateGenerator.generateRandomSample(TARGET, 16, rand);
+        // 1. Generate standard pool
+        List<FactorCell> cells = generateStandardPool(rand);
         
-        // Interleave strategies
-        List<FactorCell> cells = new ArrayList<>();
-        FactorStrategy[] strategies = {
-            FactorStrategy.SMALL_PRIMES,
-            FactorStrategy.FERMAT_NEAR_SQRT,
-            FactorStrategy.RANDOM_SAMPLE
-        };
-        
-        int[] indices = {0, 0, 0}; // Track current index for each strategy
-        
-        for (int position = 0; position < ARRAY_SIZE; position++) {
-            FactorStrategy strategy = strategies[position % 3];
-            int candidate;
-            
-            if (strategy == FactorStrategy.SMALL_PRIMES) {
-                candidate = smallPrimes.get(indices[0]++ % smallPrimes.size());
-            } else if (strategy == FactorStrategy.FERMAT_NEAR_SQRT) {
-                candidate = fermat.get(indices[1]++ % fermat.size());
-            } else {
-                candidate = random.get(indices[2]++ % random.size());
-            }
-            
-            cells.add(new FactorCell(candidate, TARGET, strategy, position));
-        }
-        
-        // PHASE 2 FIX: Guarantee factors 11 and 13 present (with condition-specific seeding)
+        // 2. Ensure factors present
         ensureFactorsPresent(cells, seed, "C3_zero_aggregation");
         
-        return cells;
+        // 3. Arrange maximally mixed (interleaved)
+        return SpatialArranger.arrange(cells, SpatialArranger.LayoutMode.MAXIMAL_MIXING, rand);
     }
     
     /**
@@ -623,7 +611,7 @@ private static final int STAGNATION_THRESHOLD = 20;
      * <ul>
      *   <li>Distribution: Same as C1 (33% / 34% / 33%)</li>
      *   <li>Spatial arrangement: Random (like C1)</li>
-     *   <li>Candidates: Manually exclude 11 and 13 (the true factors)</li>
+     *   <li>Candidates: Manually exclude true factors</li>
      *   <li>Expected aggregation: ~50-60% (random baseline)</li>
      *   <li>Fitness landscape: No perfect factors (all fitness < 1.0)</li>
      * </ul>
@@ -640,76 +628,56 @@ private static final int STAGNATION_THRESHOLD = 20;
     private List<FactorCell> generateC4FitnessControl(long seed) {
         Random rand = new Random(seed);
         
-        // Generate candidates for each strategy, then filter out 11 and 13
+        // Generate candidates for each strategy, then filter out factors
         List<Integer> smallPrimes = filterOutFactors(
-            CandidateGenerator.generateSmallPrimes(TARGET, 20, rand)
+            CandidateGenerator.generateSmallPrimes(target, 20, rand)
         );
         List<Integer> fermat = filterOutFactors(
-            CandidateGenerator.generateFermatNearSqrt(TARGET, 20, rand)
+            CandidateGenerator.generateFermatNearSqrt(target, 20, rand)
         );
         List<Integer> randomSample = filterOutFactors(
-            CandidateGenerator.generateRandomSample(TARGET, 20, rand)
+            CandidateGenerator.generateRandomSample(target, 20, rand)
         );
         
         // Ensure we have enough candidates after filtering
-        // Note: We allow duplicates since valid range [2, 10] has only 9 unique values
-        // This is realistic for C4 (no true factors) - candidates can repeat
-        int sqrtN = (int) Math.sqrt(TARGET);
+        int sqrtN = (int) Math.sqrt(target);
         
         while (smallPrimes.size() < 17) {
-            int candidate = 2 + rand.nextInt(sqrtN - 1); // [2, sqrtN]
-            if (candidate != 11 && candidate != 13) {
-                smallPrimes.add(candidate);
-            }
+            int candidate = 2 + rand.nextInt(sqrtN - 1); 
+            if (candidate != factorA && candidate != factorB) smallPrimes.add(candidate);
         }
         while (fermat.size() < 17) {
-            int candidate = 2 + rand.nextInt(sqrtN - 1); // [2, sqrtN]
-            if (candidate != 11 && candidate != 13) {
-                fermat.add(candidate);
-            }
+            int candidate = 2 + rand.nextInt(sqrtN - 1);
+            if (candidate != factorA && candidate != factorB) fermat.add(candidate);
         }
         while (randomSample.size() < 16) {
-            int candidate = 2 + rand.nextInt(sqrtN - 1); // [2, sqrtN]
-            if (candidate != 11 && candidate != 13) {
-                randomSample.add(candidate);
-            }
+            int candidate = 2 + rand.nextInt(sqrtN - 1);
+            if (candidate != factorA && candidate != factorB) randomSample.add(candidate);
         }
         
-        // Create cells with shuffled strategies (like C1)
+        // Create cells
         List<FactorCell> cells = new ArrayList<>();
         int position = 0;
         
         for (int i = 0; i < 17; i++) {
-            cells.add(new FactorCell(smallPrimes.get(i), TARGET, FactorStrategy.SMALL_PRIMES, position++));
+            cells.add(new FactorCell(smallPrimes.get(i), target, FactorStrategy.SMALL_PRIMES, position++));
         }
         for (int i = 0; i < 17; i++) {
-            cells.add(new FactorCell(fermat.get(i), TARGET, FactorStrategy.FERMAT_NEAR_SQRT, position++));
+            cells.add(new FactorCell(fermat.get(i), target, FactorStrategy.FERMAT_NEAR_SQRT, position++));
         }
         for (int i = 0; i < 16; i++) {
-            cells.add(new FactorCell(randomSample.get(i), TARGET, FactorStrategy.RANDOM_SAMPLE, position++));
+            cells.add(new FactorCell(randomSample.get(i), target, FactorStrategy.RANDOM_SAMPLE, position++));
         }
         
-        // Shuffle for random spatial distribution
-        java.util.Collections.shuffle(cells, rand);
-        
-        // Update positions after shuffle
-        for (int i = 0; i < cells.size(); i++) {
-            cells.get(i).updatePositionTo(i);
-        }
-        
-        // PHASE 2 VERIFICATION: Assert factors 11 and 13 are ABSENT (negative control)
-        // C4 is control condition - factor presence would invalidate experiment
-        for (int i = 0; i < cells.size(); i++) {
-            int value = cells.get(i).readValue();
-            if (value == 11 || value == 13) {
-                throw new IllegalStateException(String.format(
-                    "C4 factor exclusion failed: Found factor %d at position %d. " +
-                    "filterOutFactors() did not properly exclude true factors.",
-                    value, i));
+        // Verify absence
+        for (FactorCell cell : cells) {
+            if (cell.readValue() == factorA || cell.readValue() == factorB) {
+                throw new IllegalStateException("C4 failed: factor found");
             }
         }
         
-        return cells;
+        // Arrange randomly
+        return SpatialArranger.arrange(cells, SpatialArranger.LayoutMode.RANDOM, rand);
     }
     
     /**
@@ -721,7 +689,7 @@ private static final int STAGNATION_THRESHOLD = 20;
      * <ul>
      *   <li>Distribution: 100% FERMAT_NEAR_SQRT</li>
      *   <li>Aggregation: 100% (all cells same strategy by definition)</li>
-     *   <li>True factors: Present (FERMAT generates candidates near sqrt(143) ≈ 11.96, includes 11)</li>
+     *   <li>True factors: Present (FERMAT generates candidates near sqrt(N))</li>
      * </ul>
      *
      * <p><strong>HYPOTHESIS TEST:</strong></p>
@@ -739,7 +707,7 @@ private static final int STAGNATION_THRESHOLD = 20;
         
         // Generate enough FERMAT_NEAR_SQRT candidates (may include duplicates)
         List<Integer> candidates = new ArrayList<>();
-        int sqrtN = (int) Math.sqrt(TARGET);
+        int sqrtN = (int) Math.sqrt(target);
         
         while (candidates.size() < ARRAY_SIZE) {
             // Generate candidates near sqrt(N)
@@ -750,17 +718,18 @@ private static final int STAGNATION_THRESHOLD = 20;
         }
         
         for (int position = 0; position < ARRAY_SIZE; position++) {
-            cells.add(new FactorCell(candidates.get(position), TARGET, FactorStrategy.FERMAT_NEAR_SQRT, position));
+            cells.add(new FactorCell(candidates.get(position), target, FactorStrategy.FERMAT_NEAR_SQRT, position));
         }
         
-        // PHASE 2 FIX: Guarantee factors 11 and 13 present (with condition-specific seeding)
+        // PHASE 2 FIX: Guarantee factors present
         ensureFactorsPresent(cells, seed, "C5_homogeneous");
         
-        return cells;
+        // Arrange (mode doesn't matter for homogeneous, but RANDOM is safe)
+        return SpatialArranger.arrange(cells, SpatialArranger.LayoutMode.RANDOM, rand);
     }
     
     /**
-     * Filter out true factors (11 and 13) from candidate list.
+     * Filter out true factors (factorA and factorB) from candidate list.
      *
      * <p><strong>PURPOSE:</strong> C4 fitness control condition requires NO true
      * factors in candidate pool. This negative control tests whether fitness 
@@ -772,15 +741,15 @@ private static final int STAGNATION_THRESHOLD = 20;
      * while C4 EXCLUDES factors (negative control).</p>
      *
      * <p><strong>IMPLEMENTATION:</strong> Simple filter - remove candidates
-     * matching 11 or 13. Remaining candidates have fitness < 1.0 (no perfect fit).</p>
+     * matching factorA or factorB. Remaining candidates have fitness < 1.0 (no perfect fit).</p>
      *
-     * @param candidates the unfiltered candidate list (may include 11 and 13)
-     * @return filtered list with 11 and 13 removed (may be empty if all excluded)
+     * @param candidates the unfiltered candidate list (may include true factors)
+     * @return filtered list with factors removed (may be empty if all excluded)
      */
     private List<Integer> filterOutFactors(List<Integer> candidates) {
         List<Integer> filtered = new ArrayList<>();
         for (Integer candidate : candidates) {
-            if (candidate != 11 && candidate != 13) {
+            if (candidate != factorA && candidate != factorB) {
                 filtered.add(candidate);
             }
         }
@@ -889,21 +858,6 @@ private static final int STAGNATION_THRESHOLD = 20;
      * independent of strategy labels. This avoids circular reasoning in experimental
      * design where clustering hypothesis is tested using clustering-based measurement.</p>
      *
-     * <p><strong>FORMULA:</strong> (cells with >= 1 fitness-similar neighbor / total cells) × 100,
-     * where "similar" means |fitness[i] - fitness[neighbor]| < threshold (0.1)</p>
-     *
-     * <p><strong>REFERENCE:</strong> FitnessSimilarityClusteringIndex.java</p>
-     *
-     * @param cells the cell array
-     * @return fitness clustering percentage [0.0, 100.0]
-     */
-    /**
-     * Compute fitness clustering value (v2 metric - fitness-field spatial aggregation).
-     *
-     * <p><strong>SEMANTIC ALIGNMENT:</strong> This measures FITNESS-SIMILARITY adjacency,
-     * independent of strategy labels. This avoids circular reasoning in experimental
-     * design where clustering hypothesis is tested using clustering-based measurement.</p>
-     *
      * <p><strong>Fitness similarity threshold for clustering detection (Review #5 Fix).</strong></p>
      *
      * <p><strong>CALIBRATION (Empirical Justification):</strong> Pilot runs (N=10) showed median pairwise
@@ -986,36 +940,36 @@ private static final int STAGNATION_THRESHOLD = 20;
     }
     
     /**
-     * Find positions of true factors (candidates 11 and 13).
+     * Find positions of true factors (factorA and factorB).
      *
      * <p><strong>PURPOSE:</strong> Locate factors in array for localization analysis.</p>
      *
-     * <p><strong>OUTPUTS:</strong> Two-element array [position of 11, position of 13].
+     * <p><strong>OUTPUTS:</strong> Two-element array [position of A, position of B].
      * If factor not present (C4 control), position = -1.</p>
      *
      * @param cells the cell array
-     * @return array of [pos_11, pos_13]
+     * @return array of [pos_A, pos_B]
      */
     private int[] findFactorPositions(List<FactorCell> cells) {
-        int pos11 = -1;
-        int pos13 = -1;
+        int posA = -1;
+        int posB = -1;
         
         for (int i = 0; i < cells.size(); i++) {
             int candidate = cells.get(i).readValue();
-            if (candidate == 11) {
-                pos11 = i;
-            } else if (candidate == 13) {
-                pos13 = i;
+            if (candidate == factorA) {
+                posA = i;
+            } else if (candidate == factorB) {
+                posB = i;
             }
         }
         
-        return new int[]{pos11, pos13};
+        return new int[]{posA, posB};
     }
     
     /**
      * Compute mean distance of factors from array front.
      *
-     * <p><strong>FORMULA:</strong> average(position of 11, position of 13)</p>
+     * <p><strong>FORMULA:</strong> average(position of A, position of B)</p>
      *
      * <p><strong>SPECIAL CASES:</strong></p>
      * <ul>
@@ -1024,19 +978,19 @@ private static final int STAGNATION_THRESHOLD = 20;
      *   <li>If both missing (C4): return -1.0</li>
      * </ul>
      *
-     * @param factorPositions array of [pos_11, pos_13]
+     * @param factorPositions array of [pos_A, pos_B]
      * @return mean distance from front, or -1.0 if no factors present
      */
     private double computeMeanFactorDistance(int[] factorPositions) {
-        int pos11 = factorPositions[0];
-        int pos13 = factorPositions[1];
+        int posA = factorPositions[0];
+        int posB = factorPositions[1];
         
-        if (pos11 >= 0 && pos13 >= 0) {
-            return (pos11 + pos13) / 2.0;
-        } else if (pos11 >= 0) {
-            return (double) pos11;
-        } else if (pos13 >= 0) {
-            return (double) pos13;
+        if (posA >= 0 && posB >= 0) {
+            return (posA + posB) / 2.0;
+        } else if (posA >= 0) {
+            return (double) posA;
+        } else if (posB >= 0) {
+            return (double) posB;
         } else {
             return -1.0; // No factors present
         }
@@ -1148,8 +1102,8 @@ private static final int STAGNATION_THRESHOLD = 20;
      * Create output directories if they don't exist.
      */
     private void createOutputDirectories() throws IOException {
-        Files.createDirectories(Paths.get(RESULTS_DIR));
-        Files.createDirectories(Paths.get(SNAPSHOTS_DIR));
+        Files.createDirectories(Paths.get(resultsDir));
+        Files.createDirectories(Paths.get(snapshotsDir));
     }
     
     /**
@@ -1199,7 +1153,7 @@ private static final int STAGNATION_THRESHOLD = 20;
             if (m.stepNumber % SNAPSHOT_INTERVAL == 0) {
                 String filename = String.format(
                     "%s/%s_rep_%03d_step_%03d.json",
-                    SNAPSHOTS_DIR,
+                    snapshotsDir,
                     conditionName,
                     rep,
                     m.stepNumber
