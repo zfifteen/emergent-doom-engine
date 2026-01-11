@@ -136,6 +136,15 @@ private static final int CONVERGENCE_POSITION = 4;
      * in local attractor". If swaps = 0 for this many consecutive steps, mark as
      * stagnant rather than in-progress.</p>
      *
+     * <p><strong>SEMANTICS (Clarified per Review #3):</strong> If steps 1 through N all produce swaps=0,
+     * stagnation is detected at the END of step N. For N=20, stagnation flag
+     * becomes true after step 20 completes. Step counter increments BEFORE the check,
+     * so consecutiveZeroSwaps=20 triggers isStagnant=true at step=20.</p>
+     *
+     * <p><strong>EXAMPLE:</strong> Run produces swaps [0,0,0,...,0] for steps 1-20.
+     * After step 20 completes, consecutiveZeroSwaps=20 >= STAGNATION_THRESHOLD,
+     * so step 20 row in CSV shows stagnant=true. Steps 0-19 show stagnant=false.</p>
+     *
      * <p><strong>RATIONALE:</strong> Prevents false negatives where runs appear
      * "not converged" when they've actually reached a stable non-optimal state.</p>
      */
@@ -280,30 +289,32 @@ private static final int CONVERGENCE_POSITION = 4;
         // Execute steps
         int step = 0;
         while (step < MAX_STEPS) {
-            // Execute one step
+            // Execute one step (swaps reflect this step's activity)
             int swaps = engine.executeStep(castToAbstractCells(cells));
-            step++;
+            step++; // Increment step counter AFTER execution (step now = completed steps)
             
-            // Track stagnation
+            // Track consecutive zero-swap steps (Review #3: Update after step completes)
             if (swaps == 0) {
                 consecutiveZeroSwaps++;
             } else {
-                consecutiveZeroSwaps = 0;
+                consecutiveZeroSwaps = 0; // Reset on any swap activity
             }
             
-            // Determine if stagnant
+            // Flag stagnation when threshold reached
+            // (i.e., this step and prior (STAGNATION_THRESHOLD-1) steps had zero swaps)
+            // Example: After 20 zero-swap steps, at step=20, consec=20, stagnant=true
             boolean isStagnant = consecutiveZeroSwaps >= STAGNATION_THRESHOLD;
             
-            // Compute and record metrics
+            // Compute and record metrics for this completed step
             StepMetrics stepMetrics = computeMetrics(step, cells, swaps, consecutiveZeroSwaps, isStagnant);
             metricsHistory.add(stepMetrics);
             
-            // Check convergence
+            // Check convergence (both factors in [0, CONVERGENCE_POSITION])
             if (isConverged(stepMetrics)) {
                 break;
             }
             
-            // PHASE 2: Check stagnation
+            // PHASE 2: Check stagnation (stop if stuck)
             if (isStagnant) {
                 break;
             }
