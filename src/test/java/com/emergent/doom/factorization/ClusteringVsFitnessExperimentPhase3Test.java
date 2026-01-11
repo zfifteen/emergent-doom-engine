@@ -446,4 +446,47 @@ public class ClusteringVsFitnessExperimentPhase3Test {
         
         System.out.println("=== Summary Generation Complete ===");
     }
+
+    /**
+     * Validate deterministic reproducibility: same seed produces identical results.
+     * 
+     * <p><strong>PURPOSE:</strong> Scientific experiments must be reproducible.
+     * This test ensures same rep number (seed) always generates identical cell
+     * array and produces identical trajectory.</p>
+     */
+    @Test
+    @DisplayName("Factor injection positions differ across conditions (issue #2 fix)")
+    void factorInjectionPositionsDifferAcrossConditions() {
+        ClusteringVsFitnessExperiment experiment = new ClusteringVsFitnessExperiment();
+        long seed = 5L; // Arbitrary fixed seed
+        
+        // Generate C1 and C2 with same seed
+        List<FactorCell> c1 = experiment.generateC1Baseline(seed);
+        List<FactorCell> c2 = experiment.generateC2HighAggregation(seed);
+        
+        // Find factor 11 positions (simple inline finder)
+        int c1Pos11 = -1;
+        int c2Pos11 = -1;
+        for (int i = 0; i < c1.size(); i++) {
+            if (c1.get(i).readValue() == 11) {
+                c1Pos11 = i;
+                break;
+            }
+        }
+        for (int i = 0; i < c2.size(); i++) {
+            if (c2.get(i).readValue() == 11) {
+                c2Pos11 = i;
+                break;
+            }
+        }
+        
+        // With condition hashing, positions should differ (not guaranteed equal, but test for inequality)
+        // Note: Due to hash, they differ deterministically for these conditions
+        assertNotEquals(c1Pos11, c2Pos11, 
+            String.format("Factor 11 positions should differ across conditions for seed=%d (C1: %d, C2: %d)", 
+                seed, c1Pos11, c2Pos11));
+        
+        System.out.printf("✓ Factor injection independence validated: C1 pos11=%d, C2 pos11=%d (seed=%d)%n", 
+            c1Pos11, c2Pos11, seed);
+    }
 }

@@ -369,42 +369,80 @@ private static final int CONVERGENCE_POSITION = 4;
      * @param cells the cell array (modified in-place if factors missing)
      * @param seed the random seed for deterministic positioning
      */
-    private void ensureFactorsPresent(List<FactorCell> cells, long seed) {
-        // Check if factors already present
-        boolean has11 = false;
-        boolean has13 = false;
-        
-        for (FactorCell cell : cells) {
-            int value = cell.readValue();
-            if (value == 11) has11 = true;
-            if (value == 13) has13 = true;
-        }
-        
-        // If both present, no action needed
-        if (has11 && has13) {
-            return;
-        }
-        
-        // Inject missing factors deterministically
-        Random rand = new Random(seed);
-        
-        if (!has11) {
-            // Replace cell at position derived from seed
-            int pos = rand.nextInt(17); // First 17 positions
-            cells.set(pos, new FactorCell(11, TARGET, FactorStrategy.SMALL_PRIMES, pos));
-        }
-        
-        if (!has13) {
-            // Replace cell at different position
-            int pos = 17 + rand.nextInt(17); // Positions 17-33
-            cells.set(pos, new FactorCell(13, TARGET, FactorStrategy.SMALL_PRIMES, pos));
-        }
-        
-        // Update positions to ensure consistency
-        for (int i = 0; i < cells.size(); i++) {
-            cells.get(i).updatePositionTo(i);
-        }
+    /**
+ * Ensure both true factors (11 and 13) are present in cell array.
+ *
+ * <p><strong>PHASE 2 CORRECTNESS FIX:</strong> Per EXPERIMENT_SETUP_AUDIT.md §2,
+ * factor 13 was frequently missing from candidate pools in v1 experiment,
+ * making convergence impossible by definition. This method guarantees both
+ * factors are present in all non-control conditions.</p>
+ *
+ * <p><strong>CRITICAL FIX (Phase 3 Review #2):</strong> Original used shared seed across conditions,
+ * causing identical injection positions (e.g., C1_rep_005 and C2_rep_005 both inject at same pos).
+ * Now hashes condition name into seed for independence: injectionSeed = seed ^ condition.hashCode().</p>
+ *
+ * <p><strong>STRATEGY:</strong></p>
+ * <ol>
+ *   <li>Check if factors 11 and 13 are already present</li>
+ *   <li>If missing, deterministically replace cells to inject factors</li>
+ *   <li>Use condition-hashed seed for unique positioning per condition</li>
+ *   <li>Preserve strategy distribution as much as possible</li>
+ * </ol>
+ *
+ * <p><strong>INJECTION LOGIC:</strong></p>
+ * <ul>
+ *   <li>If factor 11 missing: replace cell at position (injectionSeed % 17) with factor 11</li>
+ *   <li>If factor 13 missing: replace cell at position (injectionSeed % 17 + 17) with factor 13</li>
+ *   <li>Choose SMALL_PRIMES strategy for injected factors (both are prime)</li>
+ * </ul>
+ *
+ * <p><strong>APPLICABILITY:</strong></p>
+ * <ul>
+ *   <li>C1, C2, C3, C5: APPLY (need factors for hypothesis testing)</li>
+ *   <li>C4 (fitness control): DO NOT APPLY (intentionally excludes factors)</li>
+ * </ul>
+ *
+ * @param cells the cell array (modified in-place if factors missing)
+ * @param seed the random seed for deterministic positioning
+ * @param condition the condition name (e.g., &quot;C1_baseline&quot;) for seed hashing
+ */
+private void ensureFactorsPresent(List<FactorCell> cells, long seed, String condition) {
+    // Check if factors already present
+    boolean has11 = false;
+    boolean has13 = false;
+    
+    for (FactorCell cell : cells) {
+        int value = cell.readValue();
+        if (value == 11) has11 = true;
+        if (value == 13) has13 = true;
     }
+    
+    // If both present, no action needed
+    if (has11 && has13) {
+        return;
+    }
+    
+    // Inject missing factors deterministically with condition-specific seed
+    long injectionSeed = seed ^ condition.hashCode();
+    Random rand = new Random(injectionSeed);
+    
+    if (!has11) {
+        // Replace cell at position derived from injectionSeed
+        int pos = rand.nextInt(17); // First 17 positions
+        cells.set(pos, new FactorCell(11, TARGET, FactorStrategy.SMALL_PRIMES, pos));
+    }
+    
+    if (!has13) {
+        // Replace cell at different position
+        int pos = 17 + rand.nextInt(17); // Positions 17-33
+        cells.set(pos, new FactorCell(13, TARGET, FactorStrategy.SMALL_PRIMES, pos));
+    }
+    
+    // Update positions to ensure consistency
+    for (int i = 0; i < cells.size(); i++) {
+        cells.get(i).updatePositionTo(i);
+    }
+}
     
     // ==================== CONDITION GENERATORS ====================
     
