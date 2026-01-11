@@ -38,10 +38,10 @@
       "strategy": "SMALL_PRIMES"
     },
     {
-      "candidate": 11,
+      "candidate": 13,
       "fitness": 1.0,
       "position": 6,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "SMALL_PRIMES"
     },
     {
       "candidate": 11,
@@ -56,10 +56,10 @@
       "strategy": "FERMAT_NEAR_SQRT"
     },
     {
-      "candidate": 13,
+      "candidate": 11,
       "fitness": 1.0,
       "position": 9,
-      "strategy": "SMALL_PRIMES"
+      "strategy": "FERMAT_NEAR_SQRT"
     },
     {
       "candidate": 11,
@@ -95,13 +95,13 @@
       "candidate": 11,
       "fitness": 1.0,
       "position": 15,
-      "strategy": "RANDOM_SAMPLE"
+      "strategy": "FERMAT_NEAR_SQRT"
     },
     {
-      "candidate": 9,
-      "fitness": 0.8888888888888888,
+      "candidate": 11,
+      "fitness": 1.0,
       "position": 16,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "RANDOM_SAMPLE"
     },
     {
       "candidate": 9,

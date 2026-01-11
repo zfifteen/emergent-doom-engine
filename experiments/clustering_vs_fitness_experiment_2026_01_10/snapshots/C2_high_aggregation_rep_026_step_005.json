@@ -62,16 +62,16 @@
       "strategy": "FERMAT_NEAR_SQRT"
     },
     {
-      "candidate": 13,
-      "fitness": 1.0,
-      "position": 10,
-      "strategy": "SMALL_PRIMES"
-    },
-    {
       "candidate": 11,
       "fitness": 1.0,
-      "position": 11,
+      "position": 10,
       "strategy": "FERMAT_NEAR_SQRT"
+    },
+    {
+      "candidate": 13,
+      "fitness": 1.0,
+      "position": 11,
+      "strategy": "SMALL_PRIMES"
     },
     {
       "candidate": 11,

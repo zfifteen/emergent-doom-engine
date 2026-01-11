@@ -191,7 +191,7 @@
       "candidate": 5,
       "fitness": 0.6,
       "position": 31,
-      "strategy": "SMALL_PRIMES"
+      "strategy": "RANDOM_SAMPLE"
     },
     {
       "candidate": 5,

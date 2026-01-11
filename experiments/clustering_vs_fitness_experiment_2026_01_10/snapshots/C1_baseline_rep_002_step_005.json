@@ -269,25 +269,25 @@
       "candidate": 7,
       "fitness": 0.5714285714285714,
       "position": 44,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "RANDOM_SAMPLE"
     },
     {
       "candidate": 7,
       "fitness": 0.5714285714285714,
       "position": 45,
-      "strategy": "RANDOM_SAMPLE"
-    },
-    {
-      "candidate": 7,
-      "fitness": 0.5714285714285714,
-      "position": 46,
       "strategy": "SMALL_PRIMES"
     },
     {
       "candidate": 2,
       "fitness": 0.5,
-      "position": 47,
+      "position": 46,
       "strategy": "RANDOM_SAMPLE"
+    },
+    {
+      "candidate": 2,
+      "fitness": 0.5,
+      "position": 47,
+      "strategy": "SMALL_PRIMES"
     },
     {
       "candidate": 2,

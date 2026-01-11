@@ -14,19 +14,19 @@
       "strategy": "RANDOM_SAMPLE"
     },
     {
-      "candidate": 13,
+      "candidate": 11,
       "fitness": 1.0,
       "position": 2,
-      "strategy": "SMALL_PRIMES"
+      "strategy": "FERMAT_NEAR_SQRT"
     },
     {
       "candidate": 11,
       "fitness": 1.0,
       "position": 3,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "SMALL_PRIMES"
     },
     {
-      "candidate": 11,
+      "candidate": 13,
       "fitness": 1.0,
       "position": 4,
       "strategy": "SMALL_PRIMES"
@@ -167,13 +167,13 @@
       "candidate": 3,
       "fitness": 0.6666666666666667,
       "position": 27,
-      "strategy": "RANDOM_SAMPLE"
+      "strategy": "SMALL_PRIMES"
     },
     {
       "candidate": 3,
       "fitness": 0.6666666666666667,
       "position": 28,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "RANDOM_SAMPLE"
     },
     {
       "candidate": 3,

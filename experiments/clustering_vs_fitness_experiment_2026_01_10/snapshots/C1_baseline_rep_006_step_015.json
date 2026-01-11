@@ -122,8 +122,8 @@
       "strategy": "RANDOM_SAMPLE"
     },
     {
-      "candidate": 8,
-      "fitness": 0.875,
+      "candidate": 6,
+      "fitness": 0.8333333333333334,
       "position": 20,
       "strategy": "RANDOM_SAMPLE"
     },
@@ -131,13 +131,13 @@
       "candidate": 6,
       "fitness": 0.8333333333333334,
       "position": 21,
-      "strategy": "RANDOM_SAMPLE"
+      "strategy": "FERMAT_NEAR_SQRT"
     },
     {
       "candidate": 6,
       "fitness": 0.8333333333333334,
       "position": 22,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "RANDOM_SAMPLE"
     },
     {
       "candidate": 6,

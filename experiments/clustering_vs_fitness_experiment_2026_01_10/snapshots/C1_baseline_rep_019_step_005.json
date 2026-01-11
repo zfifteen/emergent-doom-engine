@@ -143,11 +143,11 @@
       "candidate": 8,
       "fitness": 0.875,
       "position": 23,
-      "strategy": "RANDOM_SAMPLE"
+      "strategy": "FERMAT_NEAR_SQRT"
     },
     {
-      "candidate": 6,
-      "fitness": 0.8333333333333334,
+      "candidate": 8,
+      "fitness": 0.875,
       "position": 24,
       "strategy": "RANDOM_SAMPLE"
     },

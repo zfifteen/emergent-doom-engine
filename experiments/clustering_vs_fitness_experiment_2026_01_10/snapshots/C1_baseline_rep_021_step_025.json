@@ -170,10 +170,10 @@
       "strategy": "RANDOM_SAMPLE"
     },
     {
-      "candidate": 10,
-      "fitness": 0.7,
+      "candidate": 4,
+      "fitness": 0.75,
       "position": 28,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "RANDOM_SAMPLE"
     },
     {
       "candidate": 3,
