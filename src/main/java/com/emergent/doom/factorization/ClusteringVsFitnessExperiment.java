@@ -101,12 +101,6 @@ public class ClusteringVsFitnessExperiment {
     
     // ==================== CONFIGURATION CONSTANTS ====================
     
-    /** Array size (number of candidate cells) */
-    private static final int ARRAY_SIZE = 50;
-    
-    /** Maximum execution steps per run */
-    private static final int MAX_STEPS = 100;
-    
 /**
  * Convergence position threshold (both factors must be in positions [0, CONVERGENCE_POSITION]).
  *
@@ -114,7 +108,7 @@ public class ClusteringVsFitnessExperiment {
  * CLUSTERING_VS_FITNESS_EXPERIMENT.md (line 45) specified [0,3] for strict front-loading.
  * FINDINGS.md (line 112) used [0,4] in v1 analysis for broader convergence window.
  * Settled on [0,4] (5 positions) as consensus: lenient enough for biological analogy (front 10% of morphospace)
- * while ensuring factors are &quot;localized&quot; at array head. No authoritative REQUIREMENTS.md found
+ * while ensuring factors are "localized" at array head. No authoritative REQUIREMENTS.md found
  * defining this specific threshold for factorization; reconcile if future specs emerge.</p>
  *
  * <p><strong>SENSITIVITY NOTE:</strong> [0,3] vs [0,4] affects ~20% of near-threshold runs.
@@ -173,15 +167,21 @@ private static final int STAGNATION_THRESHOLD = 20;
     /** Snapshots subdirectory */
     private final String snapshotsDir;
 
+    /** Array size (number of candidate cells) */
+    private final int arraySize;
+
+    /** Maximum execution steps per run */
+    private final int maxSteps;
+
     /**
-     * Default constructor using baseline configuration (Target 143).
+     * Default constructor using baseline configuration (Target 143, Size 50, Steps 100).
      */
     public ClusteringVsFitnessExperiment() {
-        this(143, 11, 13, "experiments/clustering_vs_fitness_experiment_2026_01_10");
+        this(143, 11, 13, "experiments/clustering_vs_fitness_experiment_2026_01_10", 50, 100);
     }
 
     /**
-     * Configurable constructor for scaling experiments.
+     * Configurable constructor for scaling experiments (default size/steps).
      *
      * @param target the semiprime to factor
      * @param factorA the first factor
@@ -189,12 +189,28 @@ private static final int STAGNATION_THRESHOLD = 20;
      * @param outputDir the directory for experiment outputs
      */
     public ClusteringVsFitnessExperiment(int target, int factorA, int factorB, String outputDir) {
+        this(target, factorA, factorB, outputDir, 50, 100);
+    }
+
+    /**
+     * Fully configurable constructor.
+     *
+     * @param target the semiprime to factor
+     * @param factorA the first factor
+     * @param factorB the second factor
+     * @param outputDir the directory for experiment outputs
+     * @param arraySize number of cells in the array
+     * @param maxSteps maximum steps per run
+     */
+    public ClusteringVsFitnessExperiment(int target, int factorA, int factorB, String outputDir, int arraySize, int maxSteps) {
         this.target = target;
         this.factorA = factorA;
         this.factorB = factorB;
         this.outputDir = outputDir;
         this.resultsDir = outputDir + "/results";
         this.snapshotsDir = outputDir + "/snapshots";
+        this.arraySize = arraySize;
+        this.maxSteps = maxSteps;
     }
     
     // ==================== EXPERIMENT EXECUTION ====================
@@ -223,8 +239,8 @@ private static final int STAGNATION_THRESHOLD = 20;
     public void runFullExperiment() throws IOException {
         System.out.println("=== Clustering vs Fitness Experiment ===");
         System.out.println("Target: N = " + target + " (" + factorA + " x " + factorB + ")");
-        System.out.println("Array size: " + ARRAY_SIZE);
-        System.out.println("Max steps: " + MAX_STEPS);
+        System.out.println("Array size: " + arraySize);
+        System.out.println("Max steps: " + maxSteps);
         System.out.println("Reps per condition: " + REPS_PER_CONDITION);
         System.out.println();
         
@@ -320,7 +336,7 @@ private static final int STAGNATION_THRESHOLD = 20;
         
         // Execute steps
         int step = 0;
-        while (step < MAX_STEPS) {
+        while (step < maxSteps) {
             // Execute one step (swaps reflect this step's activity)
             int swaps = engine.executeStep(castToAbstractCells(cells));
             step++; // Increment step counter AFTER execution (step now = completed steps)
@@ -415,7 +431,7 @@ private static final int STAGNATION_THRESHOLD = 20;
      *
      * @param cells the cell array (modified in-place if factors missing)
      * @param seed the random seed for deterministic positioning
-     * @param condition the condition name (e.g., &quot;C1_baseline&quot;) for seed hashing
+     * @param condition the condition name (e.g., "C1_baseline") for seed hashing
      */
     private void ensureFactorsPresent(List<FactorCell> cells, long seed, String condition) {
         // Check if factors already present
@@ -437,15 +453,24 @@ private static final int STAGNATION_THRESHOLD = 20;
         long injectionSeed = seed ^ condition.hashCode();
         Random rand = new Random(injectionSeed);
         
+        // Note: Using hardcoded 17/17 range split for injection. 
+        // With variable arraySize, we should scale this or just ensure unique slots.
+        // Assuming arraySize >= 50 for all valid experiments. 
+        // Using % (arraySize/2) would be safer but let's stick to safe slots.
+        // For arraySize=50, 17 is ~1/3.
+        
+        int range = arraySize / 3; 
+        if (range < 1) range = 1;
+
         if (!hasFactorA) {
             // Replace cell at position derived from injectionSeed
-            int pos = rand.nextInt(17); // First 17 positions
+            int pos = rand.nextInt(range); 
             cells.set(pos, new FactorCell(factorA, target, FactorStrategy.SMALL_PRIMES, pos));
         }
         
         if (!hasFactorB) {
             // Replace cell at different position
-            int pos = 17 + rand.nextInt(17); // Positions 17-33
+            int pos = range + rand.nextInt(range); 
             cells.set(pos, new FactorCell(factorB, target, FactorStrategy.SMALL_PRIMES, pos));
         }
         
@@ -467,8 +492,12 @@ private static final int STAGNATION_THRESHOLD = 20;
         List<FactorCell> cells = new ArrayList<>();
         int sqrtN = (int) Math.sqrt(target);
         
-        // 33% SMALL_PRIMES, 34% FERMAT, 33% RANDOM
-        int[] counts = {17, 17, 16};
+        // Distribution: 33%, 34%, 33% of arraySize
+        int countSmall = (int) (arraySize * 0.33);
+        int countRandom = (int) (arraySize * 0.33);
+        int countFermat = arraySize - countSmall - countRandom;
+        
+        int[] counts = {countSmall, countFermat, countRandom};
         FactorStrategy[] strategies = {
             FactorStrategy.SMALL_PRIMES,
             FactorStrategy.FERMAT_NEAR_SQRT,
@@ -483,13 +512,16 @@ private static final int STAGNATION_THRESHOLD = 20;
             for (int i = 0; i < count; i++) {
                 int candidate;
                 if (strategy == FactorStrategy.SMALL_PRIMES) {
+                    // Generate from small primes with wrapping
                     List<Integer> primes = CandidateGenerator.generateSmallPrimes(target, sqrtN, rand);
                     if (primes.isEmpty()) primes.add(2);
                     candidate = primes.get(rand.nextInt(primes.size()));
                 } else if (strategy == FactorStrategy.FERMAT_NEAR_SQRT) {
+                    // Generate near sqrt
                     candidate = Math.max(2, sqrtN - 5 + rand.nextInt(11));
                     candidate = Math.min(candidate, sqrtN);
                 } else {
+                    // Random sample
                     candidate = 2 + rand.nextInt(sqrtN - 1);
                 }
                 
@@ -641,16 +673,19 @@ private static final int STAGNATION_THRESHOLD = 20;
         
         // Ensure we have enough candidates after filtering
         int sqrtN = (int) Math.sqrt(target);
-        
-        while (smallPrimes.size() < 17) {
+        int countSmall = (int) (arraySize * 0.33);
+        int countRandom = (int) (arraySize * 0.33);
+        int countFermat = arraySize - countSmall - countRandom;
+
+        while (smallPrimes.size() < countSmall) {
             int candidate = 2 + rand.nextInt(sqrtN - 1); 
             if (candidate != factorA && candidate != factorB) smallPrimes.add(candidate);
         }
-        while (fermat.size() < 17) {
+        while (fermat.size() < countFermat) {
             int candidate = 2 + rand.nextInt(sqrtN - 1);
             if (candidate != factorA && candidate != factorB) fermat.add(candidate);
         }
-        while (randomSample.size() < 16) {
+        while (randomSample.size() < countRandom) {
             int candidate = 2 + rand.nextInt(sqrtN - 1);
             if (candidate != factorA && candidate != factorB) randomSample.add(candidate);
         }
@@ -659,13 +694,13 @@ private static final int STAGNATION_THRESHOLD = 20;
         List<FactorCell> cells = new ArrayList<>();
         int position = 0;
         
-        for (int i = 0; i < 17; i++) {
+        for (int i = 0; i < countSmall; i++) {
             cells.add(new FactorCell(smallPrimes.get(i), target, FactorStrategy.SMALL_PRIMES, position++));
         }
-        for (int i = 0; i < 17; i++) {
+        for (int i = 0; i < countFermat; i++) {
             cells.add(new FactorCell(fermat.get(i), target, FactorStrategy.FERMAT_NEAR_SQRT, position++));
         }
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < countRandom; i++) {
             cells.add(new FactorCell(randomSample.get(i), target, FactorStrategy.RANDOM_SAMPLE, position++));
         }
         
@@ -709,7 +744,7 @@ private static final int STAGNATION_THRESHOLD = 20;
         List<Integer> candidates = new ArrayList<>();
         int sqrtN = (int) Math.sqrt(target);
         
-        while (candidates.size() < ARRAY_SIZE) {
+        while (candidates.size() < arraySize) {
             // Generate candidates near sqrt(N)
             int candidate = Math.max(2, sqrtN - 5 + rand.nextInt(11)); // [sqrtN-5, sqrtN+5]
             if (candidate <= sqrtN && candidate >= 2) {
@@ -717,7 +752,7 @@ private static final int STAGNATION_THRESHOLD = 20;
             }
         }
         
-        for (int position = 0; position < ARRAY_SIZE; position++) {
+        for (int position = 0; position < arraySize; position++) {
             cells.add(new FactorCell(candidates.get(position), target, FactorStrategy.FERMAT_NEAR_SQRT, position));
         }
         
@@ -727,7 +762,8 @@ private static final int STAGNATION_THRESHOLD = 20;
         // Arrange (mode doesn't matter for homogeneous, but RANDOM is safe)
         return SpatialArranger.arrange(cells, SpatialArranger.LayoutMode.RANDOM, rand);
     }
-    
+
+
     /**
      * Filter out true factors (factorA and factorB) from candidate list.
      *

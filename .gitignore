@@ -24,9 +24,9 @@ ENV/
 
 node_modules/
 
-# Experiment results and backups (large CSV/JSON files)
+ Experiment results and backups (large CSV/JSON files)
 experiments/**/results_v1_backup/
 experiments/**/snapshots/
 experiments/**/results/*.csv
-experiments/**/visualizations/*.png
-experiments/**/visualizations/*.pdf
+#experiments/**/visualizations/*.png
+#experiments/**/visualizations/*.pdf
