@@ -117,8 +117,8 @@ public class ClusteringVsFitnessExperiment {
  * CLUSTERING_VS_FITNESS_EXPERIMENT.md (line 45) specified [0,3] for strict front-loading.
  * FINDINGS.md (line 112) used [0,4] in v1 analysis for broader convergence window.
  * Settled on [0,4] (5 positions) as consensus: lenient enough for biological analogy (front 10% of morphospace)
- * while ensuring factors are &quot;localized&quot; at array head. No authoritative REQUIREMENTS.md found;
- * if exists in Space Files (§4.2.1), reconcile in future PR.</p>
+ * while ensuring factors are &quot;localized&quot; at array head. No authoritative REQUIREMENTS.md found
+ * defining this specific threshold for factorization; reconcile if future specs emerge.</p>
  *
  * <p><strong>SENSITIVITY NOTE:</strong> [0,3] vs [0,4] affects ~20% of near-threshold runs.
  * Future analysis: Run with both thresholds to report delta in C3 convergence (currently 63.3%).</p>
@@ -128,27 +128,27 @@ public class ClusteringVsFitnessExperiment {
  * distance via FactorLocalizationIndex.</p>
  */
 private static final int CONVERGENCE_POSITION = 4;
-    
-    /**
-     * Stagnation threshold (steps with zero progress before declaring stagnation).
-     *
-     * <p><strong>PHASE 2 FIX:</strong> Distinguish "not yet converged" from "stuck
-     * in local attractor". If swaps = 0 for this many consecutive steps, mark as
-     * stagnant rather than in-progress.</p>
-     *
-     * <p><strong>SEMANTICS (Clarified per Review #3):</strong> If steps 1 through N all produce swaps=0,
-     * stagnation is detected at the END of step N. For N=20, stagnation flag
-     * becomes true after step 20 completes. Step counter increments BEFORE the check,
-     * so consecutiveZeroSwaps=20 triggers isStagnant=true at step=20.</p>
-     *
-     * <p><strong>EXAMPLE:</strong> Run produces swaps [0,0,0,...,0] for steps 1-20.
-     * After step 20 completes, consecutiveZeroSwaps=20 >= STAGNATION_THRESHOLD,
-     * so step 20 row in CSV shows stagnant=true. Steps 0-19 show stagnant=false.</p>
-     *
-     * <p><strong>RATIONALE:</strong> Prevents false negatives where runs appear
-     * "not converged" when they've actually reached a stable non-optimal state.</p>
-     */
-    private static final int STAGNATION_THRESHOLD = 20;
+
+/**
+ * Stagnation threshold (steps with zero progress before declaring stagnation).
+ *
+ * <p><strong>PHASE 2 FIX:</strong> Distinguish "not yet converged" from "stuck
+ * in local attractor". If swaps = 0 for this many consecutive steps, mark as
+ * stagnant rather than in-progress.</p>
+ *
+ * <p><strong>SEMANTICS (Clarified per Review #3):</strong> If steps 1 through N all produce swaps=0,
+ * stagnation is detected at the END of step N. For N=20, stagnation flag
+ * becomes true after step 20 completes. Step counter increments BEFORE the check,
+ * so consecutiveZeroSwaps=20 triggers isStagnant=true at step=20.</p>
+ *
+ * <p><strong>EXAMPLE:</strong> Run produces swaps [0,0,0,...,0] for steps 1-20.
+ * After step 20 completes, consecutiveZeroSwaps=20 >= STAGNATION_THRESHOLD,
+ * so step 20 row in CSV shows stagnant=true. Steps 0-19 show stagnant=false.</p>
+ *
+ * <p><strong>RATIONALE:</strong> Prevents false negatives where runs appear
+ * "not converged" when they've actually reached a stable non-optimal state.</p>
+ */
+private static final int STAGNATION_THRESHOLD = 20;
     
     /** Number of repetitions per condition */
     private static final int REPS_PER_CONDITION = 30;
@@ -423,33 +423,6 @@ private static final int CONVERGENCE_POSITION = 4;
         }
     }
     
-    // If both present, no action needed
-    if (has11 && has13) {
-        return;
-    }
-    
-    // Inject missing factors deterministically with condition-specific seed
-    long injectionSeed = seed ^ condition.hashCode();
-    Random rand = new Random(injectionSeed);
-    
-    if (!has11) {
-        // Replace cell at position derived from injectionSeed
-        int pos = rand.nextInt(17); // First 17 positions
-        cells.set(pos, new FactorCell(11, TARGET, FactorStrategy.SMALL_PRIMES, pos));
-    }
-    
-    if (!has13) {
-        // Replace cell at different position
-        int pos = 17 + rand.nextInt(17); // Positions 17-33
-        cells.set(pos, new FactorCell(13, TARGET, FactorStrategy.SMALL_PRIMES, pos));
-    }
-    
-    // Update positions to ensure consistency
-    for (int i = 0; i < cells.size(); i++) {
-        cells.get(i).updatePositionTo(i);
-    }
-}
-    
     // ==================== CONDITION GENERATORS ====================
     
     /**
@@ -470,7 +443,7 @@ private static final int CONVERGENCE_POSITION = 4;
      * @param seed random seed (use rep number for reproducibility)
      * @return list of FactorCells with random spatial distribution
      */
-    private List<FactorCell> generateC1Baseline(long seed) {
+    List<FactorCell> generateC1Baseline(long seed) {
         Random rand = new Random(seed);
         List<FactorCell> cells = new ArrayList<>();
         int sqrtN = (int) Math.sqrt(TARGET);
@@ -547,7 +520,7 @@ private static final int CONVERGENCE_POSITION = 4;
      * @param seed random seed
      * @return list of FactorCells pre-clustered by strategy
      */
-    private List<FactorCell> generateC2HighAggregation(long seed) {
+    List<FactorCell> generateC2HighAggregation(long seed) {
         Random rand = new Random(seed);
         List<FactorCell> cells = new ArrayList<>();
         int position = 0;
@@ -724,14 +697,15 @@ private static final int CONVERGENCE_POSITION = 4;
             cells.get(i).updatePositionTo(i);
         }
         
-        // PHASE 2 FIX: Verify factors 11 and 13 are ABSENT (negative control)
-        // Replace any that might have slipped through
+        // PHASE 2 VERIFICATION: Assert factors 11 and 13 are ABSENT (negative control)
+        // C4 is control condition - factor presence would invalidate experiment
         for (int i = 0; i < cells.size(); i++) {
             int value = cells.get(i).readValue();
             if (value == 11 || value == 13) {
-                // Replace with a safe non-factor value
-                int replacement = (value == 11) ? 2 : 3; // Use 2 or 3 (both non-factors)
-                cells.set(i, new FactorCell(replacement, TARGET, cells.get(i).readAlgotype(), i));
+                throw new IllegalStateException(String.format(
+                    "C4 factor exclusion failed: Found factor %d at position %d. " +
+                    "filterOutFactors() did not properly exclude true factors.",
+                    value, i));
             }
         }
         
@@ -788,14 +762,20 @@ private static final int CONVERGENCE_POSITION = 4;
     /**
      * Filter out true factors (11 and 13) from candidate list.
      *
-     * <p><strong>PURPOSE:</strong> Remove perfect factors for C4 control condition.</p>
+     * <p><strong>PURPOSE:</strong> C4 fitness control condition requires NO true
+     * factors in candidate pool. This negative control tests whether fitness 
+     * gradient is necessary for factor localization. If localization occurs 
+     * without fitness peaks (factors absent), clustering alone is causal.</p>
      *
-     * <p><strong>PHASE 2 NOTE:</strong> C4 is negative control - factors MUST be absent
-     * to test if fitness gradient is necessary for localization. This is opposite
-     * of factor injection in C1-C3-C5.</p>
+     * <p><strong>PHASE 2 CONTEXT:</strong> This is the inverse of 
+     * {@link #ensureFactorsPresent}. C1/C2/C3/C5 INJECT factors (positive test),
+     * while C4 EXCLUDES factors (negative control).</p>
      *
-     * @param candidates the candidate list
-     * @return filtered list without 11 or 13
+     * <p><strong>IMPLEMENTATION:</strong> Simple filter - remove candidates
+     * matching 11 or 13. Remaining candidates have fitness < 1.0 (no perfect fit).</p>
+     *
+     * @param candidates the unfiltered candidate list (may include 11 and 13)
+     * @return filtered list with 11 and 13 removed (may be empty if all excluded)
      */
     private List<Integer> filterOutFactors(List<Integer> candidates) {
         List<Integer> filtered = new ArrayList<>();
@@ -1267,6 +1247,17 @@ private static final int CONVERGENCE_POSITION = 4;
     
     /**
      * Cast List&lt;FactorCell&gt; to List&lt;AbstractCell&gt; for generic engine.
+     *
+     * <p><strong>PURPOSE:</strong> {@link GenericExecutionEngine} operates on
+     * {@link AbstractCell} type, but experiment uses concrete {@link FactorCell}.
+     * This cast bridges type systems.</p>
+     *
+     * <p><strong>SAFETY:</strong> Safe unchecked cast because FactorCell extends
+     * AbstractCell&lt;Integer, FactorStrategy&gt;. Suppression justified by type
+     * hierarchy guarantee.</p>
+     *
+     * @param cells the FactorCell list
+     * @return same list cast to AbstractCell generic type
      */
     @SuppressWarnings("unchecked")
     private List<AbstractCell<Integer, FactorStrategy>> castToAbstractCells(List<FactorCell> cells) {
