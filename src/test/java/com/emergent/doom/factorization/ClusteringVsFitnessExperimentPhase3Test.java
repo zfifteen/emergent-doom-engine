@@ -361,11 +361,109 @@ public class ClusteringVsFitnessExperimentPhase3Test {
      *
      * <p><strong>OUTPUT:</strong> Printed to console for manual documentation update</p>
      */
-@Test
+    // CSV Column Constants (Review #6: Avoid hardcoded indices for robustness)
+    // Header from StepMetrics.getCsvHeader(): step,strategy_agg,fitness_clust,factor_localization,factor_11_pos,factor_13_pos,mean_factor_dist,fitness_gradient_mean,fitness_gradient_std,strategy_entropy_global,strategy_entropy_front,swaps,consecutive_zero_swaps,stagnant
+    private static final int STEP_COL = 0;
+    private static final int STRATEGY_AGG_COL = 1;
+    private static final int FITNESS_CLUST_COL = 2;
+    private static final int FACTOR_LOCALIZATION_COL = 3;
+    private static final int FACTOR_11_POS_COL = 4;
+    private static final int FACTOR_13_POS_COL = 5;
+    private static final int MEAN_FACTOR_DIST_COL = 6;
+    private static final int FITNESS_GRADIENT_MEAN_COL = 7;
+    private static final int FITNESS_GRADIENT_STD_COL = 8;
+    private static final int STRATEGY_ENTROPY_GLOBAL_COL = 9;
+    private static final int STRATEGY_ENTROPY_FRONT_COL = 10;
+    private static final int SWAPS_COL = 11;
+    private static final int CONSEC_ZERO_SWAPS_COL = 12;
+    private static final int STAGNANT_COL = 13;
+
+    @Test
     @DisplayName("Generate summary statistics for v2 experiment results")
     void generatesSummaryStatisticsForV2Results() throws IOException {
-        // ... (same body)
+        Path resultsPath = Paths.get(RESULTS_DIR);
+        
+        String[] conditions = {"C1_baseline", "C2_high_aggregation", "C3_zero_aggregation", 
+                               "C4_fitness_control", "C5_homogeneous"};
+        
+        // Check if results are v2 format
+        Path sampleFile = resultsPath.resolve("C1_baseline_rep_001.csv");
+        if (!Files.exists(sampleFile)) {
+            System.out.println("SKIP: No experiment results found. Run full experiment test first.");
+            return;
+        }
+        
+        String header = Files.readAllLines(sampleFile).get(0);
+        boolean isV2Format = header.contains("strategy_agg") && header.contains("fitness_clust");
+        
+        if (!isV2Format) {
+            System.out.println("SKIP: Results are in v1 format. Run full experiment test first to generate v2 results.");
+            return;
+        }
+        
+        System.out.println("\n=== Phase 3 v2 Experiment Summary ===\n");
+        
+        for (String condition : conditions) {
+            int convergedCount = 0;
+            int stagnatedCount = 0;
+            double totalConvergenceTime = 0.0;
+            double totalInitialFitnessClust = 0.0;
+            
+            for (int rep = 1; rep <= 30; rep++) {
+                Path csvFile = resultsPath.resolve(String.format("%s_rep_%03d.csv", condition, rep));
+                
+                if (!Files.exists(csvFile)) {
+                    System.out.println("WARNING: Missing CSV: " + csvFile);
+                    continue;
+                }
+                
+                java.util.List<String> lines = Files.readAllLines(csvFile);
+                
+                // Get initial fitness clustering (step 0)
+                if (lines.size() > 1) {
+                    String[] step0 = lines.get(1).split(",");
+                    totalInitialFitnessClust += Double.parseDouble(step0[FITNESS_CLUST_COL]);
+                }
+                
+                // Check final step for convergence/stagnation
+                if (lines.size() > 1) {
+                    String[] lastStep = lines.get(lines.size() - 1).split(",");
+                    int stepNum = Integer.parseInt(lastStep[STEP_COL]);
+                    int factor11Pos = Integer.parseInt(lastStep[FACTOR_11_POS_COL]);
+                    int factor13Pos = Integer.parseInt(lastStep[FACTOR_13_POS_COL]);
+                    boolean isStagnant = Boolean.parseBoolean(lastStep[STAGNANT_COL]);
+                    
+                    // Converged = both factors in [0,4]
+                    if (factor11Pos >= 0 && factor11Pos <= 4 && 
+                        factor13Pos >= 0 && factor13Pos <= 4) {
+                        convergedCount++;
+                        totalConvergenceTime += stepNum;
+                    }
+                    
+                    if (isStagnant) {
+                        stagnatedCount++;
+                    }
+                }
+            }
+            
+            double convergenceRate = (convergedCount / 30.0) * 100.0;
+            double meanConvergenceTime = convergedCount > 0 ? totalConvergenceTime / convergedCount : 0.0;
+            double stagnationRate = (stagnatedCount / 30.0) * 100.0;
+            double meanInitialFitnessClust = totalInitialFitnessClust / 30.0;
+            
+            System.out.printf("%s:\n", condition);
+            System.out.printf("  Convergence rate: %.1f%% (%d/30)\n", convergenceRate, convergedCount);
+            if (convergedCount > 0) {
+                System.out.printf("  Mean convergence time: %.1f steps\n", meanConvergenceTime);
+            }
+            System.out.printf("  Stagnation rate: %.1f%% (%d/30)\n", stagnationRate, stagnatedCount);
+            System.out.printf("  Initial fitness clustering: %.1f%%\n", meanInitialFitnessClust);
+            System.out.println();
+        }
+        
+        System.out.println("=== Summary Generation Complete ===");
     }
+
 
     /**
      * Validate factor injection independence across conditions (issue #2 fix).
