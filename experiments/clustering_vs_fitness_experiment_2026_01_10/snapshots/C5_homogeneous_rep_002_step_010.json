@@ -2,16 +2,16 @@
   "condition": "C5_homogeneous",
   "cells": [
     {
-      "candidate": 11,
-      "fitness": 1.0,
-      "position": 0,
-      "strategy": "FERMAT_NEAR_SQRT"
-    },
-    {
       "candidate": 13,
       "fitness": 1.0,
-      "position": 1,
+      "position": 0,
       "strategy": "SMALL_PRIMES"
+    },
+    {
+      "candidate": 11,
+      "fitness": 1.0,
+      "position": 1,
+      "strategy": "FERMAT_NEAR_SQRT"
     },
     {
       "candidate": 11,

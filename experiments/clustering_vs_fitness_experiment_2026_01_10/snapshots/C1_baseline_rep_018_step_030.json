@@ -32,16 +32,16 @@
       "strategy": "FERMAT_NEAR_SQRT"
     },
     {
-      "candidate": 11,
-      "fitness": 1.0,
-      "position": 5,
-      "strategy": "RANDOM_SAMPLE"
-    },
-    {
       "candidate": 13,
       "fitness": 1.0,
-      "position": 6,
+      "position": 5,
       "strategy": "SMALL_PRIMES"
+    },
+    {
+      "candidate": 11,
+      "fitness": 1.0,
+      "position": 6,
+      "strategy": "RANDOM_SAMPLE"
     },
     {
       "candidate": 11,
@@ -239,7 +239,7 @@
       "candidate": 7,
       "fitness": 0.5714285714285714,
       "position": 39,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "SMALL_PRIMES"
     },
     {
       "candidate": 7,

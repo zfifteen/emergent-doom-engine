@@ -14,28 +14,28 @@
       "strategy": "FERMAT_NEAR_SQRT"
     },
     {
-      "candidate": 13,
+      "candidate": 11,
       "fitness": 1.0,
       "position": 2,
-      "strategy": "SMALL_PRIMES"
+      "strategy": "FERMAT_NEAR_SQRT"
     },
     {
       "candidate": 11,
       "fitness": 1.0,
       "position": 3,
-      "strategy": "FERMAT_NEAR_SQRT"
-    },
-    {
-      "candidate": 11,
-      "fitness": 1.0,
-      "position": 4,
       "strategy": "SMALL_PRIMES"
     },
     {
       "candidate": 11,
       "fitness": 1.0,
-      "position": 5,
+      "position": 4,
       "strategy": "FERMAT_NEAR_SQRT"
+    },
+    {
+      "candidate": 13,
+      "fitness": 1.0,
+      "position": 5,
+      "strategy": "SMALL_PRIMES"
     },
     {
       "candidate": 11,
@@ -182,10 +182,10 @@
       "strategy": "RANDOM_SAMPLE"
     },
     {
-      "candidate": 7,
-      "fitness": 0.5714285714285714,
+      "candidate": 5,
+      "fitness": 0.6,
       "position": 30,
-      "strategy": "RANDOM_SAMPLE"
+      "strategy": "SMALL_PRIMES"
     },
     {
       "candidate": 7,
@@ -197,7 +197,7 @@
       "candidate": 7,
       "fitness": 0.5714285714285714,
       "position": 32,
-      "strategy": "SMALL_PRIMES"
+      "strategy": "RANDOM_SAMPLE"
     },
     {
       "candidate": 7,
@@ -209,7 +209,7 @@
       "candidate": 7,
       "fitness": 0.5714285714285714,
       "position": 34,
-      "strategy": "RANDOM_SAMPLE"
+      "strategy": "SMALL_PRIMES"
     },
     {
       "candidate": 7,
@@ -221,7 +221,7 @@
       "candidate": 7,
       "fitness": 0.5714285714285714,
       "position": 36,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "RANDOM_SAMPLE"
     },
     {
       "candidate": 7,
