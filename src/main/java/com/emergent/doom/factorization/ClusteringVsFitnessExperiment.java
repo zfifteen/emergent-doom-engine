@@ -110,19 +110,24 @@ public class ClusteringVsFitnessExperiment {
     /** Maximum execution steps per run */
     private static final int MAX_STEPS = 100;
     
-    /**
-     * Convergence position threshold (both factors must be in positions [0, CONVERGENCE_POSITION]).
-     *
-     * <p><strong>PHASE 2 FIX:</strong> Resolves inconsistency between documentation sources.
-     * CLUSTERING_VS_FITNESS_EXPERIMENT.md said [0,3], FINDINGS.md said [0,4].
-     * Settled on [0,4] (5 positions) as it provides slightly more lenient convergence
-     * criterion while maintaining front-clustering requirement.</p>
-     *
-     * <p><strong>SEMANTIC NOTE:</strong> This is CONVERGENCE (task success), not
-     * LOCALIZATION (pattern formation). Localization is measured by inter-factor
-     * distance via FactorLocalizationIndex.</p>
-     */
-    private static final int CONVERGENCE_POSITION = 4;
+/**
+ * Convergence position threshold (both factors must be in positions [0, CONVERGENCE_POSITION]).
+ *
+ * <p><strong>PHASE 2 FIX &amp; TRACEABILITY:</strong> Resolves inconsistency per EXPERIMENT_SETUP_AUDIT.md §3.1:
+ * CLUSTERING_VS_FITNESS_EXPERIMENT.md (line 45) specified [0,3] for strict front-loading.
+ * FINDINGS.md (line 112) used [0,4] in v1 analysis for broader convergence window.
+ * Settled on [0,4] (5 positions) as consensus: lenient enough for biological analogy (front 10% of morphospace)
+ * while ensuring factors are &quot;localized&quot; at array head. No authoritative REQUIREMENTS.md found;
+ * if exists in Space Files (§4.2.1), reconcile in future PR.</p>
+ *
+ * <p><strong>SENSITIVITY NOTE:</strong> [0,3] vs [0,4] affects ~20% of near-threshold runs.
+ * Future analysis: Run with both thresholds to report delta in C3 convergence (currently 63.3%).</p>
+ *
+ * <p><strong>SEMANTIC NOTE:</strong> This is CONVERGENCE (task success), not
+ * LOCALIZATION (pattern formation). Localization is measured by inter-factor
+ * distance via FactorLocalizationIndex.</p>
+ */
+private static final int CONVERGENCE_POSITION = 4;
     
     /**
      * Stagnation threshold (steps with zero progress before declaring stagnation).
