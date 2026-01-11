@@ -224,8 +224,8 @@
       "strategy": "FERMAT_NEAR_SQRT"
     },
     {
-      "candidate": 7,
-      "fitness": 0.5714285714285714,
+      "candidate": 10,
+      "fitness": 0.7,
       "position": 37,
       "strategy": "FERMAT_NEAR_SQRT"
     },

@@ -53,7 +53,7 @@
       "candidate": 11,
       "fitness": 1.0,
       "position": 8,
-      "strategy": "SMALL_PRIMES"
+      "strategy": "FERMAT_NEAR_SQRT"
     },
     {
       "candidate": 11,

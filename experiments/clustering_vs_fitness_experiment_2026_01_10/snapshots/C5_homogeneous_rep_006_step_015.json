@@ -2,10 +2,10 @@
   "condition": "C5_homogeneous",
   "cells": [
     {
-      "candidate": 11,
+      "candidate": 13,
       "fitness": 1.0,
       "position": 0,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "SMALL_PRIMES"
     },
     {
       "candidate": 11,
@@ -14,10 +14,10 @@
       "strategy": "FERMAT_NEAR_SQRT"
     },
     {
-      "candidate": 13,
+      "candidate": 11,
       "fitness": 1.0,
       "position": 2,
-      "strategy": "SMALL_PRIMES"
+      "strategy": "FERMAT_NEAR_SQRT"
     },
     {
       "candidate": 11,
@@ -128,8 +128,8 @@
       "strategy": "FERMAT_NEAR_SQRT"
     },
     {
-      "candidate": 8,
-      "fitness": 0.875,
+      "candidate": 6,
+      "fitness": 0.8333333333333334,
       "position": 21,
       "strategy": "FERMAT_NEAR_SQRT"
     },
