@@ -14,7 +14,7 @@
       "strategy": "SMALL_PRIMES"
     },
     {
-      "candidate": 11,
+      "candidate": 13,
       "fitness": 1.0,
       "position": 2,
       "strategy": "SMALL_PRIMES"
@@ -71,7 +71,7 @@
       "candidate": 11,
       "fitness": 1.0,
       "position": 11,
-      "strategy": "RANDOM_SAMPLE"
+      "strategy": "FERMAT_NEAR_SQRT"
     },
     {
       "candidate": 11,
@@ -80,10 +80,10 @@
       "strategy": "RANDOM_SAMPLE"
     },
     {
-      "candidate": 9,
-      "fitness": 0.8888888888888888,
+      "candidate": 11,
+      "fitness": 1.0,
       "position": 13,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "RANDOM_SAMPLE"
     },
     {
       "candidate": 9,

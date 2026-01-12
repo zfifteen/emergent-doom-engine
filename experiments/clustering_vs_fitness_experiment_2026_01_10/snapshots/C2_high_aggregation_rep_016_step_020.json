@@ -2,7 +2,7 @@
   "condition": "C2_high_aggregation",
   "cells": [
     {
-      "candidate": 11,
+      "candidate": 13,
       "fitness": 1.0,
       "position": 0,
       "strategy": "SMALL_PRIMES"
@@ -35,7 +35,7 @@
       "candidate": 11,
       "fitness": 1.0,
       "position": 5,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "RANDOM_SAMPLE"
     },
     {
       "candidate": 11,
@@ -44,14 +44,14 @@
       "strategy": "RANDOM_SAMPLE"
     },
     {
-      "candidate": 11,
-      "fitness": 1.0,
-      "position": 7,
-      "strategy": "RANDOM_SAMPLE"
-    },
-    {
       "candidate": 9,
       "fitness": 0.8888888888888888,
+      "position": 7,
+      "strategy": "FERMAT_NEAR_SQRT"
+    },
+    {
+      "candidate": 8,
+      "fitness": 0.875,
       "position": 8,
       "strategy": "FERMAT_NEAR_SQRT"
     },
@@ -68,8 +68,8 @@
       "strategy": "FERMAT_NEAR_SQRT"
     },
     {
-      "candidate": 8,
-      "fitness": 0.875,
+      "candidate": 6,
+      "fitness": 0.8333333333333334,
       "position": 11,
       "strategy": "FERMAT_NEAR_SQRT"
     },

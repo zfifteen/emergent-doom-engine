@@ -2,7 +2,7 @@
   "condition": "C2_high_aggregation",
   "cells": [
     {
-      "candidate": 11,
+      "candidate": 13,
       "fitness": 1.0,
       "position": 0,
       "strategy": "SMALL_PRIMES"
@@ -59,13 +59,13 @@
       "candidate": 9,
       "fitness": 0.8888888888888888,
       "position": 9,
-      "strategy": "RANDOM_SAMPLE"
+      "strategy": "FERMAT_NEAR_SQRT"
     },
     {
-      "candidate": 8,
-      "fitness": 0.875,
+      "candidate": 9,
+      "fitness": 0.8888888888888888,
       "position": 10,
-      "strategy": "FERMAT_NEAR_SQRT"
+      "strategy": "RANDOM_SAMPLE"
     },
     {
       "candidate": 8,
