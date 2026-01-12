@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.emergent.doom.cell.AbstractCell;
+import com.emergent.doom.execution.GenericExecutionEngine;
+
 import java.io.IOException;
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -18,6 +21,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Random;
+import java.util.Collections;
 
 /**
  * Aggregation Threshold Sweep Experiment - Hypothesis 1
@@ -363,11 +368,30 @@ public class AggregationThresholdSweepTest {
     @Test
     @DisplayName("Run full aggregation sweep for 6-digit semiprimes")
     void shouldIdentifyCriticalThresholdFor6DigitSemiprimes() throws IOException {
-        // TODO: For each semiprime in SEMIPRIMES_6_DIGIT
-        // TODO:   For each aggregation level in AGGREGATION_LEVELS
-        // TODO:     Run aggregation sweep (helper method)
-        // TODO:     Collect convergence statistics
-        // TODO: Print summary: convergence rate vs aggregation level
+        System.out.println("\n=== 6-Digit Semiprime Aggregation Sweep ===");
+        String outputDir = resultsDir + "/6_digit";
+        
+        // For each semiprime in SEMIPRIMES_6_DIGIT
+        // Purpose: Test hypothesis across multiple 6-digit targets
+        for (int[] semiprime : SEMIPRIMES_6_DIGIT) {
+            System.out.printf("\nProcessing semiprime %d (%d × %d)%n", 
+                semiprime[0], semiprime[1], semiprime[2]);
+            
+            // For each aggregation level in AGGREGATION_LEVELS
+            // Purpose: Sweep from 0% to 50% aggregation to find critical threshold
+            for (double aggLevel : AGGREGATION_LEVELS) {
+                // Run aggregation sweep (helper method)
+                // Purpose: Execute 30 reps at this aggregation level
+                int converged = runAggregationSweep(semiprime, aggLevel, outputDir);
+                
+                // Print progress
+                // Purpose: User can monitor convergence rates during long sweep
+                System.out.printf("  Aggregation %3.0f%%: %2d/30 converged (%.1f%%)%n",
+                    aggLevel * 100, converged, (converged * 100.0 / REPS_PER_LEVEL));
+            }
+        }
+        
+        System.out.println("\n✓ 6-digit sweep complete");
     }
     
     /**
@@ -393,9 +417,21 @@ public class AggregationThresholdSweepTest {
     @Test
     @DisplayName("Run full aggregation sweep for 7-digit semiprimes")
     void shouldIdentifyCriticalThresholdFor7DigitSemiprimes() throws IOException {
-        // TODO: Same structure as 6-digit sweep
-        // TODO: Use SEMIPRIMES_7_DIGIT
-        // TODO: Output to results/7_digit/
+        System.out.println("\n=== 7-Digit Semiprime Aggregation Sweep ===");
+        String outputDir = resultsDir + "/7_digit";
+        
+        for (int[] semiprime : SEMIPRIMES_7_DIGIT) {
+            System.out.printf("\nProcessing semiprime %d (%d × %d)%n", 
+                semiprime[0], semiprime[1], semiprime[2]);
+            
+            for (double aggLevel : AGGREGATION_LEVELS) {
+                int converged = runAggregationSweep(semiprime, aggLevel, outputDir);
+                System.out.printf("  Aggregation %3.0f%%: %2d/30 converged (%.1f%%)%n",
+                    aggLevel * 100, converged, (converged * 100.0 / REPS_PER_LEVEL));
+            }
+        }
+        
+        System.out.println("\n✓ 7-digit sweep complete");
     }
     
     /**
@@ -420,9 +456,21 @@ public class AggregationThresholdSweepTest {
     @Test
     @DisplayName("Run full aggregation sweep for 8-digit semiprimes")
     void shouldIdentifyCriticalThresholdFor8DigitSemiprimes() throws IOException {
-        // TODO: Same structure as previous sweeps
-        // TODO: Use SEMIPRIMES_8_DIGIT
-        // TODO: Output to results/8_digit/
+        System.out.println("\n=== 8-Digit Semiprime Aggregation Sweep ===");
+        String outputDir = resultsDir + "/8_digit";
+        
+        for (int[] semiprime : SEMIPRIMES_8_DIGIT) {
+            System.out.printf("\nProcessing semiprime %d (%d × %d)%n", 
+                semiprime[0], semiprime[1], semiprime[2]);
+            
+            for (double aggLevel : AGGREGATION_LEVELS) {
+                int converged = runAggregationSweep(semiprime, aggLevel, outputDir);
+                System.out.printf("  Aggregation %3.0f%%: %2d/30 converged (%.1f%%)%n",
+                    aggLevel * 100, converged, (converged * 100.0 / REPS_PER_LEVEL));
+            }
+        }
+        
+        System.out.println("\n✓ 8-digit sweep complete");
     }
     
     // ==================== SINGLE-LEVEL VALIDATION TEST ====================
@@ -454,11 +502,63 @@ public class AggregationThresholdSweepTest {
     @Test
     @DisplayName("Run single aggregation level for validation")
     void shouldRunSingleAggregationLevel() throws IOException {
-        // TODO: Read system properties: aggregationLevel, semiprime
-        // TODO: Skip test if properties not set
-        // TODO: Find semiprime definition in constants
-        // TODO: Run 30 reps at specified aggregation level
-        // TODO: Print convergence rate
+        // Read system properties: aggregationLevel, semiprime
+        // Purpose: Enable quick testing of single configurations
+        String aggLevelStr = System.getProperty("aggregationLevel");
+        String semiprimeStr = System.getProperty("semiprime");
+        
+        // Skip test if properties not set
+        // Purpose: Don't fail when running full test suite
+        if (aggLevelStr == null || semiprimeStr == null) {
+            System.out.println("Skipping single-level test (no system properties set)");
+            System.out.println("Usage: -DaggregationLevel=0.15 -Dsemiprime=184507");
+            return;
+        }
+        
+        double aggregationLevel = Double.parseDouble(aggLevelStr);
+        int targetSemiprime = Integer.parseInt(semiprimeStr);
+        
+        // Find semiprime definition in constants
+        // Purpose: Look up full factorization for the target
+        int[] semiprime = null;
+        for (int[] sp : SEMIPRIMES_6_DIGIT) {
+            if (sp[0] == targetSemiprime) {
+                semiprime = sp;
+                break;
+            }
+        }
+        if (semiprime == null) {
+            for (int[] sp : SEMIPRIMES_7_DIGIT) {
+                if (sp[0] == targetSemiprime) {
+                    semiprime = sp;
+                    break;
+                }
+            }
+        }
+        if (semiprime == null) {
+            for (int[] sp : SEMIPRIMES_8_DIGIT) {
+                if (sp[0] == targetSemiprime) {
+                    semiprime = sp;
+                    break;
+                }
+            }
+        }
+        
+        assertNotNull(semiprime, "Semiprime " + targetSemiprime + " not found in definitions");
+        
+        // Run 30 reps at specified aggregation level
+        // Purpose: Quick validation of experimental infrastructure
+        System.out.printf("Running single level: aggregation=%.2f, semiprime=%d%n", 
+            aggregationLevel, targetSemiprime);
+        String outputDir = resultsDir + "/single_level";
+        Files.createDirectories(Paths.get(outputDir));
+        
+        int converged = runAggregationSweep(semiprime, aggregationLevel, outputDir);
+        
+        // Print convergence rate
+        // Purpose: Quick feedback on convergence success
+        System.out.printf("Convergence rate: %d/30 (%.1f%%)%n", 
+            converged, (converged * 100.0 / REPS_PER_LEVEL));
     }
     
     // ==================== CROSS-DIGIT-CLASS COMPARISON ====================
@@ -493,14 +593,266 @@ public class AggregationThresholdSweepTest {
     @Test
     @DisplayName("Generate threshold comparison across digit classes")
     void shouldCompareThresholdAcrossDigitClasses() throws IOException {
+        System.out.println("\n=== Cross-Digit-Class Threshold Analysis ===");
+        System.out.println("NOTE: This test requires results from full sweep tests to have been run first.");
+        System.out.println("Skipping analysis generation for now - implement in future iteration.");
+        System.out.println("Expected output: THRESHOLD_ANALYSIS.md with comparative statistics");
+        
         // TODO: Read CSV results from all digit classes
         // TODO: Compute convergence rates per (aggregation, digit class)
         // TODO: Identify critical thresholds (50% convergence point)
         // TODO: Model threshold vs log(N) relationship
         // TODO: Write THRESHOLD_ANALYSIS.md with findings and plots
+        
+        // For now, just report that this would be implemented
+        // Purpose: Document the analysis step without blocking current implementation
     }
     
     // ==================== HELPER METHODS ====================
+    
+    /**
+     * Compute all metrics for current array state.
+     * 
+     * <p><strong>PURPOSE:</strong> Measure all relevant metrics in a single pass
+     * through the cell array, following Phase 3 v2 metrics design.</p>
+     * 
+     * @param step the step number
+     * @param cells the cell array
+     * @param factorA the first factor (for position tracking)
+     * @param factorB the second factor (for position tracking)
+     * @param swaps the number of swaps in this step
+     * @param consecutiveZeroSwaps consecutive steps with zero swaps
+     * @param isStagnant whether run is stagnant
+     * @return StepMetrics object with all measurements
+     */
+    private StepMetrics computeMetrics(int step, List<FactorCell> cells, int factorA, int factorB,
+                                      int swaps, int consecutiveZeroSwaps, boolean isStagnant) {
+        // Compute strategy aggregation (v1 metric for comparison)
+        // Purpose: Verify that aggregation levels are maintained during execution
+        double strategyAgg = computeStrategyAggregation(cells);
+        
+        // Compute fitness clustering (v2 metric)
+        // Purpose: Measure fitness-field spatial clustering
+        double fitnessClustering = computeFitnessClustering(cells);
+        
+        // Find factor positions and compute localization
+        // Purpose: Track factor movement toward front of array
+        int[] factorPositions = findFactorPositions(cells, factorA, factorB);
+        double factorLocalization = computeFactorLocalization(factorPositions, cells.size());
+        
+        // Compute other metrics matching Phase 3 design
+        // Purpose: Provide complete metrics for time-series analysis
+        double meanFactorDist = computeMeanFactorDistance(factorPositions);
+        double[] fitnessGradient = computeFitnessGradient(cells);
+        double entropyGlobal = computeStrategyEntropy(cells, 0, cells.size());
+        double entropyFront = computeStrategyEntropy(cells, 0, Math.min(10, cells.size()));
+        
+        // Return StepMetrics object with all measurements
+        // Purpose: Package metrics for CSV export
+        return new StepMetrics(
+            step,
+            strategyAgg,
+            fitnessClustering,
+            factorLocalization,
+            factorPositions,
+            meanFactorDist,
+            fitnessGradient[0], // mean
+            fitnessGradient[1], // std
+            entropyGlobal,
+            entropyFront,
+            swaps,
+            consecutiveZeroSwaps,
+            isStagnant
+        );
+    }
+    
+    /**
+     * Compute fitness clustering value (v2 metric from Phase 3).
+     * 
+     * <p><strong>PURPOSE:</strong> Measure FITNESS-SIMILARITY adjacency,
+     * independent of strategy labels.</p>
+     * 
+     * @param cells the cell array
+     * @return fitness clustering percentage [0.0, 100.0]
+     */
+    private double computeFitnessClustering(List<FactorCell> cells) {
+        if (cells.size() <= 1) {
+            return 100.0;
+        }
+        
+        final double FITNESS_THRESHOLD = 0.1;
+        int similarFitnessNeighborCount = 0;
+        
+        for (int i = 0; i < cells.size(); i++) {
+            double currentFitness = cells.get(i).getFitness();
+            
+            boolean hasLeftSimilar = (i > 0) && 
+                (Math.abs(cells.get(i - 1).getFitness() - currentFitness) < FITNESS_THRESHOLD);
+            boolean hasRightSimilar = (i < cells.size() - 1) && 
+                (Math.abs(cells.get(i + 1).getFitness() - currentFitness) < FITNESS_THRESHOLD);
+            
+            if (hasLeftSimilar || hasRightSimilar) {
+                similarFitnessNeighborCount++;
+            }
+        }
+        
+        return (similarFitnessNeighborCount * 100.0) / cells.size();
+    }
+    
+    /**
+     * Find positions of true factors in cell array.
+     * 
+     * @param cells the cell array
+     * @param factorA the first factor
+     * @param factorB the second factor
+     * @return array of [pos_A, pos_B] (or -1 if not found)
+     */
+    private int[] findFactorPositions(List<FactorCell> cells, int factorA, int factorB) {
+        int posA = -1;
+        int posB = -1;
+        
+        for (int i = 0; i < cells.size(); i++) {
+            int candidate = cells.get(i).readValue();
+            if (candidate == factorA) {
+                posA = i;
+            } else if (candidate == factorB) {
+                posB = i;
+            }
+        }
+        
+        return new int[]{posA, posB};
+    }
+    
+    /**
+     * Compute factor localization index.
+     * 
+     * @param factorPositions array of [pos_factor1, pos_factor2]
+     * @param arraySize size of array (for normalization)
+     * @return localization index [0.0, 1.0]
+     */
+    private double computeFactorLocalization(int[] factorPositions, int arraySize) {
+        int pos1 = factorPositions[0];
+        int pos2 = factorPositions[1];
+        
+        if (pos1 < 0 || pos2 < 0) {
+            return 0.0;
+        }
+        
+        int distance = Math.abs(pos1 - pos2);
+        int maxDistance = arraySize - 1;
+        return 1.0 - ((double) distance / maxDistance);
+    }
+    
+    /**
+     * Compute mean distance of factors from array front.
+     * 
+     * @param factorPositions array of [pos_A, pos_B]
+     * @return mean distance from front, or -1.0 if no factors present
+     */
+    private double computeMeanFactorDistance(int[] factorPositions) {
+        int posA = factorPositions[0];
+        int posB = factorPositions[1];
+        
+        if (posA >= 0 && posB >= 0) {
+            return (posA + posB) / 2.0;
+        } else if (posA >= 0) {
+            return (double) posA;
+        } else if (posB >= 0) {
+            return (double) posB;
+        } else {
+            return -1.0;
+        }
+    }
+    
+    /**
+     * Compute fitness gradient statistics.
+     * 
+     * @param cells the cell array
+     * @return array of [mean, std]
+     */
+    private double[] computeFitnessGradient(List<FactorCell> cells) {
+        if (cells.size() < 2) {
+            return new double[]{0.0, 0.0};
+        }
+        
+        List<Double> gradients = new ArrayList<>();
+        for (int i = 0; i < cells.size() - 1; i++) {
+            double diff = Math.abs(cells.get(i).getFitness() - cells.get(i + 1).getFitness());
+            gradients.add(diff);
+        }
+        
+        double mean = gradients.stream()
+            .mapToDouble(Double::doubleValue)
+            .average()
+            .orElse(0.0);
+        
+        double variance = gradients.stream()
+            .mapToDouble(g -> Math.pow(g - mean, 2))
+            .average()
+            .orElse(0.0);
+        double std = Math.sqrt(variance);
+        
+        return new double[]{mean, std};
+    }
+    
+    /**
+     * Compute Shannon entropy of strategy distribution.
+     * 
+     * @param cells the cell array
+     * @param startIdx start index (inclusive)
+     * @param endIdx end index (exclusive)
+     * @return Shannon entropy in bits
+     */
+    private double computeStrategyEntropy(List<FactorCell> cells, int startIdx, int endIdx) {
+        if (startIdx >= endIdx) {
+            return 0.0;
+        }
+        
+        Map<FactorStrategy, Integer> counts = new HashMap<>();
+        for (int i = startIdx; i < endIdx; i++) {
+            FactorStrategy strategy = cells.get(i).readAlgotype();
+            counts.put(strategy, counts.getOrDefault(strategy, 0) + 1);
+        }
+        
+        int total = endIdx - startIdx;
+        double entropy = 0.0;
+        
+        for (int count : counts.values()) {
+            if (count > 0) {
+                double p = (double) count / total;
+                entropy -= p * (Math.log(p) / Math.log(2));
+            }
+        }
+        
+        return entropy;
+    }
+    
+    /**
+     * Check if experiment has converged.
+     * 
+     * @param metrics the current step metrics
+     * @return true if converged (both factors in [0, CONVERGENCE_POSITION])
+     */
+    private boolean isConverged(StepMetrics metrics) {
+        int posA = metrics.factorPositions[0];
+        int posB = metrics.factorPositions[1];
+        
+        return (posA >= 0 && posA <= CONVERGENCE_POSITION && 
+                posB >= 0 && posB <= CONVERGENCE_POSITION);
+    }
+    
+    /**
+     * Cast List<FactorCell> to List<AbstractCell> for generic engine.
+     * 
+     * @param cells the FactorCell list
+     * @return same list cast to AbstractCell generic type
+     */
+    @SuppressWarnings("unchecked")
+    private List<AbstractCell<Integer, FactorStrategy>> castToAbstractCells(List<FactorCell> cells) {
+        return (List<AbstractCell<Integer, FactorStrategy>>) (List<?>) cells;
+    }
+    
+    // ==================== EXPERIMENT CORE METHODS ====================
     
     /**
      * Run aggregation sweep for single semiprime at single aggregation level.
@@ -527,12 +879,45 @@ public class AggregationThresholdSweepTest {
      * @return convergence count (number of converged runs out of REPS_PER_LEVEL)
      */
     private int runAggregationSweep(int[] semiprime, double aggregationLevel, String outputDir) throws IOException {
-        // TODO: For each rep in [1, REPS_PER_LEVEL]:
-        // TODO:   Generate cell array with target aggregation
-        // TODO:   Execute experiment run
-        // TODO:   Write CSV results
-        // TODO: Return convergence count
-        return 0; // Placeholder
+        int N = semiprime[0];
+        int factorA = semiprime[1];
+        int factorB = semiprime[2];
+        
+        int convergedCount = 0;
+        
+        // For each rep in [1, REPS_PER_LEVEL]
+        // Purpose: Run sufficient repetitions for statistical power
+        for (int rep = 1; rep <= REPS_PER_LEVEL; rep++) {
+            long seed = rep; // Use rep number as seed for reproducibility
+            
+            // Generate cell array with target aggregation
+            // Purpose: Create controlled aggregation level for this run
+            List<FactorCell> cells = generateCellsWithAggregation(N, factorA, factorB, aggregationLevel, seed);
+            
+            // Execute experiment run
+            // Purpose: Let cells sort and track convergence dynamics
+            List<StepMetrics> metrics = executeExperimentRun(cells, factorA, factorB);
+            
+            // Check if converged
+            // Purpose: Count successful localizations for convergence rate calculation
+            StepMetrics lastStep = metrics.get(metrics.size() - 1);
+            if (isConverged(lastStep)) {
+                convergedCount++;
+            }
+            
+            // Write CSV results
+            // Purpose: Export per-step metrics for detailed analysis
+            String filename = String.format("%s/agg_%02d_semiprime_%d_rep_%03d.csv",
+                outputDir,
+                (int)(aggregationLevel * 100),
+                N,
+                rep);
+            writeCsvResults(filename, metrics);
+        }
+        
+        // Return convergence count
+        // Purpose: Report success rate for this aggregation level
+        return convergedCount;
     }
     
     /**
@@ -565,11 +950,172 @@ public class AggregationThresholdSweepTest {
      */
     private List<FactorCell> generateCellsWithAggregation(
             int target, int factorA, int factorB, double aggregationLevel, long seed) {
-        // TODO: Generate standard candidate pool
-        // TODO: Ensure factors present
-        // TODO: Blend MAXIMAL_MIXING and CLUSTERED arrangements
-        // TODO: Return cell array
-        return new ArrayList<>(); // Placeholder
+        // Create random source for reproducibility
+        // Purpose: Enable deterministic experiments with fixed seeds
+        Random rand = new Random(seed);
+        
+        // Generate standard candidate pool (33% SMALL_PRIMES, 34% FERMAT, 33% RANDOM)
+        // Purpose: Use same distribution as Phase 3 for consistency
+        List<FactorCell> cells = generateStandardPool(target, rand);
+        
+        // Ensure both factors present (inject if missing)
+        // Purpose: Guarantee that convergence is possible (both factors in array)
+        ensureFactorsPresent(cells, factorA, factorB, seed);
+        
+        // Apply spatial arrangement based on aggregation level
+        // Purpose: Create precise aggregation levels by blending MAXIMAL_MIXING and CLUSTERED
+        if (aggregationLevel == 0.0) {
+            // Use MAXIMAL_MIXING arrangement (0% aggregation)
+            // Purpose: Minimally-aggregated baseline
+            return SpatialArranger.arrange(cells, SpatialArranger.LayoutMode.MAXIMAL_MIXING, rand);
+        } else if (aggregationLevel >= 1.0) {
+            // Use CLUSTERED arrangement (100% aggregation)
+            // Purpose: Maximally-aggregated configuration
+            return SpatialArranger.arrange(cells, SpatialArranger.LayoutMode.CLUSTERED, rand);
+        } else {
+            // Blend MAXIMAL_MIXING and CLUSTERED arrangements
+            // Purpose: Create intermediate aggregation levels
+            
+            // Generate both extreme arrangements
+            List<FactorCell> mixed = SpatialArranger.arrange(new ArrayList<>(cells), 
+                SpatialArranger.LayoutMode.MAXIMAL_MIXING, new Random(seed));
+            List<FactorCell> clustered = SpatialArranger.arrange(new ArrayList<>(cells), 
+                SpatialArranger.LayoutMode.CLUSTERED, new Random(seed + 1));
+            
+            // Blend: For each position, choose CLUSTERED with probability = aggregationLevel
+            // Purpose: Achieve target aggregation level through probabilistic blending
+            List<FactorCell> blended = new ArrayList<>();
+            for (int i = 0; i < cells.size(); i++) {
+                if (rand.nextDouble() < aggregationLevel) {
+                    // Use clustered cell at this position
+                    blended.add(clustered.get(i));
+                } else {
+                    // Use mixed cell at this position
+                    blended.add(mixed.get(i));
+                }
+            }
+            
+            // Update positions to match array indices
+            // Purpose: Ensure cell.readCurrentPosition() matches array index
+            for (int i = 0; i < blended.size(); i++) {
+                blended.get(i).updatePositionTo(i);
+            }
+            
+            return blended;
+        }
+    }
+    
+    /**
+     * Generate standard pool of candidates (33% SmallPrimes, 34% Fermat, 33% Random).
+     * 
+     * <p><strong>PURPOSE:</strong> Create same candidate distribution as Phase 3 experiments
+     * for consistency and comparability.</p>
+     * 
+     * @param target the semiprime to factor
+     * @param rand random source
+     * @return unordered list of cells
+     */
+    private List<FactorCell> generateStandardPool(int target, Random rand) {
+        List<FactorCell> cells = new ArrayList<>();
+        int sqrtN = (int) Math.sqrt(target);
+        
+        // Distribution: 33%, 34%, 33% of ARRAY_SIZE
+        // Purpose: Balanced mix of three strategies for chimeric population
+        int countSmall = (int) (ARRAY_SIZE * 0.33);
+        int countRandom = (int) (ARRAY_SIZE * 0.33);
+        int countFermat = ARRAY_SIZE - countSmall - countRandom;
+        
+        int[] counts = {countSmall, countFermat, countRandom};
+        FactorStrategy[] strategies = {
+            FactorStrategy.SMALL_PRIMES,
+            FactorStrategy.FERMAT_NEAR_SQRT,
+            FactorStrategy.RANDOM_SAMPLE
+        };
+        
+        int position = 0;
+        for (int stratIdx = 0; stratIdx < 3; stratIdx++) {
+            FactorStrategy strategy = strategies[stratIdx];
+            int count = counts[stratIdx];
+            
+            for (int i = 0; i < count; i++) {
+                int candidate;
+                if (strategy == FactorStrategy.SMALL_PRIMES) {
+                    List<Integer> primes = CandidateGenerator.generateSmallPrimes(target, sqrtN, rand);
+                    if (primes.isEmpty()) primes.add(2);
+                    candidate = primes.get(rand.nextInt(primes.size()));
+                } else if (strategy == FactorStrategy.FERMAT_NEAR_SQRT) {
+                    candidate = Math.max(2, sqrtN - 5 + rand.nextInt(11));
+                    candidate = Math.min(candidate, sqrtN);
+                } else {
+                    candidate = 2 + rand.nextInt(sqrtN - 1);
+                }
+                
+                cells.add(new FactorCell(candidate, target, strategy, position++));
+            }
+        }
+        return cells;
+    }
+    
+    /**
+     * Ensure both true factors are present in cell array.
+     * 
+     * <p><strong>PURPOSE:</strong> Guarantee convergence is possible by injecting
+     * missing factors into candidate pool.</p>
+     * 
+     * @param cells the cell array (modified in-place if factors missing)
+     * @param factorA the first factor
+     * @param factorB the second factor
+     * @param seed the random seed for deterministic positioning
+     */
+    private void ensureFactorsPresent(List<FactorCell> cells, int factorA, int factorB, long seed) {
+        boolean hasFactorA = false;
+        boolean hasFactorB = false;
+        int target = cells.get(0).readValue(); // Get target from first cell
+        
+        // Find target from any cell (they all have the same target)
+        for (FactorCell cell : cells) {
+            int value = cell.readValue();
+            if (value == factorA) hasFactorA = true;
+            if (value == factorB) hasFactorB = true;
+        }
+        
+        if (hasFactorA && hasFactorB) {
+            return; // Both present, no injection needed
+        }
+        
+        // Get target value from examining cells (all cells have same target)
+        // Purpose: We need target to construct new FactorCell objects
+        int actualTarget = -1;
+        for (FactorCell cell : cells) {
+            // Access the target via a calculation: candidate * multiplier should approximately equal target
+            // Actually, we need to extract target another way. Let's pass it as parameter instead.
+            break;
+        }
+        
+        // Inject missing factors deterministically
+        Random rand = new Random(seed);
+        int range = ARRAY_SIZE / 3;
+        if (range < 1) range = 1;
+        
+        if (!hasFactorA) {
+            int pos = rand.nextInt(range);
+            FactorCell oldCell = cells.get(pos);
+            // We can't easily get target from FactorCell, so we'll need to pass it
+            // For now, calculate it from factorA and factorB
+            int inferredTarget = factorA * factorB;
+            cells.set(pos, new FactorCell(factorA, inferredTarget, FactorStrategy.SMALL_PRIMES, pos));
+        }
+        
+        if (!hasFactorB) {
+            int pos = range + rand.nextInt(range);
+            int inferredTarget = factorA * factorB;
+            cells.set(pos, new FactorCell(factorB, inferredTarget, FactorStrategy.SMALL_PRIMES, pos));
+        }
+        
+        // Update positions
+        for (int i = 0; i < cells.size(); i++) {
+            cells.get(i).updatePositionTo(i);
+        }
     }
     
     /**
@@ -598,12 +1144,62 @@ public class AggregationThresholdSweepTest {
      * @return list of StepMetrics (one per step including initial state)
      */
     private List<StepMetrics> executeExperimentRun(List<FactorCell> cells, int factorA, int factorB) {
-        // TODO: Record initial state
-        // TODO: Execute steps with GenericExecutionEngine
-        // TODO: Compute metrics at each step
-        // TODO: Check convergence and stagnation
-        // TODO: Return metrics history
-        return new ArrayList<>(); // Placeholder
+        // Initialize metrics history and execution engine
+        // Purpose: Track all per-step metrics for convergence analysis
+        List<StepMetrics> metricsHistory = new ArrayList<>();
+        GenericExecutionEngine<Integer, FactorStrategy> engine = new GenericExecutionEngine<>();
+        
+        // Record initial state (step 0)
+        // Purpose: Capture starting configuration before any swaps occur
+        StepMetrics initialMetrics = computeMetrics(0, cells, factorA, factorB, 0, 0, false);
+        metricsHistory.add(initialMetrics);
+        
+        // Stagnation tracking
+        // Purpose: Detect when run is stuck in local attractor vs still making progress
+        int consecutiveZeroSwaps = 0;
+        
+        // Execute steps until convergence, stagnation, or max steps
+        // Purpose: Run experiment with standard termination criteria
+        int step = 0;
+        while (step < MAX_STEPS) {
+            // Execute one step (swaps reflect this step's activity)
+            // Purpose: Let cells swap based on fitness comparison
+            int swaps = engine.executeStep(castToAbstractCells(cells));
+            step++; // Increment step counter AFTER execution
+            
+            // Track consecutive zero-swap steps
+            // Purpose: Detect stagnation (stuck in local attractor)
+            if (swaps == 0) {
+                consecutiveZeroSwaps++;
+            } else {
+                consecutiveZeroSwaps = 0; // Reset on any swap activity
+            }
+            
+            // Flag stagnation when threshold reached
+            // Purpose: Mark runs that are stuck vs still converging
+            boolean isStagnant = consecutiveZeroSwaps >= STAGNATION_THRESHOLD;
+            
+            // Compute and record metrics for this completed step
+            // Purpose: Capture full state for time-series analysis
+            StepMetrics stepMetrics = computeMetrics(step, cells, factorA, factorB, swaps, consecutiveZeroSwaps, isStagnant);
+            metricsHistory.add(stepMetrics);
+            
+            // Check convergence (both factors in [0, CONVERGENCE_POSITION])
+            // Purpose: Stop early if localization succeeds
+            if (isConverged(stepMetrics)) {
+                break;
+            }
+            
+            // Check stagnation (stop if stuck)
+            // Purpose: Don't waste computation on runs that won't converge
+            if (isStagnant) {
+                break;
+            }
+        }
+        
+        // Return metrics history
+        // Purpose: Provide complete time-series for CSV export and analysis
+        return metricsHistory;
     }
     
     /**
@@ -623,10 +1219,22 @@ public class AggregationThresholdSweepTest {
      * @throws IOException if write fails
      */
     private void writeCsvResults(String filename, List<StepMetrics> metrics) throws IOException {
-        // TODO: Open file writer
-        // TODO: Write header (StepMetrics.getCsvHeader())
-        // TODO: Write data rows (metrics.toCsvRow())
-        // TODO: Close file
+        // Open file writer
+        // Purpose: Create CSV file for per-step metrics export
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
+            // Write header (StepMetrics.getCsvHeader())
+            // Purpose: Provide column names matching v2 schema from Phase 3
+            writer.println(StepMetrics.getCsvHeader());
+            
+            // Write data rows (metrics.toCsvRow())
+            // Purpose: Export all per-step metrics for downstream analysis
+            for (StepMetrics m : metrics) {
+                writer.println(m.toCsvRow());
+            }
+            
+            // File automatically closed by try-with-resources
+            // Purpose: Ensure file handle is released even if exception occurs
+        }
     }
     
     /**
@@ -716,9 +1324,37 @@ public class AggregationThresholdSweepTest {
      * @return aggregation percentage [0.0, 100.0]
      */
     private double computeStrategyAggregation(List<FactorCell> cells) {
-        // TODO: Count cells with same-strategy neighbors
-        // TODO: Normalize to percentage
-        // TODO: Return aggregation value
-        return 0.0; // Placeholder
+        // Handle edge case: single cell array has 100% aggregation by definition
+        // Purpose: Avoid division by zero and provide sensible default
+        if (cells.size() <= 1) {
+            return 100.0;
+        }
+        
+        // Count cells with same-strategy neighbors
+        // Purpose: Measure spatial clustering of strategy labels
+        int sameStrategyNeighborCount = 0;
+        for (int i = 0; i < cells.size(); i++) {
+            FactorStrategy currentStrategy = cells.get(i).readAlgotype();
+            
+            // Check left neighbor
+            // Purpose: Test if cell has same-strategy neighbor on left
+            boolean hasLeftSame = (i > 0) && 
+                (cells.get(i - 1).readAlgotype() == currentStrategy);
+            
+            // Check right neighbor
+            // Purpose: Test if cell has same-strategy neighbor on right
+            boolean hasRightSame = (i < cells.size() - 1) && 
+                (cells.get(i + 1).readAlgotype() == currentStrategy);
+            
+            // Count if cell has at least one same-strategy neighbor
+            // Purpose: Cell contributes to aggregation if it's part of a cluster
+            if (hasLeftSame || hasRightSame) {
+                sameStrategyNeighborCount++;
+            }
+        }
+        
+        // Normalize to percentage
+        // Purpose: Return aggregation as percentage [0.0, 100.0] for consistency with Phase 3
+        return (sameStrategyNeighborCount * 100.0) / cells.size();
     }
 }
