@@ -175,9 +175,9 @@ public class AggregationThresholdSweepTest {
      * different factor distributions, so that results generalize across 6-digit range.</p>
      */
     private static final int[][] SEMIPRIMES_6_DIGIT = {
-        {143063, 337, 421},    // 337 × 421 = 143,077 (verification needed)
-        {294409, 503, 587},    // 503 × 587 = 295,261 (verification needed)
-        {524287, 727, 721}     // 727 × 721 = 524,167 (verification needed)
+        {184507, 307, 601},    // 307 × 601 = 184,507
+        {186349, 307, 607},    // 307 × 607 = 186,349
+        {188191, 307, 613}     // 307 × 613 = 188,191
     };
     
     /**
@@ -195,9 +195,9 @@ public class AggregationThresholdSweepTest {
      * with problem magnitude.</p>
      */
     private static final int[][] SEMIPRIMES_7_DIGIT = {
-        {1003001, 769, 1303},     // 769 × 1303 = 1,001,207 (verification needed)
-        {2091667, 1279, 1637},    // 1279 × 1637 = 2,093,923 (verification needed)
-        {5765761, 2399, 2399}     // 2399 × 2399 = 5,755,201 (perfect square, verification needed)
+        {1007509, 503, 2003},     // 503 × 2003 = 1,007,509
+        {1011533, 503, 2011},     // 503 × 2011 = 1,011,533
+        {1014551, 503, 2017}      // 503 × 2017 = 1,014,551
     };
     
     /**
@@ -215,9 +215,9 @@ public class AggregationThresholdSweepTest {
      * I can validate the log-scale threshold model.</p>
      */
     private static final int[][] SEMIPRIMES_8_DIGIT = {
-        {10003001, 2939, 3401},   // 2939 × 3401 = 9,996,139 (verification needed)
-        {25326001, 4001, 6329},   // 4001 × 6329 = 25,320,329 (verification needed)
-        {99990001, 9901, 10099}   // 9901 × 10099 = 99,990,899 (verification needed)
+        {10021009, 2003, 5003},   // 2003 × 5003 = 10,021,009
+        {10033027, 2003, 5009},   // 2003 × 5009 = 10,033,027
+        {10037033, 2003, 5011}    // 2003 × 5011 = 10,037,033
     };
     
     // ==================== OUTPUT DIRECTORIES ====================
@@ -256,11 +256,31 @@ public class AggregationThresholdSweepTest {
      */
     @BeforeAll
     static void setupExperimentDirectories() throws IOException {
-        // TODO: Generate timestamp using LocalDateTime
-        // TODO: Create base experiment directory
-        // TODO: Create results subdirectories (6_digit, 7_digit, 8_digit)
-        // TODO: Create snapshots directory
-        // TODO: Print directory locations for traceability
+        // Generate timestamp using LocalDateTime
+        // Purpose: Create unique directory for this experimental run to avoid overwriting previous results
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd");
+        String timestamp = LocalDateTime.now().format(formatter);
+        
+        // Create base experiment directory with timestamp
+        // Purpose: Organize all outputs under timestamped root for traceability
+        experimentDir = "experiments/aggregation_threshold_sweep_" + timestamp;
+        resultsDir = experimentDir + "/results";
+        snapshotsDir = experimentDir + "/snapshots";
+        
+        // Create directory structure
+        // Purpose: Ensure all output directories exist before tests write to them
+        Files.createDirectories(Paths.get(resultsDir + "/6_digit"));
+        Files.createDirectories(Paths.get(resultsDir + "/7_digit"));
+        Files.createDirectories(Paths.get(resultsDir + "/8_digit"));
+        Files.createDirectories(Paths.get(snapshotsDir));
+        
+        // Print directory locations for user traceability
+        // Purpose: User can navigate to output directory to inspect results during/after test execution
+        System.out.println("=== Aggregation Threshold Sweep Experiment ===");
+        System.out.println("Experiment directory: " + experimentDir);
+        System.out.println("Results directory: " + resultsDir);
+        System.out.println("Snapshots directory: " + snapshotsDir);
+        System.out.println();
     }
     
     // ==================== VALIDATION TESTS ====================
@@ -286,10 +306,31 @@ public class AggregationThresholdSweepTest {
     @Test
     @DisplayName("Validate all semiprime factorizations are correct")
     void shouldValidateAllSemiprimeFactorizations() {
-        // TODO: Validate 6-digit semiprimes
-        // TODO: Validate 7-digit semiprimes
-        // TODO: Validate 8-digit semiprimes
-        // TODO: Use helper method validateSemiprime(N, p, q)
+        // Validate 6-digit semiprimes
+        // Purpose: Ensure experimental targets are mathematically valid before running full sweep
+        System.out.println("Validating 6-digit semiprimes...");
+        for (int[] semiprime : SEMIPRIMES_6_DIGIT) {
+            validateSemiprime(semiprime[0], semiprime[1], semiprime[2]);
+            System.out.printf("  ✓ %d = %d × %d%n", semiprime[0], semiprime[1], semiprime[2]);
+        }
+        
+        // Validate 7-digit semiprimes
+        // Purpose: Catch any invalid problem definitions before wasting computation on invalid targets
+        System.out.println("Validating 7-digit semiprimes...");
+        for (int[] semiprime : SEMIPRIMES_7_DIGIT) {
+            validateSemiprime(semiprime[0], semiprime[1], semiprime[2]);
+            System.out.printf("  ✓ %d = %d × %d%n", semiprime[0], semiprime[1], semiprime[2]);
+        }
+        
+        // Validate 8-digit semiprimes
+        // Purpose: Final validation before committing to expensive 8-digit sweeps
+        System.out.println("Validating 8-digit semiprimes...");
+        for (int[] semiprime : SEMIPRIMES_8_DIGIT) {
+            validateSemiprime(semiprime[0], semiprime[1], semiprime[2]);
+            System.out.printf("  ✓ %d = %d × %d%n", semiprime[0], semiprime[1], semiprime[2]);
+        }
+        
+        System.out.println("All semiprimes validated successfully!");
     }
     
     // ==================== MAIN SWEEP TESTS ====================
@@ -609,9 +650,20 @@ public class AggregationThresholdSweepTest {
      * @param q the second factor
      */
     private void validateSemiprime(int N, int p, int q) {
-        // TODO: Assert p * q == N
-        // TODO: Assert isPrime(p)
-        // TODO: Assert isPrime(q)
+        // Verify p × q = N
+        // Purpose: Ensure factorization is mathematically correct
+        assertEquals(p * q, N, 
+            String.format("Invalid factorization: %d × %d = %d, expected %d", p, q, p * q, N));
+        
+        // Verify isPrime(p)
+        // Purpose: Ensure p is prime (semiprime = product of two primes)
+        assertTrue(isPrime(p), 
+            String.format("Factor p=%d is not prime", p));
+        
+        // Verify isPrime(q)
+        // Purpose: Ensure q is prime (semiprime = product of two primes)
+        assertTrue(isPrime(q), 
+            String.format("Factor q=%d is not prime", q));
     }
     
     /**
@@ -628,10 +680,25 @@ public class AggregationThresholdSweepTest {
      * @return true if n is prime
      */
     private boolean isPrime(int n) {
-        // TODO: Handle edge cases (n <= 1, n == 2)
-        // TODO: Trial division up to sqrt(n)
-        // TODO: Return true if no divisors found
-        return false; // Placeholder
+        // Handle edge cases (n <= 1, n == 2)
+        // Purpose: Correct handling of non-prime cases and smallest prime
+        if (n <= 1) return false;
+        if (n == 2) return true;
+        if (n % 2 == 0) return false;
+        
+        // Trial division up to sqrt(n)
+        // Purpose: Efficient primality test for semiprime validation
+        // Algorithm: Check divisibility by all odd numbers up to sqrt(n)
+        int sqrtN = (int) Math.sqrt(n);
+        for (int i = 3; i <= sqrtN; i += 2) {
+            if (n % i == 0) {
+                return false; // Found divisor, not prime
+            }
+        }
+        
+        // Return true if no divisors found
+        // Purpose: n is prime if no divisors exist in [2, sqrt(n)]
+        return true;
     }
     
     /**
