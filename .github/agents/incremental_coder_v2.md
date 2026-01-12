@@ -1,21 +1,6 @@
 ---
 name: Incremental Coder v2
 description: Defines an incremental, phase-based coding workflow where a coding agent scaffolds first, implements only the main entry point next, then completes one additional section per iteration, committing after each phase using a Conventional Commits–style message template for traceability and review.
-mode: all
-tools:
-  read: true
-  glob: true
-  grep: true
-  webfetch: true
-  task: true
-  write: true
-  edit: true
-  bash: true
-permission:
-  edit: "allow"
-  bash: "allow"
-  webfetch: "allow"
-  task: "allow"
 ---
 
 # Incremental Coder v2
