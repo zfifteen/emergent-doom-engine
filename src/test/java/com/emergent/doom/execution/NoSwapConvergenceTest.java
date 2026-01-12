@@ -3,7 +3,6 @@ package com.emergent.doom.execution;
 import com.emergent.doom.cell.Cell;
 import com.emergent.doom.probe.Probe;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("NoSwapConvergence Tests")
 class NoSwapConvergenceTest {
 
-    private NoSwapConvergence<?> detector;
+    private NoSwapConvergence<TestCell> detector;
 
     @BeforeEach
     void setUp() {
@@ -39,10 +38,18 @@ class NoSwapConvergenceTest {
      * [TestWeaver: Implement test logic based on NoSwapConvergence API]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("hasConverged returns true after N stable steps")
     void hasConvergedReturnsTrueAfterNStableSteps() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        Probe<TestCell> probe = new Probe<>();
+        probe.setRecordingEnabled(false);
+        
+        // Simulate 5 steps with no swaps
+        for (int i = 0; i < 5; i++) {
+            probe.recordSnapshot(i, new TestCell[0], 0);
+        }
+        
+        // Should converge after 3+ steps with no swaps
+        assertTrue(detector.hasConverged(probe, 5));
     }
 
     /**
@@ -57,10 +64,17 @@ class NoSwapConvergenceTest {
      * [TestWeaver: Implement premature termination prevention test]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("hasConverged returns false before N stable steps")
     void hasConvergedReturnsFalseBeforeNStableSteps() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        Probe<TestCell> probe = new Probe<>();
+        probe.setRecordingEnabled(false);
+        
+        // Only 2 steps with no swaps
+        probe.recordSnapshot(0, new TestCell[0], 0);
+        probe.recordSnapshot(1, new TestCell[0], 0);
+        
+        // Should not converge with only 2 stable steps
+        assertFalse(detector.hasConverged(probe, 2));
     }
 
     /**
@@ -75,11 +89,27 @@ class NoSwapConvergenceTest {
      * [TestWeaver: Implement constructor validation test]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("constructor rejects invalid stable step counts")
     void constructorRejectsInvalidStableStepCounts() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        assertThrows(IllegalArgumentException.class, () -> new NoSwapConvergence<>(0));
+        assertThrows(IllegalArgumentException.class, () -> new NoSwapConvergence<>(-1));
     }
 
-    // [TestWeaver: Add more test methods as needed]
+    // Test helper class
+    private static class TestCell implements Cell<TestCell> {
+        
+        public int getValue() {
+            return 0;
+        }
+        
+        
+        public int compareTo(TestCell other) {
+            return 0;
+        }
+        
+        
+        public boolean shouldSwapWith(TestCell other) {
+            return false;
+        }
+    }
 }

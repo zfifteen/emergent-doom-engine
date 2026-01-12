@@ -2,8 +2,10 @@ package com.emergent.doom.swap;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,10 +40,16 @@ class ThreadSafeFrozenCellStatusTest {
      * [TestWeaver: Implement test logic based on ThreadSafeFrozenCellStatus API]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("setFrozen and getFrozen work correctly")
     void setFrozenAndGetFrozenWorkCorrectly() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        frozenStatus.setFrozen(5, FrozenCellStatus.FrozenType.IMMOVABLE);
+        assertEquals(FrozenCellStatus.FrozenType.IMMOVABLE, frozenStatus.getFrozen(5));
+        
+        frozenStatus.setFrozen(10, FrozenCellStatus.FrozenType.MOVABLE);
+        assertEquals(FrozenCellStatus.FrozenType.MOVABLE, frozenStatus.getFrozen(10));
+        
+        // Unset position should return NONE
+        assertEquals(FrozenCellStatus.FrozenType.NONE, frozenStatus.getFrozen(99));
     }
 
     /**
@@ -56,10 +64,16 @@ class ThreadSafeFrozenCellStatusTest {
      * [TestWeaver: Implement NONE removal test]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("setFrozen removes entry when set to NONE")
     void setFrozenRemovesEntryWhenSetToNone() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        frozenStatus.setFrozen(3, FrozenCellStatus.FrozenType.IMMOVABLE);
+        assertEquals(FrozenCellStatus.FrozenType.IMMOVABLE, frozenStatus.getFrozen(3));
+        
+        frozenStatus.setFrozen(3, FrozenCellStatus.FrozenType.NONE);
+        assertEquals(FrozenCellStatus.FrozenType.NONE, frozenStatus.getFrozen(3));
+        
+        // Verify position is not in frozen positions set
+        assertFalse(frozenStatus.getFrozenPositions().contains(3));
     }
 
     /**
@@ -74,10 +88,16 @@ class ThreadSafeFrozenCellStatusTest {
      * [TestWeaver: Implement isImmovable test]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("isImmovable returns true only for IMMOVABLE state")
     void isImmovableReturnsTrueOnlyForImmovable() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        frozenStatus.setFrozen(1, FrozenCellStatus.FrozenType.NONE);
+        frozenStatus.setFrozen(2, FrozenCellStatus.FrozenType.MOVABLE);
+        frozenStatus.setFrozen(3, FrozenCellStatus.FrozenType.IMMOVABLE);
+        
+        assertFalse(frozenStatus.isImmovable(1));
+        assertFalse(frozenStatus.isImmovable(2));
+        assertTrue(frozenStatus.isImmovable(3));
+        assertFalse(frozenStatus.isImmovable(99)); // Unset position
     }
 
     /**
@@ -92,11 +112,51 @@ class ThreadSafeFrozenCellStatusTest {
      * [TestWeaver: Implement thread safety test with multiple threads]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("concurrent access is thread-safe")
-    void concurrentAccessIsThreadSafe() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+    void concurrentAccessIsThreadSafe() throws InterruptedException {
+        int numThreads = 10;
+        int operationsPerThread = 100;
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(numThreads);
+        AtomicInteger errors = new AtomicInteger(0);
+        
+        for (int t = 0; t < numThreads; t++) {
+            final int threadId = t;
+            new Thread(() -> {
+                try {
+                    startLatch.await(); // Wait for all threads to be ready
+                    
+                    for (int i = 0; i < operationsPerThread; i++) {
+                        int position = threadId * operationsPerThread + i;
+                        
+                        // Set to IMMOVABLE
+                        frozenStatus.setFrozen(position, FrozenCellStatus.FrozenType.IMMOVABLE);
+                        
+                        // Read back
+                        FrozenCellStatus.FrozenType type = frozenStatus.getFrozen(position);
+                        if (type != FrozenCellStatus.FrozenType.IMMOVABLE) {
+                            errors.incrementAndGet();
+                        }
+                        
+                        // Check immovable
+                        if (!frozenStatus.isImmovable(position)) {
+                            errors.incrementAndGet();
+                        }
+                    }
+                } catch (Exception e) {
+                    errors.incrementAndGet();
+                } finally {
+                    doneLatch.countDown();
+                }
+            }).start();
+        }
+        
+        startLatch.countDown(); // Start all threads
+        doneLatch.await(); // Wait for completion
+        
+        assertEquals(0, errors.get(), "Should have no concurrent access errors");
+        
+        // Verify all positions were set
+        assertEquals(numThreads * operationsPerThread, frozenStatus.getFrozenPositions().size());
     }
-
-    // [TestWeaver: Add more test methods as needed for other FrozenCellStatus methods]
 }
