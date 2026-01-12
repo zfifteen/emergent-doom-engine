@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
@@ -59,6 +61,25 @@ import java.util.Collections;
  *   <li><strong>Max Steps:</strong> 500 (increased from 100 for larger search space)</li>
  *   <li><strong>Stagnation Threshold:</strong> 50 consecutive zero-swap steps (scaled from 20)</li>
  *   <li><strong>Convergence Criteria:</strong> Both factors in positions [0, 4]</li>
+ * </ul>
+ *
+ * <p><strong>STAGNATION DETECTION (DUAL MECHANISM):</strong></p>
+ * <ul>
+ *   <li><strong>Zero-Swap Detection:</strong> Unchanged from baseline
+ *       <ul>
+ *           <li>Triggers when consecutiveZeroSwaps >= 50</li>
+ *           <li>Detects runs where system is completely stuck (no swaps)</li>
+ *       </ul>
+ *   </li>
+ *   <li><strong>Oscillatory Detection:</strong> NEW mechanism (PR #171 fix)
+ *       <ul>
+ *           <li>Sliding 10-step window of meanFactorDistanceFromFront</li>
+ *           <li>Triggers when distance range < 1.0 for 5 consecutive observations</li>
+ *           <li>Detects oscillatory local minima (factors cycling between 2 positions while swapping)</li>
+ *           <li>Saves ~400 computation steps per trapped run</li>
+ *       </ul>
+ *   </li>
+ *   <li><strong>Combined Logic:</strong> isStagnant = isZeroSwapStagnant OR isOscillatoryStagnant</li>
  * </ul>
  *
  * <p><strong>OUTPUT ARTIFACTS:</strong></p>
@@ -163,6 +184,41 @@ public class AggregationThresholdSweepTest {
      * to aggregation rather than scale effects.</p>
      */
     private static final int ARRAY_SIZE = 50;
+    
+    /**
+     * Oscillation window size (steps to observe for oscillatory pattern detection).
+     * 
+     * <p><strong>PURPOSE:</strong> Capture 2-3 complete oscillation cycles with
+     * minimal lag for pattern recognition.</p>
+     * 
+     * <p><strong>AS A USER:</strong> I want to detect oscillatory local minima
+     * reliably without false positives, so that I can distinguish genuine oscillation
+     * from normal stochastic fluctuation.</p>
+     */
+    private static final int OSCILLATION_WINDOW = 10;
+    
+    /**
+     * Consecutive oscillatory observations before declaring oscillatory stagnation.
+     * 
+     * <p><strong>PURPOSE:</strong> Prevent noise-triggered false positives while
+     * confirming that oscillatory pattern is sustained.</p>
+     * 
+     * <p><strong>AS A USER:</strong> I want oscillatory detection to trigger only
+     * on genuine cycling patterns, not transient fluctuations, so that termination
+     * decisions are reliable.</p>
+     */
+    private static final int OSCILLATORY_CONFIRMATIONS = 5;
+    
+    /**
+     * Maximum factor distance range (within 1.0 position) for oscillatory detection.
+     * 
+     * <p><strong>PURPOSE:</strong> Factors oscillating within single array position
+     * indicates cycling between effectively identical solutions.</p>
+     * 
+     * <p><strong>AS A USER:</strong> I want a natural threshold based on problem
+     * domain, so that oscillatory detection aligns with biological/physical meaning.</p>
+     */
+    private static final double OSCILLATION_DISTANCE_THRESHOLD = 1.0;
     
     // ==================== SEMIPRIME DEFINITIONS ====================
     
@@ -1124,19 +1180,43 @@ public class AggregationThresholdSweepTest {
      * <p><strong>PURPOSE:</strong> Run execution steps until convergence, stagnation,
      * or max steps, recording v2 metrics at each step.</p>
      * 
+     * <p><strong>DUAL STAGNATION DETECTION:</strong>
+     * This method implements Hypothesis 1 fix (PR #171) with dual stagnation mechanisms:
+     * <ol>
+     *   <li><strong>Zero-Swap Detection:</strong> Unchanged mechanism
+     *       <ul>
+     *           <li>Tracks consecutiveZeroSwaps (steps with no swaps)</li>
+     *           <li>Triggers when consecutiveZeroSwaps >= STAGNATION_THRESHOLD (50)</li>
+     *           <li>Detects runs completely stuck with zero activity</li>
+     *       </ul>
+     *   </li>
+     *   <li><strong>Oscillatory Detection:</strong> NEW mechanism for PR #171
+     *       <ul>
+     *           <li>Tracks meanFactorDistanceFromFront in sliding 10-step window</li>
+     *           <li>Computes min/max distance over window</li>
+     *           <li>Detects cycling pattern: range < 1.0 (oscillating within 1 position)</li>
+     *           <li>Triggers when 5 consecutive observations of cycling</li>
+     *           <li>Saves ~400 computation steps per trapped run</li>
+     *       </ul>
+     *   </li>
+     * </ol>
+     * 
      * <p><strong>PROCESS:</strong>
      * <ol>
      *   <li>Record initial state (step 0)</li>
      *   <li>While not converged/stagnated and steps < MAX_STEPS:</li>
      *   <li>  Execute step with GenericExecutionEngine</li>
      *   <li>  Compute and record metrics (StepMetrics)</li>
+     *   <li>  Update zero-swap counter</li>
+     *   <li>  Update oscillatory distance window</li>
      *   <li>  Check convergence (both factors in [0, CONVERGENCE_POSITION])</li>
-     *   <li>  Check stagnation (consecutive zero swaps >= STAGNATION_THRESHOLD)</li>
+     *   <li>  Check stagnation (zero-swap OR oscillatory)</li>
      *   <li>Return metrics history</li>
      * </ol>
      * 
      * <p><strong>AS A USER:</strong> I want complete per-step metrics for each run,
-     * so that I can analyze convergence dynamics beyond binary success/failure.</p>
+     * so that I can analyze convergence dynamics beyond binary success/failure.
+     * Dual stagnation detection saves 400+ steps on oscillatory traps.</p>
      * 
      * @param cells the cell array to execute
      * @param factorA the first factor (for position tracking)
@@ -1154,9 +1234,36 @@ public class AggregationThresholdSweepTest {
         StepMetrics initialMetrics = computeMetrics(0, cells, factorA, factorB, 0, 0, false);
         metricsHistory.add(initialMetrics);
         
-        // Stagnation tracking
-        // Purpose: Detect when run is stuck in local attractor vs still making progress
+        // ==================== ZERO-SWAP STAGNATION TRACKING ====================
+        // Purpose: Detect when run has no swaps (completely stuck)
+        // Unchanged mechanism from baseline
+        
+        /**
+         * Track consecutive steps with zero swaps.
+         * Purpose: Detect when system is completely frozen (no activity)
+         * Reset on any swap: If swaps > 0, reset counter to 0
+         */
         int consecutiveZeroSwaps = 0;
+        
+        // ==================== OSCILLATORY STAGNATION TRACKING ====================
+        // Purpose: Detect oscillatory local minima (NEW mechanism for PR #171)
+        // Factors oscillate between 2 positions while performing swaps
+        
+        /**
+         * Sliding window of factor distances (NEW).
+         * Purpose: Track meanFactorDistanceFromFront over 10-step window
+         * Algorithm: Deque maintains last OSCILLATION_WINDOW distances
+         * Efficiency: O(1) append/remove per step
+         */
+        Deque<Double> factorDistanceWindow = new LinkedList<>();
+        
+        /**
+         * Counter for confirmed oscillatory observations (NEW).
+         * Purpose: Prevent false positives from transient fluctuations
+         * Logic: Increment when distance range < 1.0
+         *        Trigger when reaches OSCILLATORY_CONFIRMATIONS (5)
+         */
+        int oscillatoryConfirmations = 0;
         
         // Execute steps until convergence, stagnation, or max steps
         // Purpose: Run experiment with standard termination criteria
@@ -1167,6 +1274,7 @@ public class AggregationThresholdSweepTest {
             int swaps = engine.executeStep(castToAbstractCells(cells));
             step++; // Increment step counter AFTER execution
             
+            // ==================== UPDATE ZERO-SWAP COUNTER ====================
             // Track consecutive zero-swap steps
             // Purpose: Detect stagnation (stuck in local attractor)
             if (swaps == 0) {
@@ -1175,9 +1283,78 @@ public class AggregationThresholdSweepTest {
                 consecutiveZeroSwaps = 0; // Reset on any swap activity
             }
             
-            // Flag stagnation when threshold reached
-            // Purpose: Mark runs that are stuck vs still converging
-            boolean isStagnant = consecutiveZeroSwaps >= STAGNATION_THRESHOLD;
+            // ==================== UPDATE OSCILLATORY WINDOW ====================
+            // Compute current factor distance and add to window
+            // Purpose: Track factor position patterns for oscillation detection
+            int[] factorPositions = findFactorPositions(cells, factorA, factorB);
+            double currentDistance = computeMeanFactorDistance(factorPositions);
+            
+            // Add current distance to sliding window (NEW)
+            // Purpose: Maintain OSCILLATION_WINDOW-step history
+            factorDistanceWindow.addLast(currentDistance);
+            if (factorDistanceWindow.size() > OSCILLATION_WINDOW) {
+                // Remove oldest when window full
+                factorDistanceWindow.removeFirst();
+            }
+            
+            // ==================== CHECK OSCILLATORY PATTERN ====================
+            // Detect when factors oscillate within 1 position (NEW)
+            // Purpose: Identify distinct failure mode from zero-swap stagnation
+            boolean isOscillatoryStep = false;
+            
+            if (factorDistanceWindow.size() >= 3) {
+                // Compute min and max distance in current window
+                // Purpose: Measure spread of factor positions
+                double minDist = factorDistanceWindow.stream()
+                    .filter(d -> d >= 0.0) // Only count valid distances
+                    .mapToDouble(Double::doubleValue)
+                    .min()
+                    .orElse(Double.POSITIVE_INFINITY);
+                
+                double maxDist = factorDistanceWindow.stream()
+                    .filter(d -> d >= 0.0) // Only count valid distances
+                    .mapToDouble(Double::doubleValue)
+                    .max()
+                    .orElse(Double.NEGATIVE_INFINITY);
+                
+                // Check if range < OSCILLATION_DISTANCE_THRESHOLD (1.0)
+                // Purpose: Factors cycling within same "effective position"
+                double distanceRange = maxDist - minDist;
+                if (distanceRange >= 0.0 && distanceRange < OSCILLATION_DISTANCE_THRESHOLD) {
+                    isOscillatoryStep = true;
+                }
+            }
+            
+            // Update oscillatory confirmation counter
+            // Purpose: Require sustained pattern (5 observations) before triggering
+            if (isOscillatoryStep) {
+                oscillatoryConfirmations++;
+            } else {
+                oscillatoryConfirmations = 0; // Reset if pattern breaks
+            }
+            
+            // ==================== COMBINED STAGNATION FLAG ====================
+            // Check both detection mechanisms (NEW: dual detection)
+            // Purpose: Combine zero-swap and oscillatory for robust stagnation detection
+            
+            /**
+             * Zero-swap stagnation (baseline mechanism, unchanged).
+             * Triggers: consecutiveZeroSwaps >= STAGNATION_THRESHOLD (50)
+             */
+            boolean isZeroSwapStagnant = consecutiveZeroSwaps >= STAGNATION_THRESHOLD;
+            
+            /**
+             * Oscillatory stagnation (NEW mechanism for PR #171).
+             * Triggers: oscillatoryConfirmations >= OSCILLATORY_CONFIRMATIONS (5)
+             */
+            boolean isOscillatoryStagnant = oscillatoryConfirmations >= OSCILLATORY_CONFIRMATIONS;
+            
+            /**
+             * Combined stagnation flag (NEW: OR logic).
+             * Triggers: isZeroSwapStagnant OR isOscillatoryStagnant
+             * Purpose: Detect either failure mode
+             */
+            boolean isStagnant = isZeroSwapStagnant || isOscillatoryStagnant;
             
             // Compute and record metrics for this completed step
             // Purpose: Capture full state for time-series analysis
@@ -1190,7 +1367,7 @@ public class AggregationThresholdSweepTest {
                 break;
             }
             
-            // Check stagnation (stop if stuck)
+            // Check stagnation (stop if stuck via either mechanism)
             // Purpose: Don't waste computation on runs that won't converge
             if (isStagnant) {
                 break;
