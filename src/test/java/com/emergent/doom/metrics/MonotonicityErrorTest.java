@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("MonotonicityError Tests")
 class MonotonicityErrorTest {
 
-    private MonotonicityError<?> metric;
+    private MonotonicityError<TestCell> metric;
 
     @BeforeEach
     void setUp() {
@@ -41,10 +41,17 @@ class MonotonicityErrorTest {
      * [TestWeaver: Implement test logic based on MonotonicityError API]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compute counts adjacent inversions correctly")
     void computeCountsAdjacentInversions() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        TestCell[] cells = new TestCell[] {
+            new TestCell(3),
+            new TestCell(1),
+            new TestCell(4),
+            new TestCell(2)
+        };
+        
+        // Adjacent inversions: (3>1), (4>2) = 2 inversions
+        assertEquals(2.0, metric.compute(cells));
     }
 
     /**
@@ -59,10 +66,17 @@ class MonotonicityErrorTest {
      * [TestWeaver: Implement sorted array test]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compute returns zero for sorted arrays")
     void computeReturnsZeroForSortedArrays() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        TestCell[] cells = new TestCell[] {
+            new TestCell(1),
+            new TestCell(2),
+            new TestCell(3),
+            new TestCell(4),
+            new TestCell(5)
+        };
+        
+        assertEquals(0.0, metric.compute(cells));
     }
 
     /**
@@ -77,11 +91,34 @@ class MonotonicityErrorTest {
      * [TestWeaver: Implement edge case tests]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compute handles edge cases correctly")
     void computeHandlesEdgeCases() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        assertEquals(0.0, metric.compute((TestCell[]) null));
+        assertEquals(0.0, metric.compute(new TestCell[] {}));
+        assertEquals(0.0, metric.compute(new TestCell[] { new TestCell(42) }));
     }
 
-    // [TestWeaver: Add more test methods as needed, including StepSnapshot overload]
+    // Test helper class
+    private static class TestCell implements Cell<TestCell>, Comparable<TestCell> {
+        private final int value;
+        
+        TestCell(int value) {
+            this.value = value;
+        }
+        
+        
+        public int getValue() {
+            return value;
+        }
+        
+        
+        public int compareTo(TestCell other) {
+            return Integer.compare(this.value, other.value);
+        }
+        
+        
+        public boolean shouldSwapWith(TestCell other) {
+            return false;
+        }
+    }
 }

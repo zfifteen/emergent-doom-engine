@@ -32,7 +32,7 @@ class CellInterfaceTest {
             this.value = value;
         }
 
-        @Override
+        
         public int compareTo(TestCell other) {
             return Integer.compare(this.value, other.value);
         }

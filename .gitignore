@@ -28,5 +28,4 @@ node_modules/
 experiments/**/results_v1_backup/
 experiments/**/snapshots/
 experiments/**/results/*.csv
-#experiments/**/visualizations/*.png
-#experiments/**/visualizations/*.pdf
+experiments/aggregation_threshold_sweep_2026_01_12/results/

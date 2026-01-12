@@ -4,8 +4,10 @@ import com.emergent.doom.cell.Cell;
 import com.emergent.doom.probe.StepSnapshot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("DelayedGratificationIndex Tests")
 class DelayedGratificationIndexTest {
 
-    private DelayedGratificationIndex<?> metric;
+    private DelayedGratificationIndex<TestCell> metric;
 
     @BeforeEach
     void setUp() {
@@ -40,10 +42,19 @@ class DelayedGratificationIndexTest {
      * [TestWeaver: Implement test logic based on DelayedGratificationIndex API]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compute measures position-weighted quality correctly")
     void computeMeasuresPositionWeightedQuality() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        TestCell[] cells = new TestCell[] {
+            new TestCell(1),
+            new TestCell(2),
+            new TestCell(3),
+            new TestCell(10)  // Better value at end
+        };
+        
+        double result = metric.compute(cells);
+        
+        // Should be positive - better cells appear later
+        assertTrue(result > 0.0);
     }
 
     /**
@@ -58,10 +69,23 @@ class DelayedGratificationIndexTest {
      * [TestWeaver: Implement normalization verification]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compute normalizes by average position weight")
     void computeNormalizesByAveragePositionWeight() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        // Create snapshot with values
+        List<Integer> values = Arrays.asList(5, 5, 5, 5);
+        StepSnapshot<TestCell> snapshot = new StepSnapshot<>(0, 
+            Arrays.asList((Comparable<?>) 5, 5, 5, 5),
+            Arrays.asList(
+                new Object[]{0, 0, 5, 0},
+                new Object[]{0, 0, 5, 0},
+                new Object[]{0, 0, 5, 0},
+                new Object[]{0, 0, 5, 0}
+            ),
+            0);
+        
+        // All cells same value - deviation should be 0
+        double result = metric.compute(snapshot);
+        assertEquals(0.0, result, 0.01);
     }
 
     /**
@@ -76,11 +100,38 @@ class DelayedGratificationIndexTest {
      * [TestWeaver: Implement edge case tests]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compute handles edge cases correctly")
     void computeHandlesEdgeCases() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        assertEquals(0.0, metric.compute((TestCell[]) null));
+        assertEquals(0.0, metric.compute(new TestCell[] {}));
+        
+        // Single cell
+        TestCell[] singleCell = new TestCell[] { new TestCell(5) };
+        double result = metric.compute(singleCell);
+        assertTrue(result >= 0.0);
     }
 
-    // [TestWeaver: Add more test methods as needed, including StepSnapshot overload]
+    // Test helper class
+    private static class TestCell implements Cell<TestCell> {
+        private final int value;
+        
+        TestCell(int value) {
+            this.value = value;
+        }
+        
+        
+        public int getValue() {
+            return value;
+        }
+        
+        
+        public int compareTo(TestCell other) {
+            return Integer.compare(this.value, other.value);
+        }
+        
+        
+        public boolean shouldSwapWith(TestCell other) {
+            return false;
+        }
+    }
 }

@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * [TestWeaver: Generated skeleton - expand with specific test scenarios]
  */
 @DisplayName("SwapProposal Tests")
-@Disabled
 class SwapProposalTest {
 
     /**
@@ -32,10 +31,13 @@ class SwapProposalTest {
      * [TestWeaver: Implement test logic based on SwapProposal API]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("constructor stores initiator, target, and priority correctly")
     void constructorStoresFieldsCorrectly() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        SwapProposal proposal = new SwapProposal(3, 7, 1);
+        
+        assertEquals(3, proposal.getInitiatorIndex());
+        assertEquals(7, proposal.getTargetIndex());
+        assertEquals(1, proposal.getPriority());
     }
 
     /**
@@ -50,10 +52,13 @@ class SwapProposalTest {
      * [TestWeaver: Implement default priority test]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("two-argument constructor uses initiator index as priority")
     void twoArgumentConstructorUsesInitiatorAsPriority() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        SwapProposal proposal = new SwapProposal(5, 10);
+        
+        assertEquals(5, proposal.getInitiatorIndex());
+        assertEquals(10, proposal.getTargetIndex());
+        assertEquals(5, proposal.getPriority());
     }
 
     /**
@@ -68,10 +73,16 @@ class SwapProposalTest {
      * [TestWeaver: Implement priority comparison test]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("compareTo orders by priority (lower = higher precedence)")
     void compareToOrdersByPriority() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        SwapProposal p1 = new SwapProposal(0, 1, 1);
+        SwapProposal p2 = new SwapProposal(2, 3, 2);
+        SwapProposal p3 = new SwapProposal(4, 5, 3);
+        
+        assertTrue(p1.compareTo(p2) < 0);
+        assertTrue(p2.compareTo(p3) < 0);
+        assertTrue(p3.compareTo(p1) > 0);
+        assertEquals(0, p1.compareTo(new SwapProposal(10, 11, 1)));
     }
 
     /**
@@ -86,10 +97,14 @@ class SwapProposalTest {
      * [TestWeaver: Implement involves() verification]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("involves detects participation in swap")
     void involvesDetectsParticipation() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        SwapProposal proposal = new SwapProposal(2, 5);
+        
+        assertTrue(proposal.involves(2));
+        assertTrue(proposal.involves(5));
+        assertFalse(proposal.involves(7));
+        assertFalse(proposal.involves(0));
     }
 
     /**
@@ -104,11 +119,19 @@ class SwapProposalTest {
      * [TestWeaver: Implement immutability verification]
      */
     @Test
-    @Disabled("TestWeaver: Skeleton generated - awaiting implementation")
     @DisplayName("SwapProposal is immutable and thread-safe")
     void swapProposalIsImmutable() {
-        fail("TestWeaver: Skeleton generated - implement test logic");
+        SwapProposal proposal = new SwapProposal(1, 2, 3);
+        
+        // Verify getters return consistent values
+        assertEquals(1, proposal.getInitiatorIndex());
+        assertEquals(2, proposal.getTargetIndex());
+        assertEquals(3, proposal.getPriority());
+        
+        // Verify toString includes key information
+        String str = proposal.toString();
+        assertTrue(str.contains("1"));
+        assertTrue(str.contains("2"));
+        assertTrue(str.contains("3"));
     }
-
-    // [TestWeaver: Add more test methods as needed for equals(), hashCode(), toString()]
 }
