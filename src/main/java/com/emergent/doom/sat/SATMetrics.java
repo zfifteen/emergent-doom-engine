@@ -63,7 +63,7 @@ public class SATMetrics {
             double aggDev = agg.get(i) - aggMean;
             double densDev = dens.get(i) - densMean;
             aggVar += aggDev * aggDev;
-            densVar += densDev * densVar;
+            densVar += densDev * densDev;
             covar += aggDev * densDev;
         }
         
