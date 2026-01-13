@@ -226,9 +226,11 @@ Before using clustering as a primitive, validate that:
 | AlgotypeAggregationIndex | ✅ Implemented | `metrics/AlgotypeAggregationIndex.java` |
 | Chimeric array support | ✅ Implemented | `chimeric/` package |
 | Trajectory recording | ✅ Implemented | `probe/` package |
-| ClusteringPrimitive interface | ❌ Not yet | Proposed above |
-| Boundary extraction | ❌ Not yet | Proposed above |
-| Non-sorting goal functions | ❌ Not yet | Needed for Step 2 |
+| ClusteringPrimitive interface | ✅ Implemented | `sat/` package (generalized) |
+| Boundary extraction | ✅ Implemented | `sat/ConstraintDensityAnalyzer.java` |
+| Non-sorting goal functions | ✅ Implemented | `sat/SATExperiment.java` (SAT domain) |
+
+**Cross-domain validation:** SAT clustering primitive implemented and validated in `sat/` package. Results: avg_max_agg=0.65, solve_rate=85% (see [docs/findings/sat_clustering_experiment_001.md]).
 
 ---
 
