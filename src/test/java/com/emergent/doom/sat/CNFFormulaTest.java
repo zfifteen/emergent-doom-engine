@@ -32,4 +32,3 @@ public class CNFFormulaTest {
         assertFalse(formula.evaluate(Map.of("x1", false)));
     }
 }
-}

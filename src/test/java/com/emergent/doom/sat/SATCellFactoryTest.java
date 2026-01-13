@@ -13,7 +13,7 @@ public class SATCellFactoryTest {
 
     @Test
     void testDefaultDistribution() {
-        SATCellFactory factory = new SATCellFactory(new AssignmentGenerator());
+        SATCellFactory factory = new SATCellFactory(new AssignmentGenerator(42L));
         Map<SATStrategy, Double> dist = factory.getDefaultDistribution();
         assertEquals(0.3, dist.get(SATStrategy.DPLL));
         assertEquals(0.3, dist.get(SATStrategy.GREEDY_MCV));
@@ -22,8 +22,12 @@ public class SATCellFactoryTest {
 
     @Test
     void testCreateChimericArray() {
-        SATCellFactory factory = new SATCellFactory(new AssignmentGenerator());
-        var array = factory.createChimericArray(new CNFFormula(List.of()), 100);
+        SATCellFactory factory = new SATCellFactory(new AssignmentGenerator(42L));
+        Map<String, Boolean> clauseMap = new HashMap<>();
+        clauseMap.put("x1", true);
+        var clause = new CNFClause(clauseMap);
+        var formula = new CNFFormula(List.of(clause));
+        var array = factory.createChimericArray(formula, 100);
         assertTrue(array.isEmpty()); // Stub expectation
     }
 }

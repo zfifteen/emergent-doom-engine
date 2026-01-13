@@ -85,7 +85,7 @@ public class AssignmentGenerator {
         } while (propagated);
         
         // Pure literal assignment for remaining
-        for (String var : unassigned) {
+        for (String var : new ArrayList<>(unassigned)) {
             boolean onlyPositive = true, onlyNegative = true;
             for (CNFClause clause : formula.getClauses()) {
                 if (clause.getLiterals().containsKey(var)) {
@@ -94,9 +94,18 @@ public class AssignmentGenerator {
                     else onlyPositive = false;
                 }
             }
-            if (onlyPositive) assignment.put(var, true);
-            else if (onlyNegative) assignment.put(var, false);
-            else assignment.put(var, random.nextBoolean()); // Arbitrary
+            if (onlyPositive) {
+                assignment.put(var, true);
+                unassigned.remove(var);
+            } else if (onlyNegative) {
+                assignment.put(var, false);
+                unassigned.remove(var);
+            }
+        }
+        
+        // Assign remaining randomly
+        for (String var : unassigned) {
+            assignment.put(var, random.nextBoolean());
         }
         
         return assignment;

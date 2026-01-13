@@ -164,7 +164,7 @@ public class SATCell extends AbstractCell<Integer, SATStrategy> {
      * Update stagnation tracking (PHASE THREE ITER 1: For HYBRID switching).
      */
     public void updateStagnationTracking(int currentScore) {
-        if (currentScore > lastSatisfactionScore) {
+        if (currentScore >= lastSatisfactionScore) {
             stepsSinceImprovement = 0;
         } else {
             stepsSinceImprovement++;

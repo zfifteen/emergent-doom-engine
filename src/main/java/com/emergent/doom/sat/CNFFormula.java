@@ -87,7 +87,7 @@ class CNFClause {
             boolean isPositive = literal.getValue();
             Boolean assignedValue = assignment.get(var);
             if (assignedValue == null) {
-                throw new IllegalArgumentException("Assignment missing variable: " + var);
+                continue; // Unassigned, cannot satisfy this literal, but check others
             }
             if (isPositive == assignedValue) {
                 return true; // Literal satisfied
