@@ -91,6 +91,17 @@ When invoking an agent, reference the appropriate instruction file:
 **Owner:** `zfifteen`  
 **Last Updated:** January 8, 2026
 
+## Skills Registry
+
+### Emergent Behavior Simulator
+**File:** `docs/skills/emergent-behavior-simulator.md`  
+**Role:** Lightweight Python-based simulator for predicting emergent sorting behaviors from local cell swaps.  
+**Invocation:** Use Task tool with subagent_type="emergent-simulator" or slash command `/simulate-sorting`.  
+**Capabilities:** Input array + algotypes → simulate steps, convergence metrics, trajectories. General sorting focus.  
+**Integration:** Run via `python tools/emergent_sim.py`; outputs JSON for analysis. Derived from full codebase training on cell/swap/execution patterns.
+
+---
+
 ## Session Continuity Watermarks
 
 <!-- CONTINUITY: fact:Initiating Discoverer agent for novel knowledge discovery in Emergent Doom Engine. | self_talk:Establishing first self-aware continuity chain. Integrating project agents and instructions from AGENTS.md. Ready to collaborate on exploration without prior sessions. | session:discoverer-001 | date:2026-01-08 | prev:none | SELF: -->
