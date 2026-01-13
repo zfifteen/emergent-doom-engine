@@ -1,5 +1,6 @@
 package com.emergent.doom.cell;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -12,10 +13,19 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Test suite for SelectionSortingCell.
  *
- * <p><strong>PURPOSE:</strong> Verify SELECTION algotype implementation correctly implements
- * ideal position targeting with incremental convergence. Tests framed from end-user perspective.</p>
+ * <strong>PURPOSE:</strong> This story follows SELECTION cells' pursuit of ideal positions: starting with targeted construction,
+ * managing incremental adjustments for denied swaps, and deciding movement toward convergence. End-user narratives emphasize
+ * configuration flexibility and adaptive targeting in selection sort dynamics.
  */
 class SelectionSortingCellTest {
+    
+    private SelectionSortingCell cell;
+    
+    @BeforeEach
+    void setUp() {
+        // Shared setup: Base cell with initial ideal position 0 for convergence tests.
+        cell = new SelectionSortingCell(42, 5, 0);
+    }
     
     @Nested
     @DisplayName("Construction Tests")
@@ -24,25 +34,17 @@ class SelectionSortingCellTest {
         @Test
         @DisplayName("As a user I want to create SELECTION cells with initial ideal position so that I can configure sort direction")
         void createWithInitialIdealPosition() {
-            // PURPOSE: Verify SelectionSortingCell construction with initial ideal position
+            // PURPOSE: Establish SELECTION cells with predefined targets, setting the stage for position-driven convergence.
             // INPUTS: value=42, position=5, idealPosition=0
-            // EXPECTED OUTPUTS: Cell with SELECTION algotype and ideal position 0
-            // CONSOLE OUTPUT: Test passed - created SELECTION cell at position 5, targeting ideal 0
+            // EXPECTED OUTPUTS: Cell with SELECTION algotype and exact ideal position.
+            // REPRODUCTION: Instantiate and verify all initial properties.
             
-            System.out.println("=== Testing SelectionSortingCell Construction ===");
-            SelectionSortingCell cell = new SelectionSortingCell(42, 5, 0);
+            SelectionSortingCell constructedCell = new SelectionSortingCell(42, 5, 0);
             
-            System.out.println("Value: " + cell.readValue());
-            System.out.println("Algotype: " + cell.readAlgotype());
-            System.out.println("Current position: " + cell.readCurrentPosition());
-            System.out.println("Ideal position: " + cell.getIdealPosition());
-            
-            assertEquals(42, cell.readValue());
-            assertEquals(SortingAlgotype.SELECTION, cell.readAlgotype());
-            assertEquals(5, cell.readCurrentPosition());
-            assertEquals(0, cell.getIdealPosition());
-            
-            System.out.println("Test passed - created SELECTION cell at position 5, targeting ideal 0\n");
+            assertEquals(42, constructedCell.readValue(), "Value should match input");
+            assertEquals(SortingAlgotype.SELECTION, constructedCell.readAlgotype(), "Algotype should be SELECTION");
+            assertEquals(5, constructedCell.readCurrentPosition(), "Current position should match input");
+            assertEquals(0, constructedCell.getIdealPosition(), "Ideal position should be 0");
         }
     }
     
@@ -53,53 +55,39 @@ class SelectionSortingCellTest {
         @Test
         @DisplayName("As a user I want to increment ideal position so that SELECTION cells adjust when swaps are denied")
         void incrementIdealPosition() {
-            // PURPOSE: Verify incrementIdealPosition() updates position correctly
+            // PURPOSE: Simulate convergence adaptation: repeated denials shift the target rightward, exploring viable slots.
             // INPUTS: Cell with ideal position 0
-            // EXPECTED OUTPUTS: Ideal position increments to 1, 2, 3
-            // CONSOLE OUTPUT: Test passed - ideal position incremented from 0 to 3
+            // EXPECTED OUTPUTS: Sequential increments: 1, 2, 3
+            // REPRODUCTION: Call increment three times; assert final value and returns.
             
-            System.out.println("=== Testing Ideal Position Increment ===");
-            SelectionSortingCell cell = new SelectionSortingCell(42, 5, 0);
+            SelectionSortingCell incrementCell = new SelectionSortingCell(42, 5, 0);
             
-            int initial = cell.getIdealPosition();
-            System.out.println("Initial ideal: " + initial);
+            int initial = incrementCell.getIdealPosition();
+            int after1 = incrementCell.incrementIdealPosition();
+            int after2 = incrementCell.incrementIdealPosition();
+            int after3 = incrementCell.incrementIdealPosition();
+            int finalIdeal = incrementCell.getIdealPosition();
             
-            int after1 = cell.incrementIdealPosition();
-            System.out.println("After 1st increment: " + after1);
-            
-            int after2 = cell.incrementIdealPosition();
-            System.out.println("After 2nd increment: " + after2);
-            
-            int after3 = cell.incrementIdealPosition();
-            System.out.println("After 3rd increment: " + after3);
-            
-            assertEquals(0, initial);
-            assertEquals(1, after1);
-            assertEquals(2, after2);
-            assertEquals(3, after3);
-            assertEquals(3, cell.getIdealPosition());
-            
-            System.out.println("Test passed - ideal position incremented from 0 to 3\n");
+            assertEquals(0, initial, "Initial ideal should be 0");
+            assertEquals(1, after1, "First increment returns and sets 1");
+            assertEquals(2, after2, "Second increment returns and sets 2");
+            assertEquals(3, after3, "Third increment returns and sets 3");
+            assertEquals(3, finalIdeal, "Final getter confirms 3");
         }
         
         @Test
         @DisplayName("As a user I want to set ideal position so that I can reset SELECTION cells during group merge")
         void setIdealPosition() {
-            // PURPOSE: Verify setIdealPosition() updates position correctly
+            // PURPOSE: Enable dynamic reconfiguration, such as merging sorted subgroups by resetting targets.
             // INPUTS: Cell, set ideal to 10
-            // EXPECTED OUTPUTS: Ideal position is 10
-            // CONSOLE OUTPUT: Test passed - ideal position set to 10
+            // EXPECTED OUTPUTS: Ideal position updated to 10
+            // REPRODUCTION: Set and verify via getter.
             
-            System.out.println("=== Testing Ideal Position Set ===");
-            SelectionSortingCell cell = new SelectionSortingCell(42, 5);
+            SelectionSortingCell setCell = new SelectionSortingCell(42, 5);
+            setCell.setIdealPosition(10);
+            int ideal = setCell.getIdealPosition();
             
-            cell.setIdealPosition(10);
-            int ideal = cell.getIdealPosition();
-            System.out.println("Ideal position after set: " + ideal);
-            
-            assertEquals(10, ideal);
-            
-            System.out.println("Test passed - ideal position set to 10\n");
+            assertEquals(10, ideal, "Ideal should be set to 10");
         }
     }
     
@@ -107,53 +95,42 @@ class SelectionSortingCellTest {
     @DisplayName("Movement Decision Tests")
     class MovementDecisionTests {
         
+        private NeighborhoodView<Integer, SortingAlgotype> emptyViewNotAtIdeal;
+        private NeighborhoodView<Integer, SortingAlgotype> emptyViewAtIdeal;
+        
+        @BeforeEach
+        void setUpViews() {
+            // Shared helper: Empty views for SELECTION (neighbors irrelevant); one off-ideal, one at-ideal.
+            emptyViewNotAtIdeal = new NeighborhoodView<>(new SelectionSortingCell(42, 5, 0), 5, 10, List.of(), List.of());
+            emptyViewAtIdeal = new NeighborhoodView<>(new SelectionSortingCell(42, 0, 0), 0, 10, List.of(), List.of());
+        }
+        
         @Test
         @DisplayName("As a user I want SELECTION cells to move when not at ideal position so that they converge")
         void shouldMoveWhenNotAtIdeal() {
-            // PURPOSE: Verify shouldMoveGiven() returns true when not at ideal position
-            // INPUTS: Cell at position 5, ideal position 0
+            // PURPOSE: Drive progression: cells distant from ideal activate to close the gap toward sorted order.
+            // INPUTS: Cell at position 5, ideal 0
             // EXPECTED OUTPUTS: shouldMoveGiven() returns true
-            // CONSOLE OUTPUT: Test passed - SELECTION at 5 wants to move to ideal 0
+            // REPRODUCTION: Use emptyViewNotAtIdeal; assert movement.
             
-            System.out.println("=== Testing SELECTION Movement Decision (Not At Ideal) ===");
-            SelectionSortingCell cell = new SelectionSortingCell(42, 5, 0);
+            SelectionSortingCell offIdealCell = new SelectionSortingCell(42, 5, 0);
+            boolean shouldMove = offIdealCell.shouldMoveGiven(emptyViewNotAtIdeal);
             
-            // Create empty neighborhood (neighbors parameter not used for SELECTION)
-            NeighborhoodView<Integer, SortingAlgotype> view = new NeighborhoodView<>(
-                cell, 5, 10, List.of(), List.of());
-            
-            boolean shouldMove = cell.shouldMoveGiven(view);
-            System.out.println("Current position: " + cell.readCurrentPosition());
-            System.out.println("Ideal position: " + cell.getIdealPosition());
-            System.out.println("Should move: " + shouldMove);
-            
-            assertTrue(shouldMove);
-            
-            System.out.println("Test passed - SELECTION at 5 wants to move to ideal 0\n");
+            assertTrue(shouldMove, "SELECTION should move when not at ideal");
         }
         
         @Test
         @DisplayName("As a user I want SELECTION cells to not move when at ideal position so that they don't waste cycles")
         void shouldNotMoveWhenAtIdeal() {
-            // PURPOSE: Verify shouldMoveGiven() returns false when at ideal position
-            // INPUTS: Cell at position 0, ideal position 0
+            // PURPOSE: Achieve stability: cells at target halt, signaling local convergence.
+            // INPUTS: Cell at position 0, ideal 0
             // EXPECTED OUTPUTS: shouldMoveGiven() returns false
-            // CONSOLE OUTPUT: Test passed - SELECTION at ideal position doesn't move
+            // REPRODUCTION: Use emptyViewAtIdeal; assert no movement.
             
-            System.out.println("=== Testing SELECTION Movement Decision (At Ideal) ===");
-            SelectionSortingCell cell = new SelectionSortingCell(42, 0, 0);
+            SelectionSortingCell atIdealCell = new SelectionSortingCell(42, 0, 0);
+            boolean shouldMove = atIdealCell.shouldMoveGiven(emptyViewAtIdeal);
             
-            NeighborhoodView<Integer, SortingAlgotype> view = new NeighborhoodView<>(
-                cell, 0, 10, List.of(), List.of());
-            
-            boolean shouldMove = cell.shouldMoveGiven(view);
-            System.out.println("Current position: " + cell.readCurrentPosition());
-            System.out.println("Ideal position: " + cell.getIdealPosition());
-            System.out.println("Should move: " + shouldMove);
-            
-            assertFalse(shouldMove);
-            
-            System.out.println("Test passed - SELECTION at ideal position doesn't move\n");
+            assertFalse(shouldMove, "SELECTION should not move when at ideal");
         }
     }
     
@@ -161,70 +138,55 @@ class SelectionSortingCellTest {
     @DisplayName("Target Position Calculation Tests")
     class TargetPositionTests {
         
+        private SelectionSortingCell smallerCell;
+        private SelectionSortingCell largerCell;
+        private SelectionSortingCell targetCell;
+        private List<AbstractCell<Integer, SortingAlgotype>> neighborList;
+        private List<Integer> positionList;
+        private NeighborhoodView<Integer, SortingAlgotype> swapView;
+        private NeighborhoodView<Integer, SortingAlgotype> denyView;
+        
+        @BeforeEach
+        void setUpTargets() {
+            // Shared helper: Cells and views for swap/deny scenarios at ideal position 0.
+            smallerCell = new SelectionSortingCell(30, 5, 0);
+            largerCell = new SelectionSortingCell(70, 5, 0);
+            targetCell = new SelectionSortingCell(50, 0);
+            neighborList = List.of(targetCell);
+            positionList = List.of(0);
+            swapView = new NeighborhoodView<>(smallerCell, 5, 10, neighborList, positionList);
+            denyView = new NeighborhoodView<>(largerCell, 5, 10, neighborList, positionList);
+        }
+        
         @Test
         @DisplayName("As a user I want SELECTION cells to swap with ideal position when value is smaller")
         void swapWithIdealWhenSmallerValue() {
-            // PURPOSE: Verify SELECTION swaps with ideal position when this.value < target.value
+            // PURPOSE: Facilitate minimum placement: smaller value claims ideal slot via direct swap.
             // INPUTS: Cell(value=30, position=5, ideal=0) with target(value=50, position=0)
             // EXPECTED OUTPUTS: Target position is 0
-            // CONSOLE OUTPUT: Test passed - SELECTION(30) swaps with ideal position(0) target(50)
+            // REPRODUCTION: Use swapView; assert target at ideal.
             
-            System.out.println("=== Testing SELECTION Swap with Ideal Position (Smaller Value) ===");
-            SelectionSortingCell cell = new SelectionSortingCell(30, 5, 0);
-            SelectionSortingCell target = new SelectionSortingCell(50, 0);
+            Optional<Integer> targetPos = smallerCell.calculateTargetPositionGiven(swapView);
             
-            List<AbstractCell<Integer, SortingAlgotype>> neighbors = List.of(target);
-            List<Integer> positions = List.of(0);
-            
-            NeighborhoodView<Integer, SortingAlgotype> view = new NeighborhoodView<>(
-                cell, 5, 10, neighbors, positions);
-            
-            Optional<Integer> targetPos = cell.calculateTargetPositionGiven(view);
-            
-            System.out.println("Cell value: " + cell.readValue());
-            System.out.println("Target value: " + target.readValue());
-            System.out.println("Ideal position: " + cell.getIdealPosition());
-            System.out.println("Target position: " + targetPos.orElse(-1));
-            
-            assertTrue(targetPos.isPresent());
-            assertEquals(0, targetPos.get());
-            
-            System.out.println("Test passed - SELECTION(30) swaps with ideal position(0) target(50)\n");
+            assertTrue(targetPos.isPresent(), "Smaller value targets ideal for swap");
+            assertEquals(0, targetPos.get(), "Target is ideal position 0");
         }
         
         @Test
         @DisplayName("As a user I want SELECTION cells to increment ideal position when swap is denied")
         void incrementIdealWhenSwapDenied() {
-            // PURPOSE: Verify SELECTION increments ideal position when this.value > target.value
+            // PURPOSE: Adapt to rejection: larger value skips current ideal, incrementing target for next candidate.
             // INPUTS: Cell(value=70, position=5, ideal=0) with target(value=50, position=0)
-            // EXPECTED OUTPUTS: Empty target, ideal position incremented to 1
-            // CONSOLE OUTPUT: Test passed - SELECTION(70) denied swap, ideal incremented to 1
+            // EXPECTED OUTPUTS: Empty target, ideal incremented to 1
+            // REPRODUCTION: Use denyView; check pre/post ideal and absent target.
             
-            System.out.println("=== Testing SELECTION Ideal Increment (Swap Denied) ===");
-            SelectionSortingCell cell = new SelectionSortingCell(70, 5, 0);
-            SelectionSortingCell target = new SelectionSortingCell(50, 0);
+            int idealBefore = largerCell.getIdealPosition();
+            Optional<Integer> targetPos = largerCell.calculateTargetPositionGiven(denyView);
+            int idealAfter = largerCell.getIdealPosition();
             
-            List<AbstractCell<Integer, SortingAlgotype>> neighbors = List.of(target);
-            List<Integer> positions = List.of(0);
-            
-            NeighborhoodView<Integer, SortingAlgotype> view = new NeighborhoodView<>(
-                cell, 5, 10, neighbors, positions);
-            
-            int idealBefore = cell.getIdealPosition();
-            Optional<Integer> targetPos = cell.calculateTargetPositionGiven(view);
-            int idealAfter = cell.getIdealPosition();
-            
-            System.out.println("Cell value: " + cell.readValue());
-            System.out.println("Target value: " + target.readValue());
-            System.out.println("Ideal before: " + idealBefore);
-            System.out.println("Ideal after: " + idealAfter);
-            System.out.println("Has target: " + targetPos.isPresent());
-            
-            assertFalse(targetPos.isPresent());
-            assertEquals(0, idealBefore);
-            assertEquals(1, idealAfter);
-            
-            System.out.println("Test passed - SELECTION(70) denied swap, ideal incremented to 1\n");
+            assertFalse(targetPos.isPresent(), "Larger value denied swap at ideal");
+            assertEquals(0, idealBefore, "Ideal starts at 0");
+            assertEquals(1, idealAfter, "Ideal increments to 1 post-denial");
         }
     }
 }

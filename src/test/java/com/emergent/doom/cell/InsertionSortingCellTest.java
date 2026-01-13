@@ -1,5 +1,6 @@
 package com.emergent.doom.cell;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -12,10 +13,19 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Test suite for InsertionSortingCell.
  *
- * <p><strong>PURPOSE:</strong> Verify INSERTION algotype implementation correctly implements
- * conservative left-only movement with left-sorted check. Tests framed from end-user perspective.</p>
+ * <p><strong>PURPOSE:</strong> This narrative explores INSERTION cells' conservative strategy: waiting for left-sorted prefixes
+ * before shifting into position, simulating insertion sort's build-from-left progression. End-user stories highlight initialization,
+ * boundary checks, and precise leftward targeting.</p>
  */
 class InsertionSortingCellTest {
+    
+    private InsertionSortingCell cell;
+    
+    @BeforeEach
+    void setUp() {
+        // Shared setup: Initialize a base cell for reuse in movement and target tests.
+        cell = new InsertionSortingCell(30, 3);
+    }
     
     @Nested
     @DisplayName("Construction Tests")
@@ -24,23 +34,16 @@ class InsertionSortingCellTest {
         @Test
         @DisplayName("As a user I want to create INSERTION cells so that I can initialize the sorting array")
         void createInsertionCell() {
-            // PURPOSE: Verify InsertionSortingCell construction
+            // PURPOSE: Confirm construction sets up INSERTION identity, ready for left-prefix integration in array building.
             // INPUTS: value=42, position=5
-            // EXPECTED OUTPUTS: Cell with INSERTION algotype
-            // CONSOLE OUTPUT: Test passed - created INSERTION cell at position 5
+            // EXPECTED OUTPUTS: Cell with INSERTION algotype, value, and position intact.
+            // REPRODUCTION: Instantiate and verify core properties.
             
-            System.out.println("=== Testing InsertionSortingCell Construction ===");
-            InsertionSortingCell cell = new InsertionSortingCell(42, 5);
+            InsertionSortingCell constructedCell = new InsertionSortingCell(42, 5);
             
-            System.out.println("Value: " + cell.readValue());
-            System.out.println("Algotype: " + cell.readAlgotype());
-            System.out.println("Position: " + cell.readCurrentPosition());
-            
-            assertEquals(42, cell.readValue());
-            assertEquals(SortingAlgotype.INSERTION, cell.readAlgotype());
-            assertEquals(5, cell.readCurrentPosition());
-            
-            System.out.println("Test passed - created INSERTION cell at position 5\n");
+            assertEquals(42, constructedCell.readValue(), "Value should match input");
+            assertEquals(SortingAlgotype.INSERTION, constructedCell.readAlgotype(), "Algotype should be INSERTION");
+            assertEquals(5, constructedCell.readCurrentPosition(), "Position should match input");
         }
     }
     
@@ -48,92 +51,76 @@ class InsertionSortingCellTest {
     @DisplayName("Movement Decision Tests")
     class MovementDecisionTests {
         
+        private List<AbstractCell<Integer, SortingAlgotype>> sortedLeftNeighbors;
+        private List<AbstractCell<Integer, SortingAlgotype>> unsortedLeftNeighbors;
+        private List<Integer> leftPositions;
+        private NeighborhoodView<Integer, SortingAlgotype> sortedView;
+        private NeighborhoodView<Integer, SortingAlgotype> unsortedView;
+        private NeighborhoodView<Integer, SortingAlgotype> boundaryView;
+        
+        @BeforeEach
+        void setUpNeighborhoods() {
+            // Shared helper: Prepare sorted/unsorted left neighborhoods and boundary view to streamline decision testing.
+            
+            // Sorted left: [10, 20, 40]
+            sortedLeftNeighbors = List.of(
+                new InsertionSortingCell(10, 0),
+                new InsertionSortingCell(20, 1),
+                new InsertionSortingCell(40, 2)
+            );
+            leftPositions = List.of(0, 1, 2);
+            sortedView = new NeighborhoodView<>(cell, 3, 10, sortedLeftNeighbors, leftPositions);
+            
+            // Unsorted left: [20, 10, 40]
+            unsortedLeftNeighbors = List.of(
+                new InsertionSortingCell(20, 0),
+                new InsertionSortingCell(10, 1),
+                new InsertionSortingCell(40, 2)
+            );
+            unsortedView = new NeighborhoodView<>(cell, 3, 10, unsortedLeftNeighbors, leftPositions);
+            
+            // Boundary (no left)
+            boundaryView = new NeighborhoodView<>(new InsertionSortingCell(42, 0), 0, 10, List.of(), List.of());
+        }
+        
         @Test
         @DisplayName("As a user I want INSERTION cells to move when left is sorted and value is smaller")
         void shouldMoveWhenLeftSortedAndSmallerValue() {
-            // PURPOSE: Verify shouldMoveGiven() returns true when left sorted and this.value < left.value
+            // PURPOSE: Illustrate activation when left prefix is ordered and cell value fits insertion point, advancing the sort front.
             // INPUTS: Cell(value=30, position=3) with sorted left: [10, 20, 40]
             // EXPECTED OUTPUTS: shouldMoveGiven() returns true
-            // CONSOLE OUTPUT: Test passed - INSERTION(30) wants to move into sorted left
+            // REPRODUCTION: Use pre-built sortedView; assert movement for smaller value.
             
-            System.out.println("=== Testing INSERTION Movement Decision (Left Sorted, Smaller Value) ===");
-            InsertionSortingCell cell = new InsertionSortingCell(30, 3);
+            boolean shouldMove = cell.shouldMoveGiven(sortedView);
             
-            // Create sorted left prefix: [10, 20, 40]
-            InsertionSortingCell left0 = new InsertionSortingCell(10, 0);
-            InsertionSortingCell left1 = new InsertionSortingCell(20, 1);
-            InsertionSortingCell left2 = new InsertionSortingCell(40, 2);
-            
-            List<AbstractCell<Integer, SortingAlgotype>> neighbors = List.of(left0, left1, left2);
-            List<Integer> positions = List.of(0, 1, 2);
-            
-            NeighborhoodView<Integer, SortingAlgotype> view = new NeighborhoodView<>(
-                cell, 3, 10, neighbors, positions);
-            
-            boolean shouldMove = cell.shouldMoveGiven(view);
-            System.out.println("Cell value: " + cell.readValue());
-            System.out.println("Left values: [10, 20, 40]");
-            System.out.println("Should move: " + shouldMove);
-            
-            assertTrue(shouldMove);
-            
-            System.out.println("Test passed - INSERTION(30) wants to move into sorted left\n");
+            assertTrue(shouldMove, "INSERTION should move into sorted left when value is smaller");
         }
         
         @Test
         @DisplayName("As a user I want INSERTION cells to not move when left is unsorted")
         void shouldNotMoveWhenLeftUnsorted() {
-            // PURPOSE: Verify shouldMoveGiven() returns false when left is unsorted
+            // PURPOSE: Enforce patience: no movement until left stabilizes, preventing premature shifts in building the sorted prefix.
             // INPUTS: Cell(value=30, position=3) with unsorted left: [20, 10, 40]
             // EXPECTED OUTPUTS: shouldMoveGiven() returns false
-            // CONSOLE OUTPUT: Test passed - INSERTION(30) waits for left to sort
+            // REPRODUCTION: Use pre-built unsortedView; assert no movement.
             
-            System.out.println("=== Testing INSERTION Movement Decision (Left Unsorted) ===");
-            InsertionSortingCell cell = new InsertionSortingCell(30, 3);
+            boolean shouldMove = cell.shouldMoveGiven(unsortedView);
             
-            // Create unsorted left prefix: [20, 10, 40] - out of order
-            InsertionSortingCell left0 = new InsertionSortingCell(20, 0);
-            InsertionSortingCell left1 = new InsertionSortingCell(10, 1);
-            InsertionSortingCell left2 = new InsertionSortingCell(40, 2);
-            
-            List<AbstractCell<Integer, SortingAlgotype>> neighbors = List.of(left0, left1, left2);
-            List<Integer> positions = List.of(0, 1, 2);
-            
-            NeighborhoodView<Integer, SortingAlgotype> view = new NeighborhoodView<>(
-                cell, 3, 10, neighbors, positions);
-            
-            boolean shouldMove = cell.shouldMoveGiven(view);
-            System.out.println("Cell value: " + cell.readValue());
-            System.out.println("Left values: [20, 10, 40] (unsorted)");
-            System.out.println("Should move: " + shouldMove);
-            
-            assertFalse(shouldMove);
-            
-            System.out.println("Test passed - INSERTION(30) waits for left to sort\n");
+            assertFalse(shouldMove, "INSERTION should wait until left is sorted");
         }
         
         @Test
         @DisplayName("As a user I want INSERTION cells to not move when at left boundary")
         void shouldNotMoveAtLeftBoundary() {
-            // PURPOSE: Verify shouldMoveGiven() returns false at left boundary
+            // PURPOSE: Boundary cells anchor the sort; no leftward movement possible, maintaining array integrity.
             // INPUTS: Cell at position 0 (no left neighbors)
             // EXPECTED OUTPUTS: shouldMoveGiven() returns false
-            // CONSOLE OUTPUT: Test passed - INSERTION at boundary doesn't move
+            // REPRODUCTION: Use pre-built boundaryView; assert immobility.
             
-            System.out.println("=== Testing INSERTION Movement Decision (At Boundary) ===");
-            InsertionSortingCell cell = new InsertionSortingCell(42, 0);
+            InsertionSortingCell boundaryCell = new InsertionSortingCell(42, 0);
+            boolean shouldMove = boundaryCell.shouldMoveGiven(boundaryView);
             
-            // No left neighbors
-            NeighborhoodView<Integer, SortingAlgotype> view = new NeighborhoodView<>(
-                cell, 0, 10, List.of(), List.of());
-            
-            boolean shouldMove = cell.shouldMoveGiven(view);
-            System.out.println("Position: " + cell.readCurrentPosition());
-            System.out.println("Should move: " + shouldMove);
-            
-            assertFalse(shouldMove);
-            
-            System.out.println("Test passed - INSERTION at boundary doesn't move\n");
+            assertFalse(shouldMove, "INSERTION at left boundary remains stationary");
         }
     }
     
@@ -141,71 +128,61 @@ class InsertionSortingCellTest {
     @DisplayName("Target Position Calculation Tests")
     class TargetPositionTests {
         
+        private List<AbstractCell<Integer, SortingAlgotype>> sortedLeftForTarget;
+        private List<Integer> leftPositionsForTarget;
+        private NeighborhoodView<Integer, SortingAlgotype> sortedTargetView;
+        private List<AbstractCell<Integer, SortingAlgotype>> unsortedLeftForTarget;
+        private NeighborhoodView<Integer, SortingAlgotype> unsortedTargetView;
+        
+        @BeforeEach
+        void setUpTargetNeighborhoods() {
+            // Shared helper: Configure neighborhoods for target computation, focusing on left insertion points.
+            
+            InsertionSortingCell testCell = new InsertionSortingCell(25, 3);
+            
+            // Sorted left for valid target: [10, 20, 30]
+            sortedLeftForTarget = List.of(
+                new InsertionSortingCell(10, 0),
+                new InsertionSortingCell(20, 1),
+                new InsertionSortingCell(30, 2)
+            );
+            leftPositionsForTarget = List.of(0, 1, 2);
+            sortedTargetView = new NeighborhoodView<>(testCell, 3, 10, sortedLeftForTarget, leftPositionsForTarget);
+            
+            // Unsorted for no target
+            unsortedLeftForTarget = List.of(
+                new InsertionSortingCell(20, 0),
+                new InsertionSortingCell(10, 1),
+                new InsertionSortingCell(30, 2)
+            );
+            unsortedTargetView = new NeighborhoodView<>(testCell, 3, 10, unsortedLeftForTarget, leftPositionsForTarget);
+        }
+        
         @Test
         @DisplayName("As a user I want INSERTION cells to swap left when left sorted and value smaller")
         void swapLeftWhenLeftSortedAndSmaller() {
-            // PURPOSE: Verify calculateTargetPositionGiven() returns left position when valid
+            // PURPOSE: Pinpoint insertion: target the immediate left when prefix is ready and value requires shift.
             // INPUTS: Cell(value=25, position=3) with sorted left: [10, 20, 30]
-            // EXPECTED OUTPUTS: Target position is 2 (left neighbor)
-            // CONSOLE OUTPUT: Test passed - INSERTION(25) targets left position 2
+            // EXPECTED OUTPUTS: Target position is 2 (adjacent left)
+            // REPRODUCTION: Use sortedTargetView; assert target at 2.
             
-            System.out.println("=== Testing INSERTION Target Calculation (Valid Swap) ===");
-            InsertionSortingCell cell = new InsertionSortingCell(25, 3);
+            Optional<Integer> target = new InsertionSortingCell(25, 3).calculateTargetPositionGiven(sortedTargetView);
             
-            // Create sorted left prefix: [10, 20, 30]
-            InsertionSortingCell left0 = new InsertionSortingCell(10, 0);
-            InsertionSortingCell left1 = new InsertionSortingCell(20, 1);
-            InsertionSortingCell left2 = new InsertionSortingCell(30, 2);
-            
-            List<AbstractCell<Integer, SortingAlgotype>> neighbors = List.of(left0, left1, left2);
-            List<Integer> positions = List.of(0, 1, 2);
-            
-            NeighborhoodView<Integer, SortingAlgotype> view = new NeighborhoodView<>(
-                cell, 3, 10, neighbors, positions);
-            
-            Optional<Integer> target = cell.calculateTargetPositionGiven(view);
-            
-            System.out.println("Cell value: " + cell.readValue());
-            System.out.println("Left neighbor value: 30");
-            System.out.println("Target position: " + target.orElse(-1));
-            
-            assertTrue(target.isPresent());
-            assertEquals(2, target.get());
-            
-            System.out.println("Test passed - INSERTION(25) targets left position 2\n");
+            assertTrue(target.isPresent(), "Valid sorted left yields insertion target");
+            assertEquals(2, target.get(), "Target immediate left neighbor for shift");
         }
         
         @Test
         @DisplayName("As a user I want INSERTION cells to return empty when left unsorted")
         void noSwapWhenLeftUnsorted() {
-            // PURPOSE: Verify calculateTargetPositionGiven() returns empty when left unsorted
+            // PURPOSE: Defer action until prefix readiness: no target until left order is confirmed.
             // INPUTS: Cell(value=25, position=3) with unsorted left: [20, 10, 30]
             // EXPECTED OUTPUTS: Empty target
-            // CONSOLE OUTPUT: Test passed - INSERTION(25) returns empty for unsorted left
+            // REPRODUCTION: Use unsortedTargetView; assert no target.
             
-            System.out.println("=== Testing INSERTION Target Calculation (Left Unsorted) ===");
-            InsertionSortingCell cell = new InsertionSortingCell(25, 3);
+            Optional<Integer> target = new InsertionSortingCell(25, 3).calculateTargetPositionGiven(unsortedTargetView);
             
-            // Create unsorted left prefix: [20, 10, 30]
-            InsertionSortingCell left0 = new InsertionSortingCell(20, 0);
-            InsertionSortingCell left1 = new InsertionSortingCell(10, 1);
-            InsertionSortingCell left2 = new InsertionSortingCell(30, 2);
-            
-            List<AbstractCell<Integer, SortingAlgotype>> neighbors = List.of(left0, left1, left2);
-            List<Integer> positions = List.of(0, 1, 2);
-            
-            NeighborhoodView<Integer, SortingAlgotype> view = new NeighborhoodView<>(
-                cell, 3, 10, neighbors, positions);
-            
-            Optional<Integer> target = cell.calculateTargetPositionGiven(view);
-            
-            System.out.println("Cell value: " + cell.readValue());
-            System.out.println("Left values: [20, 10, 30] (unsorted)");
-            System.out.println("Has target: " + target.isPresent());
-            
-            assertFalse(target.isPresent());
-            
-            System.out.println("Test passed - INSERTION(25) returns empty for unsorted left\n");
+            assertFalse(target.isPresent(), "Unsorted left yields no insertion target");
         }
     }
 }

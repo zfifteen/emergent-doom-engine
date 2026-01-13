@@ -32,7 +32,8 @@ class FactorCellFactoryTest {
         
         @Test
         @DisplayName("Creates correct number of cells")
-        @Disabled
+        
+
         void correctCellCount() {
             // GIVEN: Factory with distribution
             FactorCellFactory factory = new FactorCellFactory(42L);
@@ -50,7 +51,8 @@ class FactorCellFactoryTest {
         
         @Test
         @DisplayName("Strategy distribution matches specification")
-        @Disabled
+        
+
         void strategyDistribution() {
             // GIVEN: Factory with 33/33/34 distribution
             FactorCellFactory factory = new FactorCellFactory(42L);

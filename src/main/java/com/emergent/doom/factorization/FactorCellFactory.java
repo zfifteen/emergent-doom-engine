@@ -129,7 +129,21 @@ public class FactorCellFactory {
             int count = entry.getValue();
             
             // Generate candidates using strategy-specific generator
-            List<Integer> candidates = generateCandidatesForStrategy(strategy, target, count);
+            List<Integer> generatedCandidates = generateCandidatesForStrategy(strategy, target, count);
+            
+            // If fewer than requested, cycle to fill exactly 'count' for proper distribution
+            List<Integer> candidates = new ArrayList<>();
+            int actualSize = generatedCandidates.size();
+            if (actualSize == 0) {
+                // Fallback: use 2 as default candidate if no generation possible
+                for (int i = 0; i < count; i++) {
+                    candidates.add(2);
+                }
+            } else {
+                for (int i = 0; i < count; i++) {
+                    candidates.add(generatedCandidates.get(i % actualSize));
+                }
+            }
             
             // Create FactorCells with candidates and strategy
             for (Integer candidate : candidates) {

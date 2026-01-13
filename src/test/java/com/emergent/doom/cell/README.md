@@ -6,6 +6,22 @@ The Cell interface is the foundation of the Emergent Doom Engine. It defines the
 
 Tests in this package validate that the Cell interface maintains its **lightweight, domain-agnostic design**. Cells are pure `Comparable<T>` data carriers with zero engine-specific state, ensuring maximum flexibility and reusability.
 
+## Test Narrative Arc
+
+This test suite tells the story of building reliable cells from the ground up, ensuring they form the stable foundation for emergent sorting behaviors.
+
+1. **Interface Purity (CellInterfaceTest)**: We begin by verifying the Cell interface remains minimal and domain-agnostic, extending only Comparable<T> without engine bloat. This establishes the contract: pure comparison logic, no metadata entanglement.
+
+2. **Generic Implementation (GenericCellTest)**: Next, we demonstrate lightweight wrapping of domain values, confirming value-based comparison, equality, and absence of metadata fields. This shows how any Comparable type becomes a cell without modification.
+
+3. **Algorithm-Specific Behaviors (BubbleSortingCellTest, InsertionSortingCellTest, SelectionSortingCellTest)**: The narrative progresses to specialized cells, validating movement decisions and target calculations. For Bubble, we explore random bidirectional swaps; for Insertion, conservative left shifts into sorted prefixes; for Selection, ideal position targeting with convergence logic. Each test weaves end-user stories of initialization, decision-making, and positioning.
+
+4. **Contract Enforcement (AbstractCellContractTest)**: Throughout, contract tests ensure immutability of core properties (value, algotype), mutability where needed (position, status), and consistent comparisons, tying the arc together as a cohesive, reusable system.
+
+5. **Supporting Utilities (AbstractSortingCellTest, MockSortingCell)**: Mock helpers and abstract tests provide the scaffolding, ensuring all cells adhere to shared patterns without redundancy.
+
+By the end, readers understand cells as emergent building blocks: simple, swappable, and ready for engine integration. Cross-references to swap/README.md extend this story to interaction mechanics.
+
 ## Concepts Covered
 
 ### Minimal Interface Contract
@@ -192,9 +208,9 @@ EDE Approach (Separated Concerns)
 │                │       │ ✅ IdealPosition     │
 │ [Domain logic] │       │ [Engine logic]       │
 └────────────────┘       └──────────────────────┘
-                                   │
-                            IntFunction<CellMetadata>
-                            index → metadata
+                               │
+                       IntFunction<CellMetadata>
+                       index → metadata
 
 Benefit: Cells reusable across engines, domains don't depend on EDE!
 ```
