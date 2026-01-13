@@ -29,3 +29,4 @@ experiments/**/results_v1_backup/
 experiments/**/snapshots/
 experiments/**/results/*.csv
 experiments/aggregation_threshold_sweep_2026_01_12/results/
+experiments/aggregation_threshold_sweep_2026_01_13/results/
