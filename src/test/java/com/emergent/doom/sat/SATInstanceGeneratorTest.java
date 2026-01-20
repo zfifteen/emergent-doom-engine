@@ -3,10 +3,12 @@ package com.emergent.doom.sat;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Map;
+
 /**
- * Tests for SATInstanceGenerator (PHASE TWO).
+ * Tests for SATInstanceGenerator (PHASE THREE ITER 2).
  *
- * As a developer, I want stub instance.
+ * As a developer, I want to verify generation and satisfiability.
  */
 public class SATInstanceGeneratorTest {
 
@@ -41,5 +43,4 @@ public class SATInstanceGeneratorTest {
         assertEquals(86, formula.getClauseCount()); // 4.3*20
         assertEquals(20, formula.getVariableCount());
     }
-}
 }

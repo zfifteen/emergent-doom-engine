@@ -253,9 +253,11 @@ class EmergentSimulator:
         if len(values) <= 1:
             return 100.0
         if descending:
-            inc = sum(1 for i in range(1, len(values)) if values[i] >= values[i - 1])
-        else:
+            # For descending monotonicity, count non-increasing steps
             inc = sum(1 for i in range(1, len(values)) if values[i] <= values[i - 1])
+        else:
+            # For ascending monotonicity, count non-decreasing steps
+            inc = sum(1 for i in range(1, len(values)) if values[i] >= values[i - 1])
         return (inc / (len(values) - 1)) * 100
 
 

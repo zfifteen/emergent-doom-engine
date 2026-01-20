@@ -34,4 +34,3 @@ public class SATStrategyTest {
         assertEquals(0.6, custom.getWalksatNoise());
     }
 }
-}

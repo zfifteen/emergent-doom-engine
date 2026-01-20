@@ -6,9 +6,9 @@ import java.util.*;
 /**
  * Factory for creating SATCell instances (PHASE TWO: Stub with distribution).
  *
- * &lt;p&gt;&lt;strong&gt;PURPOSE:&lt;/strong&gt; Generate chimeric populations per §4.2 (30/30/40).&lt;/p&gt;
+ * <p><strong>PURPOSE:</strong> Generate chimeric populations per §4.2 (30/30/40).</p>
  *
- * &lt;p&gt;&lt;strong&gt;PHASE TWO NOTES:&lt;/strong&gt; Stub generation; full in Phase 3.&lt;/p&gt;
+ * <p><strong>PHASE TWO NOTES:</strong> Stub generation; full in Phase 3.</p>
  */
 public class SATCellFactory {
 

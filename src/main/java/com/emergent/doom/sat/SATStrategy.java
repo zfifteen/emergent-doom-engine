@@ -3,12 +3,12 @@ package com.emergent.doom.sat;
 /**
  * Algotype enumeration for Boolean satisfiability domain (SCAFFOLD).
  *
- * &lt;p&gt;&lt;strong&gt;PURPOSE:&lt;/strong&gt; Define assignment strategies enabling emergent
- * clustering based on strategy compatibility in constraint landscape.&lt;/p&gt;
+ * <p><strong>PURPOSE:</strong> Define assignment strategies enabling emergent
+ * clustering based on strategy compatibility in constraint landscape.</p>
  *
- * &lt;p&gt;&lt;strong&gt;PHASE ONE NOTES:&lt;/strong&gt; Stub only; parameters and logic in Phase 3.&lt;/p&gt;
+ * <p><strong>PHASE ONE NOTES:</strong> Stub only; parameters and logic in Phase 3.</p>
  *
- * &lt;p&gt;&lt;strong&gt;REFERENCE:&lt;/strong&gt; TECH_SPEC.md §3.2.1 (Levin et al. 2024).&lt;/p&gt;
+ * <p><strong>REFERENCE:</strong> TECH_SPEC.md §3.2.1 (Levin et al. 2024).</p>
  */
 /**
  * Algotype enumeration for Boolean satisfiability domain (PHASE THREE ITER 1: Full enum with parameters).

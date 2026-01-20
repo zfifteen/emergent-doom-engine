@@ -28,8 +28,8 @@ public class SATInstanceGenerator {
      * <p><strong>OUTPUT:</strong> CNFFormula with planted satisfying assignment.</p>
      * <p><strong>GUARANTEE:</strong> At least 60% clauses satisfied by returned assignment.</p>
      */
-    public CNFFormula generateSatisfiable3SAT(int numVars, int numClauses, long seed) {
-        this.random.setSeed(seed);
+    public static CNFFormula generateSatisfiable3SAT(int numVars, int numClauses, long seed) {
+        Random random = new Random(seed);
         
         // PHASE THREE ITER 2: Plant satisfying assignment (all true for simplicity)
         Map<String, Boolean> plantedAssignment = new HashMap<>();
@@ -41,7 +41,7 @@ public class SATInstanceGenerator {
         int satisfiedCount = 0;
         
         for (int i = 0; i < numClauses; i++) {
-            CNFClause clause = generateClause(numVars, plantedAssignment);
+            CNFClause clause = generateClause(numVars, plantedAssignment, random);
             clauses.add(clause);
             if (clause.evaluate(plantedAssignment)) {
                 satisfiedCount++;
@@ -64,7 +64,7 @@ public class SATInstanceGenerator {
     /**
      * Generate single 3-literal clause biased toward satisfiability.
      */
-    private CNFClause generateClause(int numVars, Map<String, Boolean> planted) {
+    private static CNFClause generateClause(int numVars, Map<String, Boolean> planted, Random random) {
         List<String> literals = new ArrayList<>();
         
         // Generate 3 unique variables
@@ -80,8 +80,6 @@ public class SATInstanceGenerator {
             // 70% chance to choose polarity that satisfies planted assignment
             boolean positive = random.nextDouble() < 0.7 ? plantedValue : !plantedValue;
             literals.add(var + (positive ? "" : "'")); // ' denotes negation
-            // Internal: store as map var -> polarity (true=positive)
-            // Note: For evaluation, CNFClause uses Boolean for polarity
         }
         
         // Convert to CNFClause format

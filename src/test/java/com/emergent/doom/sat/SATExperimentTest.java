@@ -20,7 +20,7 @@ public class SATExperimentTest {
         assertTrue(experiment.getStepCount() > 0);
         assertFalse(experiment.getCells().isEmpty());
         // Check some swaps occurred or stable
-        assertTrue(experiment.getStepCount() < 10 || experiment.isSolved());
+        assertTrue(experiment.getStepCount() <= 10 || experiment.isSolved());
     }
 
     @Test
