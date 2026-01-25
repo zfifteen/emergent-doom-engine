@@ -24,9 +24,13 @@ ENV/
 
 node_modules/
 
- Experiment results and backups (large CSV/JSON files)
+# Experiment results and backups (large CSV/JSON files)
 experiments/**/results_v1_backup/
 experiments/**/snapshots/
 experiments/**/results/*.csv
 experiments/aggregation_threshold_sweep_2026_01_12/results/
 experiments/aggregation_threshold_sweep_2026_01_13/results/
+
+# H1 experiment outputs
+experiments/h1_*/**/*.csv
+experiments/h1_*/**/manifest.json
