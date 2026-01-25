@@ -256,13 +256,13 @@ public class GraphColoringCell extends AbstractCell<ColoringState, ColoringAlgot
      */
     private ColoringState applyMinConflict(int[] colors) {
         // Find conflicted vertices
-        java.util.List<Integer> conflicted = new java.util.ArrayList<>();
+        java.util.Set<Integer> conflicted = new java.util.HashSet<>();
         for (int[] edge : graph.getEdges()) {
             int u = edge[0];
             int v = edge[1];
             if (colors[u] == colors[v]) {
-                if (!conflicted.contains(u)) conflicted.add(u);
-                if (!conflicted.contains(v)) conflicted.add(v);
+                conflicted.add(u);
+                conflicted.add(v);
             }
         }
         
@@ -271,7 +271,8 @@ public class GraphColoringCell extends AbstractCell<ColoringState, ColoringAlgot
         }
         
         // Pick random conflicted vertex
-        int vertex = conflicted.get(random.nextInt(conflicted.size()));
+        java.util.List<Integer> conflictedList = new java.util.ArrayList<>(conflicted);
+        int vertex = conflictedList.get(random.nextInt(conflictedList.size()));
         
         // Try all colors, pick min-conflict
         int bestColor = colors[vertex];
@@ -331,10 +332,9 @@ public class GraphColoringCell extends AbstractCell<ColoringState, ColoringAlgot
     private int countVertexConflicts(int vertex, int[] colors) {
         int count = 0;
         for (int[] edge : graph.getEdges()) {
-            if (edge[0] == vertex && colors[edge[0]] == colors[edge[1]]) {
-                count++;
-            }
-            if (edge[1] == vertex && colors[edge[0]] == colors[edge[1]]) {
+            // Count each edge only once
+            if ((edge[0] == vertex || edge[1] == vertex) && 
+                colors[edge[0]] == colors[edge[1]]) {
                 count++;
             }
         }

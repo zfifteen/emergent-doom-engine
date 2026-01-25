@@ -278,6 +278,7 @@ public class BoundaryGuidedRecombination {
     private int countVertexConflicts(int vertex, int[] colors) {
         int count = 0;
         for (int[] edge : graph.getEdges()) {
+            // Count each edge only once
             if ((edge[0] == vertex || edge[1] == vertex) && 
                 colors[edge[0]] == colors[edge[1]]) {
                 count++;
